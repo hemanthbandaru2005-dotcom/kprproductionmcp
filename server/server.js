@@ -61,6 +61,7 @@ const server = http.createServer(async (req, res) => {
   const fullUrl = req.url || '';
   const [pathname, queryString] = fullUrl.split('?');
   const queryParams = new URLSearchParams(queryString || '');
+  const normalizedPath = (pathname.replace(/\/+$/, '') || '/').toLowerCase();
 
   setCorsHeaders(res);
 
@@ -70,9 +71,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // 1. Root & Index Endpoint (GET /, GET /api, GET /drive, GET /api/drive)
+  // 1. Root & Index Endpoint
   // -------------------------------------------------------------
-  if ((pathname === '/' || pathname === '/api' || pathname === '/drive' || pathname === '/api/drive' || pathname === '/app/api/drive') && req.method === 'GET') {
+  if (['/', '/api', '/drive', '/api/drive', '/app/api/drive'].includes(normalizedPath) && req.method === 'GET') {
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
     return res.end(JSON.stringify({
@@ -92,9 +93,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // 2. Health Check Endpoint (GET /health, GET /api/health)
+  // 2. Health Check Endpoint
   // -------------------------------------------------------------
-  if ((pathname === '/health' || pathname === '/api/health') && req.method === 'GET') {
+  if (['/health', '/api/health'].includes(normalizedPath) && req.method === 'GET') {
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
     return res.end(JSON.stringify({
@@ -108,7 +109,7 @@ const server = http.createServer(async (req, res) => {
   // -------------------------------------------------------------
   // 3. GET /app/api/drive/test & /api/drive/test
   // -------------------------------------------------------------
-  if ((pathname === '/app/api/drive/test' || pathname === '/api/drive/test') && req.method === 'GET') {
+  if (['/app/api/drive/test', '/api/drive/test', '/drive/test', '/api/test'].includes(normalizedPath) && req.method === 'GET') {
     res.setHeader('Content-Type', 'application/json');
     try {
       const creds = getDriveCredentials();
@@ -163,9 +164,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // 3. POST /app/api/drive/upload/initiate & /api/drive/upload/initiate
+  // 4. POST /app/api/drive/upload/initiate & aliases
   // -------------------------------------------------------------
-  if ((pathname === '/app/api/drive/upload/initiate' || pathname === '/api/drive/upload/initiate') && req.method === 'POST') {
+  if (['/app/api/drive/upload/initiate', '/api/drive/upload/initiate', '/drive/upload/initiate', '/api/upload/initiate', '/upload/initiate'].includes(normalizedPath) && req.method === 'POST') {
     res.setHeader('Content-Type', 'application/json');
     try {
       const body = await parseJsonBody(req);
@@ -246,9 +247,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // 4. PUT / POST /app/api/drive/upload/chunk
+  // 5. PUT / POST /app/api/drive/upload/chunk & aliases
   // -------------------------------------------------------------
-  if ((pathname === '/app/api/drive/upload/chunk' || pathname === '/api/drive/upload/chunk') && (req.method === 'PUT' || req.method === 'POST')) {
+  if (['/app/api/drive/upload/chunk', '/api/drive/upload/chunk', '/drive/upload/chunk', '/api/upload/chunk', '/upload/chunk'].includes(normalizedPath) && (req.method === 'PUT' || req.method === 'POST')) {
     res.setHeader('Content-Type', 'application/json');
     try {
       const uploadUrl = req.headers['x-upload-url'] || queryParams.get('mock_session');
@@ -291,9 +292,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // 5. POST /app/api/drive/upload/complete
+  // 6. POST /app/api/drive/upload/complete & aliases
   // -------------------------------------------------------------
-  if ((pathname === '/app/api/drive/upload/complete' || pathname === '/api/drive/upload/complete') && req.method === 'POST') {
+  if (['/app/api/drive/upload/complete', '/api/drive/upload/complete', '/drive/upload/complete', '/api/upload/complete', '/upload/complete'].includes(normalizedPath) && req.method === 'POST') {
     res.setHeader('Content-Type', 'application/json');
     try {
       const body = await parseJsonBody(req);
@@ -383,9 +384,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // 6. GET /app/api/drive/uploads & /api/drive/uploads
+  // 7. GET /app/api/drive/uploads & aliases
   // -------------------------------------------------------------
-  if ((pathname === '/app/api/drive/uploads' || pathname === '/api/drive/uploads') && req.method === 'GET') {
+  if (['/app/api/drive/uploads', '/api/drive/uploads', '/drive/uploads', '/api/uploads', '/uploads'].includes(normalizedPath) && req.method === 'GET') {
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200;
     return res.end(JSON.stringify({
