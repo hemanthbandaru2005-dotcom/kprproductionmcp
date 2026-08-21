@@ -70,7 +70,29 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // 1. Health Check Endpoint (GET /health, GET /api/health)
+  // 1. Root & Index Endpoint (GET /, GET /api, GET /drive, GET /api/drive)
+  // -------------------------------------------------------------
+  if ((pathname === '/' || pathname === '/api' || pathname === '/drive' || pathname === '/api/drive' || pathname === '/app/api/drive') && req.method === 'GET') {
+    res.setHeader('Content-Type', 'application/json');
+    res.statusCode = 200;
+    return res.end(JSON.stringify({
+      service: 'KPR Photography Productions - Google Drive API Backend',
+      status: 'online',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      endpoints: {
+        health: '/api/health',
+        drive_test: '/api/drive/test',
+        upload_initiate: '/app/api/drive/upload/initiate',
+        upload_chunk: '/app/api/drive/upload/chunk',
+        upload_complete: '/app/api/drive/upload/complete',
+        list_uploads: '/app/api/drive/uploads'
+      }
+    }, null, 2));
+  }
+
+  // -------------------------------------------------------------
+  // 2. Health Check Endpoint (GET /health, GET /api/health)
   // -------------------------------------------------------------
   if ((pathname === '/health' || pathname === '/api/health') && req.method === 'GET') {
     res.setHeader('Content-Type', 'application/json');
@@ -84,7 +106,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
-  // 2. GET /app/api/drive/test & /api/drive/test
+  // 3. GET /app/api/drive/test & /api/drive/test
   // -------------------------------------------------------------
   if ((pathname === '/app/api/drive/test' || pathname === '/api/drive/test') && req.method === 'GET') {
     res.setHeader('Content-Type', 'application/json');

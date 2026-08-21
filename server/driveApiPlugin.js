@@ -100,6 +100,32 @@ export function driveApiPlugin() {
         }
 
         // -------------------------------------------------------------
+        // 0. GET /, /api, /drive, /api/drive, /api/health, /health
+        // -------------------------------------------------------------
+        if ((pathname === '/' || pathname === '/api' || pathname === '/drive' || pathname === '/api/drive' || pathname === '/app/api/drive') && req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 200;
+          return res.end(JSON.stringify({
+            service: 'KPR Photography Productions - Vite Dev Drive Plugin',
+            status: 'online',
+            endpoints: {
+              health: '/api/health',
+              drive_test: '/api/drive/test',
+              upload_initiate: '/app/api/drive/upload/initiate',
+              upload_chunk: '/app/api/drive/upload/chunk',
+              upload_complete: '/app/api/drive/upload/complete',
+              list_uploads: '/app/api/drive/uploads'
+            }
+          }, null, 2));
+        }
+
+        if ((pathname === '/health' || pathname === '/api/health') && req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 200;
+          return res.end(JSON.stringify({ status: 'ok', service: 'kpr-drive-plugin', timestamp: new Date().toISOString() }));
+        }
+
+        // -------------------------------------------------------------
         // 1. GET /app/api/drive/test & /api/drive/test (Admin Test Route)
         // -------------------------------------------------------------
         if (pathname === '/app/api/drive/test' || pathname === '/api/drive/test') {
