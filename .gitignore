@@ -1,0 +1,43 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+
+# Environment and Secret Files
+.env
+.env*.local
+.env.local
+.env.production
+.env.staging
+*.local
+credentials*.json
+token*.json
+service-account*.json
+
+# Scratch and Temporary directories
+scratch/
+scripts/vercel-mcp-bridge.mjs
+test-worker-login.mjs
+photos/
+Madaling/
+*.pdf
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+

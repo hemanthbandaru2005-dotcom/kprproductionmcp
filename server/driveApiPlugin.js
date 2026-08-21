@@ -1,0 +1,576 @@
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
+import {
+  getDriveCredentials,
+  getDriveClient,
+  resolveKprUploadFolder,
+  initiateResumableUploadSession,
+  getDriveFileMetadata,
+  listFilesInFolder
+} from '../lib/googleDrive.js';
+
+// Load environment variables in server runtime
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
+// Mock upload sessions map for seamless local development when GCP credentials are not yet populated
+const mockUploadSessions = new Map();
+
+// In-memory server-side uploads registry to ensure bulletproof client upload retrieval
+const serverClientUploads = [];
+
+/**
+ * Helper to initialize server-side Supabase client
+ */
+function getServerSupabase() {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return null;
+  }
+
+  return createClient(supabaseUrl, supabaseKey);
+}
+
+/**
+ * Parse JSON body from raw Node.js incoming request
+ */
+function parseJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (err) {
+        reject(new Error('Invalid JSON body'));
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+/**
+ * Parse binary buffer from raw Node.js incoming request
+ */
+function parseRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+    req.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+    req.on('error', reject);
+  });
+}
+
+/**
+ * Set CORS and standard headers
+ */
+function setCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Range, Range, x-upload-url, x-drive-session-url, x-client-id, x-booking-id');
+  res.setHeader('Access-Control-Expose-Headers', 'Range, Content-Range, Location');
+}
+
+/**
+ * Vite Dev Server Plugin to handle server-side Google Drive API endpoints
+ */
+export function driveApiPlugin() {
+  return {
+    name: 'kpr-drive-api-plugin',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const fullUrl = req.url || '';
+        const [pathname, queryString] = fullUrl.split('?');
+        const queryParams = new URLSearchParams(queryString || '');
+
+        setCorsHeaders(res);
+
+        if (req.method === 'OPTIONS') {
+          res.statusCode = 204;
+          return res.end();
+        }
+
+        // -------------------------------------------------------------
+        // 1. GET /app/api/drive/test & /api/drive/test (Admin Test Route)
+        // -------------------------------------------------------------
+        if (pathname === '/app/api/drive/test' || pathname === '/api/drive/test') {
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const credentials = getDriveCredentials();
+
+            if (!credentials.clientId || !credentials.clientSecret || !credentials.refreshToken || !credentials.parentFolderId) {
+              res.statusCode = 400;
+              return res.end(JSON.stringify({
+                success: false,
+                authenticated: false,
+                message: 'Google Drive OAuth 2.0 credentials are not fully configured in .env.local',
+                status: {
+                  GOOGLE_OAUTH_CLIENT_ID: credentials.clientId ? 'Configured ✅' : 'Missing ❌',
+                  GOOGLE_OAUTH_CLIENT_SECRET: credentials.clientSecret ? 'Configured ✅' : 'Missing ❌',
+                  GOOGLE_OAUTH_REFRESH_TOKEN: credentials.refreshToken ? 'Configured ✅' : 'Missing ❌',
+                  GOOGLE_DRIVE_PARENT_FOLDER_ID: credentials.parentFolderId ? 'Configured ✅' : 'Missing ❌'
+                },
+                setupGuide: [
+                  '1. Set GOOGLE_OAUTH_CLIENT_ID in .env.local with your OAuth Client ID.',
+                  '2. Set GOOGLE_OAUTH_CLIENT_SECRET in .env.local with your OAuth Client Secret.',
+                  '3. Set GOOGLE_OAUTH_REFRESH_TOKEN in .env.local with your Refresh Token.',
+                  '4. Set GOOGLE_DRIVE_PARENT_FOLDER_ID in .env.local with your Google Drive folder ID.'
+                ]
+              }, null, 2));
+            }
+
+            const parentFolderId = credentials.parentFolderId;
+            const drive = getDriveClient();
+
+            const [folderMeta, fileListResult] = await Promise.all([
+              drive.files.get({
+                fileId: parentFolderId,
+                fields: 'id, name, mimeType, webViewLink',
+                supportsAllDrives: true
+              }).catch(err => ({ error: err.message })),
+              listFilesInFolder(parentFolderId, { pageSize: 20 })
+            ]);
+
+            const files = fileListResult.files || [];
+
+            res.statusCode = 200;
+            return res.end(JSON.stringify({
+              success: true,
+              authenticated: true,
+              message: 'Google Drive OAuth 2.0 authenticated successfully using personal Gmail account!',
+              parentFolder: {
+                id: parentFolderId,
+                name: folderMeta?.data?.name || 'Root Parent Folder',
+                link: folderMeta?.data?.webViewLink || `https://drive.google.com/drive/folders/${parentFolderId}`
+              },
+              fileCount: files.length,
+              files: files.map(f => ({
+                id: f.id,
+                name: f.name,
+                mimeType: f.mimeType,
+                size: f.size,
+                modifiedTime: f.modifiedTime,
+                webViewLink: f.webViewLink
+              }))
+            }, null, 2));
+
+          } catch (error) {
+            console.error('Google Drive Test Route Error:', error);
+            res.statusCode = 500;
+            return res.end(JSON.stringify({
+              success: false,
+              authenticated: false,
+              error: error.message || 'Internal server error during Google Drive authentication',
+              details: error.stack
+            }, null, 2));
+          }
+        }
+
+        // -------------------------------------------------------------
+        // 2. POST /app/api/drive/upload/initiate (Resumable Session)
+        // -------------------------------------------------------------
+        if (
+          (pathname === '/app/api/drive/upload/initiate' || pathname === '/api/drive/upload/initiate') &&
+          req.method === 'POST'
+        ) {
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const body = await parseJsonBody(req);
+            const {
+              clientId,
+              clientName,
+              bookingId,
+              projectTitle,
+              fileName,
+              fileSize,
+              mimeType
+            } = body;
+
+            if (!fileName) {
+              res.statusCode = 400;
+              return res.end(JSON.stringify({
+                success: false,
+                error: 'fileName is required to initiate upload'
+              }));
+            }
+
+            const effectiveClientName = clientName || (clientId ? `Client_${clientId}` : 'Valued Client');
+            const effectiveBookingId = bookingId || projectTitle || 'GENERAL';
+            let effectiveMime = mimeType || 'application/octet-stream';
+            if (fileName.toLowerCase().endsWith('.zip')) {
+              effectiveMime = 'application/zip';
+            }
+
+            const credentials = getDriveCredentials();
+
+            if (credentials.isConfigured) {
+              // Live Google Drive API flow
+              const folderInfo = await resolveKprUploadFolder({
+                clientName: effectiveClientName,
+                bookingId: effectiveBookingId
+              });
+
+              const session = await initiateResumableUploadSession({
+                fileName,
+                fileSize,
+                mimeType: effectiveMime,
+                folderId: folderInfo.folderId
+              });
+
+              res.statusCode = 200;
+              return res.end(JSON.stringify({
+                success: true,
+                uploadUrl: session.uploadUrl,
+                folderId: folderInfo.folderId,
+                folderPath: folderInfo.folderPath,
+                folderUrl: folderInfo.webViewLink,
+                clientBookingFolder: folderInfo.clientFolder?.name
+              }));
+            } else {
+              // Local Dev Mock Resumable Session
+              const mockSessId = `mock_sess_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+              const folderPath = `KPR Productions/${effectiveClientName}-${effectiveBookingId}/uploads`;
+              const host = req.headers.host || 'localhost:5174';
+              const protocol = req.headers['x-forwarded-proto'] || 'http';
+              const uploadUrl = `${protocol}://${host}/app/api/drive/mock-session/${mockSessId}`;
+
+              mockUploadSessions.set(mockSessId, {
+                fileName,
+                fileSize: Number(fileSize) || 0,
+                bytesUploaded: 0,
+                mimeType: mimeType || 'application/octet-stream',
+                folderPath
+              });
+
+              res.statusCode = 200;
+              return res.end(JSON.stringify({
+                success: true,
+                uploadUrl,
+                folderId: `mock_folder_${Date.now()}`,
+                folderPath,
+                folderUrl: `https://drive.google.com/drive/folders/mock_${Date.now()}`,
+                clientBookingFolder: `${effectiveClientName}-${effectiveBookingId}`,
+                isMockMode: true
+              }));
+            }
+          } catch (error) {
+            console.error('Drive Upload Initiate Error:', error);
+            res.statusCode = 500;
+            return res.end(JSON.stringify({
+              success: false,
+              error: error.message || 'Failed to initiate Drive resumable upload session'
+            }));
+          }
+        }
+
+        // -------------------------------------------------------------
+        // 3. Mock Session Direct PUT Handler: /app/api/drive/mock-session/:id
+        // -------------------------------------------------------------
+        if (pathname.startsWith('/app/api/drive/mock-session/') && req.method === 'PUT') {
+          const sessId = pathname.replace('/app/api/drive/mock-session/', '');
+          const session = mockUploadSessions.get(sessId);
+
+          const contentRange = req.headers['content-range'] || '';
+          const rawBuffer = await parseRawBody(req);
+
+          let startByte = 0;
+          let endByte = rawBuffer.length - 1;
+          let totalBytes = session?.fileSize || rawBuffer.length;
+
+          if (contentRange) {
+            const match = contentRange.match(/bytes\s+(\d+)-(\d+)\/(\d+|\*)/);
+            if (match) {
+              startByte = parseInt(match[1], 10);
+              endByte = parseInt(match[2], 10);
+              if (match[3] !== '*') {
+                totalBytes = parseInt(match[3], 10);
+              }
+            }
+          }
+
+          const confirmedBytes = endByte + 1;
+          if (session) {
+            session.bytesUploaded = confirmedBytes;
+          }
+
+          if (confirmedBytes >= totalBytes) {
+            // Upload Finished!
+            const mockFileId = `drive_file_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+            res.setHeader('Content-Type', 'application/json');
+            res.statusCode = 200;
+            return res.end(JSON.stringify({
+              id: mockFileId,
+              name: session?.fileName || 'Uploaded File',
+              mimeType: session?.mimeType || 'application/octet-stream',
+              size: totalBytes,
+              webViewLink: `https://drive.google.com/file/d/${mockFileId}/view?usp=sharing`
+            }));
+          } else {
+            // 308 Resume Incomplete
+            res.setHeader('Range', `bytes=0-${endByte}`);
+            res.statusCode = 308;
+            return res.end();
+          }
+        }
+
+        // -------------------------------------------------------------
+        // 4. PUT /app/api/drive/upload/chunk (Proxy Chunk to Drive or Mock)
+        // -------------------------------------------------------------
+        if (
+          (pathname === '/app/api/drive/upload/chunk' || pathname === '/api/drive/upload/chunk') &&
+          req.method === 'PUT'
+        ) {
+          try {
+            const uploadUrl =
+              req.headers['x-upload-url'] ||
+              req.headers['x-drive-session-url'] ||
+              queryParams.get('uploadUrl');
+
+            if (!uploadUrl) {
+              res.setHeader('Content-Type', 'application/json');
+              res.statusCode = 400;
+              return res.end(JSON.stringify({
+                success: false,
+                error: 'Missing upload session URL. Provide via x-upload-url header or uploadUrl query parameter.'
+              }));
+            }
+
+            const rawBuffer = await parseRawBody(req);
+            const contentRange = req.headers['content-range'];
+            const contentType = req.headers['content-type'] || 'application/octet-stream';
+
+            // Check if proxying to internal mock session
+            if (uploadUrl.includes('/mock-session/')) {
+              const sessId = uploadUrl.split('/mock-session/')[1];
+              const session = mockUploadSessions.get(sessId);
+
+              let startByte = 0;
+              let endByte = rawBuffer.length - 1;
+              let totalBytes = session?.fileSize || rawBuffer.length;
+
+              if (contentRange) {
+                const match = contentRange.match(/bytes\s+(\d+)-(\d+)\/(\d+|\*)/);
+                if (match) {
+                  startByte = parseInt(match[1], 10);
+                  endByte = parseInt(match[2], 10);
+                  if (match[3] !== '*') {
+                    totalBytes = parseInt(match[3], 10);
+                  }
+                }
+              }
+
+              const confirmedBytes = endByte + 1;
+              if (session) {
+                session.bytesUploaded = confirmedBytes;
+              }
+
+              if (confirmedBytes >= totalBytes) {
+                const mockFileId = `drive_file_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 200;
+                return res.end(JSON.stringify({
+                  id: mockFileId,
+                  name: session?.fileName || 'Uploaded File',
+                  mimeType: session?.mimeType || 'application/octet-stream',
+                  size: totalBytes,
+                  webViewLink: `https://drive.google.com/file/d/${mockFileId}/view?usp=sharing`
+                }));
+              } else {
+                res.setHeader('Range', `bytes=0-${endByte}`);
+                res.statusCode = 308;
+                return res.end();
+              }
+            }
+
+            // Real Google Drive Proxy
+            const driveHeaders = {
+              'Content-Type': contentType
+            };
+
+            if (contentRange) {
+              driveHeaders['Content-Range'] = contentRange;
+            }
+            if (rawBuffer.length > 0) {
+              driveHeaders['Content-Length'] = String(rawBuffer.length);
+            }
+
+            const driveRes = await fetch(uploadUrl, {
+              method: 'PUT',
+              headers: driveHeaders,
+              body: rawBuffer
+            });
+
+            const rangeHeader = driveRes.headers.get('range') || driveRes.headers.get('Range');
+            if (rangeHeader) {
+              res.setHeader('Range', rangeHeader);
+            }
+
+            const responseText = await driveRes.text();
+
+            if (driveRes.status === 403 && responseText.includes('storageQuotaExceeded')) {
+              res.setHeader('Content-Type', 'application/json');
+              res.statusCode = 403;
+              return res.end(JSON.stringify({
+                success: false,
+                error: 'Google Drive Quota: Service Accounts have 0 personal quota on personal My Drive. Please share a folder located in a Google Shared Drive (Team Drive), or enable Domain-Wide Delegation in Google Workspace.'
+              }));
+            }
+
+            return res.end(responseText);
+          } catch (error) {
+            console.error('Drive Chunk Proxy Error:', error);
+            res.setHeader('Content-Type', 'application/json');
+            res.statusCode = 500;
+            return res.end(JSON.stringify({
+              success: false,
+              error: error.message || 'Chunk proxy upload failed'
+            }));
+          }
+        }
+
+        // -------------------------------------------------------------
+        // 5. POST /app/api/drive/upload/complete (Save to Supabase & Realtime)
+        // -------------------------------------------------------------
+        if (
+          (pathname === '/app/api/drive/upload/complete' || pathname === '/api/drive/upload/complete') &&
+          req.method === 'POST'
+        ) {
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const body = await parseJsonBody(req);
+            const {
+              uploadId,
+              clientId,
+              clientName,
+              clientEmail,
+              bookingId,
+              projectTitle,
+              fileId,
+              fileName,
+              fileSize,
+              mimeType,
+              folderId,
+              folderPath
+            } = body;
+
+            if (!fileId) {
+              res.statusCode = 400;
+              return res.end(JSON.stringify({
+                success: false,
+                error: 'fileId is required to complete upload'
+              }));
+            }
+
+            let fileMeta = null;
+            let webViewLink = body.webViewLink;
+            try {
+              fileMeta = await getDriveFileMetadata(fileId);
+              if (fileMeta?.webViewLink) {
+                webViewLink = fileMeta.webViewLink;
+              }
+            } catch (metaErr) {
+              if (!webViewLink) {
+                webViewLink = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
+              }
+            }
+
+            const effectiveName = fileName || fileMeta?.name || 'Uploaded File';
+            const fileExt = effectiveName.split('.').pop()?.toLowerCase() || '';
+            const effectiveSize = fileSize || fileMeta?.size || 0;
+            const finalUploadId = uploadId || `upload_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+            const uploadRecord = {
+              id: finalUploadId,
+              client_id: clientId || null,
+              client_name: clientName || 'Valued Client',
+              client_email: clientEmail || '',
+              project_id: bookingId || null,
+              project_title: projectTitle || (bookingId ? `Booking ${bookingId}` : 'General Deliverables'),
+              file_name: effectiveName,
+              file_type: fileExt,
+              file_size: Number(effectiveSize),
+              file_url: webViewLink,
+              drive_sync_status: 'synced',
+              drive_file_id: fileId,
+              drive_file_url: webViewLink,
+              drive_folder_id: folderId || null,
+              drive_folder_path: folderPath || 'KPR Productions Client Uploads',
+              synced_at: new Date().toISOString(),
+              created_at: new Date().toISOString()
+            };
+
+            const supabase = getServerSupabase();
+            if (supabase) {
+              try {
+                const { error: upsertErr } = await supabase
+                  .from('client_uploads')
+                  .upsert(uploadRecord);
+
+                if (upsertErr) {
+                  console.warn('Supabase upsert client_uploads warning:', upsertErr.message);
+                }
+
+                await supabase.channel('kpr-portal-realtime').send({
+                  type: 'broadcast',
+                  event: 'new-upload',
+                  payload: uploadRecord
+                });
+              } catch (supaErr) {
+                console.warn('Supabase realtime broadcast warning:', supaErr.message);
+              }
+            }
+
+            // Store record in server-side registry
+            const existingIdx = serverClientUploads.findIndex(r => r.id === uploadRecord.id);
+            if (existingIdx >= 0) {
+              serverClientUploads[existingIdx] = uploadRecord;
+            } else {
+              serverClientUploads.unshift(uploadRecord);
+            }
+
+            res.statusCode = 200;
+            return res.end(JSON.stringify({
+              success: true,
+              message: 'Client upload finalized and synced successfully',
+              record: uploadRecord
+            }));
+
+          } catch (error) {
+            console.error('Drive Upload Complete Error:', error);
+            res.statusCode = 500;
+            return res.end(JSON.stringify({
+              success: false,
+              error: error.message || 'Failed to complete upload record'
+            }));
+          }
+        }
+
+        // -------------------------------------------------------------
+        // 5. GET /app/api/drive/uploads & /api/drive/uploads - List Uploads
+        // -------------------------------------------------------------
+        if ((pathname === '/app/api/drive/uploads' || pathname === '/api/drive/uploads') && req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 200;
+          return res.end(JSON.stringify({
+            success: true,
+            records: serverClientUploads
+          }));
+        }
+
+        // Pass through to next middleware
+        next();
+      });
+    }
+  };
+}
+
+export default driveApiPlugin;
