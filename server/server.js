@@ -188,7 +188,7 @@ const server = http.createServer(async (req, res) => {
 
       const creds = getDriveCredentials();
 
-      if (creds.configured) {
+      if (creds.isConfigured || creds.configured) {
         try {
           const folderInfo = await resolveKprUploadFolder({
             clientId,
@@ -204,6 +204,10 @@ const server = http.createServer(async (req, res) => {
             parentFolderId: folderInfo.folderId
           });
 
+          console.log(`\n[Google Drive API] Resumable session created for "${fileName}" (${fileSize} bytes)`);
+          console.log(`📁 Target Folder: "${folderInfo.folderPath}" [ID: ${folderInfo.folderId}]`);
+          console.log(`🔗 Session URL: ${sessionInfo.uploadUrl.substring(0, 80)}...\n`);
+
           res.statusCode = 200;
           return res.end(JSON.stringify({
             success: true,
@@ -213,10 +217,16 @@ const server = http.createServer(async (req, res) => {
             isMock: false
           }));
         } catch (driveErr) {
-          console.warn('Drive initiate failed, falling back to mock session:', driveErr.message);
+          console.error('Google Drive Session Initiation Error:', driveErr);
+          res.statusCode = 500;
+          return res.end(JSON.stringify({
+            success: false,
+            error: `Google Drive upload initiation failed: ${driveErr.message}`
+          }));
         }
       }
 
+      console.warn('[Warning] Google Drive credentials not configured. Using local mock session.');
       const mockSessionId = `mock_sess_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       const host = req.headers.host || `localhost:${PORT}`;
       const protocol = req.headers['x-forwarded-proto'] || 'http';
@@ -241,6 +251,7 @@ const server = http.createServer(async (req, res) => {
       }));
 
     } catch (error) {
+      console.error('Initiate Route Error:', error);
       res.statusCode = 500;
       return res.end(JSON.stringify({ error: error.message || 'Failed to initiate upload session' }));
     }
