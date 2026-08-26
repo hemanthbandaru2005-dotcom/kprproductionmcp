@@ -11,6 +11,13 @@ import {
   formatFileSize
 } from '../../utils/clientUploadsService';
 import {
+  fetchJobs,
+  updateJob,
+  deleteJob,
+  subscribeToJobsRealtime,
+  isJobForWorker
+} from '../../utils/jobsService';
+import {
   Briefcase, CheckCircle, Clock, UploadCloud, FileText,
   LogOut, Bell, Calendar, RefreshCw, AlertCircle,
   File, Image as ImageIcon, Video, ChevronRight, Loader2, Sparkles, UserCheck,
@@ -33,43 +40,6 @@ function formatShootDate(dateStr) {
   } catch (e) {
     return dateStr;
   }
-}
-
-function isJobForWorker(job, user, profile) {
-  if (!job) return false;
-  const assigned = (job.assigned_worker || '').trim().toLowerCase();
-  const assignedName = (job.assigned_worker_name || '').trim().toLowerCase();
-  const assignedEmail = (job.assigned_worker_email || '').trim().toLowerCase();
-
-  const userEmail = (user?.email || profile?.email || '').trim().toLowerCase();
-  const userId = (user?.id || profile?.id || '').trim().toLowerCase();
-  const fullName = (profile?.full_name || user?.user_metadata?.full_name || '').trim().toLowerCase();
-  const realEmail = (profile?.real_email || '').trim().toLowerCase();
-  const userPrefix = userEmail ? userEmail.split('@')[0] : (userId ? userId.replace(/^worker-/, '') : '');
-
-  // 1. Direct matches with ID or Email
-  if (userEmail && (assigned === userEmail || assignedName === userEmail || assignedEmail === userEmail)) return true;
-  if (userId && (assigned === userId || assignedName === userId || assignedEmail === userId)) return true;
-  if (realEmail && (assigned === realEmail || assignedName === realEmail)) return true;
-
-  // 2. Prefix / username match (e.g. 'hemanth' matches 'hemanth@kpr.com' or 'worker-hemanth')
-  if (userPrefix) {
-    const cleanAssigned = assigned.replace(/^worker-/, '').replace(/@.*$/, '');
-    const cleanAssignedName = assignedName.replace(/^worker-/, '').replace(/@.*$/, '');
-    if (cleanAssigned && (cleanAssigned === userPrefix || cleanAssigned.includes(userPrefix) || userPrefix.includes(cleanAssigned))) return true;
-    if (cleanAssignedName && (cleanAssignedName === userPrefix || cleanAssignedName.includes(userPrefix) || userPrefix.includes(cleanAssignedName))) return true;
-  }
-
-  // 3. Full Name match
-  if (fullName) {
-    if (assigned === fullName || assignedName === fullName) return true;
-    if (assigned.includes(fullName) || fullName.includes(assigned)) return true;
-  }
-
-  // 4. If assigned contains worker prefix
-  if (assigned && userPrefix && (assigned.includes(userPrefix) || userPrefix.includes(assigned))) return true;
-
-  return false;
 }
 
 export default function WorkerDashboard({ onLogout }) {
@@ -99,70 +69,13 @@ export default function WorkerDashboard({ onLogout }) {
 
   const workerId = user?.id || profile?.id || user?.email || 'worker';
 
-  // Fetch assigned jobs
+  // Fetch assigned jobs via unified jobsService
   const fetchMyJobs = async () => {
     setLoading(true);
 
     try {
-      const jobsMap = new Map();
-      const deletedIds = [];
-      try {
-        const rawDel = localStorage.getItem('kpr_deleted_jobs_v1');
-        if (rawDel) {
-          deletedIds.push(...JSON.parse(rawDel));
-        }
-      } catch (e) {}
-
-      // 1. Supabase jobs
-      try {
-        const { data, error } = await supabase
-          .from('jobs')
-          .select('*')
-          .order('updated_at', { ascending: false });
-
-        if (!error && data && data.length > 0) {
-          data.forEach(j => {
-            const t = (j.title || '').toLowerCase();
-            const c = (j.client_name || '').toLowerCase();
-            if (t.includes('photogrpher') || c.includes('hemnath')) return;
-            if (deletedIds.includes(j.id)) return;
-
-            if (isJobForWorker(j, user, profile)) {
-              jobsMap.set(j.id, j);
-            }
-          });
-        }
-      } catch (e) {}
-
-      // 2. Local fallback jobs
-      try {
-        const raw = localStorage.getItem('kpr_admin_jobs_v1');
-        if (raw) {
-          const localJobs = JSON.parse(raw);
-          if (Array.isArray(localJobs)) {
-            const cleaned = localJobs.filter(j => {
-              if (!j) return false;
-              const t = (j.title || '').toLowerCase();
-              const c = (j.client_name || '').toLowerCase();
-              if (t.includes('photogrpher') || c.includes('hemnath')) return false;
-              return true;
-            });
-
-            if (cleaned.length !== localJobs.length) {
-              localStorage.setItem('kpr_admin_jobs_v1', JSON.stringify(cleaned));
-            }
-
-            cleaned.forEach(j => {
-              if (deletedIds.includes(j.id)) return;
-              if (isJobForWorker(j, user, profile) && !jobsMap.has(j.id)) {
-                jobsMap.set(j.id, j);
-              }
-            });
-          }
-        }
-      } catch (e) {}
-
-      const myJobs = Array.from(jobsMap.values());
+      const allJobs = await fetchJobs();
+      const myJobs = allJobs.filter(j => isJobForWorker(j, user, profile));
       setJobs(myJobs);
 
       // Auto-select first job if none selected
@@ -185,44 +98,12 @@ export default function WorkerDashboard({ onLogout }) {
   const handleDeleteJob = async (job) => {
     if (!job) return;
 
-    // 1. Optimistic removal
     setJobs(prev => prev.filter(j => j.id !== job.id));
     if (selectedJob?.id === job.id) {
       setSelectedJob(null);
     }
 
-    // 2. Add to deleted tracking
-    try {
-      const raw = localStorage.getItem('kpr_deleted_jobs_v1');
-      const list = raw ? JSON.parse(raw) : [];
-      if (!list.includes(job.id)) {
-        list.push(job.id);
-        localStorage.setItem('kpr_deleted_jobs_v1', JSON.stringify(list));
-      }
-
-      const rawJobs = localStorage.getItem('kpr_admin_jobs_v1');
-      if (rawJobs) {
-        const parsed = JSON.parse(rawJobs);
-        const filtered = parsed.filter(j => j.id !== job.id);
-        localStorage.setItem('kpr_admin_jobs_v1', JSON.stringify(filtered));
-      }
-    } catch (e) {}
-
-    // 3. Supabase delete
-    try {
-      await supabase.from('jobs').delete().eq('id', job.id);
-    } catch (e) {}
-
-    try {
-      if (typeof BroadcastChannel !== 'undefined') {
-        const bc = new BroadcastChannel('kpr_jobs_bc_v1');
-        bc.postMessage({ detail: { deleted: job.id }, timestamp: Date.now() });
-        setTimeout(() => bc.close(), 200);
-      }
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('kpr_jobs_updated', { detail: { deleted: job.id } }));
-      }
-    } catch (e) {}
+    await deleteJob(job.id);
   };
 
   // Fetch unread messages
@@ -290,41 +171,17 @@ export default function WorkerDashboard({ onLogout }) {
     fetchMyJobs();
     fetchUnreadCount();
 
-    // Subscribe to realtime job changes & chat
-    const channel = supabase
-      .channel('worker-jobs-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
-        fetchMyJobs();
-      })
-      .subscribe();
-
-    const handleJobsUpdated = () => {
+    const unsubscribeJobs = subscribeToJobsRealtime(() => {
       fetchMyJobs();
-    };
-
-    let bc = null;
-    try {
-      if (typeof BroadcastChannel !== 'undefined') {
-        bc = new BroadcastChannel('kpr_jobs_bc_v1');
-        bc.onmessage = () => {
-          fetchMyJobs();
-        };
-      }
-    } catch (e) {}
-
-    window.addEventListener('kpr_jobs_updated', handleJobsUpdated);
+    });
 
     const unsubscribeChat = subscribeToChatChannel(() => {
       fetchUnreadCount();
     });
 
     return () => {
-      supabase.removeChannel(channel);
-      if (bc) {
-        try { bc.close(); } catch (e) {}
-      }
-      window.removeEventListener('kpr_jobs_updated', handleJobsUpdated);
-      unsubscribeChat();
+      if (unsubscribeJobs) unsubscribeJobs();
+      if (unsubscribeChat) unsubscribeChat();
     };
   }, [user, profile]);
 
@@ -343,34 +200,15 @@ export default function WorkerDashboard({ onLogout }) {
     setUpdatingStatus(true);
     setStatusMsg('');
 
-    // 1. Supabase update
-    try {
-      await supabase
-        .from('jobs')
-        .update({
-          status: editStatus,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', selectedJob.id);
-    } catch (e) {}
-
-    // 2. Local storage update
-    try {
-      const raw = localStorage.getItem('kpr_admin_jobs_v1');
-      if (raw) {
-        const localJobs = JSON.parse(raw);
-        const updated = localJobs.map(j => j.id === selectedJob.id ? { ...j, status: editStatus, updated_at: new Date().toISOString() } : j);
-        localStorage.setItem('kpr_admin_jobs_v1', JSON.stringify(updated));
-      }
-    } catch (e) {}
+    const updated = await updateJob(selectedJob.id, {
+      status: editStatus
+    });
 
     setUpdatingStatus(false);
     setStatusMsg('Job status updated successfully!');
-    setSelectedJob(prev => ({
-      ...prev,
-      status: editStatus,
-      updated_at: new Date().toISOString()
-    }));
+    if (updated?.job) {
+      setSelectedJob(updated.job);
+    }
     fetchMyJobs();
     setTimeout(() => setStatusMsg(''), 3000);
   };

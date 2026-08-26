@@ -2,9 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { WORKER_MEMBERS } from '../../context/AuthContext';
 import {
+  fetchJobs,
+  updateJob,
+  deleteJob,
+  subscribeToJobsRealtime,
+  getDeletedJobIds
+} from '../../utils/jobsService';
+import {
   Briefcase, User, Clock, RefreshCw, UserCheck,
   Edit2, Trash2, X, CheckCircle, AlertTriangle, Loader2,
-  Calendar, Camera, FileText
+  Calendar, Camera, FileText, ExternalLink
 } from 'lucide-react';
 
 const STATUS_CONFIG = {
@@ -12,17 +19,6 @@ const STATUS_CONFIG = {
   review:      { label: 'Review',      bg: 'bg-[#FEF3C7]', text: 'text-[#D97706]', dot: 'bg-[#D97706]' },
   completed:   { label: 'Completed',   bg: 'bg-[#DFF5E3]', text: 'text-[#16A34A]', dot: 'bg-[#16A34A]' },
 };
-
-const DELETED_JOBS_KEY = 'kpr_deleted_jobs_v1';
-
-function getDeletedJobIds() {
-  try {
-    const raw = localStorage.getItem(DELETED_JOBS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    return [];
-  }
-}
 
 function formatShootDate(dateStr) {
   if (!dateStr) return 'Not Scheduled';
@@ -33,22 +29,6 @@ function formatShootDate(dateStr) {
   } catch (e) {
     return dateStr;
   }
-}
-
-function broadcastJobUpdate(detail) {
-  try {
-    if (typeof BroadcastChannel !== 'undefined') {
-      const bc = new BroadcastChannel('kpr_jobs_bc_v1');
-      bc.postMessage({ detail, timestamp: Date.now() });
-      setTimeout(() => bc.close(), 200);
-    }
-  } catch (e) {}
-
-  try {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('kpr_jobs_updated', { detail }));
-    }
-  } catch (e) {}
 }
 
 export default function JobStatusTable() {
@@ -74,57 +54,40 @@ export default function JobStatusTable() {
   const [deleting, setDeleting] = useState(false);
 
   const fetchWorkersAndJobs = async () => {
-    const deletedIds = getDeletedJobIds();
+    setLoading(true);
 
-    // 1. Build workers lookup map
+    // 1. Fetch Workers
     const wMap = {};
     const wList = [];
 
-    // Defaults from WORKER_MEMBERS
-    if (Array.isArray(WORKER_MEMBERS)) {
-      WORKER_MEMBERS.forEach(w => {
-        if (w.id) wMap[w.id] = w;
-        if (w.email) {
-          wMap[w.email.toLowerCase()] = w;
-          wList.push({ id: w.id || w.email, email: w.email.toLowerCase(), full_name: w.full_name || w.name });
-        }
-      });
-    }
-
-    // Local registered workers
     try {
-      const raw = localStorage.getItem('kpr_registered_workers_v1');
-      if (raw) {
-        const parsed = JSON.parse(raw);
+      const rawReg = localStorage.getItem('kpr_registered_workers_v1');
+      if (rawReg) {
+        const parsed = JSON.parse(rawReg);
         if (Array.isArray(parsed)) {
           parsed.forEach(w => {
-            if (w && w.id) wMap[w.id] = w;
-            if (w && w.email) {
+            if (w.id) wMap[w.id] = w;
+            if (w.email) {
               const cleanEm = w.email.toLowerCase();
               wMap[cleanEm] = w;
-              if (!wList.some(item => item.email === cleanEm)) {
-                wList.push({ id: w.id || cleanEm, email: cleanEm, full_name: w.full_name });
-              }
+              wList.push({ id: w.id, email: cleanEm, full_name: w.full_name || w.name });
             }
           });
         }
       }
-    } catch (e) {}
 
-    // Supabase profiles
-    try {
       const { data: wData } = await supabase
         .from('profiles')
         .select('id, email, full_name')
         .eq('role', 'worker');
 
-      if (wData && wData.length > 0) {
+      if (wData) {
         wData.forEach(w => {
           if (w.id) wMap[w.id] = w;
           if (w.email) {
             const cleanEm = w.email.toLowerCase();
             wMap[cleanEm] = w;
-            if (!wList.some(item => item.email === cleanEm)) {
+            if (!wList.find(item => item.email === cleanEm)) {
               wList.push({ id: w.id, email: cleanEm, full_name: w.full_name });
             }
           }
@@ -135,89 +98,19 @@ export default function JobStatusTable() {
     setWorkersMap(wMap);
     setWorkersList(wList);
 
-    // 2. Fetch Jobs
-    const jobsDict = new Map();
-
-    // From LocalStorage cache
-    try {
-      const rawJobs = localStorage.getItem('kpr_admin_jobs_v1');
-      if (rawJobs) {
-        const parsed = JSON.parse(rawJobs);
-        if (Array.isArray(parsed)) {
-          // Auto-purge any test job matching 'photogrpher' or 'hemnath'
-          const cleaned = parsed.filter(j => {
-            if (!j) return false;
-            const t = (j.title || '').toLowerCase();
-            const c = (j.client_name || '').toLowerCase();
-            if (t.includes('photogrpher') || c.includes('hemnath')) return false;
-            return true;
-          });
-
-          if (cleaned.length !== parsed.length) {
-            localStorage.setItem('kpr_admin_jobs_v1', JSON.stringify(cleaned));
-          }
-
-          cleaned.forEach(j => {
-            if (j && j.id && !deletedIds.includes(j.id)) {
-              jobsDict.set(j.id, j);
-            }
-          });
-        }
-      }
-    } catch (e) {}
-
-    // From Supabase
-    try {
-      const { data: sJobs, error } = await supabase
-        .from('jobs')
-        .select('*, worker:assigned_worker(email, full_name)')
-        .order('updated_at', { ascending: false });
-
-      if (!error && sJobs && sJobs.length > 0) {
-        sJobs.forEach(j => {
-          if (j && j.id && !deletedIds.includes(j.id)) {
-            jobsDict.set(j.id, j);
-          }
-        });
-      }
-    } catch (e) {}
-
-    setJobs(Array.from(jobsDict.values()));
+    // 2. Fetch Jobs via jobsService
+    const allJobs = await fetchJobs();
+    setJobs(allJobs);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchWorkersAndJobs();
-
-    const channel = supabase
-      .channel('job-status-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
-        fetchWorkersAndJobs();
-      })
-      .subscribe();
-
-    const handleJobsUpdated = () => {
+    const unsubscribe = subscribeToJobsRealtime(() => {
       fetchWorkersAndJobs();
-    };
-
-    let bc = null;
-    try {
-      if (typeof BroadcastChannel !== 'undefined') {
-        bc = new BroadcastChannel('kpr_jobs_bc_v1');
-        bc.onmessage = () => {
-          fetchWorkersAndJobs();
-        };
-      }
-    } catch (e) {}
-
-    window.addEventListener('kpr_jobs_updated', handleJobsUpdated);
-
+    });
     return () => {
-      supabase.removeChannel(channel);
-      if (bc) {
-        try { bc.close(); } catch (e) {}
-      }
-      window.removeEventListener('kpr_jobs_updated', handleJobsUpdated);
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 
@@ -242,7 +135,6 @@ export default function JobStatusTable() {
     return rawId;
   };
 
-  // Open Edit Modal
   const handleOpenEdit = (job) => {
     setEditingJob(job);
     setEditForm({
@@ -255,7 +147,6 @@ export default function JobStatusTable() {
     });
   };
 
-  // Save Edit
   const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (!editingJob || !editForm.title.trim()) return;
@@ -265,8 +156,7 @@ export default function JobStatusTable() {
     const workerEmail = (editForm.assigned_worker || '').trim().toLowerCase() || null;
     const shootDateVal = editForm.shoot_date || null;
 
-    const updatedJob = {
-      ...editingJob,
+    const updated = await updateJob(editingJob.id, {
       title: editForm.title.trim(),
       client_name: editForm.client_name.trim() || null,
       shoot_type: editForm.shoot_type.trim() || 'Photoshoot',
@@ -275,78 +165,23 @@ export default function JobStatusTable() {
       due_date: shootDateVal,
       assigned_worker: workerEmail,
       assigned_worker_name: workerEmail,
-      notes: editForm.notes.trim() || null,
-      updated_at: new Date().toISOString()
-    };
+      notes: editForm.notes.trim() || null
+    });
 
-    // 1. Optimistic state update
-    setJobs(prev => prev.map(j => j.id === editingJob.id ? updatedJob : j));
-
-    // 2. Local storage update
-    try {
-      const raw = localStorage.getItem('kpr_admin_jobs_v1');
-      if (raw) {
-        const list = JSON.parse(raw);
-        const nextList = list.map(j => j.id === editingJob.id ? updatedJob : j);
-        localStorage.setItem('kpr_admin_jobs_v1', JSON.stringify(nextList));
-      }
-    } catch (e) {}
-
-    // 3. Supabase update
-    try {
-      await supabase
-        .from('jobs')
-        .update({
-          title: updatedJob.title,
-          client_name: updatedJob.client_name,
-          shoot_type: updatedJob.shoot_type,
-          shoot_date: updatedJob.shoot_date,
-          date: updatedJob.date,
-          assigned_worker: updatedJob.assigned_worker,
-          assigned_worker_name: updatedJob.assigned_worker_name,
-          notes: updatedJob.notes,
-          updated_at: updatedJob.updated_at
-        })
-        .eq('id', editingJob.id);
-    } catch (e) {}
-
-    broadcastJobUpdate(updatedJob);
+    if (updated?.job) {
+      setJobs(prev => prev.map(j => j.id === editingJob.id ? updated.job : j));
+    }
 
     setSavingEdit(false);
     setEditingJob(null);
   };
 
-  // Delete Job permanently
   const handleDeleteJob = async (job) => {
     if (!job) return;
     setDeleting(true);
 
-    // 1. Optimistic removal from UI state
     setJobs(prev => prev.filter(j => j.id !== job.id));
-
-    // 2. Add to permanent deleted tracking
-    try {
-      const deletedIds = getDeletedJobIds();
-      if (!deletedIds.includes(job.id)) {
-        deletedIds.push(job.id);
-        localStorage.setItem(DELETED_JOBS_KEY, JSON.stringify(deletedIds));
-      }
-
-      // Remove from LocalStorage jobs cache
-      const raw = localStorage.getItem('kpr_admin_jobs_v1');
-      if (raw) {
-        const list = JSON.parse(raw);
-        const filtered = list.filter(j => j.id !== job.id);
-        localStorage.setItem('kpr_admin_jobs_v1', JSON.stringify(filtered));
-      }
-    } catch (e) {}
-
-    // 3. Delete from Supabase
-    try {
-      await supabase.from('jobs').delete().eq('id', job.id);
-    } catch (e) {}
-
-    broadcastJobUpdate({ deleted: job.id });
+    await deleteJob(job.id);
 
     setDeleting(false);
     setDeleteConfirmJob(null);

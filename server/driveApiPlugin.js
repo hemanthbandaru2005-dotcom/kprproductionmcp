@@ -592,6 +592,74 @@ export function driveApiPlugin() {
           }));
         }
 
+        // -------------------------------------------------------------
+        // 6. Job Sync Endpoints for All Admins & Workers
+        // -------------------------------------------------------------
+        if ((pathname === '/app/api/jobs' || pathname === '/api/jobs') && req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json');
+          res.statusCode = 200;
+          return res.end(JSON.stringify({
+            success: true,
+            jobs: serverClientUploads._jobs || []
+          }));
+        }
+
+        if ((pathname === '/app/api/jobs' || pathname === '/api/jobs') && req.method === 'POST') {
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const body = await parseJsonBody(req);
+            const newJob = {
+              id: body.id || `job_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+              title: (body.title || '').trim(),
+              client_name: (body.client_name || '').trim() || null,
+              shoot_type: (body.shoot_type || 'Photoshoot').trim(),
+              shoot_date: body.shoot_date || body.date || null,
+              date: body.shoot_date || body.date || null,
+              due_date: body.shoot_date || body.date || null,
+              assigned_worker: (body.assigned_worker || '').trim().toLowerCase() || null,
+              assigned_worker_name: (body.assigned_worker_name || body.assigned_worker || '').trim() || null,
+              notes: (body.notes || '').trim() || null,
+              status: body.status || 'in_progress',
+              progress_percent: body.progress_percent || 0,
+              created_at: body.created_at || new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+
+            if (!serverClientUploads._jobs) serverClientUploads._jobs = [];
+            serverClientUploads._jobs.unshift(newJob);
+
+            res.statusCode = 200;
+            return res.end(JSON.stringify({ success: true, job: newJob }));
+          } catch (e) {
+            res.statusCode = 500;
+            return res.end(JSON.stringify({ error: e.message }));
+          }
+        }
+
+        if (pathname.startsWith('/app/api/jobs/') || pathname.startsWith('/api/jobs/')) {
+          const jobId = pathname.split('/').pop();
+          if (!serverClientUploads._jobs) serverClientUploads._jobs = [];
+
+          if (req.method === 'PUT') {
+            res.setHeader('Content-Type', 'application/json');
+            const body = await parseJsonBody(req);
+            const idx = serverClientUploads._jobs.findIndex(j => j.id === jobId);
+            const updated = { ...(idx >= 0 ? serverClientUploads._jobs[idx] : { id: jobId }), ...body, id: jobId, updated_at: new Date().toISOString() };
+            if (idx >= 0) serverClientUploads._jobs[idx] = updated;
+            else serverClientUploads._jobs.unshift(updated);
+            res.statusCode = 200;
+            return res.end(JSON.stringify({ success: true, job: updated }));
+          }
+
+          if (req.method === 'DELETE') {
+            res.setHeader('Content-Type', 'application/json');
+            const idx = serverClientUploads._jobs.findIndex(j => j.id === jobId);
+            if (idx >= 0) serverClientUploads._jobs.splice(idx, 1);
+            res.statusCode = 200;
+            return res.end(JSON.stringify({ success: true }));
+          }
+        }
+
         // Pass through to next middleware
         next();
       });

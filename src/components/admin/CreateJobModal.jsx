@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { WORKER_MEMBERS } from '../../context/AuthContext';
+import { createJob } from '../../utils/jobsService';
 import { X, Plus, Calendar, User, FileText, Camera, Loader2, UserCheck } from 'lucide-react';
 
 function broadcastJob(detail) {
@@ -39,30 +40,38 @@ export default function CreateJobModal({ isOpen, onClose }) {
 
       // 1. Local registered workers
       try {
-        const raw = localStorage.getItem('kpr_registered_workers_v1');
-        if (raw) {
-          const parsed = JSON.parse(raw);
+        const rawReg = localStorage.getItem('kpr_registered_workers_v1');
+        if (rawReg) {
+          const parsed = JSON.parse(rawReg);
           if (Array.isArray(parsed)) {
             parsed.forEach(w => {
-              if (w && w.email && !w.email.includes('example.com')) {
-                map.set(w.email.toLowerCase(), { id: w.id || `worker-${w.email.split('@')[0]}`, email: w.email.toLowerCase(), full_name: w.full_name });
+              if (w && w.email) {
+                map.set(w.email.toLowerCase(), {
+                  id: w.id || w.email,
+                  email: w.email.toLowerCase(),
+                  name: w.full_name || w.name || w.email.split('@')[0],
+                });
               }
             });
           }
         }
       } catch (e) {}
 
-      // 2. Supabase profiles
+      // 2. Supabase profiles table
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('profiles')
-          .select('id, email, full_name, role')
+          .select('id, email, full_name')
           .eq('role', 'worker');
 
-        if (data && data.length > 0) {
+        if (!error && data) {
           data.forEach(w => {
-            if (w.email && !w.email.includes('example.com')) {
-              map.set(w.email.toLowerCase(), { id: w.id, email: w.email.toLowerCase(), full_name: w.full_name });
+            if (w.email) {
+              map.set(w.email.toLowerCase(), {
+                id: w.id,
+                email: w.email.toLowerCase(),
+                name: w.full_name || w.email.split('@')[0],
+              });
             }
           });
         }
@@ -83,8 +92,7 @@ export default function CreateJobModal({ isOpen, onClose }) {
     const workerEmail = (form.assigned_worker || '').trim().toLowerCase() || null;
     const shootDateVal = form.shoot_date || null;
 
-    const newJob = {
-      id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    await createJob({
       title: form.title.trim(),
       client_name: form.client_name.trim() || null,
       shoot_type: form.shoot_type.trim() || 'Photoshoot',
@@ -95,35 +103,8 @@ export default function CreateJobModal({ isOpen, onClose }) {
       assigned_worker_name: workerEmail,
       notes: form.notes.trim() || null,
       status: 'in_progress',
-      progress_percent: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    // 1. Save locally for instant reactivity
-    try {
-      const raw = localStorage.getItem('kpr_admin_jobs_v1');
-      const list = raw ? JSON.parse(raw) : [];
-      localStorage.setItem('kpr_admin_jobs_v1', JSON.stringify([newJob, ...list]));
-    } catch (e) {}
-
-    // 2. Insert to Supabase jobs table
-    try {
-      await supabase.from('jobs').insert([{
-        title: newJob.title,
-        client_name: newJob.client_name,
-        shoot_type: newJob.shoot_type,
-        shoot_date: newJob.shoot_date,
-        date: newJob.date,
-        assigned_worker: workerEmail,
-        assigned_worker_name: workerEmail,
-        notes: newJob.notes,
-        status: 'in_progress',
-        progress_percent: 0,
-      }]);
-    } catch (e) {}
-
-    broadcastJob(newJob);
+      progress_percent: 0
+    });
 
     setLoading(false);
     onClose();

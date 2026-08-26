@@ -1,23 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { WORKER_MEMBERS } from '../../context/AuthContext';
+import { fetchJobs, updateJob } from '../../utils/jobsService';
 import { X, UserCheck, Loader2, Briefcase } from 'lucide-react';
-
-function broadcastJob(detail) {
-  try {
-    if (typeof BroadcastChannel !== 'undefined') {
-      const bc = new BroadcastChannel('kpr_jobs_bc_v1');
-      bc.postMessage({ detail, timestamp: Date.now() });
-      setTimeout(() => bc.close(), 200);
-    }
-  } catch (e) {}
-
-  try {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('kpr_jobs_updated', { detail }));
-    }
-  } catch (e) {}
-}
 
 export default function AssignWorkerModal({ isOpen, onClose, onWorkerAssigned }) {
   const [jobs, setJobs] = useState([]);
@@ -30,43 +15,21 @@ export default function AssignWorkerModal({ isOpen, onClose, onWorkerAssigned })
     if (!isOpen) return;
 
     async function loadData() {
-      // 1. Load jobs
-      const jobsMap = new Map();
-      try {
-        const raw = localStorage.getItem('kpr_admin_jobs_v1');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            parsed.forEach(j => jobsMap.set(j.id, j));
-          }
-        }
-      } catch (e) {}
-
-      try {
-        const { data } = await supabase
-          .from('jobs')
-          .select('id, title, assigned_worker, shoot_date, date')
-          .order('created_at', { ascending: false });
-
-        if (data && data.length > 0) {
-          data.forEach(j => {
-            if (!jobsMap.has(j.id)) jobsMap.set(j.id, j);
-          });
-        }
-      } catch (e) {}
-      setJobs(Array.from(jobsMap.values()));
+      // 1. Load jobs via jobsService
+      const allJobs = await fetchJobs();
+      setJobs(allJobs);
 
       // 2. Load all real workers
       const workersMap = new Map();
 
       try {
-        const raw = localStorage.getItem('kpr_registered_workers_v1');
-        if (raw) {
-          const parsed = JSON.parse(raw);
+        const rawReg = localStorage.getItem('kpr_registered_workers_v1');
+        if (rawReg) {
+          const parsed = JSON.parse(rawReg);
           if (Array.isArray(parsed)) {
             parsed.forEach(w => {
               if (w && w.email && !w.email.includes('example.com')) {
-                workersMap.set(w.email.toLowerCase(), { id: w.id || `worker-${w.email.split('@')[0]}`, email: w.email.toLowerCase(), full_name: w.full_name });
+                workersMap.set(w.email.toLowerCase(), { id: w.id || `worker-${w.email.split('@')[0]}`, email: w.email.toLowerCase(), full_name: w.full_name || w.name });
               }
             });
           }
@@ -102,41 +65,11 @@ export default function AssignWorkerModal({ isOpen, onClose, onWorkerAssigned })
 
     const workerEmail = selectedWorker.trim().toLowerCase();
 
-    // 1. Update local storage cache
-    let updatedJob = null;
-    try {
-      const raw = localStorage.getItem('kpr_admin_jobs_v1');
-      if (raw) {
-        const list = JSON.parse(raw);
-        const updated = list.map(j => {
-          if (j.id === selectedJob) {
-            updatedJob = {
-              ...j,
-              assigned_worker: workerEmail,
-              assigned_worker_name: workerEmail,
-              updated_at: new Date().toISOString()
-            };
-            return updatedJob;
-          }
-          return j;
-        });
-        localStorage.setItem('kpr_admin_jobs_v1', JSON.stringify(updated));
-      }
-    } catch (e) {}
-
-    // 2. Update Supabase
-    try {
-      await supabase
-        .from('jobs')
-        .update({
-          assigned_worker: workerEmail,
-          assigned_worker_name: workerEmail,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', selectedJob);
-    } catch (e) {}
-
-    broadcastJob(updatedJob || { id: selectedJob, assigned_worker: workerEmail });
+    // Update job via jobsService (syncs across backend API, Supabase, and broadcast channels)
+    await updateJob(selectedJob, {
+      assigned_worker: workerEmail,
+      assigned_worker_name: workerEmail
+    });
 
     setLoading(false);
     if (onWorkerAssigned) onWorkerAssigned();

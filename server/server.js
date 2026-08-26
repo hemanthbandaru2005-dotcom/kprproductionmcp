@@ -18,6 +18,24 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 const PORT = process.env.PORT || 5000;
 const mockUploadSessions = new Map();
 const serverClientUploads = [];
+const serverJobs = [
+  {
+    id: 'job-init-1',
+    title: 'Grand Royal Wedding Shoot',
+    client_name: 'Vikram & Ananya',
+    shoot_type: 'Wedding',
+    shoot_date: '2026-09-10',
+    date: '2026-09-10',
+    due_date: '2026-09-10',
+    assigned_worker: 'worker@kpr.com',
+    assigned_worker_name: 'worker@kpr.com',
+    notes: 'Full candid wedding coverage + cinematic drone shoots',
+    status: 'in_progress',
+    progress_percent: 40,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+];
 
 function getServerSupabase() {
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -404,6 +422,102 @@ const server = http.createServer(async (req, res) => {
       success: true,
       records: serverClientUploads
     }));
+  }
+
+  // -------------------------------------------------------------
+  // 8. GET /app/api/jobs & /api/jobs (Sync across all Admins & Workers)
+  // -------------------------------------------------------------
+  if (['/app/api/jobs', '/api/jobs', '/jobs'].includes(normalizedPath) && req.method === 'GET') {
+    res.setHeader('Content-Type', 'application/json');
+    res.statusCode = 200;
+    return res.end(JSON.stringify({
+      success: true,
+      jobs: serverJobs
+    }));
+  }
+
+  // -------------------------------------------------------------
+  // 9. POST /app/api/jobs & /api/jobs (Create Job)
+  // -------------------------------------------------------------
+  if (['/app/api/jobs', '/api/jobs', '/jobs'].includes(normalizedPath) && req.method === 'POST') {
+    res.setHeader('Content-Type', 'application/json');
+    try {
+      const body = await parseJsonBody(req);
+      const newJob = {
+        id: body.id || `job_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        title: (body.title || '').trim(),
+        client_name: (body.client_name || '').trim() || null,
+        shoot_type: (body.shoot_type || 'Photoshoot').trim(),
+        shoot_date: body.shoot_date || body.date || null,
+        date: body.shoot_date || body.date || null,
+        due_date: body.shoot_date || body.date || null,
+        assigned_worker: (body.assigned_worker || '').trim().toLowerCase() || null,
+        assigned_worker_name: (body.assigned_worker_name || body.assigned_worker || '').trim() || null,
+        notes: (body.notes || '').trim() || null,
+        status: body.status || 'in_progress',
+        progress_percent: body.progress_percent || 0,
+        created_at: body.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const existingIdx = serverJobs.findIndex(j => j.id === newJob.id);
+      if (existingIdx >= 0) {
+        serverJobs[existingIdx] = newJob;
+      } else {
+        serverJobs.unshift(newJob);
+      }
+
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true, job: newJob }));
+    } catch (e) {
+      res.statusCode = 500;
+      return res.end(JSON.stringify({ error: e.message || 'Failed to create job' }));
+    }
+  }
+
+  // -------------------------------------------------------------
+  // 10. PUT & DELETE /app/api/jobs/:id
+  // -------------------------------------------------------------
+  if (normalizedPath.startsWith('/app/api/jobs/') || normalizedPath.startsWith('/api/jobs/') || normalizedPath.startsWith('/jobs/')) {
+    const jobId = normalizedPath.split('/').pop();
+
+    if (req.method === 'PUT') {
+      res.setHeader('Content-Type', 'application/json');
+      try {
+        const body = await parseJsonBody(req);
+        const existingIdx = serverJobs.findIndex(j => j.id === jobId);
+        const existing = existingIdx >= 0 ? serverJobs[existingIdx] : { id: jobId };
+
+        const updatedJob = {
+          ...existing,
+          ...body,
+          id: jobId,
+          updated_at: new Date().toISOString()
+        };
+
+        if (existingIdx >= 0) {
+          serverJobs[existingIdx] = updatedJob;
+        } else {
+          serverJobs.unshift(updatedJob);
+        }
+
+        res.statusCode = 200;
+        return res.end(JSON.stringify({ success: true, job: updatedJob }));
+      } catch (e) {
+        res.statusCode = 500;
+        return res.end(JSON.stringify({ error: e.message || 'Failed to update job' }));
+      }
+    }
+
+    if (req.method === 'DELETE') {
+      res.setHeader('Content-Type', 'application/json');
+      const idx = serverJobs.findIndex(j => j.id === jobId);
+      if (idx >= 0) {
+        serverJobs.splice(idx, 1);
+      }
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true }));
+    }
   }
 
   // 404 for unknown routes
