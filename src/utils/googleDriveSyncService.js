@@ -4,7 +4,11 @@
  * Direct Google Drive API v3 chunked resumable upload and MIME utilities.
  * Completely replaces legacy Google Apps Script webhooks.
  * Supports ZIP archives, images, videos, PDFs, and project documents.
+ * 
+ * Direct Browser → Google Drive streaming (Zero Render proxying overhead).
  */
+
+import { getBackendApiUrl } from './clientUploadsService.js';
 
 // Supported MIME types mapping
 export const SUPPORTED_EXTENSIONS = [
@@ -92,18 +96,15 @@ export function getMimeType(filename, fileType = '') {
 }
 
 /**
- * Standard Chunk Size: 512 KiB (must be exact multiple of 256 KiB for Google Drive API)
- * Standard Chunk Size: 2MB (must be exact multiple of 256 KiB for Google Drive API)
+ * Standard Chunk Size: 8 MB (exact multiple of 256 KiB for Google Drive API)
  */
-export const DRIVE_CHUNK_SIZE = 2 * 1024 * 1024;
-
-const API_BASE = (import.meta.env?.VITE_API_URL || '').replace(/\/$/, '');
+export const DRIVE_CHUNK_SIZE = 8 * 1024 * 1024;
 
 /**
- * Performs a complete chunked resumable upload to Google Drive via backend API proxy:
- * 1. POST /app/api/drive/upload/initiate -> opens session
- * 2. PUT /app/api/drive/upload/chunk (iterative 2MB chunks, handling 308 Resume Incomplete)
- * 3. POST /app/api/drive/upload/complete -> persists to Supabase & returns metadata
+ * Performs a complete chunked resumable upload DIRECTLY to Google Drive:
+ * 1. POST /app/api/drive/upload/initiate -> opens session and returns Google Drive uploadUrl
+ * 2. PUT uploadUrl directly on https://www.googleapis.com (Zero Render proxying!)
+ * 3. POST /app/api/drive/upload/complete -> persists metadata to Supabase & returns verified record
  */
 export async function uploadFileWithDriveResumable({
   file,
@@ -121,11 +122,12 @@ export async function uploadFileWithDriveResumable({
 
   const mimeType = getMimeType(file.name, file.type);
   const totalSize = file.size;
+  const apiBase = getBackendApiUrl();
 
-  if (onProgress) onProgress(5, 'Opening resumable Drive session...');
+  if (onProgress) onProgress(3, 'Opening direct Google Drive session...');
 
-  // 1. Initiate Session
-  const initiateRes = await fetch(`${API_BASE}/app/api/drive/upload/initiate`, {
+  // 1. Initiate Session on Backend
+  const initiateRes = await fetch(`${apiBase}/app/api/drive/upload/initiate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -150,29 +152,30 @@ export async function uploadFileWithDriveResumable({
   const folderId = sessionData.folderId;
   const folderPath = sessionData.folderPath;
 
-  // 2. Upload Chunks
+  // 2. Stream Chunks DIRECTLY to Google Drive
   let offset = 0;
   let driveFileId = null;
   let webViewLink = null;
+  const chunkSize = totalSize > 8 * 1024 * 1024 ? DRIVE_CHUNK_SIZE : 2 * 1024 * 1024;
 
   while (offset < totalSize) {
-    const nextOffset = Math.min(offset + DRIVE_CHUNK_SIZE, totalSize);
+    const nextOffset = Math.min(offset + chunkSize, totalSize);
     const chunkBlob = file.slice(offset, nextOffset);
     const contentRange = `bytes ${offset}-${nextOffset - 1}/${totalSize}`;
     const chunkLength = nextOffset - offset;
 
-    const percent = Math.round((offset / totalSize) * 85) + 5;
+    const percent = Math.round((offset / totalSize) * 90) + 5;
     if (onProgress) {
-      onProgress(percent, `Uploading chunk (${Math.round(nextOffset / 1024)} KB / ${Math.round(totalSize / 1024)} KB)...`);
+      onProgress(percent, `Streaming directly to Google Drive (${Math.round(nextOffset / 1024 / 1024)} MB / ${Math.round(totalSize / 1024 / 1024)} MB)...`);
     }
 
-    const chunkRes = await fetch(`${API_BASE}/app/api/drive/upload/chunk`, {
+    // Direct Browser → Google Drive PUT
+    const chunkRes = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': mimeType,
         'Content-Range': contentRange,
-        'Content-Length': String(chunkLength),
-        'x-upload-url': uploadUrl
+        'Content-Length': String(chunkLength)
       },
       body: chunkBlob
     });
@@ -199,18 +202,18 @@ export async function uploadFileWithDriveResumable({
       break;
     } else {
       const errText = await chunkRes.text().catch(() => '');
-      throw new Error(`Chunk upload failed with status ${chunkRes.status}: ${errText}`);
+      throw new Error(`Direct Google Drive upload failed (${chunkRes.status}): ${errText}`);
     }
   }
 
-  if (onProgress) onProgress(92, 'Finalizing record with Supabase...');
+  if (onProgress) onProgress(95, 'Securing file metadata in studio vault...');
 
   // 3. Complete Upload Record
-  const completeRes = await fetch(`${API_BASE}/app/api/drive/upload/complete`, {
+  const completeRes = await fetch(`${apiBase}/app/api/drive/upload/complete`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      uploadId,
+      uploadId: uploadId || `upload_${Date.now()}`,
       clientId,
       clientName,
       clientEmail,

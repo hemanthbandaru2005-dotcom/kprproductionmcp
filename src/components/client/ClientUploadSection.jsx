@@ -100,36 +100,30 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
     }, 4500);
   };
 
-  // Upload a single file with resilient retry & progress tracking
-  const startFileUpload = async (file, resumeQueueId = null) => {
-    const queueId = resumeQueueId || `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+  // Active concurrency limit
+  const MAX_CONCURRENT_UPLOADS = 2;
+  const activeUploadsCountRef = useRef(0);
+  const pendingQueueRef = useRef([]);
+
+  // Process the queue with controlled concurrency
+  const processNextInQueue = () => {
+    while (activeUploadsCountRef.current < MAX_CONCURRENT_UPLOADS && pendingQueueRef.current.length > 0) {
+      const nextTask = pendingQueueRef.current.shift();
+      if (nextTask) {
+        activeUploadsCountRef.current += 1;
+        executeFileUpload(nextTask.file, nextTask.queueId).finally(() => {
+          activeUploadsCountRef.current = Math.max(0, activeUploadsCountRef.current - 1);
+          processNextInQueue();
+        });
+      }
+    }
+  };
+
+  // Upload execution handler
+  const executeFileUpload = async (file, queueId) => {
     const effectiveProject = selectedProject === 'Other / Custom Project'
       ? (customProject.trim() || 'Custom Project Uploads')
       : selectedProject;
-
-    if (!resumeQueueId) {
-      setUploadQueue((prev) => [
-        {
-          id: queueId,
-          name: file.name,
-          size: file.size,
-          bytesUploaded: 0,
-          progress: 0,
-          stage: 'Initializing resilient stream…',
-          status: 'uploading',
-          file
-        },
-        ...prev
-      ]);
-    } else {
-      setUploadQueue((prev) =>
-        prev.map((item) =>
-          item.id === queueId
-            ? { ...item, status: 'uploading', stage: 'Resuming upload…', file }
-            : item
-        )
-      );
-    }
 
     try {
       const result = await uploadClientFile({
@@ -139,16 +133,18 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
         clientEmail,
         projectTitle: effectiveProject,
         existingSessionId: queueId,
-        onProgress: ({ progress, bytesUploaded, totalBytes }) => {
+        onProgress: ({ progress, percent, bytesUploaded, totalBytes, speed, eta, stage }) => {
           setUploadQueue((prev) =>
             prev.map((item) =>
               item.id === queueId
                 ? {
                     ...item,
-                    progress,
+                    progress: progress || percent || 0,
                     bytesUploaded,
                     size: totalBytes,
-                    stage: `Uploading chunk (${formatFileSize(bytesUploaded)} / ${formatFileSize(totalBytes)})`
+                    speed: speed || '',
+                    eta: eta || '',
+                    stage: stage || `Uploading (${formatFileSize(bytesUploaded)} / ${formatFileSize(totalBytes)})`
                   }
                 : item
             )
@@ -170,18 +166,20 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
               ? {
                   ...item,
                   progress: 100,
-                  stage: 'Synced & Secured in Drive Vault',
+                  speed: 'Complete',
+                  eta: '',
+                  stage: 'Synced & Secured in Google Drive',
                   status: 'completed'
                 }
               : item
           )
         );
-        showToast(`"${file.name}" uploaded successfully!`, 'success');
+        showToast(`"${file.name}" uploaded directly to Google Drive!`, 'success');
         loadUploads();
 
         setTimeout(() => {
           setUploadQueue((prev) => prev.filter((item) => item.id !== queueId));
-        }, 3000);
+        }, 3500);
       } else {
         const errMsg = result.error || 'Upload could not complete.';
         setUploadQueue((prev) =>
@@ -190,13 +188,15 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
               ? {
                   ...item,
                   stage: errMsg,
-                  status: 'error',
+                  status: result.isPaused ? 'paused' : 'error',
                   file
                 }
               : item
           )
         );
-        showToast(errMsg, 'error');
+        if (!result.isPaused && !result.isCancelled) {
+          showToast(errMsg, 'error');
+        }
       }
     } catch (err) {
       const errMsg = err.message || 'Upload error occurred.';
@@ -214,6 +214,40 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
       );
       showToast(errMsg, 'error');
     }
+  };
+
+  // Queue a file for upload
+  const startFileUpload = (file, resumeQueueId = null) => {
+    const queueId = resumeQueueId || `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+
+    if (!resumeQueueId) {
+      setUploadQueue((prev) => [
+        {
+          id: queueId,
+          name: file.name,
+          size: file.size,
+          bytesUploaded: 0,
+          progress: 0,
+          speed: '',
+          eta: 'Starting…',
+          stage: 'Connecting directly to Google Drive…',
+          status: 'uploading',
+          file
+        },
+        ...prev
+      ]);
+    } else {
+      setUploadQueue((prev) =>
+        prev.map((item) =>
+          item.id === queueId
+            ? { ...item, status: 'uploading', stage: 'Resuming direct upload…', file }
+            : item
+        )
+      );
+    }
+
+    pendingQueueRef.current.push({ file, queueId });
+    processNextInQueue();
   };
 
   // Handle files selection or drop
@@ -241,9 +275,10 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
 
     if (validFiles.length === 0) return;
 
-    for (const file of validFiles) {
+    // Queue valid files with controlled concurrency
+    validFiles.forEach((file) => {
       startFileUpload(file);
-    }
+    });
   };
 
   const handlePause = (queueId, e) => {
@@ -482,6 +517,16 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
                       </div>
 
                       <div className="flex items-center gap-2">
+                        {item.speed && item.status === 'uploading' && (
+                          <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-[#DCE9FF] text-[#1E74FF] font-mono text-[10px] font-bold">
+                            {item.speed}
+                          </span>
+                        )}
+                        {item.eta && item.status === 'uploading' && (
+                          <span className="hidden sm:inline-block text-[10px] text-[#6B7280] font-mono">
+                            {item.eta}
+                          </span>
+                        )}
                         <span className={`text-[11px] font-mono font-bold ${
                           isRetrying ? 'text-[#D97706]' : isError ? 'text-[#DC2626]' : 'text-[#1E74FF]'
                         }`}>
@@ -540,7 +585,7 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
 
                     {/* Status Text */}
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className={`${
+                      <span className={`truncate pr-2 ${
                         isRetrying ? 'text-[#D97706] font-medium' : isError ? 'text-[#DC2626]' : 'text-[#6B7280]'
                       }`}>
                         {isRetrying && (
@@ -549,16 +594,16 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
                         {item.stage}
                       </span>
                       {isCompleted && (
-                        <span className="text-[#13A52D] font-bold flex items-center gap-1">
+                        <span className="text-[#13A52D] font-bold flex items-center gap-1 shrink-0">
                           <CheckCircle className="w-3 h-3" />
-                          <span>Secured</span>
+                          <span>Secured in Drive</span>
                         </span>
                       )}
                       {isPaused && (
-                        <span className="text-[#D97706] font-semibold">Paused</span>
+                        <span className="text-[#D97706] font-semibold shrink-0">Paused</span>
                       )}
                       {isError && (
-                        <span className="text-[#DC2626] font-semibold">Interrupted</span>
+                        <span className="text-[#DC2626] font-semibold shrink-0">Interrupted</span>
                       )}
                     </div>
                   </div>
