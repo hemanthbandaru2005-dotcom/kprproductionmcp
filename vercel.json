@@ -1,5 +1,16 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/app/api/drive/:path*",
+      "destination": "https://kprproductionmcp.onrender.com/app/api/drive/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://kprproductionmcp.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
