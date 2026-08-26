@@ -3,35 +3,27 @@ import { supabase } from '../utils/supabaseClient';
 
 export const ADMIN_MEMBERS = [
   {
-    id: 'admin_pranav_01',
-    email: 'pranavkumareddya@gmail.com',
-    full_name: 'Pranav Kumar Reddy',
+    id: 'admin_kpr_fotography',
+    email: 'kprfotography@gmail.com',
+    full_name: 'KPR Fotography Admin',
     role: 'admin',
     designation: 'Studio Admin',
     status: 'active'
   },
   {
-    id: 'admin_hemanth_02',
-    email: 'hemanthbandaru2005@gmail.com',
-    full_name: 'Hemanth Bandaru',
+    id: 'admin_kpr_events',
+    email: 'kprevents@gmail.com',
+    full_name: 'KPR Events Admin',
     role: 'admin',
-    designation: 'Studio Admin',
+    designation: 'Events Admin',
     status: 'active'
   },
   {
-    id: 'admin_nihal_03',
-    email: 'nihalreddy0916@gmail.com',
-    full_name: 'Nihal Reddy',
+    id: 'admin_kpr_colorlab',
+    email: 'kprcolourlab@gmail.com',
+    full_name: 'KPR Colour Lab Admin',
     role: 'admin',
-    designation: 'Studio Admin',
-    status: 'active'
-  },
-  {
-    id: 'admin_nihal_03_alias',
-    email: 'nihalreddy0916@gmal.com',
-    full_name: 'Nihal Reddy',
-    role: 'admin',
-    designation: 'Studio Admin',
+    designation: 'Colour Lab Admin',
     status: 'active'
   }
 ];
@@ -214,13 +206,13 @@ export function AuthProvider({ children }) {
     const workerMatch = WORKER_MEMBERS.find(w => w.email.toLowerCase() === cleanEmail) ||
       (cleanEmail.endsWith('@kpr.com') || cleanEmail.includes('@kpr') || cleanEmail.includes('worker') || !cleanEmail.includes('@')
         ? {
-            id: `worker-${workerUsername}`,
-            email: cleanEmail.includes('@') ? cleanEmail : `${cleanEmail}@kpr.com`,
-            full_name: workerFormattedName,
-            role: 'worker',
-            designation: 'Studio Team Member',
-            status: 'active'
-          }
+          id: `worker-${workerUsername}`,
+          email: cleanEmail.includes('@') ? cleanEmail : `${cleanEmail}@kpr.com`,
+          full_name: workerFormattedName,
+          role: 'worker',
+          designation: 'Studio Team Member',
+          status: 'active'
+        }
         : null);
 
     if (workerMatch && password && password.length >= 6) {
@@ -252,12 +244,12 @@ export function AuthProvider({ children }) {
     const clientMatch = CLIENT_MEMBERS.find(c => c.email.toLowerCase() === cleanEmail) ||
       (cleanEmail.includes('client') || cleanEmail.includes('@')
         ? {
-            id: `client-${clientUsername}`,
-            email: cleanEmail,
-            full_name: clientFormattedName,
-            role: 'client',
-            status: 'active'
-          }
+          id: `client-${clientUsername}`,
+          email: cleanEmail,
+          full_name: clientFormattedName,
+          role: 'client',
+          status: 'active'
+        }
         : null);
 
     if (clientMatch && password && password.length >= 6) {
@@ -284,7 +276,7 @@ export function AuthProvider({ children }) {
             localStorage.setItem('kpr_registered_clients_v1', JSON.stringify(list));
           }
         }
-      } catch (e) {}
+      } catch (e) { }
 
       setUser(mockUser);
       setProfile(mockProf);

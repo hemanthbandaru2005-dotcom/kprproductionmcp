@@ -3,7 +3,13 @@ import { Camera, Mail, MapPin, Phone, Heart } from 'lucide-react';
 import { SOCIAL_LINKS } from '../utils/socialLinks';
 import { InstagramIcon, FacebookIcon, YoutubeIcon } from './SocialIcons';
 
-export default function Footer({ onOpenInquire, showInstagram = true }) {
+export default function Footer({
+  onOpenInquire,
+  showInstagram = true,
+  showAddress = true,
+  instagramUrl = SOCIAL_LINKS.instagram,
+  instagramHandle = '@kpr_fotography'
+}) {
   const instagramGrid = [
     '/images/21/photo_1.jpg',
     '/images/21/photo_2.jpg',
@@ -23,18 +29,18 @@ export default function Footer({ onOpenInquire, showInstagram = true }) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 pb-4 border-b border-white/10">
               <div>
                 <span className="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase text-[#C5A880] font-medium block">
-                  @KPR_FOTOGRAPHY
+                  {instagramHandle.toUpperCase()}
                 </span>
                 <h3 className="font-serif text-xl sm:text-2xl text-white font-light">Follow Our Journal On Instagram</h3>
               </div>
               <a
-                href={SOCIAL_LINKS.instagram}
+                href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3.5 sm:px-4 py-2 border border-white/20 hover:border-[#C5A880] text-[11px] sm:text-xs uppercase tracking-wider text-white/80 hover:text-[#C5A880] transition-all duration-300 flex items-center gap-2 self-start sm:self-auto group"
               >
                 <InstagramIcon className="w-4 h-4 text-[#C5A880] group-hover:scale-110 transition-transform" />
-                <span>Follow Live @kpr_fotography</span>
+                <span>Follow Live {instagramHandle}</span>
               </a>
             </div>
 
@@ -42,7 +48,7 @@ export default function Footer({ onOpenInquire, showInstagram = true }) {
               {instagramGrid.map((img, i) => (
                 <a
                   key={i}
-                  href={SOCIAL_LINKS.instagram}
+                  href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group relative aspect-square overflow-hidden bg-white/5 border border-white/10"
@@ -77,18 +83,20 @@ export default function Footer({ onOpenInquire, showInstagram = true }) {
           <div className="md:col-span-4 space-y-3">
             <h4 className="text-[11px] tracking-[0.25em] uppercase text-[#C5A880] font-semibold">Studio Enquiries</h4>
             <div className="space-y-2.5 text-xs text-white/70 font-light">
-              <a
-                href="https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-start gap-2 text-white/80 hover:text-[#C5A880] transition-colors group"
-              >
-                <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                <div>
-                  <span className="font-semibold text-white block">Grand Gayathri, 8-5-34</span>
-                  <span>TKS Commercial Complex, Station Road, Warangal 506002</span>
-                </div>
-              </a>
+              {showAddress && (
+                <a
+                  href="https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-2 text-white/80 hover:text-[#C5A880] transition-colors group"
+                >
+                  <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <span className="font-semibold text-white block">Grand Gayathri, 8-5-34</span>
+                    <span>TKS Commercial Complex, Station Road, Warangal 506002</span>
+                  </div>
+                </a>
+              )}
               <a
                 href="mailto:kprfotography@gmail.com"
                 className="flex items-center gap-2 hover:text-[#C5A880] transition-colors"
@@ -113,7 +121,7 @@ export default function Footer({ onOpenInquire, showInstagram = true }) {
               
               {/* Instagram Link */}
               <a
-                href={SOCIAL_LINKS.instagram}
+                href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 px-3 py-2 bg-white/5 hover:bg-[#C5A880]/15 border border-white/10 hover:border-[#C5A880]/40 rounded text-xs text-white/80 hover:text-white transition-all duration-300 group"
@@ -123,7 +131,7 @@ export default function Footer({ onOpenInquire, showInstagram = true }) {
                 </div>
                 <div>
                   <span className="block font-medium text-white group-hover:text-[#C5A880]">Instagram</span>
-                  <span className="text-[10px] text-white/40">@kpr_fotography</span>
+                  <span className="text-[10px] text-white/40">{instagramHandle}</span>
                 </div>
               </a>
 

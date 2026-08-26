@@ -31,10 +31,10 @@ const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnl
               e.stopPropagation();
               onToggleFlag(pageIndex + 1);
             }}
-            className={`absolute top-4 right-5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 transition-all shadow-lg cursor-pointer ${
+            className={`absolute top-4 right-5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 transition-all shadow-md cursor-pointer ${
               isFlagged
-                ? 'bg-rose-500 text-white shadow-rose-500/40 ring-2 ring-white'
-                : 'bg-black/60 hover:bg-black text-white/80 hover:text-white backdrop-blur-md'
+                ? 'bg-[#DC2626] text-white shadow-rose-500/40 ring-2 ring-white'
+                : 'bg-[#141414]/80 hover:bg-[#141414] text-white backdrop-blur-xs'
             }`}
           >
             <Flag className={`w-3 h-3 ${isFlagged ? 'fill-current' : ''}`} />
@@ -43,14 +43,14 @@ const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnl
         )}
 
         {readOnly && isFlagged && (
-          <div className="absolute top-4 right-5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500 text-white flex items-center gap-1.5 shadow-md">
+          <div className="absolute top-4 right-5 px-3 py-1 rounded-full text-[10px] font-bold bg-[#DC2626] text-white flex items-center gap-1.5 shadow-md">
             <Flag className="w-3 h-3 fill-current" />
             <span>Flagged</span>
           </div>
         )}
 
         {/* Page Number Watermark */}
-        <span className="absolute bottom-4 right-5 text-[10px] text-white/70 font-mono select-none drop-shadow-md bg-black/40 px-2 py-0.5 rounded">
+        <span className="absolute bottom-4 right-5 text-[10px] text-[#111111] font-mono select-none drop-shadow-xs bg-white/90 px-2.5 py-0.5 rounded-full shadow-xs border border-[#E7E8EB]">
           Page {pageIndex + 1}
         </span>
       </div>
@@ -147,7 +147,6 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
     }
   };
 
-  // Compile all flagged items
   const getAllFlaggedItems = () => {
     const list = [];
     flaggedPages.forEach(p => list.push(`Page ${p}`));
@@ -158,7 +157,7 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
     return list;
   };
 
-  // ── 1. APPROVE FLOW ──
+  // 1. APPROVE FLOW
   const handleApprove = async () => {
     if (isApproved) return;
     setSubmitting(true);
@@ -183,7 +182,7 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
     }
   };
 
-  // ── 2. REQUEST CHANGES FLOW ──
+  // 2. REQUEST CHANGES FLOW
   const handleSubmitChanges = async (e) => {
     e.preventDefault();
     if (!clientNote || clientNote.trim().length < 5) {
@@ -220,7 +219,7 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
   const pages = verification?.album_pages || [];
   const totalPages = pages.length;
 
-  const topPad = 60;
+  const topPad = 64;
   const bottomPad = 80;
   const availH = vh - topPad - bottomPad;
   const availW = vw - (isMobile ? 32 : 120);
@@ -246,34 +245,34 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-[9999] flex flex-col bg-black/95 text-white"
+        className="fixed inset-0 z-[9999] flex flex-col bg-black/70 backdrop-blur-xs text-[#111111]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
         {/* ═══════ 1. TOP HEADER TOOLBAR ═══════ */}
-        <div className="w-full h-16 border-b border-white/10 px-4 sm:px-8 flex items-center justify-between bg-[#111827] shrink-0 z-20">
+        <div className="w-full h-16 border-b border-[#E7E8EB] px-4 sm:px-8 flex items-center justify-between bg-white shrink-0 z-20 shadow-xs">
           
           {/* Left info */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#C5A880]/20 text-[#C5A880] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-[#DCE9FF] text-[#1E74FF] flex items-center justify-center">
               {hasAlbum ? <BookOpen className="w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white tracking-wide truncate max-w-xs sm:max-w-md">
+              <h3 className="text-sm sm:text-base font-bold text-[#111111] tracking-tight truncate max-w-xs sm:max-w-md">
                 {verification?.album_title || verification?.event_title || 'Color Lab Proofing'}
               </h3>
-              <p className="text-[10px] text-white/50">{verification?.event_title}</p>
+              <p className="text-[11px] text-[#6B7280]">{verification?.event_title}</p>
             </div>
           </div>
 
-          {/* Center: Tab Switcher (if both album + reference photos exist) */}
+          {/* Center: Tab Switcher */}
           {hasAlbum && hasPhotos && (
-            <div className="hidden sm:flex items-center p-1 bg-white/5 rounded-full border border-white/10">
+            <div className="hidden sm:flex items-center p-1 bg-[#F7F8FA] rounded-full border border-[#E7E8EB]">
               <button
                 onClick={() => setActiveTab('album')}
-                className={`px-4 py-1 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'album' ? 'bg-[#C5A880] text-black shadow-md' : 'text-white/60 hover:text-white'
+                className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'album' ? 'bg-[#141414] text-white shadow-xs' : 'text-[#6B7280] hover:text-[#111111]'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" />
@@ -282,8 +281,8 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
 
               <button
                 onClick={() => setActiveTab('photos')}
-                className={`px-4 py-1 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === 'photos' ? 'bg-[#C5A880] text-black shadow-md' : 'text-white/60 hover:text-white'
+                className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === 'photos' ? 'bg-[#141414] text-white shadow-xs' : 'text-[#6B7280] hover:text-[#111111]'
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
@@ -292,23 +291,23 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
             </div>
           )}
 
-          {/* Right: Verification / Drive Link Access (if included) + Close button */}
+          {/* Right: Close button */}
           <div className="flex items-center gap-2.5">
             {(verification?.verification_link || verification?.drive_link) && (
               <a
                 href={verification.verification_link || verification.drive_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/50 text-xs font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shadow-lg group/link"
+                className="px-4 py-1.5 rounded-full bg-[#1E74FF] hover:bg-blue-600 text-white text-xs font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
-                <ExternalLink className="w-3.5 h-3.5 group-hover/link:scale-110 transition-transform" />
-                <span>Open Verification Link ↗</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Verification Link ↗</span>
               </a>
             )}
 
             <button
               onClick={onClose}
-              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              className="p-2 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] transition-colors cursor-pointer"
               title="Close viewer"
             >
               <X className="w-5 h-5" />
@@ -317,14 +316,14 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
         </div>
 
         {/* ═══════ 2. MAIN REVIEW CONTENT ═══════ */}
-        <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 relative">
+        <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 relative bg-[#F3F4F6]">
 
           {/* SUCCESS TOAST */}
           {successToast && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="absolute top-6 z-50 px-6 py-3 rounded-xl bg-emerald-500 text-white font-bold text-xs shadow-2xl flex items-center gap-2"
+              className="absolute top-6 z-50 px-6 py-3 rounded-full bg-[#13A52D] text-white font-bold text-xs shadow-xl flex items-center gap-2"
             >
               <CheckCircle className="w-5 h-5" />
               <span>{successToast}</span>
@@ -339,7 +338,7 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
               {!isMobile && (
                 <button
                   onClick={() => flipBookRef.current?.pageFlip()?.flipPrev()}
-                  className="absolute left-4 z-10 w-11 h-11 rounded-full bg-black/60 hover:bg-black text-white/80 hover:text-white border border-white/10 flex items-center justify-center transition-transform hover:scale-110 shadow-2xl cursor-pointer"
+                  className="absolute left-6 z-10 w-12 h-12 rounded-full bg-white hover:bg-[#F1F2F4] text-[#111111] border border-[#E7E8EB] flex items-center justify-center transition-transform hover:scale-105 shadow-md cursor-pointer"
                   aria-label="Previous Page"
                 >
                   <ChevronLeft className="w-6 h-6" />
@@ -347,30 +346,26 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
               )}
 
               {/* Flipbook Container */}
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center drop-shadow-xl">
                 <HTMLFlipBook
                   ref={flipBookRef}
                   width={bookWidth}
                   height={bookHeight}
                   size="fixed"
                   minWidth={180}
-                  maxWidth={700}
+                  maxWidth={800}
                   minHeight={260}
-                  maxHeight={900}
+                  maxHeight={800}
+                  maxShadowOpacity={0.4}
                   showCover={true}
-                  flippingTime={800}
-                  usePortrait={isMobile}
-                  startZIndex={1}
-                  autoSize={true}
-                  maxShadowOpacity={0.5}
-                  showPageCorners={true}
-                  className="shadow-2xl rounded-sm"
+                  mobileScrollSupport={true}
                   onFlip={(e) => setCurrentPage(e.data)}
+                  className="shadow-2xl rounded-sm overflow-hidden"
                 >
-                  {pages.map((pageSrc, idx) => (
+                  {pages.map((p, idx) => (
                     <ProofPage
-                      key={idx}
-                      src={pageSrc}
+                      key={p.id || idx}
+                      src={p.url || p.file_path || p}
                       pageIndex={idx}
                       isFlagged={flaggedPages.includes(idx + 1)}
                       onToggleFlag={togglePageFlag}
@@ -384,66 +379,54 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
               {!isMobile && (
                 <button
                   onClick={() => flipBookRef.current?.pageFlip()?.flipNext()}
-                  className="absolute right-4 z-10 w-11 h-11 rounded-full bg-black/60 hover:bg-black text-white/80 hover:text-white border border-white/10 flex items-center justify-center transition-transform hover:scale-110 shadow-2xl cursor-pointer"
+                  className="absolute right-6 z-10 w-12 h-12 rounded-full bg-white hover:bg-[#F1F2F4] text-[#111111] border border-[#E7E8EB] flex items-center justify-center transition-transform hover:scale-105 shadow-md cursor-pointer"
                   aria-label="Next Page"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
               )}
 
-              {/* Page Indicator */}
-              <div className="mt-3 px-3 py-1 rounded-full bg-black/50 border border-white/10 text-xs font-mono text-white/70">
-                {isMobile ? `Page ${currentPage + 1} of ${totalPages}` : `Page ${currentPage + 1}-${Math.min(currentPage + 2, totalPages)} of ${totalPages}`}
+              {/* Page Counter & Controls */}
+              <div className="mt-4 flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-xs border border-[#E7E8EB] text-xs">
+                <span className="font-mono text-[#6B7280]">
+                  Spread <strong className="text-[#111111]">{currentPage + 1}</strong> of <strong className="text-[#111111]">{totalPages}</strong>
+                </span>
               </div>
             </div>
           )}
 
-          {/* ──── TAB B: LOOSE REFERENCE PHOTOS GRID ──── */}
+          {/* ──── TAB B: REFERENCE PHOTOS GRID ──── */}
           {activeTab === 'photos' && hasPhotos && (
-            <div className="w-full max-w-5xl mx-auto py-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-white/70">
-                  Select or Flag Individual Proofs
-                </h4>
-                <span className="text-xs text-[#C5A880]">
-                  {flaggedPhotoIds.length} flagged for adjustment
-                </span>
-              </div>
-
+            <div className="w-full max-w-5xl h-full p-4 overflow-y-auto">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {verification.photo_items.map((photo) => {
                   const isFlagged = flaggedPhotoIds.includes(photo.id);
+
                   return (
                     <div
                       key={photo.id}
-                      className="group relative bg-[#1E2937] border border-white/10 rounded-xl overflow-hidden shadow-lg transition-all"
+                      onClick={() => togglePhotoFlag(photo.id)}
+                      className={`relative rounded-2xl overflow-hidden bg-white border-2 p-1.5 transition-all cursor-pointer shadow-xs ${
+                        isFlagged
+                          ? 'border-[#DC2626] ring-2 ring-[#DC2626]/30'
+                          : 'border-[#E7E8EB] hover:border-[#141414]'
+                      }`}
                     >
-                      <div className="aspect-[4/3] w-full overflow-hidden bg-black">
+                      <div className="h-44 rounded-xl overflow-hidden bg-[#F7F8FA]">
                         <img
-                          src={photo.src}
-                          alt={photo.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          src={photo.url || photo.file_path}
+                          alt={photo.title || 'Photo'}
+                          className="w-full h-full object-cover"
                         />
                       </div>
-
-                      <div className="p-3 flex items-center justify-between">
-                        <span className="text-xs font-medium text-white truncate max-w-[130px]">
-                          {photo.title}
-                        </span>
-
+                      <div className="p-2 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-[#111111] truncate">{photo.title || 'Photo item'}</span>
                         {!isApproved && (
-                          <button
-                            type="button"
-                            onClick={() => togglePhotoFlag(photo.id)}
-                            className={`p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
-                              isFlagged
-                                ? 'bg-rose-500 text-white border-rose-500'
-                                : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border-white/10'
-                            }`}
-                            title={isFlagged ? 'Flagged for changes' : 'Flag this photo'}
-                          >
-                            <Flag className={`w-3.5 h-3.5 ${isFlagged ? 'fill-current' : ''}`} />
-                          </button>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isFlagged ? 'bg-[#FEF2F2] text-[#DC2626]' : 'bg-[#F1F2F4] text-[#6B7280]'
+                          }`}>
+                            {isFlagged ? 'Flagged' : 'Flag'}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -456,22 +439,22 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
         </div>
 
         {/* ═══════ 3. BOTTOM APPROVAL & ACTION BAR ═══════ */}
-        <div className="w-full border-t border-white/10 bg-[#111827] px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-20">
+        <div className="w-full border-t border-[#E7E8EB] bg-white px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-20 shadow-xs">
           
           {/* Left status / flag counters */}
           <div className="flex items-center gap-3">
             {isApproved ? (
-              <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
+              <div className="flex items-center gap-2 text-[#13A52D] font-bold text-xs bg-[#DFF5E3] px-3.5 py-1.5 rounded-full border border-[#BBF7D0]">
                 <CheckCircle className="w-4 h-4" />
                 <span>Verification Approved & Finalized</span>
               </div>
             ) : totalFlaggedCount > 0 ? (
-              <div className="flex items-center gap-2 text-rose-400 text-xs bg-rose-500/10 px-3 py-1.5 rounded-full border border-rose-500/20">
+              <div className="flex items-center gap-2 text-[#DC2626] font-bold text-xs bg-[#FEF2F2] px-3.5 py-1.5 rounded-full border border-[#FCA5A5]">
                 <Flag className="w-3.5 h-3.5 fill-current" />
                 <span>{totalFlaggedCount} item(s) flagged for changes</span>
               </div>
             ) : (
-              <span className="text-xs text-white/50">
+              <span className="text-xs text-[#6B7280]">
                 Review pages above and mark any items that need changes.
               </span>
             )}
@@ -480,77 +463,75 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
           {/* Right Action Buttons */}
           {!isApproved ? (
             <div className="flex items-center gap-3">
-              {/* Request Changes Button */}
               <button
                 onClick={() => setChangeModalOpen(true)}
                 disabled={submitting}
-                className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-rose-500/20 text-white hover:text-rose-300 border border-white/15 hover:border-rose-500/40 text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer flex items-center gap-2"
+                className="px-5 py-2.5 rounded-full bg-white hover:bg-[#FEF2F2] text-[#DC2626] border border-[#FCA5A5] text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-2xs"
               >
-                <AlertTriangle className="w-4 h-4 text-rose-400" />
+                <AlertTriangle className="w-4 h-4 text-[#DC2626]" />
                 <span>Request Changes</span>
               </button>
 
-              {/* Approve Button */}
               <button
                 onClick={handleApprove}
                 disabled={submitting}
-                className="px-7 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-xl cursor-pointer disabled:opacity-60 flex items-center gap-2"
+                className="px-7 py-2.5 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer disabled:opacity-60 flex items-center gap-2"
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4 text-[#13A52D]" />}
                 <span>{hasAlbum ? 'Approve Album' : 'Approve All'}</span>
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-xs text-white/40">
+            <div className="flex items-center gap-2 text-xs text-[#9CA0A6]">
               <Lock className="w-3.5 h-3.5" />
-              <span>Read-only mode</span>
+              <span>Read-only finalized mode</span>
             </div>
           )}
         </div>
 
         {/* ═══════ 4. REQUEST CHANGES MODAL ═══════ */}
         {changeModalOpen && (
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-[#1F2937] border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl p-6 space-y-4 text-white">
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+            <div className="bg-white border border-[#E7E8EB] rounded-[24px] sm:rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl p-6 space-y-4 text-[#111111]">
               
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div className="flex items-center gap-2 text-rose-400 font-bold">
+              <div className="flex items-center justify-between border-b border-[#E7E8EB] pb-3">
+                <div className="flex items-center gap-2 text-[#DC2626] font-bold">
                   <AlertTriangle className="w-5 h-5" />
                   <span>Request Revisions</span>
                 </div>
                 <button
                   onClick={() => setChangeModalOpen(false)}
-                  className="text-white/40 hover:text-white"
+                  className="p-1.5 rounded-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB]"
                 >
-                  ✕
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Flagged items summary */}
               {totalFlaggedCount > 0 ? (
-                <div className="p-3 bg-black/30 rounded-xl border border-white/10 space-y-1">
-                  <p className="text-[11px] font-bold text-[#C5A880] uppercase tracking-wider flex items-center gap-1">
-                    <Flag className="w-3.5 h-3.5" />
+                <div className="p-3 bg-[#F7F8FA] rounded-2xl border border-[#E7E8EB] space-y-1">
+                  <p className="text-[11px] font-bold text-[#111111] uppercase tracking-wider flex items-center gap-1">
+                    <Flag className="w-3.5 h-3.5 text-[#DC2626]" />
                     Items Attached for Fixes ({totalFlaggedCount}):
                   </p>
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {getAllFlaggedItems().map((flag, idx) => (
-                      <span key={idx} className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-mono border border-rose-500/30">
+                      <span key={idx} className="px-2.5 py-0.5 rounded-full bg-[#FEF2F2] text-[#DC2626] text-[10px] font-mono border border-[#FCA5A5] font-bold">
                         {flag}
                       </span>
                     ))}
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-white/50">
+                <p className="text-xs text-[#6B7280]">
                   Tip: You can flag specific pages in the flipbook so our designers know exactly which photos to update.
                 </p>
               )}
 
               {/* Notes Input */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-2">
-                  What changes or retouching would you like? <span className="text-rose-400">*</span>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#6B7280] mb-2">
+                  What changes or retouching would you like? <span className="text-[#DC2626]">*</span>
                 </label>
                 <textarea
                   rows={4}
@@ -558,12 +539,12 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
                   placeholder="e.g. Please swap the photo on page 4 with the sunset portrait, and warm up the tone on the mandap photo..."
                   value={clientNote}
                   onChange={(e) => setClientNote(e.target.value)}
-                  className="w-full p-3.5 bg-[#111827] border border-white/15 rounded-xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#C5A880] resize-none"
+                  className="w-full p-3.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-2xl text-xs text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414] resize-none"
                 />
               </div>
 
               {errorMsg && (
-                <p className="text-xs text-rose-400 font-medium">{errorMsg}</p>
+                <p className="text-xs text-[#DC2626] font-semibold">{errorMsg}</p>
               )}
 
               {/* Modal Actions */}
@@ -571,7 +552,7 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
                 <button
                   type="button"
                   onClick={() => setChangeModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs text-white/60 hover:text-white cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] text-xs font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -580,7 +561,7 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
                   type="button"
                   onClick={handleSubmitChanges}
                   disabled={submitting}
-                  className="px-6 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-lg cursor-pointer disabled:opacity-60 flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-full bg-[#DC2626] hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer disabled:opacity-60 flex items-center gap-2"
                 >
                   {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   Submit Changes

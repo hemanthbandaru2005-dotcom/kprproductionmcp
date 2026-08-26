@@ -30,10 +30,7 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
   const [selectedPhotoIds, setSelectedPhotoIds] = useState(['p1', 'p2']);
 
   // Drive Link State
-  const [existingDriveLink, setExistingDriveLink] = useState('');
   const [driveLinkInput, setDriveLinkInput] = useState('');
-  const [includeDriveLink, setIncludeDriveLink] = useState(false);
-  const [isEditingDriveLink, setIsEditingDriveLink] = useState(false);
 
   const [loadingClients, setLoadingClients] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -103,147 +100,104 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
     loadClients();
   }, [isOpen]);
 
-  // Fetch jobs for selected client
+  // When selectedClientId changes, load their real jobs or provide a default
   useEffect(() => {
     if (!selectedClientId) return;
 
     if (selectedClientId === 'custom') {
-      setClientJobs([{ id: 'job-custom', title: 'Color Lab Album Verification', drive_link: '' }]);
-      setSelectedJobId('job-custom');
+      setClientJobs([
+        { id: 'custom-event', title: 'Grand Royal Wedding & Reception' },
+        { id: 'custom-event-2', title: 'Pre-Wedding & Haldi Ceremony' },
+        { id: 'custom-event-3', title: 'Custom Color Lab Order' }
+      ]);
+      setSelectedJobId('custom-event');
       return;
     }
 
     async function loadJobs() {
-      try {
-        const { data, error } = await supabase
-          .from('jobs')
-          .select('*')
-          .eq('client_id', selectedClientId);
+      const selectedClient = clients.find(c => c.id === selectedClientId);
+      const clientEmail = selectedClient?.email || '';
 
-        if (!error && data && data.length > 0) {
-          setClientJobs(data);
-          setSelectedJobId(data[0].id);
-        } else {
-          setClientJobs([{ id: 'job-default', title: 'Grand Royal Wedding — Proofing Job', drive_link: '' }]);
-          setSelectedJobId('job-default');
-        }
-      } catch (err) {
-        setClientJobs([{ id: 'job-default', title: 'Grand Royal Wedding — Proofing Job', drive_link: '' }]);
-        setSelectedJobId('job-default');
+      const { data } = await supabase
+        .from('jobs')
+        .select('id, title, shoot_date')
+        .or(`client_name.ilike.%${selectedClient?.full_name || ''}%,client_name.ilike.%${clientEmail}%`);
+
+      if (data && data.length > 0) {
+        setClientJobs(data);
+        setSelectedJobId(data[0].id);
+      } else {
+        setClientJobs([
+          { id: 'job-default-1', title: `${selectedClient?.full_name || 'Client'}'s Wedding Album Layout` },
+          { id: 'job-default-2', title: `${selectedClient?.full_name || 'Client'}'s Haldi Ceremony Highlights` }
+        ]);
+        setSelectedJobId('job-default-1');
       }
     }
 
     loadJobs();
-  }, [selectedClientId]);
+  }, [selectedClientId, clients]);
 
-  // When selectedJobId changes, check for existing drive_link on that event
-  useEffect(() => {
-    if (!selectedJobId) return;
-    const currentJob = clientJobs.find(j => j.id === selectedJobId);
-    if (currentJob?.drive_link) {
-      setExistingDriveLink(currentJob.drive_link);
-      setDriveLinkInput(currentJob.drive_link);
-      setIncludeDriveLink(true);
-      setIsEditingDriveLink(false);
+  const togglePhoto = (id) => {
+    if (selectedPhotoIds.includes(id)) {
+      setSelectedPhotoIds(selectedPhotoIds.filter(p => p !== id));
     } else {
-      setExistingDriveLink('');
-      setDriveLinkInput('');
-      setIncludeDriveLink(false);
-      setIsEditingDriveLink(true);
-    }
-  }, [selectedJobId, clientJobs]);
-
-  if (!isOpen) return null;
-
-  const togglePhotoSelection = (photoId) => {
-    if (selectedPhotoIds.includes(photoId)) {
-      setSelectedPhotoIds(selectedPhotoIds.filter(id => id !== photoId));
-    } else {
-      setSelectedPhotoIds([...selectedPhotoIds, photoId]);
+      setSelectedPhotoIds([...selectedPhotoIds, id]);
     }
   };
 
-  const handleSend = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
-    let finalClientId = selectedClientId;
-    let finalClientName = '';
-    let finalClientEmail = '';
+    let targetClientId = selectedClientId;
+    let targetClientName = '';
+    let targetClientEmail = '';
 
     if (selectedClientId === 'custom') {
-      if (!customClientEmail.trim()) {
-        setErrorMsg('Please enter the client email address.');
+      if (!customClientName.trim() || !customClientEmail.trim()) {
+        setErrorMsg('Please enter both the client name and email.');
         return;
       }
-      finalClientEmail = customClientEmail.trim().toLowerCase();
-      finalClientName = customClientName.trim() || finalClientEmail.split('@')[0];
-      finalClientId = `client-${finalClientEmail.split('@')[0]}`;
-
-      // Save to local registered list
-      try {
-        const raw = localStorage.getItem('kpr_registered_clients_v1');
-        const list = raw ? JSON.parse(raw) : [];
-        if (!list.some(c => c.email.toLowerCase() === finalClientEmail)) {
-          list.push({ id: finalClientId, full_name: finalClientName, email: finalClientEmail, role: 'client', status: 'active' });
-          localStorage.setItem('kpr_registered_clients_v1', JSON.stringify(list));
-        }
-      } catch (e) {}
+      targetClientName = customClientName.trim();
+      targetClientEmail = customClientEmail.trim().toLowerCase();
+      targetClientId = `client-${targetClientEmail.split('@')[0]}`;
     } else {
-      const clientObj = clients.find(c => c.id === selectedClientId) || { full_name: 'Client', email: '' };
-      finalClientName = clientObj.full_name || 'Client';
-      finalClientEmail = (clientObj.email || '').trim().toLowerCase();
-      finalClientId = clientObj.id || (finalClientEmail ? `client-${finalClientEmail.split('@')[0]}` : selectedClientId);
+      const c = clients.find(cl => cl.id === selectedClientId);
+      targetClientName = c?.full_name || 'Valued Client';
+      targetClientEmail = c?.email || '';
     }
 
-    const jobObj = clientJobs.find(j => j.id === selectedJobId) || { title: customEventTitle || 'Color Lab Proofing Project' };
+    const selJob = clientJobs.find(j => j.id === selectedJobId);
+    const eventTitle = customEventTitle.trim() || selJob?.title || `${targetClientName}'s Event Proof`;
+
     const albumObj = AVAILABLE_ALBUMS.find(a => a.id === selectedAlbumId);
+    const albumPages = (contentType === 'album' || contentType === 'both') ? (albumObj?.pages || []) : [];
+    const photoItems = (contentType === 'photos' || contentType === 'both')
+      ? SAMPLE_PROOF_PHOTOS.filter(p => selectedPhotoIds.includes(p.id))
+      : [];
 
-    if (contentType === 'album' && !selectedAlbumId) {
-      setErrorMsg('Please select an album to send for review.');
-      return;
-    }
-
-    if (contentType === 'photos' && selectedPhotoIds.length === 0) {
-      setErrorMsg('Please select at least one photo.');
-      return;
-    }
-
-    if (contentType === 'both' && (!selectedAlbumId || selectedPhotoIds.length === 0)) {
-      setErrorMsg('Please select an album and at least one reference photo.');
+    if (albumPages.length === 0 && photoItems.length === 0 && !driveLinkInput.trim()) {
+      setErrorMsg('Please select at least an album layout, photo items, or provide a verification link.');
       return;
     }
 
     setSubmitting(true);
 
-    const chosenPhotos = SAMPLE_PROOF_PHOTOS.filter(p => selectedPhotoIds.includes(p.id));
-
-    const finalLink = (driveLinkInput || '').trim() || null;
-
-    // If new/updated link was entered, save back to jobs table so it is remembered
-    if (finalLink && finalLink !== jobObj.drive_link && selectedJobId !== 'job-custom') {
-      await saveEventDriveLink(selectedJobId, finalLink);
-    }
-
     const payload = {
-      client_id: finalClientId,
-      client_name: finalClientName,
-      client_email: finalClientEmail,
-      event_id: selectedJobId,
-      event_title: customEventTitle || jobObj.title,
-      album_id: (contentType === 'album' || contentType === 'both') ? selectedAlbumId : null,
-      album_title: (contentType === 'album' || contentType === 'both') ? (albumObj?.title || 'Wedding Album') : null,
-      album_pages: (contentType === 'album' || contentType === 'both') ? (albumObj?.pages || []) : [],
-      photo_ids: (contentType === 'photos' || contentType === 'both') ? selectedPhotoIds : [],
-      photo_items: (contentType === 'photos' || contentType === 'both') ? chosenPhotos : [],
-      verification_link: finalLink,
-      drive_link: finalLink,
-      link_title: 'Verification & Approval Link',
-      drive_link_included: Boolean(finalLink),
+      client_id: targetClientId,
+      client_name: targetClientName,
+      client_email: targetClientEmail,
+      event_title: eventTitle,
+      album_title: albumObj ? albumObj.title : `${eventTitle} Album Proof`,
+      album_pages: albumPages,
+      photo_items: photoItems,
+      verification_link: driveLinkInput.trim() || null,
+      drive_link: driveLinkInput.trim() || null,
+      status: 'pending'
     };
 
     const res = await createVerification(payload);
-
     setSubmitting(false);
 
     if (res.error) {
@@ -254,56 +208,60 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#1F2937] border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+      <div className="bg-white border border-[#E7E8EB] rounded-[24px] sm:rounded-[32px] w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] text-[#111111]">
         
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#111827]">
+        {/* Header */}
+        <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-[#E7E8EB] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#C5A880]/20 text-[#C5A880] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-[#DCE9FF] flex items-center justify-center text-[#1E74FF] shrink-0">
               <Send className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white tracking-wide">Send for Client Verification</h3>
-              <p className="text-xs text-white/50">Client Proofing & Verification Pipeline</p>
+              <h3 className="text-base font-bold text-[#111111] uppercase tracking-wider">
+                Send Proofing & Verification
+              </h3>
+              <p className="text-[11px] text-[#6B7280]">
+                Deliver interactive albums & approval links to clients
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-white/40 hover:text-white rounded-lg transition-colors cursor-pointer"
+            className="p-2 rounded-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSend} className="p-6 overflow-y-auto space-y-6 flex-1 text-white">
-          
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1">
           {errorMsg && (
-            <div className="p-3 bg-red-500/20 border border-red-500/40 text-red-300 rounded-xl text-xs flex items-center gap-2">
+            <div className="p-3 bg-[#FEF2F2] border border-[#FCA5A5] rounded-xl text-xs text-[#DC2626] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* 1. Client & Project Selection */}
+          {/* 1. Client & Job Selectors */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-2 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-[#C5A880]" />
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280] mb-1.5 flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5 text-[#1E74FF]" />
                 Select Client
               </label>
               {loadingClients ? (
-                <div className="flex items-center gap-2 text-xs text-white/40 p-2.5 bg-black/30 rounded-lg">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <div className="p-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs text-[#9CA0A6]">
                   Loading client list…
                 </div>
               ) : (
                 <select
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#111827] border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                  className="w-full px-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs text-[#111111] focus:outline-none focus:border-[#141414] cursor-pointer"
                   required
                 >
                   <option value="custom">➕ Enter Custom Client (Name & Email)</option>
@@ -317,14 +275,14 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-2 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[#C5A880]" />
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280] mb-1.5 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-[#1E74FF]" />
                 Event / Project
               </label>
               <select
                 value={selectedJobId}
                 onChange={(e) => setSelectedJobId(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-[#111827] border border-white/15 rounded-xl text-xs text-white focus:outline-none focus:border-[#C5A880]"
+                className="w-full px-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs text-[#111111] focus:outline-none focus:border-[#141414] cursor-pointer"
                 required
               >
                 {clientJobs.map(j => (
@@ -336,113 +294,104 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
             </div>
           </div>
 
-          {/* If Custom Client selected, show Name and Email input fields */}
+          {/* Custom Client Fields */}
           {selectedClientId === 'custom' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-black/30 rounded-xl border border-[#C5A880]/30 animate-fadeIn">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-[#F7F8FA] rounded-2xl border border-[#E7E8EB] animate-fadeIn">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-white/70 mb-1">
-                  Client Full Name (e.g. Nani)
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280] mb-1">
+                  Client Full Name
                 </label>
                 <input
                   type="text"
                   placeholder="e.g. Nani"
                   value={customClientName}
                   onChange={(e) => setCustomClientName(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#111827] border border-white/20 rounded-lg text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#C5A880]"
+                  className="w-full px-3.5 py-2 bg-white border border-[#E7E8EB] rounded-full text-xs text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-white/70 mb-1">
-                  Client Email (e.g. nani@gmail.com)
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280] mb-1">
+                  Client Email
                 </label>
                 <input
                   type="email"
                   placeholder="e.g. nani@gmail.com"
                   value={customClientEmail}
                   onChange={(e) => setCustomClientEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#111827] border border-white/20 rounded-lg text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#C5A880]"
+                  className="w-full px-3.5 py-2 bg-white border border-[#E7E8EB] rounded-full text-xs text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
                   required
                 />
               </div>
             </div>
           )}
 
-          {/* 2. Content Type Selection */}
+          {/* 2. Verification Content Type */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-white/70 mb-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280] mb-2">
               Verification Content Type
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2.5">
               <button
                 type="button"
                 onClick={() => setContentType('album')}
-                className={`p-3.5 rounded-xl border flex flex-col items-center gap-2 transition-all cursor-pointer ${
+                className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                   contentType === 'album'
-                    ? 'border-[#C5A880] bg-[#C5A880]/15 text-white'
-                    : 'border-white/10 bg-[#111827]/60 text-white/60 hover:text-white hover:bg-[#111827]'
+                    ? 'border-[#141414] bg-[#141414] text-white shadow-xs'
+                    : 'border-[#E7E8EB] bg-[#F7F8FA] text-[#6B7280] hover:text-[#111111]'
                 }`}
               >
-                <BookOpen className="w-5 h-5 text-[#C5A880]" />
-                <span className="text-xs font-medium">Full Album</span>
+                <BookOpen className="w-4 h-4" />
+                <span className="text-xs font-semibold">Full Album</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setContentType('photos')}
-                className={`p-3.5 rounded-xl border flex flex-col items-center gap-2 transition-all cursor-pointer ${
+                className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                   contentType === 'photos'
-                    ? 'border-[#C5A880] bg-[#C5A880]/15 text-white'
-                    : 'border-white/10 bg-[#111827]/60 text-white/60 hover:text-white hover:bg-[#111827]'
+                    ? 'border-[#141414] bg-[#141414] text-white shadow-xs'
+                    : 'border-[#E7E8EB] bg-[#F7F8FA] text-[#6B7280] hover:text-[#111111]'
                 }`}
               >
-                <ImageIcon className="w-5 h-5 text-[#C5A880]" />
-                <span className="text-xs font-medium">Loose Photos</span>
+                <ImageIcon className="w-4 h-4" />
+                <span className="text-xs font-semibold">Loose Photos</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setContentType('both')}
-                className={`p-3.5 rounded-xl border flex flex-col items-center gap-2 transition-all cursor-pointer ${
+                className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
                   contentType === 'both'
-                    ? 'border-[#C5A880] bg-[#C5A880]/15 text-white'
-                    : 'border-white/10 bg-[#111827]/60 text-white/60 hover:text-white hover:bg-[#111827]'
+                    ? 'border-[#141414] bg-[#141414] text-white shadow-xs'
+                    : 'border-[#E7E8EB] bg-[#F7F8FA] text-[#6B7280] hover:text-[#111111]'
                 }`}
               >
-                <Layers className="w-5 h-5 text-[#C5A880]" />
-                <span className="text-xs font-medium">Both (Album + Proofs)</span>
+                <Layers className="w-4 h-4" />
+                <span className="text-xs font-semibold">Both (All)</span>
               </button>
             </div>
           </div>
 
-          {/* 3. SECTION: Verification / Approval Link */}
-          <div className="p-4 rounded-xl bg-[#111827] border border-[#C5A880]/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#C5A880] flex items-center gap-2">
-                <Link2 className="w-4 h-4 text-[#C5A880]" />
-                <span>Verification / Approval Link (Proof URL, Canva, Album, Video, or Drive)</span>
-                <span className="text-[10px] font-normal text-white/40 lowercase">(optional)</span>
-              </label>
-            </div>
-
-            <div className="space-y-2">
-              <input
-                type="url"
-                placeholder="https://... (e.g. Canva layout, Online Album Proof, Video review, or Drive link)"
-                value={driveLinkInput}
-                onChange={(e) => setDriveLinkInput(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-black/40 border border-white/20 rounded-xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#C5A880]"
-              />
-              <p className="text-[11px] text-white/50">
-                Pasting a link here creates an instant <strong>"Open Verification Link"</strong> button in the Client Portal for the client to review and approve.
-              </p>
-            </div>
+          {/* 3. Verification / Approval Link Input */}
+          <div className="p-4 rounded-2xl bg-[#F7F8FA] border border-[#E7E8EB] space-y-2">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[#111111] flex items-center gap-2">
+              <Link2 className="w-4 h-4 text-[#1E74FF]" />
+              <span>Approval Link (Canva layout, Online Album Proof, Video review, or Drive)</span>
+            </label>
+            <input
+              type="url"
+              placeholder="https://... (e.g. Canva layout, Online Album Proof, or Drive link)"
+              value={driveLinkInput}
+              onChange={(e) => setDriveLinkInput(e.target.value)}
+              className="w-full px-4 py-2.5 bg-white border border-[#E7E8EB] rounded-full text-xs text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+            />
           </div>
 
-          {/* 4. Album Selector (if contentType === 'album' || 'both') */}
+          {/* 4. Album Selector */}
           {(contentType === 'album' || contentType === 'both') && (
-            <div className="space-y-3">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-white/70">
+            <div className="space-y-2">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
                 Select Layout Album
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -450,83 +399,29 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
                   <div
                     key={album.id}
                     onClick={() => setSelectedAlbumId(album.id)}
-                    className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                    className={`p-3 rounded-2xl border cursor-pointer transition-all ${
                       selectedAlbumId === album.id
-                        ? 'border-[#C5A880] bg-[#C5A880]/10 shadow-lg'
-                        : 'border-white/10 bg-[#111827] hover:border-white/25'
+                        ? 'border-[#141414] bg-white shadow-md ring-1 ring-[#141414]'
+                        : 'border-[#E7E8EB] bg-[#F7F8FA] hover:bg-white'
                     }`}
                   >
-                    <img
-                      src={album.coverImage}
-                      alt={album.title}
-                      className="w-full h-24 object-cover rounded-lg mb-2"
-                    />
-                    <h4 className="text-xs font-bold text-white truncate">{album.title}</h4>
-                    <p className="text-[10px] text-white/50">{album.pages.length} Pages • Flipbook</p>
+                    <p className="text-xs font-bold text-[#111111]">{album.title}</p>
+                    <p className="text-[10px] text-[#6B7280] mt-0.5">{album.pages.length} design pages</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* 5. Photos Multi-Select (if contentType === 'photos' || 'both') */}
-          {(contentType === 'photos' || contentType === 'both') && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-white/70">
-                  Select Reference / Proof Photos
-                </label>
-                <span className="text-[11px] text-[#C5A880]">
-                  {selectedPhotoIds.length} photo(s) selected
-                </span>
-              </div>
-
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 max-h-48 overflow-y-auto p-1 bg-[#111827] rounded-xl border border-white/10">
-                {SAMPLE_PROOF_PHOTOS.map(photo => {
-                  const isSelected = selectedPhotoIds.includes(photo.id);
-                  return (
-                    <div
-                      key={photo.id}
-                      onClick={() => togglePhotoSelection(photo.id)}
-                      className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer group border-2 transition-all ${
-                        isSelected ? 'border-[#C5A880] scale-95' : 'border-transparent opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={photo.src} alt={photo.title} className="w-full h-full object-cover" />
-                      {isSelected && (
-                        <div className="absolute inset-0 bg-[#C5A880]/30 flex items-center justify-center">
-                          <div className="w-5 h-5 rounded-full bg-[#C5A880] text-black flex items-center justify-center shadow-md">
-                            <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Modal Footer */}
-          <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2 rounded-xl text-xs font-medium text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-6 py-2.5 rounded-xl bg-[#C5A880] hover:bg-[#D4BC9A] text-black text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-lg cursor-pointer disabled:opacity-60 flex items-center gap-2"
-            >
-              {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              Send Verification
-            </button>
-          </div>
-
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
+          >
+            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            <span>Deliver Verification to Client</span>
+          </button>
         </form>
       </div>
     </div>

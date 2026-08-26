@@ -37,9 +37,8 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
         </button>
 
         {/* Collapsible Wrapper Body */}
-        <div className={`transition-all duration-500 ease-in-out ${
-          isExpanded ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
-        }`}>
+        {isExpanded && (
+          <div className="transition-all duration-300 ease-in-out">
           
           {/* 2. Subsections Navigation Tabs (Gallery | Packages) */}
           <div className="bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -105,6 +104,7 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
           </div>
 
         </div>
+        )}
 
       </div>
     </div>

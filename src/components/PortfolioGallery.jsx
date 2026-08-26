@@ -185,74 +185,42 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
                         delay: prefersReducedMotion ? 0 : Math.min(index * 0.025, 0.2),
                         ease: 'easeOut'
                       }}
-                      className="group relative bg-white p-3 rounded-[12px] border border-[#E2D9CC] shadow-md transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl overflow-hidden transform-gpu"
+                      className="group relative bg-white p-2 sm:p-2.5 rounded-[14px] border border-[#E2D9CC] shadow-md transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl overflow-hidden transform-gpu cursor-pointer"
+                      onClick={() => onSelectPhoto(item)}
                     >
-                      {/* Image Container */}
-                      <div
-                        className="relative aspect-[4/5] overflow-hidden rounded-[8px] bg-[#1A1A1A] cursor-pointer"
-                        onClick={() => onSelectPhoto(item)}
-                      >
+                      {/* Image Container - Pure Photo Display */}
+                      <div className="relative aspect-[4/5] overflow-hidden rounded-[10px] bg-[#1A1A1A]">
                         <img
                           src={item.image}
-                          alt={item.title}
+                          alt={item.title || 'KPR Fotography'}
                           loading={index < 6 ? 'eager' : 'lazy'}
                           decoding="async"
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108 select-none"
                         />
                         
-                        {/* Dark Hover Overlay with details */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5">
-                          
-                          {/* Top Row: Category Badge + Heart */}
-                          <div className="flex items-center justify-between">
-                            <span className="bg-[#C5A880] text-black text-[10px] tracking-widest uppercase px-3 py-1 font-bold rounded-full shadow-md">
-                              {item.category}
-                            </span>
-
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (typeof toggleMoodboardItem === 'function') {
-                                  toggleMoodboardItem(item.id);
-                                }
-                              }}
-                              className={`p-2 rounded-full transition-transform active:scale-90 cursor-pointer ${
-                                isSaved ? 'bg-red-500 text-white' : 'bg-black/60 text-white hover:bg-[#C5A880]'
-                              }`}
-                              title={isSaved ? 'Remove from Moodboard' : 'Add to Moodboard'}
-                            >
-                              <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
-                            </button>
+                        {/* Elegant Hover Overlay with Quick Actions (No Text) */}
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
+                          <div className="p-3.5 rounded-full bg-white/90 text-black shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                            <Maximize2 className="w-5 h-5" />
                           </div>
 
-                          {/* Bottom Info */}
-                          <div className="text-white space-y-1">
-                            <h3 className="font-serif text-xl font-light leading-snug">{item.title}</h3>
-                            
-                            <div className="flex items-center gap-1.5 text-[11px] text-[#E8D4B8] font-light">
-                              <MapPin className="w-3 h-3 shrink-0" />
-                              <span>{item.location}</span>
-                            </div>
-                          </div>
+                          {/* Heart Button Top-Right */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (typeof toggleMoodboardItem === 'function') {
+                                toggleMoodboardItem(item.id);
+                              }
+                            }}
+                            className={`absolute top-3 right-3 p-2 rounded-full transition-transform active:scale-90 cursor-pointer shadow-md ${
+                              isSaved ? 'bg-red-500 text-white' : 'bg-black/60 text-white hover:bg-red-500'
+                            }`}
+                            title={isSaved ? 'Saved' : 'Save'}
+                          >
+                            <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                          </button>
                         </div>
-                      </div>
-
-                      {/* Card Footer Bar */}
-                      <div className="flex items-center justify-between pt-3 px-1">
-                        <div>
-                          <p className="font-serif text-base text-[#1A1A1A] truncate max-w-[200px] font-medium">{item.title}</p>
-                          <p className="text-[10px] tracking-widest uppercase text-[#888888]">{item.location}</p>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => onSelectPhoto(item)}
-                          className="p-2 text-[#666666] hover:text-[#C5A880] transition-colors cursor-pointer"
-                          title="View Full Photo"
-                        >
-                          <Maximize2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </motion.div>
                   );

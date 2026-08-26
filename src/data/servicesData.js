@@ -42,9 +42,9 @@ export const PRINTING_DESIGN_SERVICES = [
   {
     id: 6,
     title: 'Photo Frames',
-    tagline: 'Teakwood, Antique Brass & Glass Table Frames',
+    tagline: 'ReFrames, Antique Brass & Glass Table Frames',
     image: '/images/services/photo_frames.png',
     category: 'Classic Framing',
-    description: 'Hand-finished teakwood, gold leaf, and glass photo frames crafted to preserve cherished family memories, wedding couple portraits, and event highlights.'
+    description: 'Hand-finished ReFrames, gold leaf, and glass photo frames crafted to preserve cherished family memories, wedding couple portraits, and event highlights.'
   }
 ];

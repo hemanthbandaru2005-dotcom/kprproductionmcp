@@ -215,7 +215,7 @@ export default function ColorLabSection() {
                     PRINTING & FRAMING SERVICES
                   </span>
                   <h3 className="font-serif text-3xl sm:text-4xl text-[#1A1A1A] font-light">
-                    KPR Production Design & Printing Studio
+                    KPR Production Design & Printing Lab
                   </h3>
                   <div className="w-16 h-0.5 bg-[#C5A880] mx-auto my-4" />
                   <p className="text-xs sm:text-sm text-[#666666] font-light leading-relaxed">
@@ -261,15 +261,12 @@ export default function ColorLabSection() {
                         </div>
 
                         {/* WhatsApp Action Button */}
-                        <div className="pt-4 border-t border-[#E8E1D5] flex items-center justify-between">
-                          <span className="text-[10px] text-[#888888] uppercase tracking-wider font-mono">
-                            Studio Service
-                          </span>
+                        <div className="pt-4 border-t border-[#E8E1D5] flex items-center justify-end">
                           <a
                             href={`https://wa.me/919849390876?text=${encodeURIComponent(`Hello KPR Production! I am interested in your ${service.title} services. Please share details and pricing.`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-4 py-2 bg-[#1A1A1A] hover:bg-[#C5A880] text-white text-[10px] font-semibold tracking-widest uppercase transition-all duration-300 rounded shadow-sm hover:shadow"
+                            className="w-full sm:w-auto text-center px-5 py-2.5 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-[10px] font-semibold tracking-widest uppercase transition-all duration-300 rounded shadow-sm hover:shadow"
                           >
                             Inquire Now
                           </a>

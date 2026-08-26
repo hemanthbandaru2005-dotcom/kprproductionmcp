@@ -15,6 +15,7 @@ import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
 import IntroVideo from './components/IntroVideo';
 import ServicesShowcase from './components/ServicesShowcase';
+import { SOCIAL_LINKS } from './utils/socialLinks';
 
 function getInitialPage() {
   try {
@@ -332,6 +333,21 @@ function AppContent() {
           <Footer
             onOpenInquire={() => handleSelectPage('contact')}
             showInstagram={true}
+            showAddress={activePage !== 'media' && activePage !== 'events'}
+            instagramUrl={
+              activePage === 'colorlab'
+                ? SOCIAL_LINKS.instagramColorLab
+                : activePage === 'events'
+                ? SOCIAL_LINKS.instagramEvents
+                : SOCIAL_LINKS.instagram
+            }
+            instagramHandle={
+              activePage === 'colorlab'
+                ? '@kpr_colourlab'
+                : activePage === 'events'
+                ? '@kpr_dance_.zone'
+                : '@kpr_fotography'
+            }
           />
         </footer>
       )}

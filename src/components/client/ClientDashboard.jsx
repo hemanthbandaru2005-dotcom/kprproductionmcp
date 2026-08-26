@@ -6,7 +6,7 @@ import {
   ChevronRight, Check, X, BookOpen,
   Palette, HardDrive, ExternalLink, Bell, LogOut,
   Clock, ShieldCheck, Image as ImageIcon, Link2, Copy,
-  MessageSquare, AlertTriangle, Send, Loader2
+  MessageSquare, AlertTriangle, Send, Loader2, ArrowUpRight
 } from 'lucide-react';
 import ColorLabVerificationViewer from './ColorLabVerificationViewer';
 import ClientUploadSection from './ClientUploadSection';
@@ -17,20 +17,20 @@ const VERIF_BADGES = {
   pending: {
     label: 'Action Required',
     sub: 'Awaiting Your Review',
-    bg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-    dot: 'bg-amber-400 animate-pulse'
+    bg: 'bg-[#FEF3C7] text-[#D97706] border-[#FDE68A]',
+    dot: 'bg-[#D97706] animate-pulse'
   },
   changes_requested: {
     label: 'Changes Sent',
     sub: 'Studio Processing Revision',
-    bg: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-    dot: 'bg-rose-400'
+    bg: 'bg-[#FEF2F2] text-[#DC2626] border-[#FCA5A5]',
+    dot: 'bg-[#DC2626]'
   },
   approved: {
     label: 'Approved & Finalized',
     sub: 'Sent to Print Production',
-    bg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-    dot: 'bg-emerald-400'
+    bg: 'bg-[#DFF5E3] text-[#13A52D] border-[#BBF7D0]',
+    dot: 'bg-[#13A52D]'
   }
 };
 
@@ -114,23 +114,23 @@ export default function ClientDashboard({ onLogout }) {
       window.removeEventListener('kpr_client_uploads_updated', handleUploadsUpdated);
       window.removeEventListener('kpr_verifications_updated', handleVerificationsUpdated);
     };
-  }, [user, profile]);
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
     if (onLogout) onLogout();
   };
 
-  // Direct approve link
+  // Direct 1-Click Approve for Link Verifications
   const handleApproveLink = async (verifId) => {
+    if (!window.confirm('Are you sure you want to approve this digital preview and send it to print production?')) return;
     setSubmittingAction(true);
     try {
       await updateVerificationStatus(verifId, {
         status: 'approved',
-        client_note: 'Approved directly from Client Portal Link Review.',
-        flagged_items: []
+        client_note: 'Approved digitally via client verification link portal'
       });
-      setActionSuccessMsg('Link & Proof Approved! Studio has been notified in real time.');
+      setActionSuccessMsg('Album presentation approved! Studio notified to proceed.');
       await loadVerifications();
       setTimeout(() => setActionSuccessMsg(''), 4000);
     } catch (e) {
@@ -140,8 +140,8 @@ export default function ClientDashboard({ onLogout }) {
     }
   };
 
-  // Direct submit revision note for link
-  const handleSubmitRevision = async (e) => {
+  // Submit Feedback / Changes for Link Verifications
+  const handleSendLinkRevision = async (e) => {
     e.preventDefault();
     if (!revisionModalItem || !revisionNote.trim()) return;
 
@@ -181,606 +181,451 @@ export default function ClientDashboard({ onLogout }) {
   const pendingLinksCount = linkVerifications.filter(v => v.status === 'pending').length;
 
   return (
-    <div className="min-h-screen bg-[#111827] text-[#F7F3EE] selection:bg-[#C5A880] selection:text-white">
+    <div className="min-h-screen bg-[#F3F4F6] text-[#111111] font-sans antialiased p-2 sm:p-5 lg:p-8 flex flex-col items-center justify-start selection:bg-[#141414] selection:text-white">
       
-      {/* ═══════ HEADER ═══════ */}
-      <header className="sticky top-0 z-30 bg-[#0F1623]/90 backdrop-blur-xl border-b border-white/10 px-4 sm:px-12 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/30 flex items-center justify-center shadow-lg shrink-0">
-            <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-[#C5A880]" />
-          </div>
-          <div>
-            <h1 className="font-serif text-lg sm:text-xl text-white font-light flex items-center gap-2">
-              <span>KPR</span>
-              <span className="text-[8px] sm:text-[9px] tracking-[0.3em] font-sans font-bold uppercase text-[#C5A880] bg-[#C5A880]/10 px-2 py-0.5 rounded border border-[#C5A880]/20">
-                CLIENT PORTAL
-              </span>
-            </h1>
-            <p className="text-[8px] sm:text-[9px] tracking-[0.25em] uppercase text-[#A09585] hidden sm:block">
-              FINE ART & LUXURY WEDDING PROOFING
-            </p>
-          </div>
-        </div>
+      {/* ════════════════════════════════════════════════════════════════════════════
+          OUTER CONTAINER (32PX RADIUS FLOATING CANVAS)
+          ════════════════════════════════════════════════════════════════════════════ */}
+      <div className="w-full max-w-[1440px] bg-[#F7F8FA] border border-[#E7E8EB] rounded-[20px] sm:rounded-[32px] p-3.5 sm:p-6 md:p-8 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] space-y-4 sm:space-y-6">
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Notifications */}
-          <div className="relative">
+        {/* ════════════════════════════════════════════════════════════════════════════
+            1. TOP NAVBAR: UNCLUTTERED BRAND & PROFILE BAR
+            ════════════════════════════════════════════════════ */}
+        <header className="w-full bg-white rounded-2xl sm:rounded-full border border-[#E7E8EB] px-4 sm:px-6 py-3 shadow-xs flex items-center justify-between gap-3">
+          
+          {/* Brand Identity */}
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141414] flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0">
+              C
+            </div>
+            <div>
+              <span className="text-sm sm:text-base font-bold text-[#111111] tracking-tight block leading-tight">
+                KPR Client Suite
+              </span>
+              <span className="text-[10px] text-[#9CA0A6] font-medium tracking-wider uppercase">
+                Proofing & Media Portal
+              </span>
+            </div>
+          </div>
+
+          {/* Right Action Icons: Notifications, Profile, Logout */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            
+            {/* Notification Bell */}
+            <div className="relative">
+              <button
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] flex items-center justify-center text-[#6B7280] hover:text-[#111111] transition-colors cursor-pointer"
+                title="Notifications"
+              >
+                <Bell className="w-4.5 h-4.5" />
+                {pendingVerificationsCount > 0 && (
+                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#13A52D] ring-2 ring-white" />
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <div className="absolute right-0 mt-2 w-72 bg-white border border-[#E7E8EB] rounded-2xl shadow-xl p-4 z-40 space-y-3 animate-fadeIn">
+                  <div className="flex items-center justify-between border-b border-[#E7E8EB] pb-2">
+                    <span className="text-xs font-bold text-[#111111] uppercase tracking-wider">Updates</span>
+                    <span className="text-[11px] text-[#1E74FF] font-semibold">
+                      {pendingVerificationsCount > 0 ? `${pendingVerificationsCount} pending review` : 'All caught up'}
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-xs">
+                    {pendingVerificationsCount > 0 ? (
+                      <div className="p-2.5 bg-[#FEF3C7] rounded-xl border border-[#FDE68A] text-[#D97706]">
+                        <p className="font-bold">Album Verification Ready</p>
+                        <p className="text-[10px] text-[#6B7280]">You have an album proof awaiting your review.</p>
+                      </div>
+                    ) : (
+                      <p className="text-[#9CA0A6] text-[11px] text-center py-2">No new notifications</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Logout Button */}
             <button
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="p-2.5 text-white/60 hover:text-[#C5A880] hover:bg-white/5 rounded-full transition-colors cursor-pointer relative"
-              title="Notifications"
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#F1F2F4] hover:bg-[#FEF2F2] text-[#6B7280] hover:text-[#DC2626] border border-[#E7E8EB] hover:border-[#FCA5A5] text-xs font-semibold transition-all cursor-pointer"
+              title="Logout"
             >
-              <Bell className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </div>
+        </header>
+
+        {/* ════════════════════════════════════════════════════════════════════════════
+            2. SPACIOUS SEGMENTED NAVIGATION TABS (UNCLUTTERED)
+            ════════════════════════════════════════════════════ */}
+        <div className="flex items-center justify-between gap-3 bg-white p-1.5 rounded-2xl sm:rounded-full border border-[#E7E8EB] shadow-xs overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1.5 w-full sm:w-auto">
+            <button
+              onClick={() => setActiveTab('proofs')}
+              className={`px-4 sm:px-5 py-2.5 rounded-xl sm:rounded-full text-xs sm:text-[13px] font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shrink-0 ${
+                activeTab === 'proofs'
+                  ? 'bg-[#141414] text-white shadow-xs'
+                  : 'bg-[#F7F8FA] sm:bg-transparent text-[#6B7280] hover:text-[#111111] hover:bg-[#EEF0F2]'
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Album Proofs ({verifications.length})</span>
               {pendingVerificationsCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-400 animate-pulse ring-2 ring-[#0F1623]" />
+                <span className="w-2 h-2 rounded-full bg-[#13A52D] animate-pulse" />
               )}
             </button>
 
-            {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-[#1C2433] border border-[#C5A880]/30 rounded-2xl shadow-2xl p-4 z-40 space-y-3">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">Updates</span>
-                  <span className="text-[10px] text-[#C5A880]">
-                    {pendingVerificationsCount > 0 ? `${pendingVerificationsCount} pending review` : 'All caught up'}
-                  </span>
-                </div>
-                <div className="space-y-2 text-xs">
-                  {pendingVerificationsCount > 0 ? (
-                    <div className="p-2.5 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-300">
-                      <p className="font-bold">Album Verification Ready</p>
-                      <p className="text-[10px] text-white/70">You have an album proof awaiting your review.</p>
-                    </div>
-                  ) : (
-                    <p className="text-white/40 text-[11px] text-center py-2">No new notifications</p>
-                  )}
-                </div>
-              </div>
-            )}
+            <button
+              onClick={() => setActiveTab('links')}
+              className={`relative px-4 sm:px-5 py-2.5 rounded-xl sm:rounded-full text-xs sm:text-[13px] font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shrink-0 ${
+                activeTab === 'links'
+                  ? 'bg-[#141414] text-white shadow-xs'
+                  : 'bg-[#F7F8FA] sm:bg-transparent text-[#6B7280] hover:text-[#111111] hover:bg-[#EEF0F2]'
+              }`}
+            >
+              <Link2 className="w-4 h-4 text-[#1E74FF]" />
+              <span>Approval Links ({linkVerifications.length})</span>
+              {pendingLinksCount > 0 && (
+                <span className="px-1.5 py-0.2 bg-[#FF4D94] text-white text-[10px] font-bold rounded-full font-mono">
+                  {pendingLinksCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('uploads')}
+              className={`px-4 sm:px-5 py-2.5 rounded-xl sm:rounded-full text-xs sm:text-[13px] font-bold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shrink-0 ${
+                activeTab === 'uploads'
+                  ? 'bg-[#141414] text-white shadow-xs'
+                  : 'bg-[#F7F8FA] sm:bg-transparent text-[#6B7280] hover:text-[#111111] hover:bg-[#EEF0F2]'
+              }`}
+            >
+              <HardDrive className="w-4 h-4 text-[#13A52D]" />
+              <span>Upload Assets ({uploadsCount})</span>
+            </button>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-2 pr-3 text-xs text-[#9CA0A6]">
+            <span>Client Suite · <strong className="text-[#111111]">{clientName}</strong></span>
+          </div>
+        </div>
+
+        {/* ════════════════════════════════════════════════════════════════════════════
+            3. TITLE ROW WITH REFRESH ACTION
+            ════════════════════════════════════════════════════ */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
+          <div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111111] tracking-tight leading-tight">
+              Welcome back, <span className="text-[#1E74FF]">{clientName}</span>
+            </h2>
+            <p className="text-xs sm:text-[13px] text-[#9CA0A6] font-normal mt-0.5">
+              Review your handcrafted album proofs, upload project media, or approve digital deliverables.
+            </p>
           </div>
 
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 bg-[#C5A880]/10 hover:bg-[#C5A880]/20 text-[#C5A880] text-[10px] sm:text-xs font-bold uppercase tracking-widest rounded-full border border-[#C5A880]/30 transition-colors cursor-pointer"
+            onClick={loadVerifications}
+            className="self-start sm:self-auto px-4 py-2 rounded-full bg-white hover:bg-[#F1F2F4] text-[#111111] border border-[#E7E8EB] text-xs font-semibold flex items-center gap-2 shadow-2xs transition-colors cursor-pointer"
           >
-            <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Logout</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${loadingVerifications ? 'animate-spin' : ''}`} />
+            <span>Refresh Proofs</span>
           </button>
-        </div>
-      </header>
-
-      {/* ═══════ MAIN CONTENT ═══════ */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8 animate-fadeIn">
-
-        {/* HERO & WELCOME CARD */}
-        <div className="relative bg-gradient-to-r from-[#18202F] to-[#0F1623] border border-[#C5A880]/30 rounded-2xl sm:rounded-3xl p-5 sm:p-10 shadow-2xl overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#C5A880]/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="space-y-3 relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/30 text-[#C5A880] text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em]">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Private Client Suite</span>
-            </div>
-
-            <h2 className="font-serif text-2xl sm:text-4xl text-white font-light leading-tight">
-              Welcome back, <span className="text-[#C5A880] italic">{clientName}</span>
-            </h2>
-
-            <p className="text-xs sm:text-sm text-white/60 font-light max-w-xl">
-              Review your handcrafted album proofs, upload project documents and wedding media mirrored to Google Drive, or access your full wedding photo & video library.
-            </p>
-
-            {/* Quick Navigation Tabs */}
-            <div className="flex flex-wrap gap-2.5 pt-4">
-              <button
-                onClick={() => setActiveTab('proofs')}
-                className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'proofs'
-                    ? 'bg-[#C5A880] text-black shadow-lg'
-                    : 'bg-white/5 hover:bg-white/10 text-white/80 border border-white/10'
-                }`}
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Album Proofs ({verifications.length})</span>
-                {pendingVerificationsCount > 0 && (
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab('links')}
-                className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'links'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                    : 'bg-white/5 hover:bg-white/10 text-white/80 border border-white/10'
-                }`}
-              >
-                <Link2 className="w-4 h-4 text-blue-400" />
-                <span>Verification Links ({linkVerifications.length})</span>
-                {pendingLinksCount > 0 && (
-                  <span className="px-1.5 py-0.2 bg-amber-400 text-black text-[9px] font-bold rounded-full animate-pulse">
-                    {pendingLinksCount}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab('uploads')}
-                className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'uploads'
-                    ? 'bg-[#C5A880] text-black shadow-lg'
-                    : 'bg-white/5 hover:bg-white/10 text-white/80 border border-white/10'
-                }`}
-              >
-                <HardDrive className="w-4 h-4" />
-                <span>Upload Assets & Drive Sync ({uploadsCount})</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Global Action Success Toast */}
         {actionSuccessMsg && (
-          <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-3 shadow-2xl animate-fadeIn">
-            <CheckCircle className="w-5 h-5 shrink-0 text-emerald-400" />
+          <div className="p-4 rounded-[20px] bg-[#DFF5E3] border border-[#BBF7D0] text-[#13A52D] text-xs font-bold flex items-center gap-3 shadow-xs animate-fadeIn">
+            <CheckCircle className="w-5 h-5 shrink-0 text-[#13A52D]" />
             <span>{actionSuccessMsg}</span>
           </div>
         )}
 
-        {/* ═══════ ACTIVE TAB CONTENT ═══════ */}
+        {/* ════════════════════════════════════════════════════════════════════════════
+            4. ACTIVE TAB CONTENT
+            ════════════════════════════════════════════════════ */}
         {activeTab === 'uploads' ? (
           <ClientUploadSection
             clientUser={user}
             clientProfile={profile}
           />
         ) : activeTab === 'links' ? (
-          /* ═══════ DEDICATED VERIFICATION LINKS & APPROVALS SECTION ═══════ */
+          /* ═══════ DEDICATED VERIFICATION LINKS SECTION ═══════ */
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                  <Link2 className="w-4 h-4" />
-                </div>
+            <div className="bg-white rounded-[20px] border border-[#E7E8EB] p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E7E8EB]">
                 <div>
-                  <h3 className="font-serif text-xl sm:text-2xl text-white font-light tracking-wide">
-                    Verification & Approval Links
-                  </h3>
-                  <p className="text-xs text-white/50">
-                    Review digital album layouts, Canva proofs, video edits, and cloud media sent by the studio.
-                  </p>
+                  <h3 className="text-base font-bold text-[#111111]">Verification & Approval Links</h3>
+                  <p className="text-xs text-[#6B7280]">Review digital album layouts, Canva proofs, video edits, and cloud media</p>
                 </div>
+                <span className="text-xs font-semibold text-[#1E74FF]">{linkVerifications.length} links</span>
               </div>
 
+              {loadingVerifications ? (
+                <div className="p-16 text-center text-[#9CA0A6]">
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#141414] mb-2" />
+                  <p className="text-xs">Loading verification links…</p>
+                </div>
+              ) : linkVerifications.length === 0 ? (
+                <div className="p-12 text-center text-[#9CA0A6] space-y-2">
+                  <Link2 className="w-12 h-12 text-[#9CA0A6] mx-auto mb-2" />
+                  <h4 className="text-base font-bold text-[#111111]">No Verification Links Sent Yet</h4>
+                  <p className="text-xs text-[#6B7280] max-w-md mx-auto">
+                    When the studio sends a proofing URL or video link for review, it will appear here with one-click review and approval buttons.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {linkVerifications.map((verif) => {
+                    const badge = VERIF_BADGES[verif.status] || VERIF_BADGES.pending;
+                    const activeUrl = verif.verification_link || verif.drive_link;
+
+                    return (
+                      <div
+                        key={verif.id}
+                        className="bg-[#F7F8FA] border border-[#E7E8EB] hover:border-[#141414] rounded-2xl p-5 space-y-4 transition-all shadow-xs"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${badge.bg}`}>
+                              <span className={`w-2 h-2 rounded-full ${badge.dot}`} />
+                              {badge.label}
+                            </span>
+                            <span className="text-[11px] text-[#9CA0A6] ml-2">
+                              Sent {new Date(verif.sent_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </span>
+                          </div>
+
+                          <span className="text-xs text-[#111111] font-semibold">
+                            {verif.event_title}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-base font-bold text-[#111111]">
+                            {verif.album_title || verif.link_title || 'Color Lab Proofing Link'}
+                          </h4>
+                          <p className="text-xs text-[#6B7280] mt-0.5">
+                            Please click the link below to review all photos and video presentations, then approve or send your revision feedback directly.
+                          </p>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-white border border-[#E7E8EB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 overflow-hidden w-full sm:w-auto">
+                            <Link2 className="w-4 h-4 text-[#1E74FF] shrink-0" />
+                            <a
+                              href={activeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono text-xs text-[#1E74FF] hover:underline truncate max-w-full sm:max-w-md font-semibold"
+                            >
+                              {activeUrl}
+                            </a>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(activeUrl, verif.id)}
+                              className="px-3 py-1.5 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] text-xs font-semibold flex items-center gap-1.5 border border-[#E7E8EB] transition-colors"
+                            >
+                              {copiedId === verif.id ? <Check className="w-3.5 h-3.5 text-[#13A52D]" /> : <Copy className="w-3.5 h-3.5" />}
+                              <span>{copiedId === verif.id ? 'Copied' : 'Copy'}</span>
+                            </button>
+
+                            <a
+                              href={activeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3.5 py-1.5 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-xs"
+                            >
+                              <span>Open</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* Approval / Revision Actions */}
+                        <div className="flex items-center justify-between pt-2 border-t border-[#E7E8EB]">
+                          {verif.status === 'approved' ? (
+                            <span className="text-xs font-bold text-[#13A52D] flex items-center gap-1.5">
+                              <CheckCircle className="w-4 h-4" />
+                              <span>Approved & Sent to Print</span>
+                            </span>
+                          ) : (
+                            <div className="flex items-center gap-2.5">
+                              <button
+                                onClick={() => handleApproveLink(verif.id)}
+                                disabled={submittingAction}
+                                className="px-4 py-2 rounded-full bg-[#13A52D] hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                <span>Approve Digital Proof</span>
+                              </button>
+
+                              <button
+                                onClick={() => setRevisionModalItem(verif)}
+                                className="px-4 py-2 rounded-full bg-white hover:bg-[#FEF2F2] text-[#DC2626] border border-[#FCA5A5] text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                <span>Request Changes</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* ═══════ TAB 1: ALBUM PROOFS (COGNIFY CARDS) ═══════ */
+          <div className="space-y-6">
+            <div className="bg-white rounded-[20px] border border-[#E7E8EB] p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E7E8EB]">
+                <div>
+                  <h3 className="text-base font-bold text-[#111111]">Interactive Flipbook Proofs</h3>
+                  <p className="text-xs text-[#6B7280]">Review your wedding albums and photo galleries page by page</p>
+                </div>
+                <span className="text-xs font-semibold text-[#1E74FF]">{verifications.length} available</span>
+              </div>
+
+              {loadingVerifications ? (
+                <div className="p-16 text-center text-[#9CA0A6]">
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#141414] mb-2" />
+                  <p className="text-xs">Loading album proofs…</p>
+                </div>
+              ) : verifications.length === 0 ? (
+                <div className="p-12 text-center text-[#9CA0A6] space-y-2">
+                  <BookOpen className="w-12 h-12 text-[#9CA0A6] mx-auto mb-2" />
+                  <h4 className="text-base font-bold text-[#111111]">No Album Proofs Available Yet</h4>
+                  <p className="text-xs text-[#6B7280] max-w-md mx-auto">
+                    Once the studio design team completes your album layout, the digital flipbook will appear here for your interactive proofing and page-by-page review.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {verifications.map((item) => {
+                    const badge = VERIF_BADGES[item.status] || VERIF_BADGES.pending;
+                    const pageCount = item.album_pages?.length || item.photo_items?.length || 0;
+
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => setActiveVerification(item)}
+                        className="bg-[#F7F8FA] border border-[#E7E8EB] hover:border-[#141414] rounded-2xl p-5 space-y-4 transition-all cursor-pointer shadow-xs group"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E74FF] bg-[#DCE9FF] px-2.5 py-0.5 rounded-full">
+                              {item.event_title || 'Wedding Album'}
+                            </span>
+                            <h4 className="text-base font-bold text-[#111111] mt-2 group-hover:text-[#1E74FF] transition-colors">
+                              {item.album_title || 'Album Design Layout'}
+                            </h4>
+                          </div>
+
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${badge.bg}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
+                            {badge.label}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-[#6B7280] pt-3 border-t border-[#E7E8EB]">
+                          <span className="flex items-center gap-1.5">
+                            <BookOpen className="w-4 h-4 text-[#1E74FF]" />
+                            <span>{pageCount} Layout Pages</span>
+                          </span>
+
+                          <span className="text-[#1E74FF] font-bold text-xs group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                            <span>Open Flipbook</span>
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* ═══════ INTERACTIVE FLIPBOOK VIEWER MODAL ═══════ */}
+      {activeVerification && (
+        <ColorLabVerificationViewer
+          verification={activeVerification}
+          onClose={() => setActiveVerification(null)}
+          onStatusUpdated={() => {
+            loadVerifications();
+          }}
+        />
+      )}
+
+      {/* ═══════ REVISION REQUEST MODAL ═══════ */}
+      {revisionModalItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white border border-[#E7E8EB] rounded-[24px] sm:rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E7E8EB] pb-3">
+              <div className="flex items-center gap-2 text-[#DC2626] font-bold">
+                <AlertTriangle className="w-5 h-5" />
+                <span>Request Changes & Revisions</span>
+              </div>
               <button
-                onClick={loadVerifications}
-                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors cursor-pointer"
-                title="Refresh links"
+                onClick={() => setRevisionModalItem(null)}
+                className="p-1.5 rounded-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB]"
               >
-                <RefreshCw className="w-4 h-4" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {loadingVerifications ? (
-              <div className="bg-[#18202F] rounded-2xl p-16 text-center text-white/40 border border-white/5 space-y-2">
-                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-400" />
-                <p className="text-xs">Loading verification links…</p>
-              </div>
-            ) : linkVerifications.length === 0 ? (
-              <div className="bg-[#18202F] rounded-2xl p-10 sm:p-14 text-center border border-white/5 space-y-4 shadow-xl">
-                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center mx-auto">
-                  <Link2 className="w-7 h-7" />
-                </div>
-                <div className="space-y-1 max-w-md mx-auto">
-                  <h4 className="font-serif text-lg sm:text-xl text-white">No Verification Links Sent Yet</h4>
-                  <p className="text-xs text-white/50 leading-relaxed">
-                    When the studio sends a proofing URL, Canva layout, album presentation, or video link for your review and approval, it will appear here with one-click review and approval buttons.
-                  </p>
-                </div>
-                <div className="pt-2">
-                  <a
-                    href="https://wa.me/919849390876?text=Hello%20KPR%20Productions!%20Checking%20on%20my%20verification%20links."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold tracking-wider uppercase transition-all shadow-lg"
-                  >
-                    <span>Contact Studio on WhatsApp</span>
-                  </a>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {linkVerifications.map((verif) => {
-                  const badge = VERIF_BADGES[verif.status] || VERIF_BADGES.pending;
-                  const activeUrl = verif.verification_link || verif.drive_link;
-
-                  return (
-                    <div
-                      key={verif.id}
-                      className="bg-[#18202F] border border-blue-500/20 hover:border-blue-500/50 rounded-2xl sm:rounded-3xl p-6 sm:p-7 space-y-5 shadow-2xl transition-all"
-                    >
-                      {/* Top status bar */}
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="space-y-1">
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${badge.bg}`}>
-                            <span className={`w-2 h-2 rounded-full ${badge.dot}`} />
-                            {badge.label}
-                          </span>
-                          <span className="text-[11px] text-white/50 ml-2">
-                            Sent {new Date(verif.sent_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </span>
-                        </div>
-
-                        <span className="text-xs text-[#C5A880] font-semibold">
-                          {verif.event_title}
-                        </span>
-                      </div>
-
-                      {/* Title & Description */}
-                      <div className="space-y-1">
-                        <h4 className="font-serif text-xl sm:text-2xl text-white font-medium">
-                          {verif.album_title || verif.link_title || 'Color Lab Proofing Link'}
-                        </h4>
-                        <p className="text-xs text-white/60">
-                          Please click the link below to review all photos, layouts, or video presentations, then approve or send your revision feedback directly.
-                        </p>
-                      </div>
-
-                      {/* Full URL Box with Copy & Open */}
-                      <div className="p-3.5 sm:p-4 rounded-xl bg-black/40 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-2.5 overflow-hidden w-full sm:w-auto">
-                          <Link2 className="w-4 h-4 text-blue-400 shrink-0" />
-                          <a
-                            href={activeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-mono text-xs text-blue-300 hover:text-blue-200 underline truncate max-w-full sm:max-w-md"
-                            title={activeUrl}
-                          >
-                            {activeUrl}
-                          </a>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(activeUrl, verif.id)}
-                            className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 border border-white/10 transition-colors cursor-pointer"
-                          >
-                            {copiedId === verif.id ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                <span className="text-emerald-400">Copied!</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copy Link</span>
-                              </>
-                            )}
-                          </button>
-
-                          <a
-                            href={activeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 sm:flex-initial px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-                          >
-                            <span>Open Link</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        </div>
-                      </div>
-
-                      {/* Revision Feedback Notice if changes were requested */}
-                      {verif.status === 'changes_requested' && verif.client_note && (
-                        <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs space-y-1">
-                          <p className="font-bold text-rose-300 text-[10px] uppercase flex items-center gap-1.5">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span>Your Revision Feedback to Studio:</span>
-                          </p>
-                          <p className="text-white/90 italic">"{verif.client_note}"</p>
-                        </div>
-                      )}
-
-                      {/* Approval Status Notice if approved */}
-                      {verif.status === 'approved' && (
-                        <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 font-semibold flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span>You have approved and finalized this work. Sent to studio print production.</span>
-                        </div>
-                      )}
-
-                      {/* Interactive Approval & Feedback Controls */}
-                      <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-3">
-                        {verif.status !== 'approved' ? (
-                          <>
-                            <button
-                              type="button"
-                              disabled={submittingAction}
-                              onClick={() => handleApproveLink(verif.id)}
-                              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                              <span>Approve & Finalize Work</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setRevisionModalItem(verif);
-                                setRevisionNote(verif.client_note || '');
-                              }}
-                              className="px-5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95"
-                            >
-                              <MessageSquare className="w-4 h-4" />
-                              <span>Request Changes / Feedback</span>
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setRevisionModalItem(verif);
-                              setRevisionNote(verif.client_note || '');
-                            }}
-                            className="text-xs text-white/50 hover:text-white underline cursor-pointer"
-                          >
-                            Send additional comments or update note
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* ═══════ VERIFICATIONS & ALBUM PROOFS SECTION ═══════ */
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <BookOpen className="w-5 h-5 text-[#C5A880]" />
-                <h3 className="font-serif text-xl sm:text-2xl text-white font-light tracking-wide">
-                  Album & Proof Verification
-                </h3>
-              {pendingVerificationsCount > 0 && (
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-black text-[10px] font-bold font-mono animate-pulse">
-                  {pendingVerificationsCount} Action Required
-                </span>
-              )}
+            <div>
+              <p className="text-xs text-[#6B7280]">Project: <strong className="text-[#111111]">{revisionModalItem.event_title}</strong></p>
+              <p className="text-xs text-[#6B7280]">Presentation: <strong className="text-[#111111]">{revisionModalItem.album_title || 'Design Link'}</strong></p>
             </div>
 
-            <button
-              onClick={loadVerifications}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors cursor-pointer"
-              title="Refresh verifications"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          </div>
-
-          {loadingVerifications ? (
-            <div className="bg-[#18202F] rounded-2xl p-16 text-center text-white/40 border border-white/5 space-y-2">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#C5A880]" />
-              <p className="text-xs">Loading verification requests…</p>
-            </div>
-          ) : verifications.length === 0 ? (
-            <div className="bg-[#18202F] rounded-2xl p-10 sm:p-14 text-center border border-white/5 space-y-4 shadow-xl">
-              <div className="w-14 h-14 rounded-2xl bg-[#C5A880]/10 text-[#C5A880] border border-[#C5A880]/20 flex items-center justify-center mx-auto">
-                <BookOpen className="w-7 h-7" />
-              </div>
-              <div className="space-y-1 max-w-md mx-auto">
-                <h4 className="font-serif text-lg sm:text-xl text-white">Your Album Layouts are in Production</h4>
-                <p className="text-xs text-white/50 leading-relaxed">
-                  Our color lab and design studio are currently crafting your fine art wedding album layouts and retouching proofs. Once ready, your interactive flipbook verification will appear here.
-                </p>
+            <form onSubmit={handleSendLinkRevision} className="space-y-4">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280] mb-1.5 block">
+                  Describe the requested adjustments / replacements:
+                </label>
+                <textarea
+                  rows={4}
+                  value={revisionNote}
+                  onChange={(e) => setRevisionNote(e.target.value)}
+                  placeholder="e.g. Please replace photo on Slide 4 with the sunset portrait, and brighten skin tones on the ceremony layout…"
+                  className="w-full p-3.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-2xl text-xs text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+                  required
+                />
               </div>
 
-              <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-                <a
-                  href="https://wa.me/919849390876?text=Hello%20KPR%20Productions!%20Checking%20in%20on%20my%20wedding%20album%20proofing%20status."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-5 py-2.5 rounded-xl bg-[#C5A880] hover:bg-[#D4BC9A] text-black text-xs font-bold tracking-wider uppercase transition-all flex items-center gap-2 shadow-lg"
-                >
-                  <span>WhatsApp Studio</span>
-                </a>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-              {verifications.map((verif) => {
-                const badge = VERIF_BADGES[verif.status] || VERIF_BADGES.pending;
-                const hasAlbum = Boolean(verif.album_pages?.length > 0 || verif.album_title);
-                const hasPhotos = Boolean(verif.photo_items?.length > 0);
-
-                return (
-                  <div
-                    key={verif.id}
-                    className="bg-[#18202F] border border-[#C5A880]/20 rounded-2xl sm:rounded-3xl p-6 sm:p-7 space-y-5 flex flex-col justify-between shadow-2xl hover:border-[#C5A880]/50 transition-all duration-300 group"
-                  >
-                    {/* Top status header */}
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${badge.bg}`}>
-                          <span className={`w-2 h-2 rounded-full ${badge.dot}`} />
-                          {badge.label}
-                        </span>
-                        <p className="text-[11px] text-[#A09585]">{badge.sub}</p>
-                      </div>
-
-                      <span className="text-[10px] font-mono text-white/40">
-                        {new Date(verif.sent_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </span>
-                    </div>
-
-                    {/* Main Title & Assets details */}
-                    <div className="space-y-3">
-                      <h4 className="font-serif text-xl sm:text-2xl text-white font-medium group-hover:text-[#C5A880] transition-colors">
-                        {verif.album_title || verif.event_title || 'Color Lab Proofing'}
-                      </h4>
-                      <p className="text-xs text-white/60">{verif.event_title}</p>
-
-                      <div className="flex flex-wrap items-center gap-2.5 pt-1 text-xs text-white/70">
-                        {hasAlbum && (
-                          <div className="flex items-center gap-1.5 bg-black/40 px-3 py-1 rounded-lg border border-white/5">
-                            <BookOpen className="w-3.5 h-3.5 text-[#C5A880]" />
-                            <span>{verif.album_pages?.length || 0} Pages (Flipbook)</span>
-                          </div>
-                        )}
-
-                        {hasPhotos && (
-                          <div className="flex items-center gap-1.5 bg-black/40 px-3 py-1 rounded-lg border border-white/5">
-                            <ImageIcon className="w-3.5 h-3.5 text-[#C5A880]" />
-                            <span>{verif.photo_items?.length || 0} Proof Photos</span>
-                          </div>
-                        )}
-
-                        {(verif.verification_link || verif.drive_link) && (
-                          <div className="flex items-center gap-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 px-3 py-1 rounded-lg animate-pulse">
-                            <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
-                            <span>Verification Link Attached</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Client Note / Revisions Notice if any */}
-                    {verif.status === 'changes_requested' && verif.client_note && (
-                      <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs space-y-1">
-                        <p className="font-bold text-rose-300 text-[10px] uppercase">Your Revision Note:</p>
-                        <p className="text-white/80 italic line-clamp-2">"{verif.client_note}"</p>
-                        {verif.flagged_items?.length > 0 && (
-                          <p className="text-[10px] text-rose-400 font-mono">
-                            {verif.flagged_items.length} item(s) flagged for revision
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Action Buttons */}
-                    <div className="space-y-2.5 pt-2">
-                      {/* 1. Direct Verification Link Button */}
-                      {(verif.verification_link || verif.drive_link) && (
-                        <a
-                          href={verif.verification_link || verif.drive_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border border-blue-400/50 text-xs font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xl hover:scale-[1.02] active:scale-[0.98] group/link"
-                        >
-                          <ExternalLink className="w-4 h-4 text-white group-hover/link:scale-110 transition-transform" />
-                          <span>Open Verification / Approval Link</span>
-                          <span className="ml-auto text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono">OPEN ↗</span>
-                        </a>
-                      )}
-
-                      {/* 2. In-App Flipbook Proof Viewer Button */}
-                      {(hasAlbum || hasPhotos) && (
-                        <button
-                          onClick={() => setActiveVerification(verif)}
-                          className={`w-full py-3 px-5 rounded-xl sm:rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-xl cursor-pointer flex items-center justify-center gap-2 ${
-                            verif.status === 'approved'
-                              ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'
-                              : 'bg-[#C5A880] hover:bg-[#D4BC9A] text-black'
-                          }`}
-                        >
-                          {verif.status === 'approved' ? (
-                            <>
-                              <CheckCircle className="w-4 h-4" />
-                              <span>View Approved Proof</span>
-                            </>
-                          ) : (
-                            <>
-                              <BookOpen className="w-4 h-4" />
-                              <span>Review & Proof Album</span>
-                            </>
-                          )}
-                          <ChevronRight className="w-4 h-4 ml-auto" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-        )}
-
-        {/* ═══════ REVISION FEEDBACK MODAL ═══════ */}
-        {revisionModalItem && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-[#1F2937] border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div className="flex items-center gap-2 text-rose-400 font-bold">
-                  <MessageSquare className="w-5 h-5" />
-                  <span>Request Changes / Send Feedback</span>
-                </div>
+              <div className="flex items-center justify-end gap-2.5 pt-2">
                 <button
+                  type="button"
                   onClick={() => setRevisionModalItem(null)}
-                  className="p-1.5 text-white/40 hover:text-white rounded-lg transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] text-xs font-semibold"
                 >
-                  <X className="w-5 h-5" />
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingAction || !revisionNote.trim()}
+                  className="px-5 py-2 rounded-full bg-[#DC2626] hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {submittingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  <span>Send Feedback</span>
                 </button>
               </div>
-
-              <form onSubmit={handleSubmitRevision} className="space-y-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-white/70">
-                    What changes or adjustments would you like the studio to make?
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={revisionNote}
-                    onChange={(e) => setRevisionNote(e.target.value)}
-                    placeholder="e.g. Please swap photo #3 on page 2, brighten the family portraits, or adjust the cover typography..."
-                    className="w-full p-3 bg-black/40 border border-white/15 rounded-xl text-xs text-white placeholder-white/30 focus:outline-none focus:border-rose-400"
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setRevisionModalItem(null)}
-                    className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 text-xs font-semibold cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={submittingAction}
-                    className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg cursor-pointer disabled:opacity-50"
-                  >
-                    {submittingAction ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                    <span>Send to Studio</span>
-                  </button>
-                </div>
-              </form>
-            </div>
+            </form>
           </div>
-        )}
-
-        {/* ═══════ COLOR LAB VERIFICATION VIEWER MODAL ═══════ */}
-        {activeVerification && (
-          <ColorLabVerificationViewer
-            verification={activeVerification}
-            onClose={() => setActiveVerification(null)}
-            onStatusUpdated={(updated) => {
-              setVerifications(verifications.map(v => v.id === updated.id ? updated : v));
-            }}
-          />
-        )}
-
-
-
-      </main>
+        </div>
+      )}
 
     </div>
   );

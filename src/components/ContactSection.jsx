@@ -90,17 +90,6 @@ export default function ContactSection() {
                 <p>Near Post Office Station Road, Hotel Lane</p>
                 <p className="text-[#C5A880]">Warangal, Telangana 506002</p>
               </div>
-
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#C5A880]/15 hover:bg-[#C5A880] text-[#C5A880] hover:text-black text-xs font-bold uppercase tracking-widest rounded-xl border border-[#C5A880]/40 transition-all duration-300 w-full justify-center group/btn cursor-pointer mt-2"
-              >
-                <MapPin className="w-4 h-4 text-[#C5A880] group-hover/btn:text-black transition-colors" />
-                <span>Open in Google Maps</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
             </div>
 
             {/* Quick Contact Info */}
@@ -224,8 +213,8 @@ export default function ContactSection() {
                       onChange={handleChange}
                       className="w-full bg-[#22201D] border border-white/15 focus:border-[#C5A880] text-white text-xs rounded-xl px-4 py-3 outline-none transition-colors"
                     >
-                      <option value="Wedding Photography">Luxury Wedding Photography</option>
-                      <option value="Pre-Wedding Shoot">Pre-Wedding Shoot</option>
+                      <option value="Wedding Fotography">Luxury Wedding Fotography</option>
+                      <option value="Pre-Wedding Shoot">Pre-Wedding Fotography Shoot</option>
                       <option value="Album Printing (Color Lab)">Album Printing / Color Lab</option>
                       <option value="Frames & Acrylic">Custom Frames & Acrylic</option>
                       <option value="Commercial & Flex">Commercial & Flex Printing</option>
@@ -271,38 +260,6 @@ export default function ContactSection() {
 
           </div>
 
-        </div>
-
-        {/* Embedded Interactive Google Map */}
-        <div className="space-y-4 pt-4 border-t border-white/10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <div>
-              <span className="text-[10px] tracking-widest text-[#C5A880] uppercase font-bold">Studio Location Map</span>
-              <h3 className="font-serif text-xl text-white font-light">Find Us in Warangal</h3>
-            </div>
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-[#C5A880] hover:underline flex items-center gap-1"
-            >
-              <span>View full screen map</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          </div>
-
-          <div className="w-full h-80 rounded-2xl overflow-hidden border border-[#C5A880]/30 shadow-2xl relative bg-[#1E1C19]">
-            <iframe
-              title="KPR Productions Warangal Studio Location"
-              src={mapEmbedUrl}
-              width="100%"
-              height="100%"
-              style={{ border: 0, filter: 'contrast(1.05) saturate(1.1)' }}
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
         </div>
 
       </div>

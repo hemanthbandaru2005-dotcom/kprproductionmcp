@@ -68,11 +68,23 @@ export const AVAILABLE_ALBUMS = [
 ];
 
 const LOCAL_STORAGE_KEY = 'kpr_verifications_db';
+const DELETED_STORAGE_KEY = 'kpr_deleted_verifications_v1';
+
+function getDeletedVerificationIds() {
+  try {
+    const raw = localStorage.getItem(DELETED_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
 
 function getLocalVerifications() {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const list = raw ? JSON.parse(raw) : [];
+    const deleted = getDeletedVerificationIds();
+    return list.filter(item => !deleted.includes(item.id));
   } catch (e) {
     return [];
   }
@@ -80,7 +92,9 @@ function getLocalVerifications() {
 
 function saveLocalVerifications(items) {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+    const deleted = getDeletedVerificationIds();
+    const clean = items.filter(item => !deleted.includes(item.id));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clean));
   } catch (e) {
     console.error('Error saving local verifications:', e);
   }
@@ -140,6 +154,8 @@ function notifyVerificationChange(type, data) {
  * Fetch all verifications for Admin
  */
 export async function fetchVerificationsForAdmin() {
+  const deletedIds = getDeletedVerificationIds();
+
   try {
     const { data, error } = await supabase
       .from('verifications')
@@ -148,12 +164,15 @@ export async function fetchVerificationsForAdmin() {
       .order('sent_at', { ascending: false });
 
     if (!error && data && data.length > 0) {
-      const unpacked = data.filter(item => item.album_id !== 'CHAT_MESSAGE').map(unpackVerification);
+      const unpacked = data
+        .filter(item => item.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(item.id))
+        .map(unpackVerification);
+
       // Sync to local
       const local = getLocalVerifications();
       const merged = [...unpacked];
       local.forEach(loc => {
-        if (!merged.some(m => m.id === loc.id) && loc.album_id !== 'CHAT_MESSAGE') {
+        if (!merged.some(m => m.id === loc.id) && loc.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(loc.id)) {
           merged.push(loc);
         }
       });
@@ -164,7 +183,9 @@ export async function fetchVerificationsForAdmin() {
     console.warn('Supabase verifications table query failed, using local store:', err);
   }
 
-  return getLocalVerifications().filter(item => item.album_id !== 'CHAT_MESSAGE').map(unpackVerification);
+  return getLocalVerifications()
+    .filter(item => item.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(item.id))
+    .map(unpackVerification);
 }
 
 function matchClient(item, clientId, clientEmail) {
@@ -174,12 +195,12 @@ function matchClient(item, clientId, clientEmail) {
   const targetEmailNorm = targetEmail.replace('gamil.com', 'gmail.com');
   const itemEmailNorm = itemEmail.replace('gamil.com', 'gmail.com');
 
-  // 1. Direct email match (exact or typo-tolerant)
+  // 1. Direct email match
   if (targetEmail && itemEmail && (targetEmail === itemEmail || targetEmailNorm === itemEmailNorm)) {
     return true;
   }
 
-  // 2. Username prefix match (e.g. 'nani' matches 'nani@gmail.com' or 'nani@gamil.com')
+  // 2. Username prefix match
   const targetUser = targetEmailNorm.split('@')[0];
   const itemUser = itemEmailNorm.split('@')[0];
   if (targetUser && itemUser && targetUser === itemUser) {
@@ -205,6 +226,8 @@ function matchClient(item, clientId, clientEmail) {
  * Fetch verifications for a specific client (by ID or Email)
  */
 export async function fetchVerificationsForClient(clientId, clientEmail = '') {
+  const deletedIds = getDeletedVerificationIds();
+
   try {
     const { data, error } = await supabase
       .from('verifications')
@@ -213,11 +236,11 @@ export async function fetchVerificationsForClient(clientId, clientEmail = '') {
       .order('sent_at', { ascending: false });
 
     if (!error && data && data.length > 0) {
-      const nonChat = data.filter(item => item.album_id !== 'CHAT_MESSAGE').map(unpackVerification);
+      const nonChat = data
+        .filter(item => item.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(item.id))
+        .map(unpackVerification);
       
-      // Filter for this client by ID or Email
       const matching = nonChat.filter(item => matchClient(item, clientId, clientEmail));
-
       if (matching.length > 0) {
         return matching;
       }
@@ -227,10 +250,10 @@ export async function fetchVerificationsForClient(clientId, clientEmail = '') {
   }
 
   // Fallback to local
-  const localItems = getLocalVerifications().filter(item => item.album_id !== 'CHAT_MESSAGE').map(unpackVerification);
-  const filtered = localItems.filter(item => matchClient(item, clientId, clientEmail));
-
-  return filtered;
+  const localItems = getLocalVerifications()
+    .filter(item => item.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(item.id))
+    .map(unpackVerification);
+  return localItems.filter(item => matchClient(item, clientId, clientEmail));
 }
 
 /**
@@ -239,7 +262,6 @@ export async function fetchVerificationsForClient(clientId, clientEmail = '') {
 export async function createVerification(payload) {
   const chosenPhotoItems = [...(payload.photo_items || [])];
 
-  // Encode Verification / Drive Link into photo_items metadata payload
   const linkToAttach = (payload.verification_link || payload.drive_link || payload.link || '').trim();
   if (linkToAttach) {
     chosenPhotoItems.push({
@@ -248,122 +270,158 @@ export async function createVerification(payload) {
       verification_link: linkToAttach,
       drive_link: linkToAttach,
       link_title: payload.link_title || 'Verification / Approval Link',
-      drive_link_included: true
+      url: linkToAttach,
+      title: 'Verification Link'
     });
   }
 
-  const newId = `verif_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
-
-  // Pure Supabase-compatible record matching existing columns
-  const supabaseRecord = {
-    id: newId,
-    client_id: payload.client_id || (payload.client_email ? `client-${payload.client_email.split('@')[0]}` : null),
-    client_name: payload.client_name || 'Client',
-    client_email: (payload.client_email || '').trim().toLowerCase(),
-    event_id: payload.event_id || null,
-    event_title: payload.event_title || 'Color Lab Proofing Project',
+  const newRecord = {
+    id: `verif-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+    client_id: payload.client_id || 'client-default',
+    client_name: payload.client_name || 'Valued Client',
+    client_email: payload.client_email || null,
+    event_title: payload.event_title || 'Event Verification',
     album_id: payload.album_id || null,
-    album_title: payload.album_title || null,
+    album_title: payload.album_title || 'Album Proof',
     album_pages: payload.album_pages || [],
-    photo_ids: payload.photo_ids || [],
+    photo_ids: (payload.photo_items || []).map(p => p.id),
     photo_items: chosenPhotoItems,
+    drive_link: linkToAttach || null,
+    verification_link: linkToAttach || null,
     status: 'pending',
     sent_at: new Date().toISOString(),
-    responded_at: null,
+    updated_at: new Date().toISOString(),
     client_note: null,
     flagged_items: []
   };
 
-  // 1. Try Supabase insert
+  // 1. Save to local storage for instantaneous reactivity
+  const local = getLocalVerifications();
+  const updatedLocal = [newRecord, ...local];
+  saveLocalVerifications(updatedLocal);
+
+  // 2. Try inserting into Supabase verifications table
   try {
+    const supabasePayload = {
+      id: newRecord.id,
+      client_id: newRecord.client_id,
+      client_name: newRecord.client_name,
+      client_email: newRecord.client_email,
+      event_title: newRecord.event_title,
+      album_id: newRecord.album_id,
+      album_title: newRecord.album_title,
+      album_pages: newRecord.album_pages,
+      photo_ids: newRecord.photo_ids,
+      photo_items: chosenPhotoItems,
+      drive_link: linkToAttach || null,
+      verification_link: linkToAttach || null,
+      status: 'pending',
+      sent_at: newRecord.sent_at,
+      updated_at: newRecord.updated_at
+    };
+
     const { data, error } = await supabase
       .from('verifications')
-      .insert([supabaseRecord])
-      .select();
+      .insert([supabasePayload])
+      .select()
+      .single();
 
-    if (!error && data && data.length > 0) {
-      const unpacked = unpackVerification(data[0]);
-      // Also sync to local
-      const local = getLocalVerifications();
-      saveLocalVerifications([unpacked, ...local.filter(x => x.id !== unpacked.id)]);
-      notifyVerificationChange('CREATED', unpacked);
-      return { data: unpacked, error: null };
-    }
-    if (error) {
-      console.warn('Supabase verifications insert error:', error);
+    if (!error && data) {
+      notifyVerificationChange('created', unpackVerification(data));
+      return { data: unpackVerification(data), error: null };
     }
   } catch (err) {
-    console.warn('Could not insert directly to Supabase verifications, saving locally:', err);
+    console.warn('Supabase verifications insert notice (using local storage fallback):', err);
   }
 
-  // 2. Local fallback
-  const localRecord = unpackVerification({
-    id: newId,
-    ...supabaseRecord,
-    drive_link: payload.drive_link || null,
-    drive_link_included: Boolean(payload.drive_link_included)
-  });
-  const local = getLocalVerifications();
-  const updated = [localRecord, ...local.filter(x => x.id !== localRecord.id)];
-  saveLocalVerifications(updated);
-  notifyVerificationChange('CREATED', localRecord);
-
-  return { data: localRecord, error: null };
+  notifyVerificationChange('created', newRecord);
+  return { data: newRecord, error: null };
 }
 
 /**
- * Persist or update drive link for an event/job
+ * Permanently delete a verification record (Admin action)
  */
-export async function saveEventDriveLink(eventId, driveLink) {
-  if (!eventId) return;
+export async function deleteVerification(id) {
+  if (!id) return { success: false };
+
+  // 1. Add to permanent deleted tracking
   try {
-    await supabase
-      .from('jobs')
-      .update({ drive_link: driveLink || null })
-      .eq('id', eventId);
-  } catch (err) {
-    console.warn('Could not update jobs.drive_link in Supabase:', err);
+    const deleted = getDeletedVerificationIds();
+    if (!deleted.includes(id)) {
+      deleted.push(id);
+      localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(deleted));
+    }
+
+    // 2. Remove from local store
+    const local = getLocalVerifications();
+    const updated = local.filter(item => item.id !== id);
+    saveLocalVerifications(updated);
+  } catch (e) {}
+
+  // 3. Delete from Supabase
+  try {
+    await supabase.from('verifications').delete().eq('id', id);
+  } catch (e) {
+    console.warn('Supabase delete verification error:', e);
   }
+
+  notifyVerificationChange('deleted', { id });
+  return { success: true };
 }
 
 /**
- * Update verification status (Approve or Request Changes)
+ * Update verification status
  */
 export async function updateVerificationStatus(id, { status, client_note, flagged_items }) {
-  const updates = {
+  const updatePayload = {
     status,
-    responded_at: new Date().toISOString(),
     client_note: client_note || null,
-    flagged_items: flagged_items || []
+    flagged_items: flagged_items || [],
+    updated_at: new Date().toISOString()
   };
 
-  // 1. Try Supabase update
+  // 1. Update local
+  const local = getLocalVerifications();
+  const updatedLocal = local.map(item => {
+    if (item.id === id) {
+      return { ...item, ...updatePayload };
+    }
+    return item;
+  });
+  saveLocalVerifications(updatedLocal);
+
+  // 2. Update Supabase
   try {
     const { data, error } = await supabase
       .from('verifications')
-      .update(updates)
+      .update(updatePayload)
       .eq('id', id)
-      .select();
+      .select()
+      .single();
 
-    if (!error && data && data.length > 0) {
-      const unpacked = unpackVerification(data[0]);
-      // Sync local
-      const local = getLocalVerifications();
-      saveLocalVerifications(local.map(item => item.id === id ? { ...item, ...unpacked } : item));
-      notifyVerificationChange('STATUS_UPDATED', unpacked);
-      return { data: unpacked, error: null };
+    if (!error && data) {
+      notifyVerificationChange('status_updated', unpackVerification(data));
+      return { data: unpackVerification(data), error: null };
     }
   } catch (err) {
-    console.warn('Could not update Supabase verifications, updating locally:', err);
+    console.warn('Supabase update verification error:', err);
   }
 
-  // 2. Local fallback
-  const local = getLocalVerifications();
-  const updated = local.map(item => item.id === id ? { ...item, ...updates } : item);
-  saveLocalVerifications(updated);
+  notifyVerificationChange('status_updated', { id, ...updatePayload });
+  return { data: { id, ...updatePayload }, error: null };
+}
 
-  const matched = updated.find(x => x.id === id);
-  const unpacked = unpackVerification(matched);
-  notifyVerificationChange('STATUS_UPDATED', unpacked);
-  return { data: unpacked, error: null };
+/**
+ * Legacy Helper: Save event Drive Link directly
+ */
+export async function saveEventDriveLink(jobId, driveUrl, clientName = '', eventTitle = '') {
+  return createVerification({
+    client_id: `client-${jobId}`,
+    client_name: clientName || 'Valued Client',
+    event_title: eventTitle || 'Client Event Drive Link',
+    verification_link: driveUrl,
+    drive_link: driveUrl,
+    album_pages: [],
+    photo_items: []
+  });
 }

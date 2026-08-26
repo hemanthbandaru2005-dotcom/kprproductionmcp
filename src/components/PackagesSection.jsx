@@ -23,10 +23,10 @@ export default function PackagesSection({
     loadData();
   }, [packageType]);
 
-  // Function to build WhatsApp direct link with pre-typed message
+  // Function to build WhatsApp direct link with pre-typed message (No price displayed)
   const getWhatsAppUrl = (serviceName, servicePrice, duration) => {
     const dur = duration || 'Coverage';
-    const textMessage = `Hello KPR Production! I would like to book the *${serviceName}* package (₹${Number(servicePrice).toLocaleString('en-IN')}/- for ${dur}). Please confirm availability and booking process.`;
+    const textMessage = `Hello KPR Production! I would like to inquire about and book the *${serviceName}* service (${dur}). Please share full details, availability, and pricing.`;
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(textMessage)}`;
   };
 
@@ -36,15 +36,15 @@ export default function PackagesSection({
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F3EE] py-6 sm:py-12">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-12">
+    <div className="w-full bg-[#F7F3EE] py-2 sm:py-10">
+      <div className="max-w-7xl mx-auto px-1.5 sm:px-6 md:px-12">
         
         {/* Back Button */}
         {onBackToGallery && (
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-8">
             <button
               onClick={onBackToGallery}
-              className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] font-medium text-[#1A1A1A] hover:text-[#C5A880] py-2 sm:py-2.5 px-4 sm:px-5 border border-[#E2D9CC] bg-white transition-all duration-300 shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] font-medium text-[#1A1A1A] hover:text-[#C5A880] py-2 sm:py-2.5 px-4 sm:px-5 border border-[#E2D9CC] bg-white transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer rounded-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Gallery</span>
@@ -53,21 +53,21 @@ export default function PackagesSection({
         )}
 
         {/* Page Title & Header */}
-        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-16">
-          <p className="text-[10px] sm:text-[11px] md:text-[12px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-[#666666] font-medium mb-2 sm:mb-3">
-            PRICING & INVESTMENT
+        <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-12">
+          <p className="text-[10px] sm:text-[11px] md:text-[12px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-[#666666] font-medium mb-1.5 sm:mb-3">
+            SERVICES & PACKAGES
           </p>
-          <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl text-[#1A1A1A] font-light tracking-wide mb-4 sm:mb-6">
+          <h2 className="font-serif text-xl sm:text-4xl md:text-5xl text-[#1A1A1A] font-light tracking-wide mb-2.5 sm:mb-6">
             {categoryTitle}
           </h2>
-          <div className="w-16 h-0.5 bg-[#C5A880] mx-auto mb-4 sm:mb-6" />
-          <p className="text-[#666666] text-xs sm:text-sm md:text-base font-light leading-relaxed">
+          <div className="w-12 sm:w-16 h-0.5 bg-[#C5A880] mx-auto mb-3 sm:mb-6" />
+          <p className="text-[#666666] text-xs sm:text-sm md:text-base font-light leading-relaxed px-2">
             {categorySubtitle}
           </p>
         </div>
 
         {/* Services Grid (Dynamic from Supabase / Admin Editor) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-12 sm:mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-8 sm:mb-16">
           {packages.map((service, index) => {
             const whatsappLink = getWhatsAppUrl(service.name, service.price, service.duration);
             const imageSrc = service.image || '/images/packages/user_pkg_candid_photo.png';
@@ -75,7 +75,7 @@ export default function PackagesSection({
             return (
               <div
                 key={service.id || index}
-                className="bg-white border border-[#E2D9CC] overflow-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-500 hover:border-[#C5A880]/60 group"
+                className="bg-white border border-[#E2D9CC] rounded-xl overflow-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-500 hover:border-[#C5A880]/60 group"
               >
                 {/* Thumbnail Image Header */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-[#121212]">
@@ -83,18 +83,22 @@ export default function PackagesSection({
                     src={imageSrc}
                     alt={service.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/images/packages/user_pkg_candid_photo.png';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
 
                   {/* Category Badge */}
                   <div className="absolute top-3 left-3">
-                    <span className="bg-black/60 backdrop-blur-md text-[#E8D4B8] text-[9px] tracking-widest uppercase px-3 py-1 font-medium border border-white/10">
+                    <span className="bg-black/60 backdrop-blur-md text-[#E8D4B8] text-[9px] tracking-widest uppercase px-3 py-1 font-medium border border-white/10 rounded-sm">
                       {service.category}
                     </span>
                   </div>
 
                   {service.popular && (
-                    <div className="absolute bottom-3 left-3 bg-[#C5A880] text-white text-[9px] tracking-[0.2em] uppercase px-3 py-1 font-semibold flex items-center gap-1 shadow">
+                    <div className="absolute bottom-3 left-3 bg-[#C5A880] text-white text-[9px] tracking-[0.2em] uppercase px-3 py-1 font-semibold flex items-center gap-1 shadow rounded-sm">
                       <Sparkles className="w-3 h-3" />
                       <span>POPULAR</span>
                     </div>
@@ -102,9 +106,9 @@ export default function PackagesSection({
                 </div>
 
                 {/* Card Content Body */}
-                <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <h3 className="font-serif text-xl sm:text-2xl text-[#1A1A1A] font-medium leading-tight group-hover:text-[#C5A880] transition-colors">
+                <div className="p-4 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col justify-between">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <h3 className="font-serif text-lg sm:text-2xl text-[#1A1A1A] font-medium leading-tight group-hover:text-[#C5A880] transition-colors">
                       {service.name}
                     </h3>
                     <p className="text-xs text-[#666666] font-light leading-relaxed">
@@ -112,21 +116,13 @@ export default function PackagesSection({
                     </p>
                   </div>
 
-                  {/* Pricing + Duration Details */}
+                  {/* Duration / Scope Details (No Price) */}
                   <div className="pt-4 border-t border-[#E8E1D5] space-y-4">
-                    <div className="flex items-baseline justify-between">
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-[#888888] block">Price</span>
-                        <span className="font-serif text-2xl text-[#1A1A1A] font-bold">
-                          ₹{Number(service.price).toLocaleString('en-IN')}/-
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] uppercase tracking-wider text-[#888888] block">Duration / Unit</span>
-                        <span className="text-xs font-medium text-[#444444]">
-                          {service.duration}
-                        </span>
-                      </div>
+                    <div className="flex items-center justify-between bg-[#FAF7F2] p-2.5 rounded-lg border border-[#E8E1D5]">
+                      <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold">Duration / Scope</span>
+                      <span className="text-xs font-bold text-[#1A1A1A]">
+                        {service.duration}
+                      </span>
                     </div>
 
                     {/* Features List */}
@@ -146,13 +142,13 @@ export default function PackagesSection({
                       href={whatsappLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-3 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-[11px] font-semibold tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow hover:shadow-md"
+                      className="w-full py-3 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-[11px] font-semibold tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow hover:shadow-md rounded-sm"
                     >
                       {/* WhatsApp Icon */}
                       <svg className="w-4.5 h-4.5 fill-current shrink-0" viewBox="0 0 24 24">
                         <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.299.431 2.504 1.16 3.477l-.76 2.776 2.842-.746c.94.512 2.019.803 3.167.803 3.182 0 5.768-2.586 5.768-5.766 0-3.18-2.586-5.766-5.769-5.766zm4.186 8.163c-.174.492-.857.901-1.393.992-.367.062-.846.111-2.457-.557-2.062-.854-3.393-2.951-3.495-3.088-.103-.138-.834-1.112-.834-2.122 0-1.01.527-1.507.714-1.713.188-.206.411-.257.548-.257.137 0 .274.001.394.007.127.006.298-.048.466.356.174.419.599 1.463.651 1.567.052.103.086.223.018.36-.069.137-.103.223-.206.343-.103.12-.216.268-.309.36-.103.103-.211.215-.091.421.12.206.533.88 1.144 1.424.786.7 1.45.918 1.656 1.021.206.103.326.086.446-.052.12-.137.514-.6.651-.806.137-.206.274-.171.463-.103.188.069 1.2.566 1.406.669.206.103.343.154.394.24.051.086.051.497-.123.989zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.66 1.438 5.176L2 22l4.981-1.309A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
                       </svg>
-                      <span>BOOK NOW</span>
+                      <span>INQUIRE & BOOK NOW</span>
                     </a>
                   </div>
                 </div>

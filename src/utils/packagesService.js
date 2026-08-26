@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { PRINTING_DESIGN_SERVICES as INITIAL_COLORLAB_SERVICES } from '../data/servicesData';
 
-const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v2';
+const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v3';
 
 function getLocalPackages() {
   try {

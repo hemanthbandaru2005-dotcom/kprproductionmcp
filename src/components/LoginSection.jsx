@@ -13,7 +13,7 @@ const THEMES = {
     primarySoft: '#C97DA8',
     label: 'ADMIN LOGIN',
     icon: ShieldCheck,
-    placeholder: 'hemanthbandaru2005@gmail.com',
+    placeholder: 'name@gmail.com',
   },
   worker: {
     primary: '#2D6A8B',
@@ -22,7 +22,7 @@ const THEMES = {
     primarySoft: '#6BB3D4',
     label: 'WORKER LOGIN',
     icon: UserCheck,
-    placeholder: '123@kpr.com',
+    placeholder: 'name@gmail.com',
   },
   client: {
     primary: '#C5A880',
@@ -31,7 +31,7 @@ const THEMES = {
     primarySoft: '#E8D4B8',
     label: 'CLIENT LOGIN',
     icon: Users,
-    placeholder: 'client@example.com',
+    placeholder: 'name@gmail.com',
   },
 };
 
