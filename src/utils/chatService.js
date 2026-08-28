@@ -1,72 +1,43 @@
-import { supabase } from './supabaseClient.js';
+import { supabase } from './supabaseClient';
 
-const CHAT_EVENT_ID_PREFIX = 'thread_';
 const CHAT_ALBUM_FLAG = 'CHAT_MESSAGE';
-const LOCAL_CHAT_KEY = 'kpr_admin_worker_chat_v3';
-const CHAT_CHANNEL_NAME = 'admin_worker_chat_topic';
+const CHAT_EVENT_ID_PREFIX = 'thread_';
+const LOCAL_CHAT_KEY = 'kpr_staff_chats_v1';
+const SHARED_CHANNEL_NAME = 'kpr_studio_realtime_chat_v1';
 
-// ─── Shared channel + callback registry ─────────────────────────────────
-let _sharedChannel = null;
+let _chatBc = null;
+function getChatBroadcastChannel() {
+  if (typeof BroadcastChannel === 'undefined') return null;
+  if (!_chatBc) {
+    try {
+      _chatBc = new BroadcastChannel('kpr_studio_chat_bc_v1');
+    } catch (e) {
+      console.warn('BroadcastChannel not available:', e);
+    }
+  }
+  return _chatBc;
+}
+
 const _listeners = {
   new_message: new Set(),
   messages_read: new Set(),
-  chat_cleared: new Set(),
+  chat_cleared: new Set()
 };
 
-// Cross-tab / cross-window instant communication via standard browser BroadcastChannel
-let _chatBroadcastChannel = null;
-function getChatBroadcastChannel() {
-  if (typeof BroadcastChannel === 'undefined') return null;
-  if (!_chatBroadcastChannel) {
-    try {
-      _chatBroadcastChannel = new BroadcastChannel('kpr_chat_broadcast_v2');
-      _chatBroadcastChannel.onmessage = (event) => {
-        const { type, payload } = event.data || {};
-        if (type === 'new_message' && payload) {
-          _listeners.new_message.forEach(fn => fn(payload));
-        } else if (type === 'messages_read' && payload) {
-          _listeners.messages_read.forEach(fn => fn(payload));
-        } else if (type === 'chat_cleared' && payload) {
-          _listeners.chat_cleared.forEach(fn => fn(payload));
-        }
-      };
-    } catch (e) {
-      console.warn('BroadcastChannel not supported:', e);
-    }
-  }
-  return _chatBroadcastChannel;
-}
+let _sharedChannel = null;
 
-// Window storage and custom event listeners for bulletproof instant sync
-if (typeof window !== 'undefined') {
-  window.addEventListener('storage', (e) => {
-    if (e.key === LOCAL_CHAT_KEY && e.newValue) {
-      try {
-        const msgs = JSON.parse(e.newValue);
-        if (Array.isArray(msgs) && msgs.length > 0) {
-          const lastMsg = msgs[msgs.length - 1];
-          if (lastMsg) {
-            _listeners.new_message.forEach(fn => fn(lastMsg));
-          }
-        }
-      } catch (err) {}
-    }
-  });
-
-  window.addEventListener('kpr_chat_new_msg', (e) => {
-    if (e.detail) {
-      _listeners.new_message.forEach(fn => fn(e.detail));
-    }
-  });
-}
-
-function ensureSharedChannel() {
-  getChatBroadcastChannel();
+export function ensureSharedChannel() {
   if (_sharedChannel) return _sharedChannel;
 
   try {
-    _sharedChannel = supabase.channel(CHAT_CHANNEL_NAME)
-      // 1. Listen to instant Broadcast events
+    _sharedChannel = supabase.channel(SHARED_CHANNEL_NAME, {
+      config: {
+        broadcast: { self: true },
+        presence: { key: 'studio_chat_presence' }
+      }
+    });
+
+    _sharedChannel
       .on('broadcast', { event: 'new_message' }, ({ payload }) => {
         if (payload) {
           _listeners.new_message.forEach(fn => fn(payload));
@@ -82,7 +53,6 @@ function ensureSharedChannel() {
           _listeners.chat_cleared.forEach(fn => fn(payload));
         }
       })
-      // 2. Listen to Postgres Database table changes
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'verifications' }, (payload) => {
         if (payload?.new && payload.new.album_id === CHAT_ALBUM_FLAG) {
           const msg = normalizeMessage(payload.new);
@@ -197,6 +167,34 @@ export function normalizeWorkerId(raw) {
   return `worker-${id}`;
 }
 
+/**
+ * Comprehensive worker matching that resolves any identifier
+ * (email, worker-id, username, thread ID, or sender name)
+ */
+export function matchesWorker(m, workerIdentifier) {
+  if (!m || !workerIdentifier) return false;
+  const target = String(workerIdentifier).toLowerCase().trim();
+  const targetNorm = normalizeWorkerId(target);
+  const targetClean = target.replace(/^(worker[-_]|staff[-_]|client[-_])/, '');
+  const targetUser = target.includes('@') ? target.split('@')[0] : targetClean;
+
+  const msgWorker = String(m.worker_id || '').toLowerCase().trim();
+  const msgNorm = normalizeWorkerId(msgWorker);
+  const msgClean = msgWorker.replace(/^(worker[-_]|staff[-_]|client[-_])/, '');
+  const msgThread = String(m.thread_id || '').replace(/^thread_/, '').toLowerCase().trim();
+  const msgThreadNorm = normalizeWorkerId(msgThread);
+  const msgSender = String(m.sender_name || '').toLowerCase().trim();
+
+  const candidateIds = new Set([target, targetNorm, targetClean, targetUser]);
+
+  return candidateIds.has(msgWorker) ||
+    candidateIds.has(msgNorm) ||
+    candidateIds.has(msgClean) ||
+    candidateIds.has(msgThread) ||
+    candidateIds.has(msgThreadNorm) ||
+    (m.sender_role === 'staff' && (candidateIds.has(msgSender) || (targetUser.length > 2 && msgSender.includes(targetUser))));
+}
+
 const FAKE_WORKER_PATTERNS = [
   'rajesh.lead@kpr.com',
   'priya.editor@kpr.com',
@@ -251,8 +249,8 @@ function isUUID(str) {
 }
 
 /**
- * Fetch ONLY real registered workers from profiles table and localStorage
- * Deduplicates by email to prevent same person showing up twice
+ * Fetch real registered workers from Supabase and active chat message records
+ * Deduplicates by email and canonical worker ID
  */
 export async function fetchWorkersForChat() {
   const workerByEmail = new Map();
@@ -393,66 +391,7 @@ export async function fetchWorkersForChat() {
 }
 
 /**
- * Fetch all chat messages for a specific worker's 1:1 thread with Admin
- */
-export async function fetchMessagesForWorker(workerId) {
-  if (!workerId) return [];
-  const normalizedId = normalizeWorkerId(workerId);
-  const emailBasedId = resolveWorkerEmailId(workerId);
-  const threadId = `${CHAT_EVENT_ID_PREFIX}${normalizedId}`;
-  const legacyThreadId = `${CHAT_EVENT_ID_PREFIX}${workerId}`;
-  const emailThreadId = `${CHAT_EVENT_ID_PREFIX}${emailBasedId}`;
-
-  const allWorkerIds = new Set([workerId, normalizedId, emailBasedId]);
-
-  const isMatchingWorker = (m) => {
-    if (!m) return false;
-    return allWorkerIds.has(m.worker_id) ||
-      allWorkerIds.has(normalizeWorkerId(m.worker_id)) ||
-      allWorkerIds.has(m.thread_id?.replace(CHAT_EVENT_ID_PREFIX, '').replace('thread_', ''));
-  };
-
-  const localList = getLocalMessages().filter(isMatchingWorker);
-
-  try {
-    const queryIds = Array.from(new Set([
-      threadId,
-      legacyThreadId,
-      emailThreadId,
-      `thread_${workerId}`,
-      `thread_${normalizedId}`,
-      `thread_${emailBasedId}`
-    ])).filter(Boolean);
-
-    const { data, error } = await supabase
-      .from('verifications')
-      .select('*')
-      .eq('album_id', CHAT_ALBUM_FLAG)
-      .in('event_id', queryIds)
-      .order('sent_at', { ascending: true });
-
-    if (!error && Array.isArray(data)) {
-      const remoteMessages = data.map(normalizeMessage).filter(Boolean);
-      
-      const map = new Map();
-      localList.forEach(m => { if (m && m.id) map.set(m.id, m); });
-      remoteMessages.forEach(m => { if (m && m.id) map.set(m.id, m); });
-
-      const merged = Array.from(map.values()).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      
-      const otherLocal = getLocalMessages().filter(m => !isMatchingWorker(m));
-      saveLocalMessages([...otherLocal, ...merged]);
-      return merged;
-    }
-  } catch (err) {
-    console.warn('Error fetching thread messages from Supabase database:', err);
-  }
-
-  return localList;
-}
-
-/**
- * Fetch all recent messages across all threads from Supabase Database for Admin
+ * Fetch all recent messages across all threads from Supabase Database (Single Unified Source of Truth)
  */
 export async function fetchAllChatThreadsForAdmin() {
   const currentLocal = getLocalMessages();
@@ -469,7 +408,7 @@ export async function fetchAllChatThreadsForAdmin() {
       currentLocal.forEach(m => { if (m && m.id) map.set(m.id, m); });
       remoteMsgs.forEach(m => { if (m && m.id) map.set(m.id, m); });
 
-      const merged = Array.from(map.values()).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      const merged = Array.from(map.values()).sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
       saveLocalMessages(merged);
       return merged;
     }
@@ -478,6 +417,16 @@ export async function fetchAllChatThreadsForAdmin() {
   }
 
   return currentLocal;
+}
+
+/**
+ * Fetch all chat messages for a specific worker's 1:1 thread with Admin
+ * Uses the unified all-messages dataset and filters with matchesWorker to guarantee 100% synchronization.
+ */
+export async function fetchMessagesForWorker(workerId) {
+  if (!workerId) return [];
+  const allMessages = await fetchAllChatThreadsForAdmin();
+  return allMessages.filter(m => matchesWorker(m, workerId));
 }
 
 /**
@@ -508,7 +457,7 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
     read_at: null
   };
 
-  // 1. Broadcast on instant BroadcastChannel & shared Realtime channel
+  // 1. Broadcast immediately on instant BroadcastChannel & shared Realtime channel
   try {
     const bc = getChatBroadcastChannel();
     if (bc) {
@@ -528,7 +477,7 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
     console.warn('Broadcast channel error:', bErr);
   }
 
-  // 2. Persist to Supabase Database (Omit 'id' so database assigns valid primary key without schema errors)
+  // 2. Persist to Supabase Database
   const supabaseRecord = {
     client_id: normalizedWorkerId,
     client_name: normalizedRole === 'staff' ? cleanSenderName : 'Staff Worker',
@@ -565,14 +514,11 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
       saveLocalMessages([...local, normalized]);
       return normalized;
     }
-    if (error) {
-      console.warn('Supabase chat insert notice:', error);
-    }
   } catch (err) {
-    console.warn('Failed to insert chat record into Supabase database:', err);
+    console.warn('Notice while persisting message to database (stored in local broadcast):', err);
   }
 
-  // 3. Fallback / local save
+  // 3. Local save fallback
   const local = getLocalMessages().filter(m => m && m.id !== msgId);
   saveLocalMessages([...local, msgPayload]);
   return msgPayload;
@@ -584,10 +530,6 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
 export async function markThreadAsRead(workerId, readerRole = 'admin') {
   if (!workerId) return;
   const normalizedWorkerId = normalizeWorkerId(workerId);
-  const emailBasedId = resolveWorkerEmailId(workerId);
-  const threadId = `${CHAT_EVENT_ID_PREFIX}${normalizedWorkerId}`;
-  const legacyThreadId = `${CHAT_EVENT_ID_PREFIX}${workerId}`;
-  const emailThreadId = `${CHAT_EVENT_ID_PREFIX}${emailBasedId}`;
   const now = new Date().toISOString();
   const isReaderStaff = readerRole === 'staff' || readerRole === 'worker';
   const targetSenderRole = isReaderStaff ? 'admin' : 'staff';
@@ -607,21 +549,12 @@ export async function markThreadAsRead(workerId, readerRole = 'admin') {
       }));
     }
 
-    const updateIds = Array.from(new Set([
-      threadId,
-      legacyThreadId,
-      emailThreadId,
-      `thread_${workerId}`,
-      `thread_${normalizedWorkerId}`,
-      `thread_${emailBasedId}`
-    ])).filter(Boolean);
-
     await supabase
       .from('verifications')
       .update({ responded_at: now })
       .eq('album_id', CHAT_ALBUM_FLAG)
-      .in('event_id', updateIds)
       .eq('status', targetSenderRole)
+      .or(`client_id.eq.${workerId},client_id.eq.${normalizedWorkerId},event_id.eq.thread_${normalizedWorkerId},event_id.eq.thread_${workerId}`)
       .is('responded_at', null);
 
     const channel = ensureSharedChannel();
@@ -631,16 +564,11 @@ export async function markThreadAsRead(workerId, readerRole = 'admin') {
       payload: { worker_id: normalizedWorkerId, reader_role: readerRole, read_at: now }
     }).catch(e => console.warn('Broadcast send catch:', e));
   } catch (err) {
-    console.warn('Error marking messages as read in Supabase database:', err);
+    console.warn('Error marking messages as read in database:', err);
   }
 
-  const allWorkerIds = new Set([workerId, normalizedWorkerId, emailBasedId]);
   const local = getLocalMessages().map(m => {
-    const matchesThread = m && (
-      allWorkerIds.has(m.worker_id) ||
-      allWorkerIds.has(normalizeWorkerId(m.worker_id))
-    );
-    if (matchesThread && m.sender_role === targetSenderRole && !m.read_at) {
+    if (matchesWorker(m, workerId) && m.sender_role === targetSenderRole && !m.read_at) {
       return { ...m, read_at: now };
     }
     return m;
@@ -668,75 +596,62 @@ export async function clearAllChatHistory() {
       type: 'broadcast',
       event: 'chat_cleared',
       payload: { all: true }
-    }).catch(() => {});
-  } catch (err) {
-    console.warn('Error clearing Supabase database chat messages:', err);
-  }
+    }).catch(e => console.warn('Broadcast send catch:', e));
+  } catch (e) {}
 
   saveLocalMessages([]);
-  return { success: true };
 }
 
 /**
- * Clear chat messages for a specific worker's 1:1 thread in Supabase Database
+ * Clear all messages for a specific worker thread
  */
 export async function clearThreadMessages(workerId) {
   if (!workerId) return;
   const normalizedWorkerId = normalizeWorkerId(workerId);
-  const emailBasedId = resolveWorkerEmailId(workerId);
   const threadId = `${CHAT_EVENT_ID_PREFIX}${normalizedWorkerId}`;
-  const legacyThreadId = `${CHAT_EVENT_ID_PREFIX}${workerId}`;
-  const emailThreadId = `${CHAT_EVENT_ID_PREFIX}${emailBasedId}`;
 
   try {
-    const bc = getChatBroadcastChannel();
-    if (bc) {
-      bc.postMessage({ type: 'chat_cleared', payload: { worker_id: normalizedWorkerId } });
-    }
-
-    const deleteIds = Array.from(new Set([
-      threadId,
-      legacyThreadId,
-      emailThreadId,
-      `thread_${workerId}`,
-      `thread_${normalizedWorkerId}`,
-      `thread_${emailBasedId}`
-    ])).filter(Boolean);
-
     await supabase
       .from('verifications')
       .delete()
       .eq('album_id', CHAT_ALBUM_FLAG)
-      .in('event_id', deleteIds);
+      .or(`client_id.eq.${workerId},client_id.eq.${normalizedWorkerId},event_id.eq.${threadId},event_id.eq.thread_${workerId}`);
+  } catch (e) {}
 
-    const channel = ensureSharedChannel();
-    channel.send({
-      type: 'broadcast',
-      event: 'chat_cleared',
-      payload: { worker_id: normalizedWorkerId }
-    }).catch(() => {});
-  } catch (err) {
-    console.warn('Error clearing worker thread chat messages from Supabase database:', err);
-  }
-
-  const allWorkerIds = new Set([workerId, normalizedWorkerId, emailBasedId]);
-  const local = getLocalMessages().filter(m => {
-    if (!m) return false;
-    return !allWorkerIds.has(m.worker_id) && !allWorkerIds.has(normalizeWorkerId(m.worker_id));
-  });
+  const local = getLocalMessages().filter(m => !matchesWorker(m, workerId));
   saveLocalMessages(local);
 }
 
-export function subscribeToChatChannel(onNewMessage, onMessageUpdated, onChatCleared) {
+/**
+ * Subscribe to real-time chat updates
+ */
+export function subscribeToChatChannel(onNewMessage, onMessageUpdated, onCleared) {
   ensureSharedChannel();
-  
+
   if (onNewMessage) _listeners.new_message.add(onNewMessage);
   if (onMessageUpdated) _listeners.messages_read.add(onMessageUpdated);
-  if (onChatCleared) _listeners.chat_cleared.add(onChatCleared);
+  if (onCleared) _listeners.chat_cleared.add(onCleared);
+
+  const handleCustomEvent = (e) => {
+    if (e.detail && onNewMessage) onNewMessage(e.detail);
+  };
+  const handleReadEvent = (e) => {
+    if (e.detail && onMessageUpdated) onMessageUpdated(e.detail);
+  };
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('kpr_chat_new_msg', handleCustomEvent);
+    window.addEventListener('kpr_chat_messages_read', handleReadEvent);
+  }
 
   return () => {
     if (onNewMessage) _listeners.new_message.delete(onNewMessage);
     if (onMessageUpdated) _listeners.messages_read.delete(onMessageUpdated);
-    if (onChatCleared) _listeners.chat_cleared.delete(onChatCleared);
+    if (onCleared) _listeners.chat_cleared.delete(onCleared);
+
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('kpr_chat_new_msg', handleCustomEvent);
+      window.removeEventListener('kpr_chat_messages_read', handleReadEvent);
+    }
   };
 }

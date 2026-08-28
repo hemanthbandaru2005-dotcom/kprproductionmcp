@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Search, Check, CheckCheck,
@@ -9,7 +9,6 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import {
   fetchWorkersForChat,
-  fetchMessagesForWorker,
   fetchAllChatThreadsForAdmin,
   sendChatMessage,
   markThreadAsRead,
@@ -18,7 +17,8 @@ import {
   clearAllChatHistory,
   DEFAULT_DEMO_WORKERS,
   formatNameFromEmailOrId,
-  normalizeWorkerId
+  normalizeWorkerId,
+  matchesWorker
 } from '../../utils/chatService';
 
 const QUICK_PROMPTS = [
@@ -111,14 +111,12 @@ export default function AdminChatPanel() {
   const [workers, setWorkers] = useState([]);
   const [selectedWorkerId, setSelectedWorkerId] = useState(null);
   const [newChatModalOpen, setNewChatModalOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [allMessages, setAllMessages] = useState([]);
+  const [allMessages, setAllMessages] = useState([]); // Unified Source of Truth
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [search, setSearch] = useState('');
   const [loadingWorkers, setLoadingWorkers] = useState(true);
-  const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
 
   const fileInputRef = useRef(null);
@@ -140,7 +138,6 @@ export default function AdminChatPanel() {
   // Safe data definitions computed in top scope
   const safeWorkers = Array.isArray(workers) ? workers : [];
   const safeAllMessages = Array.isArray(allMessages) ? allMessages : [];
-  const safeMessages = Array.isArray(messages) ? messages : [];
 
   const selectedWorker = selectedWorkerId
     ? (safeWorkers.find(w => {
@@ -154,21 +151,9 @@ export default function AdminChatPanel() {
     : (safeWorkers.length > 0 ? safeWorkers[0] : null);
   const activeWorkerId = selectedWorker?.id || selectedWorkerId || null;
 
+  // Derive active threads for the sidebar from safeAllMessages
   const activeWorkerThreads = safeWorkers.map(worker => {
-    const workerIds = new Set();
-    if (worker.id) workerIds.add(worker.id);
-    if (worker.id) workerIds.add(normalizeWorkerId(worker.id));
-    if (worker.email) {
-      workerIds.add(normalizeWorkerId(worker.email));
-      workerIds.add(`worker-${worker.email.split('@')[0].toLowerCase()}`);
-    }
-
-    const threadMsgs = safeAllMessages.filter(m => {
-      if (!m) return false;
-      const msgWorkerId = m.worker_id || '';
-      const msgNorm = normalizeWorkerId(msgWorkerId);
-      return workerIds.has(msgWorkerId) || workerIds.has(msgNorm);
-    });
+    const threadMsgs = safeAllMessages.filter(m => matchesWorker(m, worker.id || worker.email || worker.full_name));
     const lastMsg = threadMsgs.length > 0 ? threadMsgs[threadMsgs.length - 1] : null;
     const unreadCount = threadMsgs.filter(m => m && m.sender_role === 'staff' && !m.read_at).length;
 
@@ -183,6 +168,14 @@ export default function AdminChatPanel() {
     return timeB - timeA;
   });
 
+  // Current open thread messages dynamically and strictly derived from the single source of truth (safeAllMessages)
+  const currentThreadMessages = useMemo(() => {
+    if (!selectedWorker) return [];
+    return safeAllMessages.filter(m =>
+      matchesWorker(m, selectedWorker.id || selectedWorker.email || selectedWorker.full_name)
+    ).sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+  }, [selectedWorker, safeAllMessages]);
+
   const filteredThreads = activeWorkerThreads.filter(t => {
     if (!t || !t.worker) return false;
     const s = (search || '').toLowerCase();
@@ -194,7 +187,7 @@ export default function AdminChatPanel() {
     );
   });
 
-  // 1. Load workers and message previews on mount
+  // 1. Load workers and all message threads on mount
   useEffect(() => {
     let isMounted = true;
     async function loadData() {
@@ -236,31 +229,22 @@ export default function AdminChatPanel() {
         setAllMessages((prev) => mergeAndDeduplicateMessages(prev, newMsg));
 
         const activeId = selectedWorkerIdRef.current;
-        if (activeId && (
-          newMsg.worker_id === activeId ||
-          normalizeWorkerId(newMsg.worker_id) === normalizeWorkerId(activeId) ||
-          newMsg.thread_id === `thread_${activeId}` ||
-          newMsg.thread_id === `thread_${normalizeWorkerId(activeId)}`
-        )) {
-          setMessages((prev) => mergeAndDeduplicateMessages(prev, newMsg));
-          setTimeout(() => scrollToBottom('smooth'), 100);
+        if (activeId && matchesWorker(newMsg, activeId)) {
+          setTimeout(() => scrollToBottom('smooth'), 50);
 
           if (newMsg.sender_role === 'staff') {
             markThreadAsRead(activeId, 'admin');
           }
         }
       },
-      (updatedMsg) => {
-        if (!updatedMsg) return;
-        setAllMessages((prev) => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
-        const activeId = selectedWorkerIdRef.current;
-        if (activeId && (
-          updatedMsg.worker_id === activeId ||
-          normalizeWorkerId(updatedMsg.worker_id) === normalizeWorkerId(activeId) ||
-          updatedMsg.thread_id === `thread_${activeId}`
-        )) {
-          setMessages((prev) => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
-        }
+      (receipt) => {
+        if (!receipt) return;
+        setAllMessages((prev) => prev.map(m => {
+          if (m && matchesWorker(m, receipt.worker_id) && m.sender_role === 'staff' && !m.read_at) {
+            return { ...m, read_at: receipt.read_at || new Date().toISOString() };
+          }
+          return m;
+        }));
       }
     );
 
@@ -271,36 +255,14 @@ export default function AdminChatPanel() {
     };
   }, []);
 
-  // 2. Load conversation messages when selectedWorkerId changes
+  // 2. When selectedWorkerId changes, mark messages as read and scroll to bottom
   useEffect(() => {
     if (!selectedWorkerId) return;
-
-    let isMounted = true;
-    async function loadThread() {
-      setLoadingMessages(true);
-      try {
-        const threadMsgs = await fetchMessagesForWorker(selectedWorkerId);
-        if (!isMounted) return;
-
-        setMessages(Array.isArray(threadMsgs) ? threadMsgs : []);
-        setTimeout(() => scrollToBottom('auto'), 100);
-
-        await markThreadAsRead(selectedWorkerId, 'admin');
-      } catch (err) {
-        console.error('Error loading worker thread:', err);
-      } finally {
-        if (isMounted) setLoadingMessages(false);
-      }
-    }
-
-    loadThread();
-
-    return () => {
-      isMounted = false;
-    };
+    markThreadAsRead(selectedWorkerId, 'admin');
+    setTimeout(() => scrollToBottom('auto'), 80);
   }, [selectedWorkerId]);
 
-  // 3. Auto-poll for incoming worker messages every 3 seconds
+  // 3. Auto-poll for incoming messages every 2.5 seconds
   useEffect(() => {
     let isMounted = true;
 
@@ -308,29 +270,19 @@ export default function AdminChatPanel() {
       if (!isMounted) return;
       try {
         const latestAll = await fetchAllChatThreadsForAdmin();
-        if (!isMounted) return;
-        if (Array.isArray(latestAll)) {
-          setAllMessages(latestAll);
-        }
+        if (!isMounted || !Array.isArray(latestAll)) return;
 
-        const activeId = selectedWorkerIdRef.current;
-        if (activeId) {
-          const threadMsgs = await fetchMessagesForWorker(activeId);
-          if (!isMounted) return;
-          if (Array.isArray(threadMsgs)) {
-            setMessages(prev => {
-              if (threadMsgs.length !== prev.length || (threadMsgs.length > 0 && prev.length > 0 && threadMsgs[threadMsgs.length - 1]?.id !== prev[prev.length - 1]?.id)) {
-                setTimeout(() => scrollToBottom('smooth'), 100);
-                return threadMsgs;
-              }
-              return prev;
-            });
+        setAllMessages(prev => {
+          if (latestAll.length !== prev.length || (latestAll.length > 0 && prev.length > 0 && latestAll[latestAll.length - 1]?.id !== prev[prev.length - 1]?.id)) {
+            setTimeout(() => scrollToBottom('smooth'), 100);
+            return latestAll;
           }
-        }
+          return prev;
+        });
       } catch (err) {
         // Silently ignore polling errors
       }
-    }, 3000);
+    }, 2500);
 
     return () => {
       isMounted = false;
@@ -342,7 +294,6 @@ export default function AdminChatPanel() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size < 10MB
     if (file.size > 10 * 1024 * 1024) {
       alert('Please select an image smaller than 10MB.');
       return;
@@ -357,8 +308,11 @@ export default function AdminChatPanel() {
 
   const handleSend = async (e, directText = null) => {
     if (e) e.preventDefault();
+    const textToSend = directText || inputText;
+    const imageToSend = selectedImage;
     const targetWorker = selectedWorker || (safeWorkers.length > 0 ? safeWorkers[0] : null);
     const targetWorkerId = targetWorker?.email || targetWorker?.id || selectedWorkerId || 'worker-primary';
+
     if ((!textToSend.trim() && !imageToSend) || !targetWorkerId || sending) return;
 
     if (!selectedWorkerId && targetWorker?.id) {
@@ -370,23 +324,42 @@ export default function AdminChatPanel() {
     setSelectedImage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
 
+    // Immediate optimistic message rendering
+    const optimisticMsg = {
+      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      thread_id: `thread_${normalizeWorkerId(targetWorkerId)}`,
+      worker_id: normalizeWorkerId(targetWorkerId),
+      sender_id: user?.id || user?.email || 'admin_user',
+      sender_name: currentAdminName || 'KPR Fotography Admin',
+      sender_role: 'admin',
+      content: textToSend.trim() || (imageToSend ? 'Attached photo 📷' : ''),
+      image_url: imageToSend,
+      created_at: new Date().toISOString(),
+      read_at: null
+    };
+
+    setAllMessages(prev => mergeAndDeduplicateMessages(prev, optimisticMsg));
+    setTimeout(() => scrollToBottom('smooth'), 50);
+
     try {
-      const sent = await sendChatMessage({
-        workerId: targetWorkerId,
-        senderRole: 'admin',
-        senderName: currentAdminName || 'KPR Fotography Admin',
-        senderId: user?.id || user?.email || 'admin_user',
-        content: textToSend.trim() || (imageToSend ? 'Attached photo 📷' : ''),
-        imageUrl: imageToSend
-      });
+      const sent = await Promise.race([
+        sendChatMessage({
+          workerId: targetWorkerId,
+          senderRole: 'admin',
+          senderName: currentAdminName || 'KPR Fotography Admin',
+          senderId: user?.id || user?.email || 'admin_user',
+          content: textToSend.trim() || (imageToSend ? 'Attached photo 📷' : ''),
+          imageUrl: imageToSend
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Send timeout')), 8000))
+      ]);
 
       if (sent) {
-        setMessages(prev => mergeAndDeduplicateMessages(prev, sent));
         setAllMessages(prev => mergeAndDeduplicateMessages(prev, sent));
         setTimeout(() => scrollToBottom('smooth'), 100);
       }
     } catch (err) {
-      console.error('Error sending message:', err);
+      console.warn('Notice while sending message (saved locally/optimistically):', err);
     } finally {
       setSending(false);
     }
@@ -396,8 +369,7 @@ export default function AdminChatPanel() {
     if (!selectedWorkerId) return;
     if (!window.confirm('Are you sure you want to clear this entire conversation?')) return;
 
-    setMessages([]);
-    setAllMessages(prev => prev.filter(m => m.worker_id !== selectedWorkerId));
+    setAllMessages(prev => prev.filter(m => !matchesWorker(m, selectedWorkerId)));
     await clearThreadMessages(selectedWorkerId);
   };
 
@@ -620,12 +592,12 @@ export default function AdminChatPanel() {
 
             {/* 3. Messages Stream */}
             <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-3 sm:space-y-4 bg-[#F7F8FA]">
-              {loadingMessages ? (
+              {loadingWorkers ? (
                 <div className="p-12 sm:p-16 text-center text-[#9CA0A6]">
                   <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#141414] mb-2" />
                   <p className="text-xs">Loading conversation history…</p>
                 </div>
-              ) : safeMessages.length === 0 ? (
+              ) : currentThreadMessages.length === 0 ? (
                 <div className="p-8 sm:p-16 text-center text-[#9CA0A6] space-y-3">
                   <div className="w-12 h-12 rounded-full bg-[#DCE9FF] text-[#1E74FF] flex items-center justify-center mx-auto mb-2">
                     <MessageSquare className="w-6 h-6" />
@@ -636,7 +608,7 @@ export default function AdminChatPanel() {
                   </p>
                 </div>
               ) : (
-                safeMessages.map((msg, idx) => {
+                currentThreadMessages.map((msg, idx) => {
                   if (!msg) return null;
                   const isOutgoingAdmin = msg.sender_role === 'admin';
                   const authorName = isOutgoingAdmin
