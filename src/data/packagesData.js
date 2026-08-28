@@ -1,8 +1,8 @@
 export const SERVICES_PACKAGES = [
   { id: 1, name: 'Traditional Photography', price: 6000, duration: '6 hours', category: 'Photography', image: '/images/packages/user_pkg_trad_photo.png', popular: false },
   { id: 2, name: 'Traditional Videography', price: 6000, duration: '6 hours', category: 'Videography', image: '/images/packages/user_pkg_trad_video.png', popular: false },
-  { id: 3, name: 'Candid Photography', price: 12000, duration: 'Full Coverage', category: 'Photography', image: '/images/packages/user_pkg_candid_photo.png', popular: true },
-  { id: 4, name: 'Cinematic Videography', price: 14000, duration: 'Full Coverage', category: 'Videography', image: '/images/packages/user_pkg_cinematic_video.png', popular: true },
+  { id: 3, name: 'Candid Photography', price: 12000, duration: '6 hours', category: 'Photography', image: '/images/packages/user_pkg_candid_photo.png', popular: true },
+  { id: 4, name: 'Cinematic Videography', price: 14000, duration: '6 hours', category: 'Videography', image: '/images/packages/user_pkg_cinematic_video.png', popular: true },
   { id: 5, name: 'Drone Coverage', price: 6000, duration: '4 hours', category: 'Aerial', image: '/images/packages/user_pkg_drone.png', popular: false },
   { id: 6, name: 'LED Screen Display', price: 16000, duration: '6 hours (+ Transport Charges)', category: 'Setup', image: '/images/packages/user_pkg_led_screen.png', popular: false },
   { id: 7, name: 'Avata FPV Drone', price: 12000, duration: '3 hours', category: 'Aerial', image: '/images/packages/user_pkg_avata_drone.png', popular: false },

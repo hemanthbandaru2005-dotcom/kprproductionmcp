@@ -154,6 +154,71 @@ export async function fetchClientUploads(clientId) {
     }
   });
 
+  // 4. Merge worker job deliverables from Supabase job_files & local job cache
+  try {
+    const { data: jobFiles } = await supabase.from('job_files').select('*');
+    if (Array.isArray(jobFiles)) {
+      jobFiles.forEach(jf => {
+        if (!jf || !jf.id) return;
+        const uploadKey = `worker_jf_${jf.id}`;
+        if (!map.has(uploadKey) && !map.has(jf.id)) {
+          map.set(uploadKey, {
+            id: uploadKey,
+            file_name: jf.file_name || 'Deliverable Drive Folder / File',
+            file_type: jf.file_type || 'drive',
+            file_category: jf.file_category || 'drive',
+            file_size: jf.file_size || 0,
+            file_url: jf.file_path,
+            drive_file_url: jf.file_path,
+            drive_sync_status: 'synced',
+            client_id: jf.job_id || 'studio',
+            client_name: jf.client_name || 'Studio Production',
+            project_title: jf.job_title || `Photoshoot Order #${jf.job_id || ''}`,
+            uploader_role: 'worker',
+            uploader_name: jf.uploaded_by || 'Staff Photographer / Editor',
+            uploader_email: 'worker@kpr.com',
+            created_at: jf.created_at || new Date().toISOString()
+          });
+        }
+      });
+    }
+  } catch (e) {}
+
+  try {
+    if (typeof localStorage !== 'undefined') {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('kpr_job_files_')) {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              list.forEach(jf => {
+                if (jf && jf.id && !map.has(jf.id) && !map.has(`worker_jf_${jf.id}`)) {
+                  map.set(jf.id, {
+                    id: jf.id,
+                    file_name: jf.file_name || 'Worker Deliverable Folder / File',
+                    file_type: jf.file_type || 'drive',
+                    file_category: 'drive',
+                    file_size: jf.file_size || 0,
+                    file_url: jf.file_path || jf.drive_link,
+                    drive_file_url: jf.file_path || jf.drive_link,
+                    drive_sync_status: 'synced',
+                    client_name: 'Studio Production',
+                    project_title: `Photoshoot Order #${jf.job_id || ''}`,
+                    uploader_role: 'worker',
+                    uploader_name: jf.uploaded_by || 'Staff Worker',
+                    created_at: jf.created_at || new Date().toISOString()
+                  });
+                }
+              });
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {}
+
   const allRecords = Array.from(map.values()).sort(
     (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
   );
@@ -316,6 +381,9 @@ export async function uploadClientFile({
   clientEmail,
   projectId,
   projectTitle,
+  uploaderRole = 'client',
+  uploaderName,
+  uploaderEmail,
   existingSessionId,
   onProgress,
   onStatusChange
@@ -680,11 +748,17 @@ export async function uploadClientFile({
       }
     } catch (e) {}
 
-    const record = finalRecord || {
+    const determinedRole = uploaderRole || (clientEmail?.includes('@kpr.com') || clientId?.startsWith('worker') ? 'worker' : 'client');
+    const determinedName = uploaderName || (determinedRole === 'worker' ? (clientName || 'Staff Worker') : cleanClientName);
+
+    const record = {
+      ...(finalRecord || {}),
       id: uploadId,
       client_id: clientId,
       client_name: cleanClientName,
+      client_email: clientEmail,
       project_title: cleanProjectTitle,
+      project_id: projectId,
       file_name: file.name,
       file_type: fileExt,
       file_category: fileCategory,
@@ -693,6 +767,9 @@ export async function uploadClientFile({
       drive_sync_status: 'synced',
       drive_file_id: driveFileId,
       drive_file_url: webViewLink || (driveFileId ? `https://drive.google.com/file/d/${driveFileId}/view` : ''),
+      uploader_role: determinedRole,
+      uploader_name: determinedName,
+      uploader_email: uploaderEmail || clientEmail,
       created_at: new Date().toISOString(),
       synced_at: new Date().toISOString()
     };
@@ -717,6 +794,18 @@ export async function uploadClientFile({
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('kpr_client_uploads_updated', { detail: { uploadId, record } }));
     }
+
+    // Also register activity notification message for Admin Uploads feed
+    try {
+      addUploadActivityMessage({
+        uploaderRole: determinedRole,
+        uploaderName: determinedName,
+        uploaderEmail: uploaderEmail || clientEmail,
+        fileName: file.name,
+        projectTitle: cleanProjectTitle,
+        driveUrl: webViewLink || (driveFileId ? `https://drive.google.com/file/d/${driveFileId}/view` : '')
+      });
+    } catch (e) {}
 
     if (onProgress) {
       onProgress({
@@ -756,6 +845,228 @@ export async function uploadClientFile({
       error: err.message || 'Upload failed. Please retry.'
     };
   }
+}
+
+/**
+ * ════════════════════════════════════════════════════════════════════════════════
+ * UPLOAD ACTIVITY MESSAGES & ALERTS SYSTEM (Admin Notification Feed)
+ * ════════════════════════════════════════════════════════════════════════════════
+ */
+const ACTIVITY_ALBUM_FLAG = 'UPLOAD_ACTIVITY_MESSAGE';
+const LOCAL_ACTIVITY_KEY = 'kpr_upload_activity_messages_v1';
+
+export function getLocalActivityMessages() {
+  try {
+    const raw = localStorage.getItem(LOCAL_ACTIVITY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export function saveLocalActivityMessages(list) {
+  try {
+    localStorage.setItem(LOCAL_ACTIVITY_KEY, JSON.stringify(list));
+  } catch (e) {}
+}
+
+/**
+ * Fetch all upload activity messages from cloud + local cache
+ */
+export async function fetchUploadActivityMessages() {
+  const map = new Map();
+
+  // 1. Fetch from Supabase verifications table
+  try {
+    const { data } = await supabase
+      .from('verifications')
+      .select('*')
+      .eq('album_id', ACTIVITY_ALBUM_FLAG)
+      .order('created_at', { ascending: false });
+
+    if (Array.isArray(data)) {
+      data.forEach(row => {
+        try {
+          const parsed = typeof row.notes === 'string' ? JSON.parse(row.notes) : (row.notes || {});
+          const item = {
+            id: row.event_id || row.id,
+            uploader_role: parsed.uploader_role || 'worker',
+            uploader_name: parsed.uploader_name || row.client_name || 'Staff Member',
+            uploader_email: parsed.uploader_email || '',
+            file_name: parsed.file_name || 'Photoshoot Deliverables',
+            file_count: parsed.file_count || 1,
+            project_title: parsed.project_title || 'Photoshoot Order',
+            drive_url: parsed.drive_url || row.image_url || '',
+            created_at: row.created_at || new Date().toISOString()
+          };
+          map.set(item.id, item);
+        } catch (err) {}
+      });
+    }
+  } catch (e) {}
+
+  // 2. Merge local cache
+  const localList = getLocalActivityMessages();
+  localList.forEach(item => {
+    if (item && item.id && !map.has(item.id)) {
+      map.set(item.id, item);
+    }
+  });
+
+  return Array.from(map.values()).sort(
+    (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+  );
+}
+
+/**
+ * Add a new upload activity message
+ */
+export async function addUploadActivityMessage({
+  uploaderRole = 'worker',
+  uploaderName = 'Staff Member',
+  uploaderEmail = '',
+  fileName = 'Uploaded Photos',
+  fileCount = 1,
+  projectTitle = 'Photoshoot Deliverables',
+  driveUrl = ''
+}) {
+  const id = `act_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const messageItem = {
+    id,
+    uploader_role: uploaderRole,
+    uploader_name: uploaderName,
+    uploader_email: uploaderEmail,
+    file_name: fileName,
+    file_count: fileCount,
+    project_title: projectTitle,
+    drive_url: driveUrl,
+    created_at: new Date().toISOString()
+  };
+
+  // 1. Save to Supabase verifications
+  try {
+    await supabase.from('verifications').insert([{
+      event_id: id,
+      album_id: ACTIVITY_ALBUM_FLAG,
+      client_name: uploaderName,
+      image_url: driveUrl,
+      notes: JSON.stringify(messageItem),
+      created_at: messageItem.created_at
+    }]);
+  } catch (e) {}
+
+  // 2. Save to local storage
+  const current = getLocalActivityMessages();
+  saveLocalActivityMessages([messageItem, ...current.filter(m => m.id !== id)]);
+
+  // 3. Broadcast
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      const bc = new BroadcastChannel('kpr_upload_activity_bc_v1');
+      bc.postMessage({ type: 'new_activity', message: messageItem });
+      bc.close();
+    } catch (e) {}
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('kpr_upload_activity_updated', { detail: { type: 'new_activity', message: messageItem } }));
+  }
+
+  return messageItem;
+}
+
+/**
+ * Delete a specific upload activity message
+ */
+export async function deleteUploadActivityMessage(id) {
+  if (!id) return;
+
+  // 1. Delete from Supabase
+  try {
+    await supabase
+      .from('verifications')
+      .delete()
+      .eq('event_id', id)
+      .eq('album_id', ACTIVITY_ALBUM_FLAG);
+  } catch (e) {}
+
+  // 2. Delete from local cache
+  const current = getLocalActivityMessages();
+  saveLocalActivityMessages(current.filter(m => m.id !== id));
+
+  // 3. Broadcast deletion
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      const bc = new BroadcastChannel('kpr_upload_activity_bc_v1');
+      bc.postMessage({ type: 'delete_activity', id });
+      bc.close();
+    } catch (e) {}
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('kpr_upload_activity_updated', { detail: { type: 'delete_activity', id } }));
+  }
+}
+
+/**
+ * Clear all upload activity messages
+ */
+export async function clearAllUploadActivityMessages() {
+  // 1. Clear from Supabase
+  try {
+    await supabase
+      .from('verifications')
+      .delete()
+      .eq('album_id', ACTIVITY_ALBUM_FLAG);
+  } catch (e) {}
+
+  // 2. Clear local cache
+  saveLocalActivityMessages([]);
+
+  // 3. Broadcast clear
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      const bc = new BroadcastChannel('kpr_upload_activity_bc_v1');
+      bc.postMessage({ type: 'clear_all' });
+      bc.close();
+    } catch (e) {}
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('kpr_upload_activity_updated', { detail: { type: 'clear_all' } }));
+  }
+}
+
+/**
+ * Subscribe to upload activity messages
+ */
+export function subscribeToUploadActivityMessages(onUpdate) {
+  let bc = null;
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      bc = new BroadcastChannel('kpr_upload_activity_bc_v1');
+      bc.onmessage = (event) => {
+        if (onUpdate) onUpdate(event.data);
+      };
+    } catch (e) {}
+  }
+
+  const handleCustomEvent = (e) => {
+    if (onUpdate) onUpdate(e.detail);
+  };
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('kpr_upload_activity_updated', handleCustomEvent);
+  }
+
+  return () => {
+    if (bc) {
+      try { bc.close(); } catch (e) {}
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('kpr_upload_activity_updated', handleCustomEvent);
+    }
+  };
 }
 
 /**

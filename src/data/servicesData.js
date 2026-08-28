@@ -5,31 +5,31 @@ export const PRINTING_DESIGN_SERVICES = [
     tagline: 'Luxury Handcrafted Flush-Mount Layflat Albums',
     image: '/images/services/wedding_album_printing.png',
     category: 'Album Artistry',
-    description: 'Premium Italian leather, velvet & acrylic wedding albums with gold zari embossing, layflat archival sheets, custom color grading, and long-lasting heirloom finish for Telangana traditional weddings.'
+    description: 'Premium Italian leather, velvet & acrylic wedding albums with gold foil embossing, layflat archival sheets, custom color grading, and long-lasting heirloom finish for Telangana traditional weddings.'
   },
   {
     id: 2,
-    title: 'Large Format Printing',
-    tagline: 'High-Definition Canvas & Archival Wall Displays',
-    image: '/images/services/large_format_printing.png',
-    category: 'Large Format',
-    description: 'Ultra-high-resolution large format printing on premium canvas, metallic silk, and museum paper. Ideal for wedding portraits, event entry banners, and luxury gallery displays.'
+    title: 'Colour Jet SONIQ Printer Large Format Flex Printer',
+    tagline: 'High-Speed Industrial Flex & Vinyl Printing',
+    image: '/images/services/colorjet_soniq_printer.jpg',
+    category: 'Large Format Flex',
+    description: 'Industrial-grade ColourJet SONIQ i large format flex & vinyl printer delivering vibrant, photorealistic prints with high-speed multi-head precision for event backdrops, hoardings, and stage banners.'
   },
   {
     id: 3,
-    title: 'Laser Printing',
-    tagline: 'Wooden, Stone & Acrylic Laser Engraving',
+    title: 'Laser Printing & Precision Cutting',
+    tagline: 'Wooden, Stone & Acrylic Laser Engraving & CNC Cutting',
     image: '/images/services/laser_printing.png',
-    category: 'Laser & Engraving',
+    category: 'Laser & Cutting',
     description: 'Precision CNC laser engraving, cutting and etching on natural wood, polished stone, and crystal-clear acrylic sheets. Perfect for mandap decor, custom nameplates, portraits, and luxury event displays.'
   },
   {
     id: 4,
-    title: 'Flex Printing',
-    tagline: 'HD Vinyl Banners & Wedding Event Backdrops',
-    image: '/images/services/flex_printing.png',
-    category: 'Banner & Signage',
-    description: 'Heavy-duty weatherproof flex banners, star flex displays, and wedding backdrop prints with rich vibrant colors and crisp royal Telugu typography.'
+    title: 'Canon imagePROGRAF GP-566S 60 in Large Format Photo Printer 7 Colours',
+    tagline: 'Ultra-Wide 7-Colour Archival Wedding Portraits & Canvas Prints',
+    image: '/images/services/canon_imageprograf_printer.png',
+    category: '60" Fine Art Photo',
+    description: 'Flagship Canon imagePROGRAF GP-566S 60-inch large format 7-colour photo printer featuring fluorescent pink ink and LUCIA PRO II pigment inks for stunning wide-gamut wedding portraits, canvas gallery wraps, and archival prints.'
   },
   {
     id: 5,

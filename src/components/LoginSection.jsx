@@ -191,17 +191,14 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
 
     // ADMIN: Security question reset flow
     if (activePortal === 'admin') {
-      const initialEmail = formData.email || '';
-      setAdminResetEmail(initialEmail);
+      const initialEmail = (formData.email || '').trim().toLowerCase();
+      setAdminResetEmail(initialEmail || 'admin@kpr.com');
       setErrorMsg('');
       setAdminAnswer1('');
       setAdminAnswer2('');
-      if (initialEmail) {
-        // Check if security questions are set up for this email
-        await checkAdminSecuritySetup(initialEmail);
-      } else {
-        setAdminResetStep('email');
-      }
+      setAdminNewPassword('');
+      setAdminConfirmPassword('');
+      setAdminResetStep('sq1');
       return;
     }
 
@@ -234,32 +231,9 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
     setErrorMsg('');
 
     try {
-      let hasQ = false;
-
-      // 1. Try checking Supabase RPC
-      try {
-        const { data, error } = await supabase.rpc('check_admin_security_setup', {
-          p_email: emailToCheck,
-        });
-        const result = typeof data === 'string' ? JSON.parse(data) : data;
-        if (!error && result?.has_security_questions) {
-          hasQ = true;
-        }
-      } catch (e) {}
-
-      // 2. Allow all recognized Admin emails to proceed with Security Code
-      const isAdminEmail = ADMIN_MEMBERS.some(a => a.email.toLowerCase() === emailToCheck) ||
-        emailToCheck.endsWith('@kpr.com') ||
-        Boolean(localStorage.getItem('kpr_admin_security_answers_v1'));
-
-      if (hasQ || isAdminEmail) {
-        setAdminResetEmail(emailToCheck);
-        setAdminHasSecurityQ(true);
-        setAdminResetStep('sq1');
-      } else {
-        setErrorMsg('Admin account not found. Please verify your admin email.');
-        setAdminResetStep('none');
-      }
+      setAdminResetEmail(emailToCheck);
+      setAdminHasSecurityQ(true);
+      setAdminResetStep('sq1');
     } catch (err) {
       setErrorMsg('Failed to check security setup. Please try again.');
     } finally {
@@ -286,43 +260,74 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
       const ans1 = (adminAnswer1 || '').trim().toLowerCase();
       const ans2 = (adminAnswer2 || '').trim().toLowerCase();
 
-      // Check stored custom answers or studio master code '1'
-      let isVerified = ans1 === '1' || ans1 === 'kpr' || ans1 === '123456';
-      
+      // Retrieve saved security answers from local storage & Supabase
+      let savedAnswer1 = 'warangal';
+      let savedAnswer2 = 'grand gayathri';
+
       try {
         const rawAns = localStorage.getItem('kpr_admin_security_answers_v1');
         if (rawAns) {
           const parsed = JSON.parse(rawAns);
-          if (parsed.answer1 && (parsed.answer1.toLowerCase() === ans1 || parsed.answer1.toLowerCase() === ans2)) {
-            isVerified = true;
-          }
+          if (parsed.answer1) savedAnswer1 = parsed.answer1.trim().toLowerCase();
+          if (parsed.answer2) savedAnswer2 = parsed.answer2.trim().toLowerCase();
         }
       } catch (e) {}
 
-      // Try Supabase RPC as well
       try {
-        const { data, error } = await supabase.rpc('admin_recovery_reset_password', {
-          p_email: adminResetEmail.trim().toLowerCase(),
-          p_answer_1: ans1,
-          p_answer_2: ans2 || ans1,
-          p_new_password: adminNewPassword,
-        });
-        const result = typeof data === 'string' ? JSON.parse(data) : data;
-        if (!error && result?.success) {
-          isVerified = true;
+        const { data } = await supabase
+          .from('verifications')
+          .select('notes')
+          .eq('event_id', 'SYSTEM_ADMIN_SECURITY_QA')
+          .single();
+        if (data?.notes) {
+          const parsed = typeof data.notes === 'string' ? JSON.parse(data.notes) : data.notes;
+          if (parsed.answer1) savedAnswer1 = parsed.answer1.trim().toLowerCase();
+          if (parsed.answer2) savedAnswer2 = parsed.answer2.trim().toLowerCase();
         }
       } catch (e) {}
 
-      if (isVerified) {
-        // Save new password to admin password cache
+      // Verification check: matches saved answer or default studio location or master bypass
+      const isAns1Valid = ans1 === savedAnswer1 ||
+        ans1 === 'warangal' ||
+        ans1 === 'kpr' ||
+        ans1 === '123456' ||
+        ans1 === '1';
+
+      const isAns2Valid = ans2 === savedAnswer2 ||
+        ans2 === 'grand gayathri' ||
+        ans2.includes('gayathri') ||
+        ans2 === 'kpr' ||
+        ans2 === '123456' ||
+        ans2 === '1';
+
+      if (isAns1Valid && isAns2Valid) {
+        // Save new password to admin password cache & Supabase
+        const targetEmail = (adminResetEmail || 'admin@kpr.com').trim().toLowerCase();
+
         try {
           const rawPw = localStorage.getItem('kpr_admin_passwords_v1');
           const pwList = rawPw ? JSON.parse(rawPw) : {};
-          pwList[adminResetEmail.trim().toLowerCase()] = adminNewPassword;
+          pwList[targetEmail] = adminNewPassword;
           localStorage.setItem('kpr_admin_passwords_v1', JSON.stringify(pwList));
         } catch (e) {}
 
+        try {
+          await supabase.from('verifications').upsert({
+            event_id: `SYSTEM_ADMIN_PW_${targetEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
+            album_id: 'SYSTEM_ADMIN_REGISTRY',
+            client_name: 'Studio Admin',
+            notes: JSON.stringify({ email: targetEmail, password: adminNewPassword, updated_at: new Date().toISOString() })
+          }, { onConflict: 'event_id' });
+        } catch (e) {}
+
+        // Also try Supabase Auth update if supported
+        try {
+          await supabase.auth.updateUser({ password: adminNewPassword });
+        } catch (e) {}
+
         setResetSuccess(true);
+        setFormData(prev => ({ ...prev, email: targetEmail, password: adminNewPassword }));
+
         setTimeout(() => {
           setAdminResetStep('none');
           setResetSuccess(false);
@@ -330,9 +335,9 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
           setAdminAnswer2('');
           setAdminNewPassword('');
           setAdminConfirmPassword('');
-        }, 2000);
+        }, 2200);
       } else {
-        setErrorMsg('Invalid security code. Please type the code 1 (or your configured answer) to reset.');
+        setErrorMsg('Security answers do not match. Please verify Establishment City & Founding Landmark.');
       }
     } catch (err) {
       setErrorMsg('An unexpected error occurred. Please try again.');
@@ -575,9 +580,11 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                 ) : (
                   <>
                     {/* Security Question 1 */}
-                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Security Question 1</p>
-                      <p className="text-sm text-gray-800 font-medium">"Type the code 1"</p>
+                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-200 space-y-1">
+                      <p className="text-[10px] uppercase tracking-wider text-[#C5A880] font-bold">Security Question 1</p>
+                      <p className="text-xs text-gray-800 font-semibold leading-relaxed">
+                        What is the registered studio establishment city?
+                      </p>
                     </div>
                     <div
                       className="relative border-b-2 border-gray-300 transition-colors duration-300"
@@ -585,9 +592,9 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                     >
                       <HelpCircle className="w-4.5 h-4.5 text-gray-400 absolute left-0 top-3" />
                       <input
-                        type="password"
+                        type="text"
                         required
-                        placeholder="Your answer"
+                        placeholder="e.g. Warangal"
                         value={adminAnswer1}
                         onChange={(e) => setAdminAnswer1(e.target.value)}
                         className="w-full pl-8 pr-2 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
@@ -596,9 +603,11 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                     </div>
 
                     {/* Security Question 2 */}
-                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Security Question 2</p>
-                      <p className="text-sm text-gray-800 font-medium">"Type the code 2"</p>
+                    <div className="bg-gray-50 rounded-xl p-3 border border-gray-200 space-y-1">
+                      <p className="text-[10px] uppercase tracking-wider text-[#C5A880] font-bold">Security Question 2</p>
+                      <p className="text-xs text-gray-800 font-semibold leading-relaxed">
+                        What is your primary studio founding landmark?
+                      </p>
                     </div>
                     <div
                       className="relative border-b-2 border-gray-300 transition-colors duration-300"
@@ -606,9 +615,9 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                     >
                       <HelpCircle className="w-4.5 h-4.5 text-gray-400 absolute left-0 top-3" />
                       <input
-                        type="password"
+                        type="text"
                         required
-                        placeholder="Your answer"
+                        placeholder="e.g. Grand Gayathri"
                         value={adminAnswer2}
                         onChange={(e) => setAdminAnswer2(e.target.value)}
                         className="w-full pl-8 pr-2 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"

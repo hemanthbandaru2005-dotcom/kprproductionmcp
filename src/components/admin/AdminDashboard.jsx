@@ -19,13 +19,19 @@ import {
   fetchAllClientUploadsForAdmin,
   subscribeToClientUploadsRealtime
 } from '../../utils/clientUploadsService';
+import {
+  fetchJobs,
+  cleanAllFakeTestData,
+  subscribeToJobsRealtime
+} from '../../utils/jobsService';
 import PasswordManagementPage from './PasswordManagementPage';
 import {
   LayoutDashboard, Users, UserCheck,
   Edit3, LogOut, Menu, X, ChevronRight,
   Plus, UserPlus, Activity, Palette,
   MessageSquare, Bell, CheckCircle, HardDrive, KeyRound,
-  Settings, Sparkles, HelpCircle, Briefcase, Camera, ArrowUpRight
+  Settings, Sparkles, HelpCircle, Briefcase, Camera, ArrowUpRight,
+  CheckCircle2
 } from 'lucide-react';
 
 const TOP_NAV_PILLS = [
@@ -49,18 +55,115 @@ export default function AdminDashboard({ onLogout }) {
   const [createJobOpen, setCreateJobOpen] = useState(false);
   const [assignWorkerOpen, setAssignWorkerOpen] = useState(false);
 
-  // Live status counts
+  // 100% Live metrics state
   const [statusCounts, setStatusCounts] = useState({ in_progress: 0, review: 0, completed: 0 });
+  const [allJobsList, setAllJobsList] = useState([]);
+  const [workerCount, setWorkerCount] = useState(0);
+  const [workersList, setWorkersList] = useState([]);
+  const [clientCount, setClientCount] = useState(0);
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [failedUploadsCount, setFailedUploadsCount] = useState(0);
+  const [cleanToast, setCleanToast] = useState('');
 
-  const fetchStatusCounts = async () => {
-    const { data } = await supabase.from('jobs').select('status');
-    if (data) {
+  const fetchAllDashboardData = async () => {
+    // 1. Fetch Real Jobs
+    try {
+      const jobs = await fetchJobs();
+      setAllJobsList(jobs || []);
       const counts = { in_progress: 0, review: 0, completed: 0 };
-      data.forEach((j) => { if (counts[j.status] !== undefined) counts[j.status]++; });
+      (jobs || []).forEach((j) => {
+        if (counts[j.status] !== undefined) counts[j.status]++;
+      });
       setStatusCounts(counts);
+    } catch (e) {
+      console.warn('Failed fetching jobs for dashboard:', e);
     }
+
+    // 2. Fetch Real Workers
+    try {
+      const { data: vWorkers } = await supabase.from('verifications').select('*').eq('album_id', 'SYSTEM_WORKER_REGISTRY');
+      const { data: wProfiles } = await supabase.from('profiles').select('*').eq('role', 'worker');
+      const rawWorkers = localStorage.getItem('kpr_registered_workers_v1');
+      const parsedWorkers = rawWorkers ? JSON.parse(rawWorkers) : [];
+      const deletedWorkers = localStorage.getItem('kpr_deleted_workers_v1') ? JSON.parse(localStorage.getItem('kpr_deleted_workers_v1')) : [];
+      
+      const workerMap = new Map();
+      (vWorkers || []).forEach(v => {
+        const email = (v.client_email || '').toLowerCase().trim();
+        const meta = Array.isArray(v.photo_items) && v.photo_items[0] ? v.photo_items[0] : {};
+        if (email && !deletedWorkers.includes(email)) {
+          workerMap.set(email, {
+            id: v.id || `worker-${v.client_id || email.split('@')[0]}`,
+            client_id: v.client_id,
+            full_name: meta.full_name || v.client_name,
+            email: email,
+            phone: meta.phone || v.client_note || 'N/A',
+            role: 'worker',
+            status: v.status || 'active',
+            skill: meta.skill || 'Photographer / Editor'
+          });
+        }
+      });
+
+      (wProfiles || []).forEach(w => {
+        const email = (w.email || '').toLowerCase().trim();
+        if (email && !deletedWorkers.includes(email) && !workerMap.has(email)) {
+          workerMap.set(email, w);
+        }
+      });
+
+      (parsedWorkers || []).forEach(w => {
+        const email = (w.email || '').toLowerCase().trim();
+        if (email && !deletedWorkers.includes(email) && !workerMap.has(email)) {
+          workerMap.set(email, w);
+        }
+      });
+
+      const wArr = Array.from(workerMap.values());
+      setWorkersList(wArr);
+      setWorkerCount(wArr.length);
+    } catch (e) {}
+
+    // 3. Fetch Real Clients
+    try {
+      const { data: vClients } = await supabase.from('verifications').select('*').eq('album_id', 'SYSTEM_CLIENT_REGISTRY');
+      const { data: cProfiles } = await supabase.from('profiles').select('*').eq('role', 'client');
+      const rawClients = localStorage.getItem('kpr_registered_clients_v1');
+      const parsedClients = rawClients ? JSON.parse(rawClients) : [];
+      const deletedClients = localStorage.getItem('kpr_deleted_clients_v1') ? JSON.parse(localStorage.getItem('kpr_deleted_clients_v1')) : [];
+
+      const clientMap = new Map();
+      (vClients || []).forEach(v => {
+        const email = (v.client_email || '').toLowerCase().trim();
+        const meta = Array.isArray(v.photo_items) && v.photo_items[0] ? v.photo_items[0] : {};
+        if (email && !deletedClients.includes(email) && !email.includes('example.com')) {
+          clientMap.set(email, {
+            id: v.id || `client-${email.split('@')[0]}`,
+            full_name: meta.full_name || v.client_name,
+            email: email,
+            phone: meta.phone || v.client_note || 'N/A',
+            role: 'client',
+            status: v.status || 'active'
+          });
+        }
+      });
+
+      (cProfiles || []).forEach(c => {
+        const email = (c.email || '').toLowerCase().trim();
+        if (email && !deletedClients.includes(email) && !email.includes('example.com') && !clientMap.has(email)) {
+          clientMap.set(email, c);
+        }
+      });
+
+      (parsedClients || []).forEach(c => {
+        const email = (c.email || '').toLowerCase().trim();
+        if (email && !deletedClients.includes(email) && !clientMap.has(email)) {
+          clientMap.set(email, c);
+        }
+      });
+
+      setClientCount(clientMap.size);
+    } catch (e) {}
   };
 
   const fetchUnreadCount = async () => {
@@ -75,8 +178,18 @@ export default function AdminDashboard({ onLogout }) {
     setFailedUploadsCount(failed);
   };
 
+  const handleCleanFakeData = async () => {
+    const res = await cleanAllFakeTestData();
+    await fetchAllDashboardData();
+    await fetchUnreadCount();
+    await fetchFailedUploads();
+    setCleanToast(res.message || 'All fake test data deleted successfully.');
+    setTimeout(() => setCleanToast(''), 4000);
+    return res;
+  };
+
   useEffect(() => {
-    fetchStatusCounts();
+    fetchAllDashboardData();
     fetchUnreadCount();
     fetchFailedUploads();
 
@@ -84,24 +197,33 @@ export default function AdminDashboard({ onLogout }) {
       fetchFailedUploads();
     });
 
-    const jobChannel = supabase
-      .channel('status-counts')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
-        fetchStatusCounts();
-      })
-      .subscribe();
+    const unsubscribeJobs = subscribeToJobsRealtime(() => {
+      fetchAllDashboardData();
+    });
 
     const unsubscribeChat = subscribeToChatChannel(
       () => fetchUnreadCount(),
       () => fetchUnreadCount()
     );
 
+    const onMessagesRead = () => {
+      fetchUnreadCount();
+    };
+    window.addEventListener('kpr_chat_messages_read', onMessagesRead);
+
     return () => {
-      supabase.removeChannel(jobChannel);
+      unsubscribeJobs();
       unsubscribeChat();
       unsubscribeUploads();
+      window.removeEventListener('kpr_chat_messages_read', onMessagesRead);
     };
   }, []);
+
+  useEffect(() => {
+    if (activeSection === 'messages') {
+      fetchUnreadCount();
+    }
+  }, [activeSection]);
 
   const handleLogout = async () => {
     await signOut();
@@ -328,6 +450,19 @@ export default function AdminDashboard({ onLogout }) {
           )}
         </div>
 
+        {/* Global Toast Alert for Data Cleanup Confirmation */}
+        {cleanToast && (
+          <div className="w-full bg-[#DFF5E3] border border-[#16A34A]/30 text-[#16A34A] px-4 py-3 rounded-2xl text-xs font-semibold flex items-center justify-between gap-2 shadow-xs animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{cleanToast}</span>
+            </div>
+            <button onClick={() => setCleanToast('')} className="text-[#16A34A] hover:opacity-75 cursor-pointer">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* ════════════════════════════════════════════════════════════════════════════
             3. MAIN CONTENT AREA (DYNAMICALLY SWITCHES BETWEEN SECTIONS)
             ════════════════════════════════════════════════════════════════════════════ */}
@@ -336,9 +471,14 @@ export default function AdminDashboard({ onLogout }) {
             <CognifyDashboard
               statusCounts={statusCounts}
               totalJobs={totalJobs}
+              allJobsList={allJobsList}
+              workerCount={workerCount}
+              workersList={workersList}
+              clientCount={clientCount}
               onCreateJob={() => setCreateJobOpen(true)}
               onAssignWorker={() => setAssignWorkerOpen(true)}
               onNavigateSection={(sec) => setActiveSection(sec)}
+              onCleanFakeData={handleCleanFakeData}
               failedUploadsCount={failedUploadsCount}
               totalUnreadMessages={totalUnreadMessages}
             />

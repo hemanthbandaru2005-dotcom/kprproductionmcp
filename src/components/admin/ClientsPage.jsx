@@ -26,7 +26,35 @@ export default function ClientsPage() {
     const deletedEmails = getDeletedClientEmails();
     const clientMap = new Map();
 
-    // 1. Supabase Profiles
+    // 1. Supabase verifications cloud registry (Works across all laptops & devices)
+    try {
+      const { data: vData, error: vErr } = await supabase
+        .from('verifications')
+        .select('*')
+        .eq('album_id', 'SYSTEM_CLIENT_REGISTRY')
+        .order('sent_at', { ascending: false });
+
+      if (!vErr && Array.isArray(vData)) {
+        vData.forEach(item => {
+          const email = (item.client_email || '').toLowerCase().trim();
+          const meta = Array.isArray(item.photo_items) && item.photo_items[0] ? item.photo_items[0] : {};
+          if (email && !deletedEmails.includes(email) && !email.includes('example.com')) {
+            clientMap.set(email, {
+              id: item.id || `client-${email.split('@')[0]}`,
+              client_id: item.client_id,
+              full_name: meta.full_name || item.client_name,
+              email: email,
+              phone: meta.phone || item.client_note || 'N/A',
+              role: 'client',
+              status: item.status || 'active',
+              created_at: item.sent_at || item.created_at
+            });
+          }
+        });
+      }
+    } catch (e) {}
+
+    // 2. Supabase Profiles
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -34,25 +62,41 @@ export default function ClientsPage() {
         .eq('role', 'client')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && Array.isArray(data) && data.length > 0) {
         data.forEach(c => {
-          if (c.email && !deletedEmails.includes(c.email.toLowerCase()) && !c.email.includes('example.com')) {
-            clientMap.set(c.email.toLowerCase(), c);
+          const email = (c.email || '').toLowerCase().trim();
+          if (email && !deletedEmails.includes(email) && !email.includes('example.com') && !clientMap.has(email)) {
+            clientMap.set(email, c);
           }
         });
       }
     } catch (e) {}
 
-    // 2. Local Registered Clients
+    // 3. Local Registered Clients
     try {
       const raw = localStorage.getItem('kpr_registered_clients_v1');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
           parsed.forEach(c => {
-            if (c && c.email && !deletedEmails.includes(c.email.toLowerCase()) && !c.email.includes('example.com')) {
-              if (!clientMap.has(c.email.toLowerCase())) {
-                clientMap.set(c.email.toLowerCase(), c);
+            const email = (c && c.email ? c.email : '').toLowerCase().trim();
+            if (email && !deletedEmails.includes(email) && !email.includes('example.com')) {
+              if (!clientMap.has(email)) {
+                clientMap.set(email, c);
+                // Auto-sync local client to Supabase cloud database
+                supabase.from('verifications').insert([{
+                  id: `client_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                  client_id: c.id || `client-${email.split('@')[0]}`,
+                  client_name: c.full_name || 'Client',
+                  client_email: email,
+                  album_id: 'SYSTEM_CLIENT_REGISTRY',
+                  event_id: `client_profile_${email.split('@')[0]}`,
+                  event_title: 'Studio Client Account',
+                  client_note: c.phone || 'N/A',
+                  status: c.status || 'active',
+                  sent_at: c.created_at || new Date().toISOString(),
+                  photo_items: [c]
+                }]).then(() => {}).catch(() => {});
               }
             }
           });
@@ -60,7 +104,7 @@ export default function ClientsPage() {
       }
     } catch (e) {}
 
-    // 3. Fallback default Nani only if NOT deleted by user
+    // 4. Fallback default Nani only if NOT deleted by user
     if (!deletedEmails.includes('nani@gmail.com') && !deletedEmails.includes('nani@gamil.com')) {
       if (!clientMap.has('nani@gmail.com') && !clientMap.has('nani@gamil.com')) {
         clientMap.set('nani@gmail.com', {
@@ -82,12 +126,16 @@ export default function ClientsPage() {
   useEffect(() => {
     fetchClients();
 
-    const channel = supabase
-      .channel('clients-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchClients();
-      })
-      .subscribe();
+    const channelId = `clients-realtime-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+    let channel = null;
+    try {
+      channel = supabase
+        .channel(channelId)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+          fetchClients();
+        })
+        .subscribe();
+    } catch (e) {}
 
     const handleLocalClientUpdated = () => {
       fetchClients();
@@ -95,7 +143,9 @@ export default function ClientsPage() {
     window.addEventListener('kpr_registered_clients_updated', handleLocalClientUpdated);
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch (e) {}
+      }
       window.removeEventListener('kpr_registered_clients_updated', handleLocalClientUpdated);
     };
   }, []);
@@ -124,7 +174,7 @@ export default function ClientsPage() {
     const emailToDelete = (client.email || '').toLowerCase().trim();
 
     // 1. Optimistic removal from UI state
-    setClients(prev => prev.filter(c => c.id !== client.id && c.email.toLowerCase() !== emailToDelete));
+    setClients(prev => prev.filter(c => c.id !== client.id && (c.email || '').toLowerCase() !== emailToDelete));
 
     // 2. Add to permanent deleted tracking
     try {
@@ -143,8 +193,12 @@ export default function ClientsPage() {
       }
     } catch (e) {}
 
-    // 3. Remove from Supabase
+    // 3. Remove from Supabase cloud database
     try {
+      await supabase.from('verifications').delete().eq('album_id', 'SYSTEM_CLIENT_REGISTRY').eq('client_email', emailToDelete);
+      if (client.id) {
+        await supabase.from('verifications').delete().eq('album_id', 'SYSTEM_CLIENT_REGISTRY').eq('client_id', client.id);
+      }
       await supabase.from('profiles').delete().eq('email', emailToDelete);
       if (client.id) {
         await supabase.from('profiles').delete().eq('id', client.id);

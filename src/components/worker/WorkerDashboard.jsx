@@ -8,7 +8,8 @@ import {
 } from '../../utils/chatService';
 import {
   uploadClientFile,
-  formatFileSize
+  formatFileSize,
+  addUploadActivityMessage
 } from '../../utils/clientUploadsService';
 import {
   fetchJobs,
@@ -175,15 +176,29 @@ export default function WorkerDashboard({ onLogout }) {
       fetchMyJobs();
     });
 
-    const unsubscribeChat = subscribeToChatChannel(() => {
+    const unsubscribeChat = subscribeToChatChannel(
+      () => fetchUnreadCount(),
+      () => fetchUnreadCount()
+    );
+
+    const onMessagesRead = () => {
       fetchUnreadCount();
-    });
+    };
+    window.addEventListener('kpr_chat_messages_read', onMessagesRead);
 
     return () => {
       if (unsubscribeJobs) unsubscribeJobs();
       if (unsubscribeChat) unsubscribeChat();
+      window.removeEventListener('kpr_chat_messages_read', onMessagesRead);
     };
   }, [user, profile]);
+
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      setUnreadChatCount(0);
+      fetchUnreadCount();
+    }
+  }, [activeTab]);
 
   // Select a job
   const handleSelectJob = (job) => {
@@ -267,6 +282,39 @@ export default function WorkerDashboard({ onLogout }) {
         const nextJList = jList.map(j => j.id === selectedJob.id ? { ...j, drive_link: formattedUrl, drive_folder_url: formattedUrl, updated_at: new Date().toISOString() } : j);
         localStorage.setItem('kpr_admin_jobs_v1', JSON.stringify(nextJList));
       }
+
+      // Also register to Admin Uploads Vault under Worker Deliverables
+      const workerUploadRecord = {
+        id: newDriveItem.id,
+        client_id: selectedJob.client_name || 'studio',
+        client_name: selectedJob.client_name || selectedJob.title,
+        client_email: user?.email || 'worker@kpr.com',
+        project_title: selectedJob.title,
+        project_id: selectedJob.id,
+        file_name: formattedTitle,
+        file_type: 'drive',
+        file_category: 'drive',
+        file_size: 0,
+        file_url: formattedUrl,
+        drive_sync_status: 'synced',
+        drive_file_url: formattedUrl,
+        uploader_role: 'worker',
+        uploader_name: profile?.full_name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : 'Staff Worker'),
+        uploader_email: user?.email || 'worker@kpr.com',
+        created_at: new Date().toISOString(),
+        synced_at: new Date().toISOString()
+      };
+      // Also register activity notification message for Admin
+      try {
+        addUploadActivityMessage({
+          uploaderRole: 'worker',
+          uploaderName: profile?.full_name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : 'Staff Worker'),
+          uploaderEmail: user?.email || 'worker@kpr.com',
+          fileName: formattedTitle,
+          projectTitle: selectedJob.title || 'Photoshoot Deliverables',
+          driveUrl: formattedUrl
+        });
+      } catch (e) {}
     } catch (e) {}
 
     setJobFiles(prev => [newDriveItem, ...prev]);
@@ -317,6 +365,7 @@ export default function WorkerDashboard({ onLogout }) {
       setUploadProgressText(`Uploading "${file.name}" directly to Google Drive (0%)…`);
 
       try {
+        const workerDisplayName = profile?.full_name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : 'Staff Worker');
         const uploadResult = await uploadClientFile({
           file,
           clientId: selectedJob.client_name || 'studio',
@@ -324,6 +373,9 @@ export default function WorkerDashboard({ onLogout }) {
           clientEmail: user?.email || 'worker@kpr.com',
           projectId: selectedJob.id,
           projectTitle: selectedJob.title,
+          uploaderRole: 'worker',
+          uploaderName: workerDisplayName,
+          uploaderEmail: user?.email || 'worker@kpr.com',
           onProgress: (p) => {
             setUploadProgressText(`Syncing "${file.name}" to Google Drive: ${p.percent || 0}% (${p.stage || 'Uploading'})`);
           }

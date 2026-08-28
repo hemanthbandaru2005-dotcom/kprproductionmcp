@@ -10,7 +10,8 @@ import {
   markThreadAsRead,
   subscribeToChatChannel,
   clearThreadMessages,
-  formatNameFromEmailOrId
+  formatNameFromEmailOrId,
+  normalizeWorkerId
 } from '../../utils/chatService';
 
 const WORKER_QUICK_PROMPTS = [
@@ -30,10 +31,41 @@ function formatMessageTime(dateStr) {
   }
 }
 
+function mergeAndDeduplicateMessages(existingList, newMsg) {
+  if (!newMsg) return existingList;
+  const list = Array.isArray(existingList) ? existingList : [];
+
+  const isDuplicate = list.some(m => {
+    if (!m) return false;
+    if (m.id === newMsg.id) return true;
+    const sameWorker = m.worker_id === newMsg.worker_id;
+    const sameRole = m.sender_role === newMsg.sender_role;
+    const sameContent = (m.content || '').trim() === (newMsg.content || '').trim();
+    const timeDiff = Math.abs(new Date(m.created_at || 0) - new Date(newMsg.created_at || 0));
+    return sameWorker && sameRole && sameContent && timeDiff < 10000;
+  });
+
+  if (isDuplicate) {
+    return list.map(m => {
+      if (m.id === newMsg.id || (
+        m.worker_id === newMsg.worker_id &&
+        m.sender_role === newMsg.sender_role &&
+        (m.content || '').trim() === (newMsg.content || '').trim() &&
+        Math.abs(new Date(m.created_at || 0) - new Date(newMsg.created_at || 0)) < 10000
+      )) {
+        return { ...m, ...newMsg };
+      }
+      return m;
+    });
+  }
+
+  return [...list, newMsg];
+}
+
 export default function WorkerChatPanel({ workerUser, workerProfile }) {
-  const workerRaw = workerUser?.email || workerProfile?.email || workerUser?.id || workerProfile?.id || 'worker-user';
-  const workerId = workerUser?.id || workerProfile?.id || `worker-${workerRaw.split('@')[0]}`;
-  const workerName = workerProfile?.full_name || formatNameFromEmailOrId(workerUser?.email || workerProfile?.email || workerId);
+  const workerEmail = (workerUser?.email || workerProfile?.email || '').toLowerCase().trim();
+  const workerId = normalizeWorkerId(workerEmail || workerUser?.id || workerProfile?.id || 'worker-user');
+  const workerName = workerProfile?.full_name || workerUser?.user_metadata?.full_name || formatNameFromEmailOrId(workerEmail || workerId);
 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
@@ -71,17 +103,17 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
     const unsubscribe = subscribeToChatChannel(
       (newMsg) => {
         if (!newMsg) return;
-        const matchesWorker = newMsg.worker_id === workerId ||
-          (workerUser?.email && newMsg.worker_id?.includes(workerUser.email.split('@')[0])) ||
-          (workerId === 'worker-rajesh' && newMsg.worker_id === 'worker-123') ||
-          (workerId === 'worker-123' && newMsg.worker_id === 'worker-rajesh');
+        const targetNorm = normalizeWorkerId(workerId);
+        const matchesWorker = (
+          newMsg.worker_id === workerId ||
+          newMsg.worker_id === targetNorm ||
+          normalizeWorkerId(newMsg.worker_id) === targetNorm ||
+          newMsg.thread_id === `thread_${workerId}` ||
+          newMsg.thread_id === `thread_${targetNorm}`
+        );
 
         if (matchesWorker) {
-          setMessages(prev => {
-            const list = Array.isArray(prev) ? prev : [];
-            const exists = list.some(m => m && (m.id === newMsg.id || (m.content === newMsg.content && Math.abs(new Date(m.created_at) - new Date(newMsg.created_at)) < 3000)));
-            return exists ? list.map(m => (m.content === newMsg.content && Math.abs(new Date(m.created_at) - new Date(newMsg.created_at)) < 3000) ? newMsg : m) : [...list, newMsg];
-          });
+          setMessages(prev => mergeAndDeduplicateMessages(prev, newMsg));
           setTimeout(() => scrollToBottom('smooth'), 100);
 
           if (newMsg.sender_role === 'admin') {
@@ -92,7 +124,8 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
       (receipt) => {
         if (!receipt) return;
         const { worker_id, reader_role, read_at } = receipt;
-        if (reader_role === 'admin' && (worker_id === workerId || worker_id === 'worker-123' || worker_id === 'worker-rajesh')) {
+        const targetNorm = normalizeWorkerId(workerId);
+        if (reader_role === 'admin' && (worker_id === workerId || worker_id === targetNorm || normalizeWorkerId(worker_id) === targetNorm)) {
           setMessages(prev => (Array.isArray(prev) ? prev : []).map(m => {
             if (m && m.sender_role === 'staff' && !m.read_at) {
               return { ...m, read_at };
@@ -107,6 +140,33 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
       unsubscribe();
     };
   }, [workerId, workerUser]);
+
+  // Auto-poll for new messages every 3 seconds (ensures real-time sync across all devices)
+  useEffect(() => {
+    let isMounted = true;
+
+    const pollInterval = setInterval(async () => {
+      if (!isMounted) return;
+      try {
+        const threadMsgs = await fetchMessagesForWorker(workerId);
+        if (!isMounted || !Array.isArray(threadMsgs)) return;
+        setMessages(prev => {
+          if (threadMsgs.length !== prev.length || (threadMsgs.length > 0 && prev.length > 0 && threadMsgs[threadMsgs.length - 1]?.id !== prev[prev.length - 1]?.id)) {
+            setTimeout(() => scrollToBottom('smooth'), 100);
+            return threadMsgs;
+          }
+          return prev;
+        });
+      } catch (err) {
+        // Silently ignore polling errors
+      }
+    }, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(pollInterval);
+    };
+  }, [workerId]);
 
   const handleSend = async (e, directText = null) => {
     if (e) e.preventDefault();
@@ -125,10 +185,7 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
       });
 
       if (sent) {
-        setMessages(prev => {
-          const list = Array.isArray(prev) ? prev : [];
-          return [...list, sent];
-        });
+        setMessages(prev => mergeAndDeduplicateMessages(prev, sent));
         setTimeout(() => scrollToBottom('smooth'), 100);
       }
     } catch (err) {
@@ -204,7 +261,10 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
         ) : (
           messages.map((msg, idx) => {
             if (!msg) return null;
-            const isMe = msg.sender_role === 'staff';
+            const isOutgoingWorker = msg.sender_role === 'staff';
+            const authorName = isOutgoingWorker
+              ? (msg.sender_name || workerName || 'Staff Member')
+              : (msg.sender_name || 'Studio Admin');
 
             return (
               <motion.div
@@ -212,43 +272,48 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
                 initial={{ opacity: 0, y: 6, scale: 0.99 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.15 }}
-                className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                className={`flex flex-col ${isOutgoingWorker ? 'items-end' : 'items-start'}`}
               >
+                {/* Sender Identification Header */}
                 <div className="flex items-center gap-1.5 mb-1 px-1">
-                  <span className="text-[10px] font-bold text-[#6B7280]">
-                    {isMe ? 'You (Staff)' : `${msg.sender_name || 'Studio Admin'} (Admin)`}
+                  <span className={`text-[11px] font-bold ${isOutgoingWorker ? 'text-[#111111]' : 'text-[#D97706]'}`}>
+                    {isOutgoingWorker ? `You (${authorName})` : authorName}
                   </span>
-                  <span className="text-[9px] font-mono text-[#9CA0A6]">
-                    {formatMessageTime(msg.created_at)}
+                  <span className={`text-[9px] font-bold uppercase px-1.5 py-0.2 rounded-full ${
+                    isOutgoingWorker ? 'bg-[#DCE9FF] text-[#1E74FF]' : 'bg-[#FFE8CC] text-[#D97706]'
+                  }`}>
+                    {isOutgoingWorker ? 'Staff' : 'Studio Admin'}
                   </span>
                 </div>
 
+                {/* Message Bubble */}
                 <div
-                  className={`max-w-[85%] sm:max-w-md px-4 py-2.5 rounded-2xl text-xs leading-relaxed break-words shadow-xs ${
-                    isMe
-                      ? 'bg-[#141414] text-white font-normal rounded-tr-none'
+                  className={`max-w-[85%] sm:max-w-md px-4 py-3 rounded-2xl text-xs leading-relaxed break-words shadow-2xs ${
+                    isOutgoingWorker
+                      ? 'bg-[#141414] text-white rounded-tr-none'
                       : 'bg-white text-[#111111] border border-[#E7E8EB] rounded-tl-none'
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{msg.content || ''}</p>
-                </div>
 
-                {/* Read receipt */}
-                {isMe && (
-                  <div className="flex items-center gap-1 mt-0.5 px-1 text-[9px] text-[#9CA0A6]">
-                    {msg.read_at ? (
-                      <span className="flex items-center gap-0.5 text-[#13A52D] font-semibold">
-                        <CheckCheck className="w-3 h-3" />
-                        <span>Seen by Admin</span>
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-0.5 text-[#9CA0A6]">
-                        <Check className="w-3 h-3" />
-                        <span>Delivered</span>
-                      </span>
+                  {/* Timestamp & Read Receipt */}
+                  <div className={`flex items-center justify-end gap-1.5 text-[10px] mt-1.5 ${
+                    isOutgoingWorker ? 'text-white/60' : 'text-[#9CA0A6]'
+                  }`}>
+                    <span>{formatMessageTime(msg.created_at)}</span>
+                    {isOutgoingWorker && (
+                      msg.read_at ? (
+                        <span className="flex items-center text-[#38BDF8] font-bold" title="Seen by Admin">
+                          <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-white/50" title="Delivered">
+                          <Check className="w-3.5 h-3.5" />
+                        </span>
+                      )
                     )}
                   </div>
-                )}
+                </div>
               </motion.div>
             );
           })

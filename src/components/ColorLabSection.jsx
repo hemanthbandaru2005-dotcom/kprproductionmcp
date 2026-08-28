@@ -2,17 +2,21 @@ import React, { useState, useEffect } from 'react';
 import RetouchSlider from './RetouchSlider';
 import PackagesSection from './PackagesSection';
 import AlbumFlipbookViewer from './AlbumFlipbookViewer';
-import { Palette, Package, BookOpen, ChevronDown, Check, Sparkles, Eye, Loader2, Image as ImageIcon } from 'lucide-react';
+import AlbumPreviewPage from './AlbumPreviewPage';
+import { Palette, Package, BookOpen, ChevronDown, Check, Sparkles, Eye, Loader2, Image as ImageIcon, Mail, Phone, Upload, X } from 'lucide-react';
 import { PRINTING_DESIGN_SERVICES } from '../data/servicesData';
 import { loadPdfPages } from '../utils/pdfLoader';
 import { fetchCustomSitePhotos } from '../utils/sitePhotosService';
 import kprColorLabLogo from '../assets/kpr_colorlab_logo.png';
+import colorLabHeaderLeft from '../assets/colorlab_header_left.jpg';
+import colorLabHeaderRight from '../assets/colorlab_header_right.jpg';
 
 export default function ColorLabSection() {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState('designs'); // 'designs' | 'packages' | 'albums'
   const [flipbookImages, setFlipbookImages] = useState(null); // when set, opens the album flipbook viewer
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [showAlbumPreview, setShowAlbumPreview] = useState(false);
   const [customColorLabPhotos, setCustomColorLabPhotos] = useState([]);
 
   useEffect(() => {
@@ -71,51 +75,6 @@ export default function ColorLabSection() {
         '/albums/kpr_album/page_09.jpg',
         '/albums/kpr_album/page_10.jpg',
       ]
-    },
-    {
-      id: 'album-royal-velvet',
-      title: 'Royal Velvet Wedding Album',
-      subtitle: 'Flush Mount 30-Sheet Layflat',
-      image: '/images/packages/user_pkg_trad_photo.png',
-      desc: 'Handcrafted Italian leather album with metallic foil embossing and thick layflat archival sheets.',
-      previewImages: [
-        '/images/services/wedding_album_printing.png',
-        '/images/services/large_format_printing.png',
-        '/images/services/laser_printing.png',
-        '/images/services/acrylic_mdf_frames.png',
-        '/images/services/photo_frames.png',
-        '/images/services/flex_printing.png',
-      ]
-    },
-    {
-      id: 'album-editorial-fineart',
-      title: 'Editorial Fine Art Book',
-      subtitle: 'Silk Linen Hardcover',
-      image: '/images/packages/user_pkg_candid_photo.png',
-      desc: 'Museum-grade matte cotton paper with custom typography layout for unforgettable wedding stories.',
-      previewImages: [
-        '/images/services/large_format_printing.png',
-        '/images/services/photo_frames.png',
-        '/images/services/acrylic_mdf_frames.png',
-        '/images/services/wedding_album_printing.png',
-        '/images/services/laser_printing.png',
-        '/images/services/flex_printing.png',
-      ]
-    },
-    {
-      id: 'album-cinematic-sunset',
-      title: 'Cinematic Sunset Storybook',
-      subtitle: 'Acrylic Glass Cover',
-      image: '/images/packages/user_pkg_cinematic_video.png',
-      desc: 'High-definition acrylic front plate with metallic sheen pages capturing golden hour romance.',
-      previewImages: [
-        '/images/services/flex_printing.png',
-        '/images/services/acrylic_mdf_frames.png',
-        '/images/services/wedding_album_printing.png',
-        '/images/services/large_format_printing.png',
-        '/images/services/photo_frames.png',
-        '/images/services/laser_printing.png',
-      ]
     }
   ];
 
@@ -123,23 +82,51 @@ export default function ColorLabSection() {
     <div id="colorlab" className="w-full bg-[#F7F3EE] py-4 px-2 sm:px-6 lg:px-12 transition-all duration-300">
       <div className="max-w-7xl mx-auto border border-[#E2D9CC] rounded-xl bg-white shadow-xl overflow-hidden transition-all duration-500">
         
-        {/* 1. Main Collapsible "COLOR LAB" Header Bar */}
+        {/* 1. Main Collapsible "COLOR LAB" Header Bar with Flanking Showcase Photos */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] p-4 sm:p-8 flex items-center justify-center relative transition-colors duration-300 group cursor-pointer focus:outline-none border-b border-[#E2D9CC] min-h-[90px] sm:min-h-[140px] md:min-h-[170px]"
+          className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] px-3 py-3 sm:px-6 sm:py-5 md:px-8 md:py-6 flex items-center justify-between relative transition-all duration-300 group cursor-pointer focus:outline-none border-b border-[#E2D9CC] min-h-[95px] sm:min-h-[140px] md:min-h-[175px]"
+          aria-label="Toggle KPR Colour Lab section"
         >
-          <img
-            src={kprColorLabLogo}
-            alt="KPR Colour Lab"
-            className="h-20 sm:h-32 md:h-44 w-auto max-w-[85%] sm:max-w-[75%] object-contain transition-transform duration-300 group-hover:scale-105 select-none"
-          />
+          {/* Left Flanking Photo */}
+          <div className="flex items-center justify-center shrink-0">
+            <div className="relative overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl border-2 border-[#E2D9CC] group-hover:border-[#C5A880] shadow-sm sm:shadow-md transition-all duration-300 group-hover:scale-105 h-16 w-16 sm:h-24 sm:w-24 md:h-32 md:w-36 lg:h-36 lg:w-44 bg-[#F7F3EE]">
+              <img
+                src={colorLabHeaderLeft}
+                alt="KPR Color Lab - Luxury Heirloom Wooden & Leather Album Case"
+                className="w-full h-full object-cover object-center select-none"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Center Logo Area */}
+          <div className="flex-1 flex items-center justify-center px-2 sm:px-4 md:px-6">
+            <img
+              src={kprColorLabLogo}
+              alt="KPR Colour Lab"
+              className="h-14 sm:h-24 md:h-32 lg:h-40 w-auto max-w-[92%] object-contain transition-transform duration-300 group-hover:scale-105 select-none"
+            />
+          </div>
+
+          {/* Right Flanking Photo */}
+          <div className="flex items-center justify-center shrink-0 mr-7 sm:mr-12 md:mr-14">
+            <div className="relative overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl border-2 border-[#E2D9CC] group-hover:border-[#C5A880] shadow-sm sm:shadow-md transition-all duration-300 group-hover:scale-105 h-16 w-16 sm:h-24 sm:w-24 md:h-32 md:w-36 lg:h-36 lg:w-44 bg-[#F7F3EE]">
+              <img
+                src={colorLabHeaderRight}
+                alt="KPR Color Lab - Signature Ruby Leatherette Photobook"
+                className="w-full h-full object-cover object-center select-none"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+            </div>
+          </div>
 
           {/* Chevron Rotate Animation */}
-          <div className="absolute right-3 sm:right-8">
+          <div className="absolute right-2.5 sm:right-5 md:right-7 z-10">
             <div className={`p-1.5 sm:p-2.5 rounded-full border transition-all duration-500 ${
               isExpanded ? 'rotate-180 bg-[#C5A880] text-white border-[#C5A880]' : 'rotate-0 bg-[#F7F3EE] text-[#1A1A1A] border-[#E2D9CC] group-hover:bg-[#EAE4DC]'
             }`}>
-              <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
             </div>
           </div>
         </button>
@@ -149,7 +136,7 @@ export default function ColorLabSection() {
           isExpanded ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}>
           
-          {/* 2. Subsections Navigation Tabs: DESIGNS | PACKAGES | ALBUMS */}
+          {/* 2. Subsections Navigation Tabs: PRINTING & CUTTING | PACKAGES | ALBUMS */}
           <div className="bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             
             <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-[#666666] flex items-center gap-2">
@@ -159,7 +146,7 @@ export default function ColorLabSection() {
 
             <div className="inline-flex w-full sm:w-auto justify-center flex-wrap items-center gap-1.5 sm:gap-2 p-1 bg-white border border-[#E2D9CC] rounded-lg shadow-sm">
               
-              {/* DESIGNS TAB */}
+              {/* PRINTING & CUTTING TAB */}
               <button
                 onClick={() => setActiveSubTab('designs')}
                 className={`flex-1 sm:flex-initial inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs font-semibold tracking-widest uppercase rounded-md transition-all duration-300 cursor-pointer ${
@@ -169,7 +156,7 @@ export default function ColorLabSection() {
                 }`}
               >
                 <Palette className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'designs' ? 'text-[#C5A880]' : ''}`} />
-                <span>Designs</span>
+                <span>Printing & Cutting</span>
               </button>
 
               {/* PACKAGES TAB */}
@@ -205,25 +192,25 @@ export default function ColorLabSection() {
           {/* 3. Subsections Content Area */}
           <div className="p-2 sm:p-6 lg:p-8 bg-[#F7F3EE]">
             
-            {/* DESIGNS SUBSECTION */}
+            {/* PRINTING & CUTTING SUBSECTION */}
             {activeSubTab === 'designs' && (
               <div className="animate-fadeIn space-y-10">
                 
                 {/* Header */}
-                <div className="text-center max-w-3xl mx-auto mb-10">
-                  <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block mb-1">
-                    PRINTING & FRAMING SERVICES
+                <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
+                  <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block">
+                    PRINTING & CUTTING LAB
                   </span>
                   <h3 className="font-serif text-3xl sm:text-4xl text-[#1A1A1A] font-light">
-                    KPR Production Design & Printing Lab
+                    Printing & Cutting
                   </h3>
-                  <div className="w-16 h-0.5 bg-[#C5A880] mx-auto my-4" />
+                  <div className="w-16 h-0.5 bg-[#C5A880] mx-auto my-3" />
                   <p className="text-xs sm:text-sm text-[#666666] font-light leading-relaxed">
-                    Custom Telangana-style wedding album printing, high-definition large format displays, custom frames, and laser engraving tailored for grand Indian celebrations.
+                    Custom Telugu wedding album printing, industrial ColourJet flex printing, Canon 60" 7-colour photo printing, and precision CNC laser cutting tailored for grand Indian celebrations.
                   </p>
                 </div>
 
-                {/* 7 Services Grid */}
+                {/* 6 Services Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
                   {PRINTING_DESIGN_SERVICES.map((service) => (
                     <div
@@ -263,7 +250,7 @@ export default function ColorLabSection() {
                         {/* WhatsApp Action Button */}
                         <div className="pt-4 border-t border-[#E8E1D5] flex items-center justify-end">
                           <a
-                            href={`https://wa.me/919849390876?text=${encodeURIComponent(`Hello KPR Production! I am interested in your ${service.title} services. Please share details and pricing.`)}`}
+                            href={`https://wa.me/919849443648?text=${encodeURIComponent(`Hello KPR Colour Lab! I am interested in your ${service.title} services. Please share details and pricing.`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full sm:w-auto text-center px-5 py-2.5 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-[10px] font-semibold tracking-widest uppercase transition-all duration-300 rounded shadow-sm hover:shadow"
@@ -324,9 +311,10 @@ export default function ColorLabSection() {
               <div className="animate-fadeIn">
                 <PackagesSection
                   packageType="colorlab"
-                  whatsappNumber="919849390876"
-                  displayPhone="+91 98493 90876"
-                  categoryTitle="COLOUR LAB & PRINTING PACKAGES"
+                  whatsappNumber="919849443648"
+                  displayPhone="+91 98494 43648"
+                  showEyebrow={false}
+                  categoryTitle="PRINTING PACKAGES"
                   categorySubtitle="Transparent pricing for our fine art wedding album printing, framing, card printing, flex, and custom design services. Click Book Now to order via WhatsApp."
                 />
               </div>
@@ -343,9 +331,27 @@ export default function ColorLabSection() {
                   <p className="text-xs text-[#666666] font-light mt-2 leading-relaxed">
                     Designed sheet-by-sheet in our color lab, printed on museum archival paper that will be cherished for generations.
                   </p>
+                  <button
+                    onClick={() => setShowAlbumPreview(prev => !prev)}
+                    className={`mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer ${
+                      showAlbumPreview
+                        ? 'bg-[#C5A880] text-black hover:bg-[#b89560]'
+                        : 'bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black'
+                    }`}
+                  >
+                    {showAlbumPreview ? <X className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
+                    {showAlbumPreview ? 'Close Preview Tool' : 'Preview Your Album'}
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {/* Inline Album Preview Tool */}
+                {showAlbumPreview && (
+                  <div className="mb-10 border border-[#E2D9CC] rounded-2xl overflow-hidden bg-[#F7F3EE] shadow-inner animate-fadeIn">
+                    <AlbumPreviewPage />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {albumSheets.map((album, i) => (
                     <div key={i} className="bg-white border border-[#E2D9CC] rounded-lg overflow-hidden shadow-sm group hover:shadow-xl transition-all duration-300">
                       <div className="aspect-[4/3] overflow-hidden bg-black relative">
@@ -381,7 +387,7 @@ export default function ColorLabSection() {
                             {pdfLoading && album.pdfSrc ? 'Loading…' : 'View Album'}
                           </button>
                           <a
-                            href="https://wa.me/919849390876?text=Hi%20KPR%20Productions,%20I'm%20interested%20in%20your%20luxury%20wedding%20albums!"
+                            href="https://wa.me/919849443648?text=Hi%20KPR%20Colour%20Lab,%20I'm%20interested%20in%20your%20luxury%20wedding%20albums!"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-4 py-2 bg-[#1A1A1A] hover:bg-[#C5A880] text-white text-[10px] tracking-widest uppercase font-semibold transition-colors rounded"

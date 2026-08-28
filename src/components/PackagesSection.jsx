@@ -9,7 +9,8 @@ export default function PackagesSection({
   whatsappNumber = '919849443648',
   displayPhone = '+91 98494 43648',
   categoryTitle = 'KPR PRODUCTION PACKAGES',
-  categorySubtitle = 'Transparent pricing for our luxury photography, videography, aerial drone, live streaming, and post-production video editing services. Click Book Now to reserve your dates via WhatsApp.'
+  categorySubtitle = 'Transparent pricing for our luxury photography, videography, aerial drone, live streaming, and post-production video editing services. Click Book Now to reserve your dates via WhatsApp.',
+  showEyebrow = true
 }) {
   const [packages, setPackages] = useState(INITIAL_PHOTOGRAPHY_PACKAGES);
 
@@ -54,9 +55,11 @@ export default function PackagesSection({
 
         {/* Page Title & Header */}
         <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-12">
-          <p className="text-[10px] sm:text-[11px] md:text-[12px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-[#666666] font-medium mb-1.5 sm:mb-3">
-            SERVICES & PACKAGES
-          </p>
+          {showEyebrow && (
+            <p className="text-[10px] sm:text-[11px] md:text-[12px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-[#666666] font-medium mb-1.5 sm:mb-3">
+              SERVICES & PACKAGES
+            </p>
+          )}
           <h2 className="font-serif text-xl sm:text-4xl md:text-5xl text-[#1A1A1A] font-light tracking-wide mb-2.5 sm:mb-6">
             {categoryTitle}
           </h2>
@@ -69,7 +72,8 @@ export default function PackagesSection({
         {/* Services Grid (Dynamic from Supabase / Admin Editor) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-8 sm:mb-16">
           {packages.map((service, index) => {
-            const whatsappLink = getWhatsAppUrl(service.name, service.price, service.duration);
+            const displayDuration = (service.name === 'Candid Photography' || service.name === 'Cinematic Videography' || service.duration === 'Full Coverage') ? '6 hours' : service.duration;
+            const whatsappLink = getWhatsAppUrl(service.name, service.price, displayDuration);
             const imageSrc = service.image || '/images/packages/user_pkg_candid_photo.png';
 
             return (
@@ -121,7 +125,7 @@ export default function PackagesSection({
                     <div className="flex items-center justify-between bg-[#FAF7F2] p-2.5 rounded-lg border border-[#E8E1D5]">
                       <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold">Duration / Scope</span>
                       <span className="text-xs font-bold text-[#1A1A1A]">
-                        {service.duration}
+                        {displayDuration}
                       </span>
                     </div>
 

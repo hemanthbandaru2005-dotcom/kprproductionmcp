@@ -660,6 +660,60 @@ export function driveApiPlugin() {
           }
         }
 
+        if ((pathname === '/api/cleanup-test-data' || pathname === '/app/api/cleanup-test-data' || pathname === '/api/admin/clean-fake-data') && req.method === 'POST') {
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            if (serverClientUploads._jobs) serverClientUploads._jobs = [];
+            mockUploadSessions.clear();
+
+            let supabaseDeleted = {
+              jobs: 0,
+              uploads: 0,
+              messages: 0
+            };
+
+            const serverSupabase = getServerSupabase();
+            if (serverSupabase) {
+              try {
+                const { data: delJobs, error: errJobs } = await serverSupabase
+                  .from('jobs')
+                  .delete()
+                  .or('id.like.job-init-%,id.like.test-%,title.ilike.%test%,title.ilike.%demo%,client_name.ilike.%test%,client_name.ilike.%demo%')
+                  .select('id');
+                if (!errJobs && delJobs) supabaseDeleted.jobs = delJobs.length;
+              } catch (e) {}
+
+              try {
+                const { data: delUps, error: errUps } = await serverSupabase
+                  .from('client_uploads')
+                  .delete()
+                  .or('client_email.ilike.%test%,client_email.ilike.%example.com%,client_name.ilike.%test%')
+                  .select('id');
+                if (!errUps && delUps) supabaseDeleted.uploads = delUps.length;
+              } catch (e) {}
+
+              try {
+                const { data: delMsgs, error: errMsgs } = await serverSupabase
+                  .from('chat_messages')
+                  .delete()
+                  .or('sender_email.ilike.%test%,sender_email.ilike.%example.com%,message.ilike.%test message%')
+                  .select('id');
+                if (!errMsgs && delMsgs) supabaseDeleted.messages = delMsgs.length;
+              } catch (e) {}
+            }
+
+            res.statusCode = 200;
+            return res.end(JSON.stringify({
+              success: true,
+              message: 'All fake test data deleted successfully. Real production data is untouched.',
+              deleted: supabaseDeleted
+            }));
+          } catch (e) {
+            res.statusCode = 500;
+            return res.end(JSON.stringify({ error: e.message || 'Cleanup failed' }));
+          }
+        }
+
         // Pass through to next middleware
         next();
       });

@@ -13,6 +13,7 @@ import LightboxModal from './components/LightboxModal';
 import MoodboardDrawer from './components/MoodboardDrawer';
 import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
+import AlbumPreviewPage from './components/AlbumPreviewPage';
 import IntroVideo from './components/IntroVideo';
 import ServicesShowcase from './components/ServicesShowcase';
 import { SOCIAL_LINKS } from './utils/socialLinks';
@@ -20,7 +21,7 @@ import { SOCIAL_LINKS } from './utils/socialLinks';
 function getInitialPage() {
   try {
     const hash = window.location.hash.replace('#', '').trim();
-    const validPages = ['home', 'media', 'colorlab', 'events', 'login', 'contact', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'];
+    const validPages = ['home', 'media', 'colorlab', 'events', 'login', 'contact', 'album-preview', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'];
     if (validPages.includes(hash)) return hash;
   } catch (e) {}
   return 'home';
@@ -325,6 +326,12 @@ function AppContent() {
             <ContactSection />
           </div>
         )}
+
+        {activePage === 'album-preview' && (
+          <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
+            <AlbumPreviewPage />
+          </div>
+        )}
       </main>
 
       {/* Footer (shown on inner pages) */}
@@ -333,7 +340,13 @@ function AppContent() {
           <Footer
             onOpenInquire={() => handleSelectPage('contact')}
             showInstagram={true}
-            showAddress={activePage !== 'media' && activePage !== 'events'}
+            showFacebook={activePage !== 'events'}
+            showAddress={activePage === 'events' || activePage === 'colorlab' || activePage === 'contact'}
+            mapUrl={
+              activePage === 'events'
+                ? 'https://maps.app.goo.gl/SJqEJrKuFQ3Z2xys8?g_st=ic'
+                : 'https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac'
+            }
             instagramUrl={
               activePage === 'colorlab'
                 ? SOCIAL_LINKS.instagramColorLab
@@ -347,6 +360,30 @@ function AppContent() {
                 : activePage === 'events'
                 ? '@kpr_dance_.zone'
                 : '@kpr_fotography'
+            }
+            youtubeUrl={
+              activePage === 'events'
+                ? 'https://youtube.com/@kprdancezone2022?si=9iyxnp5usQPmNeO9'
+                : 'https://youtube.com/@kprfotography?si=b_8j81oMQPNZeS_3'
+            }
+            youtubeHandle={
+              activePage === 'events'
+                ? '@kprdancezone2022'
+                : '@kprfotography'
+            }
+            contactEmail={
+              activePage === 'colorlab'
+                ? 'kprcolourlab@gmail.com'
+                : activePage === 'events'
+                ? 'kprevents@gmail.com'
+                : 'kprfotography@gmail.com'
+            }
+            contactPhone={
+              activePage === 'colorlab'
+                ? '+91 98493 90876'
+                : activePage === 'events'
+                ? '+91 99489 72531'
+                : '+91 98494 43648'
             }
           />
         </footer>

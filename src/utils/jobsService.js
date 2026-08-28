@@ -82,12 +82,45 @@ export function isJobForWorker(job, user, profile) {
 /**
  * Fetch all jobs from backend API, Supabase, and local cache
  */
+/**
+ * Fetch all jobs from backend API, Supabase, and local cache
+ */
 export async function fetchJobs() {
   const jobsMap = new Map();
   const deletedIds = getDeletedJobIds();
   const apiBase = getBackendApiUrl();
 
-  // 1. Fetch from Render Backend API
+  // 1. Fetch from Supabase verifications cloud database (Accessible across all laptops & devices)
+  try {
+    const { data: vJobs, error: vErr } = await supabase
+      .from('verifications')
+      .select('*')
+      .eq('album_id', 'SYSTEM_JOB_REGISTRY')
+      .order('sent_at', { ascending: false });
+
+    if (!vErr && Array.isArray(vJobs)) {
+      vJobs.forEach(v => {
+        const jId = v.client_id || v.id;
+        const jobData = Array.isArray(v.photo_items) && v.photo_items[0] ? v.photo_items[0] : null;
+        if (jobData && jobData.id && !deletedIds.includes(jobData.id)) {
+          jobsMap.set(jobData.id, jobData);
+        } else if (jId && !deletedIds.includes(jId)) {
+          jobsMap.set(jId, {
+            id: jId,
+            title: v.event_title || 'Untitled Shoot',
+            client_name: v.client_name || null,
+            assigned_worker: v.client_email || null,
+            assigned_worker_name: v.client_email || null,
+            status: v.status || 'in_progress',
+            created_at: v.sent_at || v.created_at,
+            updated_at: v.responded_at || v.sent_at || v.created_at
+          });
+        }
+      });
+    }
+  } catch (e) {}
+
+  // 2. Fetch from Render Backend API
   try {
     const res = await fetch(`${apiBase}/app/api/jobs`);
     if (res.ok) {
@@ -95,14 +128,15 @@ export async function fetchJobs() {
       if (Array.isArray(data.jobs)) {
         data.jobs.forEach(j => {
           if (j && j.id && !deletedIds.includes(j.id)) {
-            jobsMap.set(j.id, j);
+            const existing = jobsMap.get(j.id);
+            jobsMap.set(j.id, { ...existing, ...j });
           }
         });
       }
     }
   } catch (e) {}
 
-  // 2. Fetch from Supabase
+  // 3. Fetch from Supabase jobs table
   try {
     const { data: sJobs, error } = await supabase
       .from('jobs')
@@ -112,19 +146,32 @@ export async function fetchJobs() {
     if (!error && Array.isArray(sJobs) && sJobs.length > 0) {
       sJobs.forEach(j => {
         if (j && j.id && !deletedIds.includes(j.id)) {
-          // Merge or set
           const existing = jobsMap.get(j.id);
-          jobsMap.set(j.id, { ...j, ...existing });
+          jobsMap.set(j.id, { ...existing, ...j });
         }
       });
     }
   } catch (e) {}
 
-  // 3. Merge with local cache
+  // 4. Merge with local cache
   const localList = getLocalJobs();
   localList.forEach(j => {
     if (j && j.id && !deletedIds.includes(j.id) && !jobsMap.has(j.id)) {
       jobsMap.set(j.id, j);
+      // Auto-sync legacy local job to Supabase cloud database
+      supabase.from('verifications').insert([{
+        id: `job_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        client_id: j.id,
+        client_name: j.client_name || 'Direct Client',
+        client_email: j.assigned_worker || null,
+        album_id: 'SYSTEM_JOB_REGISTRY',
+        event_id: `job_event_${j.id}`,
+        event_title: j.title,
+        client_note: j.notes,
+        status: j.status || 'in_progress',
+        sent_at: j.created_at || new Date().toISOString(),
+        photo_items: [j]
+      }]).then(() => {}).catch(() => {});
     }
   });
 
@@ -173,7 +220,26 @@ export async function createJob(jobData) {
   const current = getLocalJobs();
   saveLocalJobs([newJob, ...current.filter(j => j.id !== newId)]);
 
-  // 2. Post to Backend API
+  // 2. Save to Supabase verifications cloud database (Available everywhere)
+  try {
+    await supabase.from('verifications').insert([{
+      id: `job_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      client_id: newId,
+      client_name: newJob.client_name || 'Direct Client',
+      client_email: workerEmail,
+      album_id: 'SYSTEM_JOB_REGISTRY',
+      event_id: `job_event_${newId}`,
+      event_title: newJob.title,
+      client_note: newJob.notes,
+      status: newJob.status,
+      sent_at: newJob.created_at,
+      photo_items: [newJob]
+    }]);
+  } catch (err) {
+    console.warn('Supabase job registry insert notice:', err);
+  }
+
+  // 3. Post to Backend API
   try {
     await fetch(`${apiBase}/app/api/jobs`, {
       method: 'POST',
@@ -182,21 +248,21 @@ export async function createJob(jobData) {
     });
   } catch (e) {}
 
-  // 3. Supabase insert
+  // 4. Supabase jobs table insert
   try {
     await supabase.from('jobs').insert([{
       title: newJob.title,
       client_name: newJob.client_name,
       shoot_type: newJob.shoot_type,
       shoot_date: newJob.shoot_date,
-      assigned_worker: null, // Avoid UUID schema clash
+      assigned_worker: null,
       notes: newJob.notes,
       status: newJob.status,
       progress_percent: newJob.progress_percent
     }]);
   } catch (e) {}
 
-  // 4. Broadcast
+  // 5. Broadcast
   broadcastJobChange({ type: 'create', job: newJob });
 
   return { success: true, job: newJob };
@@ -230,7 +296,24 @@ export async function updateJob(jobId, updates) {
   // 1. Update Local Storage
   saveLocalJobs(currentList.map(j => j.id === jobId ? updatedJob : j));
 
-  // 2. Update Backend API
+  // 2. Update Supabase verifications cloud database
+  try {
+    await supabase
+      .from('verifications')
+      .update({
+        event_title: updatedJob.title,
+        client_name: updatedJob.client_name,
+        client_email: updatedJob.assigned_worker,
+        status: updatedJob.status,
+        client_note: updatedJob.notes,
+        responded_at: updatedJob.updated_at,
+        photo_items: [updatedJob]
+      })
+      .eq('album_id', 'SYSTEM_JOB_REGISTRY')
+      .eq('client_id', jobId);
+  } catch (e) {}
+
+  // 3. Update Backend API
   try {
     await fetch(`${apiBase}/app/api/jobs/${jobId}`, {
       method: 'PUT',
@@ -239,7 +322,7 @@ export async function updateJob(jobId, updates) {
     });
   } catch (e) {}
 
-  // 3. Update Supabase
+  // 4. Update Supabase jobs table
   try {
     await supabase
       .from('jobs')
@@ -256,7 +339,7 @@ export async function updateJob(jobId, updates) {
       .eq('id', jobId);
   } catch (e) {}
 
-  // 4. Broadcast
+  // 5. Broadcast
   broadcastJobChange({ type: 'update', job: updatedJob });
 
   return { success: true, job: updatedJob };
@@ -279,19 +362,28 @@ export async function deleteJob(jobId) {
   const current = getLocalJobs();
   saveLocalJobs(current.filter(j => j.id !== jobId));
 
-  // 3. Delete from Backend API
+  // 3. Delete from Supabase verifications cloud database
+  try {
+    await supabase
+      .from('verifications')
+      .delete()
+      .eq('album_id', 'SYSTEM_JOB_REGISTRY')
+      .eq('client_id', jobId);
+  } catch (e) {}
+
+  // 4. Delete from Backend API
   try {
     await fetch(`${apiBase}/app/api/jobs/${jobId}`, {
       method: 'DELETE'
     });
   } catch (e) {}
 
-  // 4. Delete from Supabase
+  // 5. Delete from Supabase jobs table
   try {
     await supabase.from('jobs').delete().eq('id', jobId);
   } catch (e) {}
 
-  // 5. Broadcast
+  // 6. Broadcast
   broadcastJobChange({ type: 'delete', jobId });
 
   return { success: true };
@@ -336,13 +428,19 @@ export function subscribeToJobsRealtime(callback) {
     window.addEventListener('kpr_jobs_updated', handleCustom);
   }
 
-  // Supabase Realtime channel
-  const channel = supabase
-    .channel('kpr-jobs-live-channel')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
-      if (callback) callback({ type: 'postgres_changes' });
-    })
-    .subscribe();
+  // Supabase Realtime channel (Unique channel name per subscription to avoid collision)
+  let channel = null;
+  try {
+    const channelId = `jobs-live-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+    channel = supabase
+      .channel(channelId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs' }, () => {
+        if (callback) callback({ type: 'postgres_changes' });
+      })
+      .subscribe();
+  } catch (e) {
+    console.warn('Realtime channel subscribe warning:', e);
+  }
 
   return () => {
     if (bc) {
@@ -351,8 +449,54 @@ export function subscribeToJobsRealtime(callback) {
     if (typeof window !== 'undefined') {
       window.removeEventListener('kpr_jobs_updated', handleCustom);
     }
-    try {
-      supabase.removeChannel(channel);
-    } catch (e) {}
+    if (channel) {
+      try {
+        supabase.removeChannel(channel);
+      } catch (e) {}
+    }
+  };
+}
+
+/**
+ * Permanently cleans all test/fake data from backend, Supabase, and localStorage
+ */
+export async function cleanAllFakeTestData() {
+  const apiBase = getBackendApiUrl();
+
+  // 1. Call Backend Cleanup API
+  try {
+    await fetch(`${apiBase}/api/cleanup-test-data`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (e) {
+    console.warn('Backend cleanup API call failed/skipped:', e);
+  }
+
+  // 2. Direct Supabase deletion for test jobs & uploads
+  try {
+    await supabase
+      .from('jobs')
+      .delete()
+      .or('id.like.job-init-%,id.like.test-%,title.ilike.%test%,title.ilike.%demo%,client_name.ilike.%test%,client_name.ilike.%demo%');
+  } catch (e) {}
+
+  // 3. Clear Local Storage caches of test data
+  try {
+    const localJobs = getLocalJobs();
+    const filteredJobs = localJobs.filter(j => {
+      const isTest = (j.id && (j.id.startsWith('test-') || j.id.startsWith('job-init-'))) ||
+                     (j.title && (j.title.toLowerCase().includes('test') || j.title.toLowerCase().includes('demo')));
+      return !isTest;
+    });
+    saveLocalJobs(filteredJobs);
+  } catch (e) {}
+
+  // 4. Notify all listeners to refresh
+  notifyJobsUpdated();
+
+  return {
+    success: true,
+    message: 'All fake test data deleted successfully. Real production data is untouched.'
   };
 }

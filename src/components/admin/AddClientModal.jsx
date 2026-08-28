@@ -37,7 +37,36 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
         }
       } catch (e) {}
 
-      // 2. Try Supabase RPC function admin_create_user
+      // 2. Insert to Supabase verifications cloud database table (Accessible across all laptops)
+      const clientId = `client-${cleanEmail.split('@')[0]}-${Date.now().toString(36)}`;
+      const clientRecordPayload = {
+        id: `client_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        client_id: clientId,
+        client_name: fullName.trim(),
+        client_email: cleanEmail,
+        album_id: 'SYSTEM_CLIENT_REGISTRY',
+        event_id: `client_profile_${cleanEmail.split('@')[0]}`,
+        event_title: 'Studio Client Account',
+        client_note: phone.trim() || 'N/A',
+        status: 'active',
+        sent_at: new Date().toISOString(),
+        photo_items: [{
+          id: clientId,
+          full_name: fullName.trim(),
+          email: cleanEmail,
+          phone: phone.trim() || 'N/A',
+          role: 'client',
+          status: 'active'
+        }]
+      };
+
+      try {
+        await supabase.from('verifications').insert([clientRecordPayload]);
+      } catch (dbErr) {
+        console.warn('Supabase client registry save notice:', dbErr);
+      }
+
+      // 3. Try Supabase RPC function admin_create_user
       try {
         await supabase.rpc('admin_create_user', {
           p_email: cleanEmail,
@@ -47,12 +76,22 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
           p_role: 'client',
           p_real_email: null,
         });
-      } catch (rpcErr) {
-        console.warn('Supabase RPC notice:', rpcErr);
-      }
+      } catch (rpcErr) {}
 
-      // 3. Directly try inserting/upserting to profiles table in Supabase
-      const clientId = `client-${cleanEmail.split('@')[0]}-${Date.now().toString(36)}`;
+      // 4. Try Supabase profiles table upsert
+      try {
+        await supabase.from('profiles').upsert([{
+          id: clientId,
+          email: cleanEmail,
+          full_name: fullName.trim(),
+          phone: phone.trim() || null,
+          role: 'client',
+          status: 'active',
+          updated_at: new Date().toISOString()
+        }]);
+      } catch (err) {}
+
+      // 5. Local cache fallback
       const newClientRecord = {
         id: clientId,
         email: cleanEmail,
@@ -64,19 +103,6 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
       };
 
       try {
-        await supabase.from('profiles').upsert([{
-          id: newClientRecord.id,
-          email: cleanEmail,
-          full_name: fullName.trim(),
-          phone: phone.trim() || null,
-          role: 'client',
-          status: 'active',
-          updated_at: new Date().toISOString()
-        }]);
-      } catch (err) {}
-
-      // 4. Local & Session Provisioning Registry
-      try {
         const raw = localStorage.getItem('kpr_registered_clients_v1');
         const list = raw ? JSON.parse(raw) : [];
         const updated = [newClientRecord, ...list.filter(c => c.email.toLowerCase() !== cleanEmail)];
@@ -85,9 +111,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('kpr_registered_clients_updated', { detail: newClientRecord }));
         }
-      } catch (storageErr) {
-        console.error('Storage update error:', storageErr);
-      }
+      } catch (storageErr) {}
 
       setSuccessMsg(`Client account created successfully!`);
       if (onClientAdded) onClientAdded(newClientRecord);

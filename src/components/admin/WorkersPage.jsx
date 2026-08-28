@@ -26,7 +26,37 @@ export default function WorkersPage() {
     const deletedEmails = getDeletedWorkerEmails();
     const workerMap = new Map();
 
-    // 1. Supabase Profiles
+    // 1. Supabase verifications cloud registry (Works across all laptops & devices)
+    try {
+      const { data: vData, error: vErr } = await supabase
+        .from('verifications')
+        .select('*')
+        .eq('album_id', 'SYSTEM_WORKER_REGISTRY')
+        .order('sent_at', { ascending: false });
+
+      if (!vErr && Array.isArray(vData)) {
+        vData.forEach(item => {
+          const email = (item.client_email || '').toLowerCase().trim();
+          const meta = Array.isArray(item.photo_items) && item.photo_items[0] ? item.photo_items[0] : {};
+          if (email && !deletedEmails.includes(email)) {
+            workerMap.set(email, {
+              id: item.id || `worker-${item.client_id || email.split('@')[0]}`,
+              client_id: item.client_id,
+              full_name: meta.full_name || item.client_name,
+              email: email,
+              phone: meta.phone || item.client_note || 'N/A',
+              real_email: meta.real_email || 'N/A',
+              role: 'worker',
+              status: item.status || 'active',
+              skill: meta.skill || 'Photographer / Editor',
+              created_at: item.sent_at || item.created_at
+            });
+          }
+        });
+      }
+    } catch (e) {}
+
+    // 2. Supabase Profiles table
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -34,24 +64,44 @@ export default function WorkersPage() {
         .eq('role', 'worker')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && Array.isArray(data) && data.length > 0) {
         data.forEach(w => {
-          if (w.email && !deletedEmails.includes(w.email.toLowerCase())) {
-            workerMap.set(w.email.toLowerCase(), w);
+          const email = (w.email || '').toLowerCase().trim();
+          if (email && !deletedEmails.includes(email) && !workerMap.has(email)) {
+            workerMap.set(email, {
+              ...w,
+              email
+            });
           }
         });
       }
     } catch (e) {}
 
-    // 2. Local Registered Workers
+    // 3. Local Registered Workers cache fallback
     try {
       const raw = localStorage.getItem('kpr_registered_workers_v1');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
           parsed.forEach(w => {
-            if (w && w.email && !deletedEmails.includes(w.email.toLowerCase()) && !workerMap.has(w.email.toLowerCase())) {
-              workerMap.set(w.email.toLowerCase(), w);
+            const email = (w.email || '').toLowerCase().trim();
+            if (email && !deletedEmails.includes(email) && !workerMap.has(email)) {
+              workerMap.set(email, w);
+              // Auto-sync local worker to Supabase cloud database so other laptops immediately see them
+              const workerKey = (w.id || email.split('@')[0]).replace(/^worker-/, '');
+              supabase.from('verifications').insert([{
+                id: `worker_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                client_id: workerKey,
+                client_name: w.full_name || 'Staff Worker',
+                client_email: email,
+                album_id: 'SYSTEM_WORKER_REGISTRY',
+                event_id: `worker_profile_${workerKey}`,
+                event_title: 'Studio Staff Worker',
+                client_note: w.phone || 'N/A',
+                status: w.status || 'active',
+                sent_at: w.created_at || new Date().toISOString(),
+                photo_items: [w]
+              }]).then(() => {}).catch(() => {});
             }
           });
         }
@@ -65,12 +115,16 @@ export default function WorkersPage() {
   useEffect(() => {
     fetchWorkers();
 
-    const channel = supabase
-      .channel('workers-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-        fetchWorkers();
-      })
-      .subscribe();
+    const channelId = `workers-realtime-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+    let channel = null;
+    try {
+      channel = supabase
+        .channel(channelId)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+          fetchWorkers();
+        })
+        .subscribe();
+    } catch (e) {}
 
     const handleLocalWorkerUpdated = () => {
       fetchWorkers();
@@ -78,7 +132,9 @@ export default function WorkersPage() {
     window.addEventListener('kpr_registered_workers_updated', handleLocalWorkerUpdated);
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch (e) {}
+      }
       window.removeEventListener('kpr_registered_workers_updated', handleLocalWorkerUpdated);
     };
   }, []);
@@ -126,8 +182,12 @@ export default function WorkersPage() {
       }
     } catch (e) {}
 
-    // 3. Remove from Supabase
+    // 3. Remove from Supabase cloud database
     try {
+      await supabase.from('verifications').delete().eq('album_id', 'SYSTEM_WORKER_REGISTRY').eq('client_email', emailToDelete);
+      if (worker.client_id) {
+        await supabase.from('verifications').delete().eq('album_id', 'SYSTEM_WORKER_REGISTRY').eq('client_id', worker.client_id);
+      }
       await supabase.from('profiles').delete().eq('email', emailToDelete);
       if (worker.id) {
         await supabase.from('profiles').delete().eq('id', worker.id);

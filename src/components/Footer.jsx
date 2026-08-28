@@ -6,9 +6,15 @@ import { InstagramIcon, FacebookIcon, YoutubeIcon } from './SocialIcons';
 export default function Footer({
   onOpenInquire,
   showInstagram = true,
+  showFacebook = true,
   showAddress = true,
+  mapUrl = 'https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac',
   instagramUrl = SOCIAL_LINKS.instagram,
-  instagramHandle = '@kpr_fotography'
+  instagramHandle = '@kpr_fotography',
+  youtubeUrl = SOCIAL_LINKS.youtube,
+  youtubeHandle = '@kprdancezone2022',
+  contactEmail = 'kprfotography@gmail.com',
+  contactPhone = '+91 98494 43648'
 }) {
   const instagramGrid = [
     '/images/21/photo_1.jpg',
@@ -39,23 +45,28 @@ export default function Footer({
                 rel="noopener noreferrer"
                 className="px-3.5 sm:px-4 py-2 border border-white/20 hover:border-[#C5A880] text-[11px] sm:text-xs uppercase tracking-wider text-white/80 hover:text-[#C5A880] transition-all duration-300 flex items-center gap-2 self-start sm:self-auto group"
               >
-                <InstagramIcon className="w-4 h-4 text-[#C5A880] group-hover:scale-110 transition-transform" />
-                <span>Follow Live {instagramHandle}</span>
+                <span className="group-hover:text-[#C5A880] font-medium">@{instagramHandle.replace('@', '')}</span>
+                <span className="text-[#C5A880] text-sm group-hover:translate-x-0.5 transition-transform">→</span>
               </a>
             </div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
               {instagramGrid.map((img, i) => (
                 <a
                   key={i}
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative aspect-square overflow-hidden bg-white/5 border border-white/10"
+                  className="aspect-square bg-white/5 overflow-hidden group/item relative rounded-sm"
                 >
-                  <img src={img} alt="Instagram preview" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                    <InstagramIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#C5A880]" />
+                  <img
+                    src={img}
+                    alt="Instagram preview"
+                    className="w-full h-full object-cover grayscale brightness-90 group-hover/item:grayscale-0 group-hover/item:brightness-100 group-hover/item:scale-105 transition-all duration-500"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center">
+                    <InstagramIcon className="w-5 h-5 text-white" />
                   </div>
                 </a>
               ))}
@@ -63,15 +74,14 @@ export default function Footer({
           </div>
         )}
 
-        {/* Footer Main Links */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-12 pb-10 sm:pb-16 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 pb-8 border-b border-white/10">
           
-          {/* Brand Col */}
-          <div className="md:col-span-5 space-y-4">
-            <h2 className="font-serif text-3xl tracking-[0.2em] uppercase text-white font-light">
-              KPR PRODUCTIONS
-            </h2>
-            <p className="text-[10px] tracking-[0.4em] uppercase text-[#C5A880]">
+          {/* Brand Column */}
+          <div className="md:col-span-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="font-serif text-xl tracking-wider font-light text-white">KPR PRODUCTIONS</span>
+            </div>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-[#C5A880] font-medium">
               FINE ART WEDDING & PORTRAIT STUDIO
             </p>
             <p className="text-xs text-white/60 font-light leading-relaxed max-w-sm">
@@ -85,7 +95,7 @@ export default function Footer({
             <div className="space-y-2.5 text-xs text-white/70 font-light">
               {showAddress && (
                 <a
-                  href="https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac"
+                  href={mapUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-2 text-white/80 hover:text-[#C5A880] transition-colors group"
@@ -98,18 +108,18 @@ export default function Footer({
                 </a>
               )}
               <a
-                href="mailto:kprfotography@gmail.com"
+                href={`mailto:${contactEmail}`}
                 className="flex items-center gap-2 hover:text-[#C5A880] transition-colors"
               >
                 <Mail className="w-3.5 h-3.5 text-[#C5A880]" />
-                <span>kprfotography@gmail.com</span>
+                <span>{contactEmail}</span>
               </a>
               <a
-                href="tel:+919849443648"
+                href={`tel:${contactPhone.replace(/\s+/g, '')}`}
                 className="flex items-center gap-2 hover:text-[#C5A880] transition-colors"
               >
                 <Phone className="w-3.5 h-3.5 text-[#C5A880]" />
-                <span>+91 98494 43648</span>
+                <span>{contactPhone}</span>
               </a>
             </div>
           </div>
@@ -136,24 +146,26 @@ export default function Footer({
               </a>
 
               {/* Facebook Link */}
-              <a
-                href={SOCIAL_LINKS.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 px-3 py-2 bg-white/5 hover:bg-[#C5A880]/15 border border-white/10 hover:border-[#C5A880]/40 rounded text-xs text-white/80 hover:text-white transition-all duration-300 group"
-              >
-                <div className="p-1.5 bg-[#C5A880]/20 rounded text-[#C5A880] group-hover:scale-110 transition-transform">
-                  <FacebookIcon className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="block font-medium text-white group-hover:text-[#C5A880]">Facebook</span>
-                  <span className="text-[10px] text-white/40">KPR Fotography</span>
-                </div>
-              </a>
+              {showFacebook && (
+                <a
+                  href={SOCIAL_LINKS.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-3 py-2 bg-white/5 hover:bg-[#C5A880]/15 border border-white/10 hover:border-[#C5A880]/40 rounded text-xs text-white/80 hover:text-white transition-all duration-300 group"
+                >
+                  <div className="p-1.5 bg-[#C5A880]/20 rounded text-[#C5A880] group-hover:scale-110 transition-transform">
+                    <FacebookIcon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="block font-medium text-white group-hover:text-[#C5A880]">Facebook</span>
+                    <span className="text-[10px] text-white/40">KPR Fotography</span>
+                  </div>
+                </a>
+              )}
 
               {/* YouTube Link */}
               <a
-                href={SOCIAL_LINKS.youtube}
+                href={youtubeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 px-3 py-2 bg-white/5 hover:bg-[#C5A880]/15 border border-white/10 hover:border-[#C5A880]/40 rounded text-xs text-white/80 hover:text-white transition-all duration-300 group"
@@ -163,7 +175,7 @@ export default function Footer({
                 </div>
                 <div>
                   <span className="block font-medium text-white group-hover:text-[#C5A880]">YouTube</span>
-                  <span className="text-[10px] text-white/40">@kprfotography</span>
+                  <span className="text-[10px] text-white/40">{youtubeHandle}</span>
                 </div>
               </a>
 

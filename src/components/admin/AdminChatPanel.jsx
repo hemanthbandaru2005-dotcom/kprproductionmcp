@@ -16,7 +16,8 @@ import {
   clearThreadMessages,
   clearAllChatHistory,
   DEFAULT_DEMO_WORKERS,
-  formatNameFromEmailOrId
+  formatNameFromEmailOrId,
+  normalizeWorkerId
 } from '../../utils/chatService';
 
 const QUICK_PROMPTS = [
@@ -65,9 +66,44 @@ function formatThreadDate(dateStr) {
   }
 }
 
+function mergeAndDeduplicateMessages(existingList, newMsg) {
+  if (!newMsg) return existingList;
+  const list = Array.isArray(existingList) ? existingList : [];
+
+  const isDuplicate = list.some(m => {
+    if (!m) return false;
+    if (m.id === newMsg.id) return true;
+    const sameWorker = m.worker_id === newMsg.worker_id;
+    const sameRole = m.sender_role === newMsg.sender_role;
+    const sameContent = (m.content || '').trim() === (newMsg.content || '').trim();
+    const timeDiff = Math.abs(new Date(m.created_at || 0) - new Date(newMsg.created_at || 0));
+    return sameWorker && sameRole && sameContent && timeDiff < 10000;
+  });
+
+  if (isDuplicate) {
+    return list.map(m => {
+      if (m.id === newMsg.id || (
+        m.worker_id === newMsg.worker_id &&
+        m.sender_role === newMsg.sender_role &&
+        (m.content || '').trim() === (newMsg.content || '').trim() &&
+        Math.abs(new Date(m.created_at || 0) - new Date(newMsg.created_at || 0)) < 10000
+      )) {
+        return { ...m, ...newMsg };
+      }
+      return m;
+    });
+  }
+
+  return [...list, newMsg];
+}
+
 export default function AdminChatPanel() {
   const { user, profile } = useAuth();
-  const currentAdminName = profile?.full_name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : 'Studio Admin');
+  const currentAdminName = profile?.full_name ||
+    (user?.email === 'kprfotography@gmail.com' ? 'KPR Fotography Admin' :
+     user?.email === 'kprevents@gmail.com' ? 'KPR Events Admin' :
+     user?.email === 'kprcolourlab@gmail.com' ? 'KPR Colour Lab Admin' :
+     user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : 'KPR Studio Admin'));
 
   const [workers, setWorkers] = useState([]);
   const [selectedWorkerId, setSelectedWorkerId] = useState(null);
@@ -81,6 +117,11 @@ export default function AdminChatPanel() {
   const [sending, setSending] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const selectedWorkerIdRef = useRef(selectedWorkerId);
+
+  useEffect(() => {
+    selectedWorkerIdRef.current = selectedWorkerId;
+  }, [selectedWorkerId]);
 
   const scrollToBottom = (behavior = 'smooth') => {
     try {
@@ -101,22 +142,15 @@ export default function AdminChatPanel() {
           fetchAllChatThreadsForAdmin()
         ]);
         if (!isMounted) return;
+
         setWorkers(workerList || []);
         setAllMessages(msgs || []);
 
-        if (msgs && msgs.length > 0 && !selectedWorkerId) {
-          const sorted = [...msgs].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-          const latestWorker = sorted.find(m => m && m.worker_id)?.worker_id;
-          if (latestWorker) {
-            setSelectedWorkerId(latestWorker);
-          } else if (workerList && workerList[0]?.id) {
-            setSelectedWorkerId(workerList[0].id);
-          }
-        } else if (workerList && workerList[0]?.id && !selectedWorkerId) {
-          setSelectedWorkerId(workerList[0].id);
+        if (Array.isArray(workerList) && workerList.length > 0) {
+          setSelectedWorkerId(prev => prev || workerList[0].id);
         }
       } catch (err) {
-        console.error('Error loading chat threads:', err);
+        console.error('Error initializing Admin Chat data:', err);
       } finally {
         if (isMounted) setLoadingWorkers(false);
       }
@@ -124,30 +158,44 @@ export default function AdminChatPanel() {
 
     loadData();
 
+    // Listen for registered worker changes
+    const onWorkersUpdated = () => {
+      fetchWorkersForChat().then(w => {
+        if (isMounted) setWorkers(w || []);
+      });
+    };
+    window.addEventListener('kpr_registered_workers_updated', onWorkersUpdated);
+
+    // Subscribe to chat channel for real-time updates
     const unsubscribe = subscribeToChatChannel(
       (newMsg) => {
         if (!newMsg) return;
-        setAllMessages((prev) => {
-          if (prev.some(m => m.id === newMsg.id)) return prev;
-          return [...prev, newMsg];
-        });
+        setAllMessages((prev) => mergeAndDeduplicateMessages(prev, newMsg));
 
-        if (selectedWorkerId && newMsg.worker_id === selectedWorkerId) {
-          setMessages((prev) => {
-            if (prev.some(m => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
-          });
+        const activeId = selectedWorkerIdRef.current;
+        if (activeId && (
+          newMsg.worker_id === activeId ||
+          normalizeWorkerId(newMsg.worker_id) === normalizeWorkerId(activeId) ||
+          newMsg.thread_id === `thread_${activeId}` ||
+          newMsg.thread_id === `thread_${normalizeWorkerId(activeId)}`
+        )) {
+          setMessages((prev) => mergeAndDeduplicateMessages(prev, newMsg));
           setTimeout(() => scrollToBottom('smooth'), 100);
 
           if (newMsg.sender_role === 'staff') {
-            markThreadAsRead(selectedWorkerId);
+            markThreadAsRead(activeId, 'admin');
           }
         }
       },
       (updatedMsg) => {
         if (!updatedMsg) return;
         setAllMessages((prev) => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
-        if (selectedWorkerId && updatedMsg.worker_id === selectedWorkerId) {
+        const activeId = selectedWorkerIdRef.current;
+        if (activeId && (
+          updatedMsg.worker_id === activeId ||
+          normalizeWorkerId(updatedMsg.worker_id) === normalizeWorkerId(activeId) ||
+          updatedMsg.thread_id === `thread_${activeId}`
+        )) {
           setMessages((prev) => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
         }
       }
@@ -156,6 +204,7 @@ export default function AdminChatPanel() {
     return () => {
       isMounted = false;
       unsubscribe();
+      window.removeEventListener('kpr_registered_workers_updated', onWorkersUpdated);
     };
   }, []);
 
@@ -170,8 +219,8 @@ export default function AdminChatPanel() {
         const threadMsgs = await fetchMessagesForWorker(selectedWorkerId);
         if (!isMounted) return;
         setMessages(threadMsgs || []);
-        await markThreadAsRead(selectedWorkerId);
-        setAllMessages(prev => prev.map(m => m.worker_id === selectedWorkerId ? { ...m, read_at: new Date().toISOString() } : m));
+        await markThreadAsRead(selectedWorkerId, 'admin');
+        setAllMessages(prev => prev.map(m => (m.worker_id === selectedWorkerId || m.worker_id === normalizeWorkerId(selectedWorkerId)) ? { ...m, read_at: new Date().toISOString() } : m));
         setTimeout(() => scrollToBottom('auto'), 150);
       } catch (err) {
         console.error('Error loading worker thread:', err);
@@ -187,6 +236,47 @@ export default function AdminChatPanel() {
     };
   }, [selectedWorkerId]);
 
+  // 3. Auto-poll for new messages every 5 seconds (ensures real-time even without Supabase Realtime)
+  useEffect(() => {
+    let isMounted = true;
+
+    const pollInterval = setInterval(async () => {
+      if (!isMounted) return;
+      try {
+        // Fetch all thread previews for sidebar
+        const latestAll = await fetchAllChatThreadsForAdmin();
+        if (!isMounted) return;
+        if (Array.isArray(latestAll)) {
+          setAllMessages(latestAll);
+        }
+
+        // Fetch active thread messages
+        const activeId = selectedWorkerIdRef.current;
+        if (activeId) {
+          const threadMsgs = await fetchMessagesForWorker(activeId);
+          if (!isMounted) return;
+          if (Array.isArray(threadMsgs)) {
+            setMessages(prev => {
+              // Only update if new messages arrived (avoid unnecessary re-renders)
+              if (threadMsgs.length !== prev.length || (threadMsgs.length > 0 && prev.length > 0 && threadMsgs[threadMsgs.length - 1]?.id !== prev[prev.length - 1]?.id)) {
+                setTimeout(() => scrollToBottom('smooth'), 100);
+                return threadMsgs;
+              }
+              return prev;
+            });
+          }
+        }
+      } catch (err) {
+        // Silently ignore polling errors
+      }
+    }, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(pollInterval);
+    };
+  }, []);
+
   const handleSend = async (e, directText = null) => {
     if (e) e.preventDefault();
     const textToSend = directText || inputText;
@@ -196,16 +286,18 @@ export default function AdminChatPanel() {
     setInputText('');
 
     try {
+      const targetWorkerId = selectedWorker?.email || selectedWorkerId;
       const sent = await sendChatMessage({
-        workerId: selectedWorkerId,
+        workerId: targetWorkerId,
         senderRole: 'admin',
         senderName: currentAdminName,
+        senderId: user?.id || user?.email || 'admin_user',
         content: textToSend.trim()
       });
 
       if (sent) {
-        setMessages(prev => [...prev, sent]);
-        setAllMessages(prev => [...prev, sent]);
+        setMessages(prev => mergeAndDeduplicateMessages(prev, sent));
+        setAllMessages(prev => mergeAndDeduplicateMessages(prev, sent));
         setTimeout(() => scrollToBottom('smooth'), 100);
       }
     } catch (err) {
@@ -224,32 +316,27 @@ export default function AdminChatPanel() {
     await clearThreadMessages(selectedWorkerId);
   };
 
-  const safeWorkers = Array.isArray(workers) && workers.length > 0 ? workers : DEFAULT_DEMO_WORKERS;
+  const safeWorkers = Array.isArray(workers) ? workers : [];
   const safeAllMessages = Array.isArray(allMessages) ? allMessages : [];
   const safeMessages = Array.isArray(messages) ? messages : [];
 
-  const activeWorkerIds = new Set(
-    safeAllMessages
-      .map(m => m && m.worker_id)
-      .filter(Boolean)
-  );
-  if (selectedWorkerId) {
-    activeWorkerIds.add(selectedWorkerId);
-  }
+  const activeWorkerThreads = safeWorkers.map(worker => {
+    // Build a set of all possible IDs for this worker
+    const workerIds = new Set();
+    if (worker.id) workerIds.add(worker.id);
+    if (worker.id) workerIds.add(normalizeWorkerId(worker.id));
+    if (worker.email) {
+      workerIds.add(normalizeWorkerId(worker.email));
+      workerIds.add(`worker-${worker.email.split('@')[0].toLowerCase()}`);
+    }
 
-  const activeWorkerThreads = Array.from(activeWorkerIds).map(wId => {
-    const threadMsgs = safeAllMessages.filter(m => m && m.worker_id === wId);
+    const threadMsgs = safeAllMessages.filter(m => {
+      if (!m) return false;
+      const msgWorkerId = m.worker_id || '';
+      const msgNorm = normalizeWorkerId(msgWorkerId);
+      return workerIds.has(msgWorkerId) || workerIds.has(msgNorm);
+    });
     const lastMsg = threadMsgs.length > 0 ? threadMsgs[threadMsgs.length - 1] : null;
-    const workerMsgName = threadMsgs.find(m => m && m.sender_role === 'staff' && m.sender_name)?.sender_name;
-    const existingWorker = safeWorkers.find(w => w && w.id === wId);
-    const cleanName = existingWorker?.full_name || workerMsgName || formatNameFromEmailOrId(wId);
-
-    const worker = existingWorker ? { ...existingWorker, full_name: existingWorker.full_name || cleanName } : {
-      id: wId,
-      full_name: cleanName,
-      email: `${wId.replace(/^worker[-_]/, '')}@kpr.com`,
-      skill: 'Team Member'
-    };
     const unreadCount = threadMsgs.filter(m => m && m.sender_role === 'staff' && !m.read_at).length;
 
     return {
@@ -257,7 +344,7 @@ export default function AdminChatPanel() {
       lastMsg,
       unreadCount
     };
-  }).filter(t => t.lastMsg || t.worker.id === selectedWorkerId).sort((a, b) => {
+  }).sort((a, b) => {
     const timeA = a.lastMsg?.created_at ? new Date(a.lastMsg.created_at).getTime() : 0;
     const timeB = b.lastMsg?.created_at ? new Date(b.lastMsg.created_at).getTime() : 0;
     return timeB - timeA;
@@ -275,11 +362,16 @@ export default function AdminChatPanel() {
   });
 
   const selectedWorker = selectedWorkerId
-    ? (safeWorkers.find(w => w && w.id === selectedWorkerId) ||
-       activeWorkerThreads.find(t => t.worker?.id === selectedWorkerId)?.worker ||
-       { id: selectedWorkerId, full_name: formatNameFromEmailOrId(selectedWorkerId), email: `${selectedWorkerId.replace(/^worker[-_]/, '')}@kpr.com`, skill: 'Team Member' })
-    : null;
-  const activeWorkerId = selectedWorker?.id || null;
+    ? (safeWorkers.find(w => {
+        if (!w) return false;
+        if (w.id === selectedWorkerId) return true;
+        if (normalizeWorkerId(w.id || w.email) === normalizeWorkerId(selectedWorkerId)) return true;
+        if (w.email && normalizeWorkerId(w.email) === normalizeWorkerId(selectedWorkerId)) return true;
+        return false;
+      }) ||
+       { id: selectedWorkerId, full_name: formatNameFromEmailOrId(selectedWorkerId), email: `${selectedWorkerId.replace(/^worker[-_]/, '')}@kpr.com`, skill: 'Photographer / Editor' })
+    : (safeWorkers.length > 0 ? safeWorkers[0] : null);
+  const activeWorkerId = selectedWorker?.id || selectedWorkerId || null;
 
   return (
     <div className="flex flex-col md:flex-row h-[750px] bg-white border border-[#E7E8EB] rounded-[20px] overflow-hidden shadow-xs animate-fadeIn flex-1 min-h-0">
@@ -517,54 +609,59 @@ export default function AdminChatPanel() {
               ) : (
                 safeMessages.map((msg, idx) => {
                   if (!msg) return null;
-                  const isAdmin = msg.sender_role === 'admin';
-                  const workerDisplayName = msg.sender_name || selectedWorker?.full_name || formatNameFromEmailOrId(selectedWorker?.email || selectedWorker?.id || 'Worker');
+                  const isOutgoingAdmin = msg.sender_role === 'admin';
+                  const authorName = isOutgoingAdmin
+                    ? (msg.sender_name || currentAdminName || 'Studio Admin')
+                    : (msg.sender_name || selectedWorker?.full_name || formatNameFromEmailOrId(selectedWorker?.email || selectedWorker?.id || 'Worker'));
 
                   return (
                     <motion.div
                       key={msg.id || idx}
-                      initial={{ opacity: 0, y: 8, scale: 0.99 }}
+                      initial={{ opacity: 0, y: 6, scale: 0.99 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{ duration: 0.15 }}
-                      className={`flex flex-col ${isAdmin ? 'items-end' : 'items-start'}`}
+                      className={`flex flex-col ${isOutgoingAdmin ? 'items-end' : 'items-start'}`}
                     >
+                      {/* Sender Identification Header */}
                       <div className="flex items-center gap-1.5 mb-1 px-1">
-                        <span className="text-[10px] font-bold text-[#6B7280]">
-                          {isAdmin
-                            ? `${msg.sender_name || currentAdminName} (Admin)`
-                            : `${workerDisplayName} (Worker)`}
+                        <span className={`text-[11px] font-bold ${isOutgoingAdmin ? 'text-[#111111]' : 'text-[#1E74FF]'}`}>
+                          {isOutgoingAdmin ? `You (${authorName})` : authorName}
                         </span>
-                        <span className="text-[9px] font-mono text-[#9CA0A6]">
-                          {formatMessageTime(msg.created_at)}
+                        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.2 rounded-full ${
+                          isOutgoingAdmin ? 'bg-[#FFE8CC] text-[#D97706]' : 'bg-[#DCE9FF] text-[#1E74FF]'
+                        }`}>
+                          {isOutgoingAdmin ? 'Admin' : 'Staff Worker'}
                         </span>
                       </div>
 
+                      {/* Message Bubble */}
                       <div
-                        className={`max-w-[85%] sm:max-w-md lg:max-w-lg px-4 py-2.5 rounded-2xl text-xs leading-relaxed break-words shadow-xs ${
-                          isAdmin
-                            ? 'bg-[#141414] text-white font-normal rounded-tr-none'
+                        className={`max-w-[85%] sm:max-w-md lg:max-w-lg px-4 py-3 rounded-2xl text-xs leading-relaxed break-words shadow-2xs ${
+                          isOutgoingAdmin
+                            ? 'bg-[#141414] text-white rounded-tr-none'
                             : 'bg-white text-[#111111] border border-[#E7E8EB] rounded-tl-none'
                         }`}
                       >
                         <p className="whitespace-pre-wrap">{msg.content || ''}</p>
-                      </div>
 
-                      {/* Read receipt indicator for Admin messages */}
-                      {isAdmin && (
-                        <div className="flex items-center gap-1 mt-0.5 px-1 text-[9px] text-[#9CA0A6]">
-                          {msg.read_at ? (
-                            <span className="flex items-center gap-0.5 text-[#13A52D] font-semibold">
-                              <CheckCheck className="w-3 h-3" />
-                              <span>Seen by Staff</span>
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-0.5 text-[#9CA0A6]">
-                              <Check className="w-3 h-3" />
-                              <span>Delivered</span>
-                            </span>
+                        {/* Timestamp & Double Ticks Footer */}
+                        <div className={`flex items-center justify-end gap-1.5 text-[10px] mt-1.5 ${
+                          isOutgoingAdmin ? 'text-white/60' : 'text-[#9CA0A6]'
+                        }`}>
+                          <span>{formatMessageTime(msg.created_at)}</span>
+                          {isOutgoingAdmin && (
+                            msg.read_at ? (
+                              <span className="flex items-center text-[#38BDF8] font-bold" title="Seen by Staff">
+                                <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                              </span>
+                            ) : (
+                              <span className="flex items-center text-white/50" title="Delivered">
+                                <Check className="w-3.5 h-3.5" />
+                              </span>
+                            )
                           )}
                         </div>
-                      )}
+                      </div>
                     </motion.div>
                   );
                 })
@@ -636,34 +733,41 @@ export default function AdminChatPanel() {
             </div>
 
             <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-              {safeWorkers.map((w) => {
-                const initials = getInitials(w.full_name || w.email, 'ST');
-                return (
-                  <button
-                    key={w.id}
-                    onClick={() => {
-                      setSelectedWorkerId(w.id);
-                      setNewChatModalOpen(false);
-                    }}
-                    className="w-full p-3 bg-[#F7F8FA] hover:bg-white border border-[#E7E8EB] rounded-2xl flex items-center justify-between gap-3 text-left transition-all cursor-pointer group shadow-2xs hover:shadow-xs"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-full bg-[#141414] text-white font-bold text-xs flex items-center justify-center shrink-0">
-                        {initials}
+              {safeWorkers.length === 0 ? (
+                <div className="p-6 text-center text-xs text-[#9CA0A6] space-y-1">
+                  <p className="font-bold text-[#111111]">No Workers Added Yet</p>
+                  <p>Go to the Workers tab to register staff emails.</p>
+                </div>
+              ) : (
+                safeWorkers.map((w) => {
+                  const initials = getInitials(w.full_name || w.email, 'ST');
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => {
+                        setSelectedWorkerId(w.id);
+                        setNewChatModalOpen(false);
+                      }}
+                      className="w-full p-3 bg-[#F7F8FA] hover:bg-white border border-[#E7E8EB] rounded-2xl flex items-center justify-between gap-3 text-left transition-all cursor-pointer group shadow-2xs hover:shadow-xs"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-full bg-[#141414] text-white font-bold text-xs flex items-center justify-center shrink-0">
+                          {initials}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-bold text-[#111111] truncate group-hover:text-[#1E74FF]">
+                            {w.full_name || w.email}
+                          </h4>
+                          <p className="text-[10px] text-[#9CA0A6] truncate">{w.email}</p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-[#111111] truncate group-hover:text-[#1E74FF]">
-                          {w.full_name || w.email}
-                        </h4>
-                        <p className="text-[10px] text-[#9CA0A6] truncate">{w.skill || 'Photographer / Editor'}</p>
-                      </div>
-                    </div>
-                    <span className="text-[11px] font-bold text-[#1E74FF] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      Chat →
-                    </span>
-                  </button>
-                );
-              })}
+                      <span className="text-[11px] font-bold text-[#1E74FF] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Chat →
+                      </span>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

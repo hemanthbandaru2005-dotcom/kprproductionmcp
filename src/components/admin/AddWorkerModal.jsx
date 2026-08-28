@@ -61,7 +61,39 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
         }
       } catch (e) {}
 
-      // 2. Try Supabase RPC function admin_create_user
+      // 2. Insert to Supabase verifications cloud database table (Accessible on all devices & laptops)
+      const workerKey = workerId.trim().toLowerCase();
+      const workerRecordPayload = {
+        id: `worker_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        client_id: workerKey,
+        client_name: fullName.trim(),
+        client_email: loginEmail,
+        album_id: 'SYSTEM_WORKER_REGISTRY',
+        event_id: `worker_profile_${workerKey}`,
+        event_title: 'Studio Staff Worker',
+        client_note: phone.trim() || 'N/A',
+        status: 'active',
+        sent_at: new Date().toISOString(),
+        photo_items: [{
+          id: `worker-${workerKey}`,
+          worker_id: workerKey,
+          full_name: fullName.trim(),
+          email: loginEmail,
+          phone: phone.trim() || 'N/A',
+          real_email: realEmail.trim() || 'N/A',
+          role: 'worker',
+          status: 'active',
+          skill: 'Photographer / Editor'
+        }]
+      };
+
+      try {
+        await supabase.from('verifications').insert([workerRecordPayload]);
+      } catch (dbErr) {
+        console.warn('Supabase worker registry save notice:', dbErr);
+      }
+
+      // 3. Try Supabase RPC function admin_create_user
       try {
         await supabase.rpc('admin_create_user', {
           p_email: loginEmail,
@@ -71,26 +103,12 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
           p_role: 'worker',
           p_real_email: realEmail.trim() || null,
         });
-      } catch (rpcErr) {
-        console.warn('Supabase worker RPC call notice:', rpcErr);
-      }
+      } catch (rpcErr) {}
 
-      // 3. Directly try inserting/upserting to profiles table in Supabase
-      const newWorkerRecord = {
-        id: `worker-${workerId.trim().toLowerCase()}`,
-        email: loginEmail,
-        full_name: fullName.trim(),
-        phone: phone.trim() || 'N/A',
-        real_email: realEmail.trim() || 'N/A',
-        role: 'worker',
-        designation: 'Studio Team Member',
-        status: 'active',
-        created_at: new Date().toISOString()
-      };
-
+      // 4. Try Supabase profiles table upsert
       try {
         await supabase.from('profiles').upsert([{
-          id: newWorkerRecord.id,
+          id: `worker-${workerKey}`,
           email: loginEmail,
           full_name: fullName.trim(),
           phone: phone.trim() || null,
@@ -100,7 +118,19 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
         }]);
       } catch (err) {}
 
-      // 4. Local & Session Provisioning Registry for Workers
+      // 5. Local cache fallback
+      const newWorkerRecord = {
+        id: `worker-${workerKey}`,
+        worker_id: workerKey,
+        email: loginEmail,
+        full_name: fullName.trim(),
+        phone: phone.trim() || 'N/A',
+        real_email: realEmail.trim() || 'N/A',
+        role: 'worker',
+        status: 'active',
+        created_at: new Date().toISOString()
+      };
+
       try {
         const raw = localStorage.getItem('kpr_registered_workers_v1');
         const list = raw ? JSON.parse(raw) : [];

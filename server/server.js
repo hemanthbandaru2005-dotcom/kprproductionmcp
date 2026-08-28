@@ -520,6 +520,68 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // -------------------------------------------------------------
+  // 11. POST /api/cleanup-test-data & /app/api/cleanup-test-data
+  // -------------------------------------------------------------
+  if ((normalizedPath === '/api/cleanup-test-data' || normalizedPath === '/app/api/cleanup-test-data' || normalizedPath === '/api/admin/clean-fake-data') && req.method === 'POST') {
+    res.setHeader('Content-Type', 'application/json');
+    try {
+      // 1. Clear server-side in-memory mock jobs and mock uploads
+      serverJobs.length = 0;
+      serverClientUploads.length = 0;
+      mockUploadSessions.clear();
+
+      let supabaseDeleted = {
+        jobs: 0,
+        uploads: 0,
+        messages: 0
+      };
+
+      const serverSupabase = getServerSupabase();
+      if (serverSupabase) {
+        // Safe deletion of test jobs
+        try {
+          const { data: delJobs, error: errJobs } = await serverSupabase
+            .from('jobs')
+            .delete()
+            .or('id.like.job-init-%,id.like.test-%,title.ilike.%test%,title.ilike.%demo%,client_name.ilike.%test%,client_name.ilike.%demo%')
+            .select('id');
+          if (!errJobs && delJobs) supabaseDeleted.jobs = delJobs.length;
+        } catch (e) {}
+
+        // Safe deletion of test uploads
+        try {
+          const { data: delUps, error: errUps } = await serverSupabase
+            .from('client_uploads')
+            .delete()
+            .or('client_email.ilike.%test%,client_email.ilike.%example.com%,client_name.ilike.%test%')
+            .select('id');
+          if (!errUps && delUps) supabaseDeleted.uploads = delUps.length;
+        } catch (e) {}
+
+        // Safe deletion of test chat messages
+        try {
+          const { data: delMsgs, error: errMsgs } = await serverSupabase
+            .from('chat_messages')
+            .delete()
+            .or('sender_email.ilike.%test%,sender_email.ilike.%example.com%,message.ilike.%test message%')
+            .select('id');
+          if (!errMsgs && delMsgs) supabaseDeleted.messages = delMsgs.length;
+        } catch (e) {}
+      }
+
+      res.statusCode = 200;
+      return res.end(JSON.stringify({
+        success: true,
+        message: 'All fake test data deleted successfully. Real production data is untouched.',
+        deleted: supabaseDeleted
+      }));
+    } catch (e) {
+      res.statusCode = 500;
+      return res.end(JSON.stringify({ error: e.message || 'Cleanup failed' }));
+    }
+  }
+
   // 404 for unknown routes
   res.statusCode = 404;
   res.setHeader('Content-Type', 'application/json');
