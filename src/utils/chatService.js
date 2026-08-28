@@ -64,18 +64,23 @@ export function ensureSharedChannel() {
           _listeners.chat_cleared.forEach(fn => fn(payload));
         }
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'verifications' }, (payload) => {
-        if (payload?.new && payload.new.album_id === CHAT_ALBUM_FLAG) {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'verifications' }, (payload) => {
+        if (payload?.new?.album_id === 'SYSTEM_WORKER_REGISTRY' || payload?.old?.album_id === 'SYSTEM_WORKER_REGISTRY') {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('kpr_registered_workers_updated', { detail: payload.new || payload.old }));
+          }
+          const bc = getChatBroadcastChannel();
+          if (bc) bc.postMessage({ type: 'workers_updated', payload: payload.new || payload.old });
+        }
+
+        if (payload?.eventType === 'INSERT' && payload?.new && payload.new.album_id === CHAT_ALBUM_FLAG) {
           const msg = normalizeMessage(payload.new);
           if (msg) {
             const local = getLocalMessages().filter(m => m && m.id !== msg.id);
             saveLocalMessages([...local, msg]);
             _listeners.new_message.forEach(fn => fn(msg));
           }
-        }
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'verifications' }, (payload) => {
-        if (payload?.new && payload.new.album_id === CHAT_ALBUM_FLAG) {
+        } else if (payload?.eventType === 'UPDATE' && payload?.new && payload.new.album_id === CHAT_ALBUM_FLAG) {
           const msg = normalizeMessage(payload.new);
           if (msg) {
             _listeners.messages_read.forEach(fn => fn({ worker_id: msg.worker_id, thread_id: msg.thread_id }));

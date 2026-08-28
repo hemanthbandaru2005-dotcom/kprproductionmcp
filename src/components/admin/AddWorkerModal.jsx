@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../utils/supabaseClient';
+import { generateUUID } from '../../utils/chatService';
 import { X, UserPlus, Mail, Phone, Lock, User, Loader2, CheckCircle, AlertCircle, Copy, Key, ShieldCheck, Sparkles } from 'lucide-react';
 
 export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
@@ -64,7 +65,7 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
       // 2. Insert to Supabase verifications cloud database table (Accessible on all devices & laptops)
       const workerKey = workerId.trim().toLowerCase();
       const workerRecordPayload = {
-        id: `worker_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        id: generateUUID(),
         client_id: workerKey,
         client_name: fullName.trim(),
         client_email: loginEmail,

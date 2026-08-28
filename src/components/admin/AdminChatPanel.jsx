@@ -119,6 +119,7 @@ export default function AdminChatPanel() {
   const [search, setSearch] = useState('');
   const [loadingWorkers, setLoadingWorkers] = useState(true);
   const [sending, setSending] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -133,6 +134,22 @@ export default function AdminChatPanel() {
       messagesEndRef.current?.scrollIntoView({ behavior });
     } catch (e) {
       // ignore
+    }
+  };
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const [w, msgs] = await Promise.all([
+        fetchWorkersForChat(),
+        fetchAllChatThreadsForAdmin()
+      ]);
+      if (Array.isArray(w) && w.length > 0) setWorkers(w);
+      if (Array.isArray(msgs)) setAllMessages(msgs);
+    } catch (e) {
+      console.warn('Manual sync notice:', e);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 400);
     }
   };
 
@@ -227,13 +244,27 @@ export default function AdminChatPanel() {
 
     loadData();
 
-    // Listen for registered worker changes
+    // Listen for registered worker changes across windows/tabs
     const onWorkersUpdated = () => {
       fetchWorkersForChat().then(w => {
-        if (isMounted) setWorkers(w || []);
+        if (isMounted && Array.isArray(w) && w.length > 0) setWorkers(w);
       });
     };
     window.addEventListener('kpr_registered_workers_updated', onWorkersUpdated);
+
+    // Auto-sync when window receives focus or tab becomes active
+    const onWindowFocus = () => {
+      fetchWorkersForChat().then(w => {
+        if (isMounted && Array.isArray(w) && w.length > 0) setWorkers(w);
+      });
+      fetchAllChatThreadsForAdmin().then(msgs => {
+        if (isMounted && Array.isArray(msgs)) setAllMessages(msgs);
+      });
+    };
+    window.addEventListener('focus', onWindowFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') onWindowFocus();
+    });
 
     // Subscribe to chat channel for real-time updates
     const unsubscribe = subscribeToChatChannel(
@@ -265,6 +296,7 @@ export default function AdminChatPanel() {
       isMounted = false;
       unsubscribe();
       window.removeEventListener('kpr_registered_workers_updated', onWorkersUpdated);
+      window.removeEventListener('focus', onWindowFocus);
     };
   }, []);
 
@@ -275,7 +307,7 @@ export default function AdminChatPanel() {
     setTimeout(() => scrollToBottom('auto'), 80);
   }, [selectedWorkerId]);
 
-  // 3. Auto-poll for incoming messages and new staff workers every 2.5 seconds
+  // 3. Auto-poll for incoming messages and new staff workers continuously
   useEffect(() => {
     let isMounted = true;
 
@@ -304,7 +336,7 @@ export default function AdminChatPanel() {
       } catch (err) {
         // Silently ignore polling errors
       }
-    }, 2500);
+    }, 2000);
 
     return () => {
       isMounted = false;
@@ -315,9 +347,7 @@ export default function AdminChatPanel() {
   // Reload workers list whenever New Chat modal opens
   useEffect(() => {
     if (newChatModalOpen) {
-      fetchWorkersForChat().then(w => {
-        if (Array.isArray(w) && w.length > 0) setWorkers(w);
-      }).catch(() => {});
+      handleManualRefresh();
     }
   }, [newChatModalOpen]);
 
@@ -415,16 +445,28 @@ export default function AdminChatPanel() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-[#1E74FF]" />
-              <h3 className="text-base font-bold text-[#111111] tracking-tight">Staff Messages</h3>
+              <div>
+                <h3 className="text-base font-bold text-[#111111] tracking-tight">Staff Messages</h3>
+              </div>
             </div>
-            <button
-              onClick={() => setNewChatModalOpen(true)}
-              className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-xs"
-              title="Start a new chat with a staff worker"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New Chat</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                className="p-1.5 rounded-full hover:bg-[#F1F2F4] text-[#6B7280] hover:text-[#111111] transition-all cursor-pointer"
+                title="Auto-Sync Staff & Messages"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#1E74FF]' : ''}`} />
+              </button>
+              <button
+                onClick={() => setNewChatModalOpen(true)}
+                className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer shadow-xs"
+                title="Start a new chat with a staff worker"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Chat</span>
+              </button>
+            </div>
           </div>
 
           <div className="relative">
@@ -817,12 +859,23 @@ export default function AdminChatPanel() {
                   <p className="text-[11px] text-[#6B7280]">Select a staff member to open a private 1:1 chat</p>
                 </div>
               </div>
-              <button
-                onClick={() => setNewChatModalOpen(false)}
-                className="p-2 text-[#6B7280] hover:text-[#111111] rounded-full hover:bg-[#F1F2F4] transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshing}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[11px] font-bold text-[#111111] transition-colors cursor-pointer"
+                  title="Refresh staff list"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-[#1E74FF]' : ''}`} />
+                  <span>{isRefreshing ? 'Syncing...' : 'Sync'}</span>
+                </button>
+                <button
+                  onClick={() => setNewChatModalOpen(false)}
+                  className="p-2 text-[#6B7280] hover:text-[#111111] rounded-full hover:bg-[#F1F2F4] transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
