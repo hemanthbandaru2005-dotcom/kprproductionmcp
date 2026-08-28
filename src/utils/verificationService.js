@@ -70,7 +70,16 @@ export const AVAILABLE_ALBUMS = [
 const LOCAL_STORAGE_KEY = 'kpr_verifications_db';
 const DELETED_STORAGE_KEY = 'kpr_deleted_verifications_v1';
 
-function getDeletedVerificationIds() {
+const SYSTEM_ALBUM_IDS = [
+  'CHAT_MESSAGE',
+  'SYSTEM_JOB_REGISTRY',
+  'SYSTEM_WORKER_REGISTRY',
+  'SYSTEM_CLIENT_REGISTRY',
+  'SYSTEM_DELETED_REGISTRY',
+  'SYSTEM_DELETED_VERIFICATIONS'
+];
+
+export function getDeletedVerificationIds() {
   try {
     const raw = localStorage.getItem(DELETED_STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -79,21 +88,66 @@ function getDeletedVerificationIds() {
   }
 }
 
-function getLocalVerifications() {
+export function saveDeletedVerificationIds(ids) {
+  try {
+    localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(Array.from(new Set(ids))));
+  } catch (e) {}
+}
+
+/**
+ * Retrieves all globally deleted verification IDs from Supabase + localStorage
+ * Ensures that if Admin deletes on Laptop A, Laptop B instantly knows it's deleted.
+ */
+export async function getCloudDeletedVerificationIds() {
+  const localDeleted = getDeletedVerificationIds();
+  const deletedSet = new Set(localDeleted);
+
+  try {
+    const { data } = await supabase
+      .from('verifications')
+      .select('id, client_id, status, album_id')
+      .or('album_id.eq.SYSTEM_DELETED_REGISTRY,album_id.eq.SYSTEM_DELETED_VERIFICATIONS,status.eq.deleted');
+
+    if (Array.isArray(data)) {
+      data.forEach(item => {
+        if (item.id) deletedSet.add(item.id);
+        if (item.client_id && item.client_id !== 'DELETED_VERIFICATION') deletedSet.add(item.client_id);
+      });
+    }
+  } catch (e) {}
+
+  const mergedList = Array.from(deletedSet);
+  saveDeletedVerificationIds(mergedList);
+  return mergedList;
+}
+
+export function getLocalVerifications() {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     const list = raw ? JSON.parse(raw) : [];
     const deleted = getDeletedVerificationIds();
-    return list.filter(item => !deleted.includes(item.id));
+    return list.filter(item => {
+      if (!item || !item.id) return false;
+      if (deleted.includes(item.id) || (item.client_id && deleted.includes(item.client_id))) return false;
+      if (item.status === 'deleted') return false;
+      if (SYSTEM_ALBUM_IDS.includes(item.album_id)) return false;
+      return true;
+    });
   } catch (e) {
     return [];
   }
 }
 
-function saveLocalVerifications(items) {
+export function saveLocalVerifications(items) {
   try {
     const deleted = getDeletedVerificationIds();
-    const clean = items.filter(item => !deleted.includes(item.id));
+    const clean = (Array.isArray(items) ? items : []).filter(item => {
+      if (!item || !item.id) return false;
+      if (deleted.includes(item.id) || (item.client_id && deleted.includes(item.client_id))) return false;
+      if (item.status === 'deleted') return false;
+      if (SYSTEM_ALBUM_IDS.includes(item.album_id)) return false;
+      return true;
+    });
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clean));
   } catch (e) {
     console.error('Error saving local verifications:', e);
@@ -151,40 +205,44 @@ function notifyVerificationChange(type, data) {
 }
 
 /**
- * Fetch all verifications for Admin
+ * Fetch all verifications for Admin (Global cloud sync)
  */
 export async function fetchVerificationsForAdmin() {
-  const deletedIds = getDeletedVerificationIds();
+  const deletedIds = await getCloudDeletedVerificationIds();
 
   try {
     const { data, error } = await supabase
       .from('verifications')
       .select('*')
-      .neq('album_id', 'CHAT_MESSAGE')
       .order('sent_at', { ascending: false });
 
-    if (!error && data && data.length > 0) {
-      const unpacked = data
-        .filter(item => item.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(item.id))
+    if (!error && Array.isArray(data)) {
+      const validRecords = data
+        .filter(item => {
+          if (!item || !item.id) return false;
+          if (SYSTEM_ALBUM_IDS.includes(item.album_id)) return false;
+          if (item.status === 'deleted') return false;
+          if (deletedIds.includes(item.id) || (item.client_id && deletedIds.includes(item.client_id))) return false;
+          return true;
+        })
         .map(unpackVerification);
 
-      // Sync to local
-      const local = getLocalVerifications();
-      const merged = [...unpacked];
-      local.forEach(loc => {
-        if (!merged.some(m => m.id === loc.id) && loc.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(loc.id)) {
-          merged.push(loc);
-        }
-      });
-      saveLocalVerifications(merged);
-      return merged;
+      // Save strictly the clean valid records to local storage
+      saveLocalVerifications(validRecords);
+      return validRecords;
     }
   } catch (err) {
     console.warn('Supabase verifications table query failed, using local store:', err);
   }
 
   return getLocalVerifications()
-    .filter(item => item.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(item.id))
+    .filter(item => {
+      if (!item || !item.id) return false;
+      if (SYSTEM_ALBUM_IDS.includes(item.album_id)) return false;
+      if (item.status === 'deleted') return false;
+      if (deletedIds.includes(item.id) || (item.client_id && deletedIds.includes(item.client_id))) return false;
+      return true;
+    })
     .map(unpackVerification);
 }
 
@@ -226,24 +284,28 @@ function matchClient(item, clientId, clientEmail) {
  * Fetch verifications for a specific client (by ID or Email)
  */
 export async function fetchVerificationsForClient(clientId, clientEmail = '') {
-  const deletedIds = getDeletedVerificationIds();
+  const deletedIds = await getCloudDeletedVerificationIds();
 
   try {
     const { data, error } = await supabase
       .from('verifications')
       .select('*')
-      .neq('album_id', 'CHAT_MESSAGE')
       .order('sent_at', { ascending: false });
 
-    if (!error && data && data.length > 0) {
-      const nonChat = data
-        .filter(item => item.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(item.id))
+    if (!error && Array.isArray(data)) {
+      const validRecords = data
+        .filter(item => {
+          if (!item || !item.id) return false;
+          if (SYSTEM_ALBUM_IDS.includes(item.album_id)) return false;
+          if (item.status === 'deleted') return false;
+          if (deletedIds.includes(item.id) || (item.client_id && deletedIds.includes(item.client_id))) return false;
+          return true;
+        })
         .map(unpackVerification);
-      
-      const matching = nonChat.filter(item => matchClient(item, clientId, clientEmail));
-      if (matching.length > 0) {
-        return matching;
-      }
+
+      saveLocalVerifications(validRecords);
+      const matching = validRecords.filter(item => matchClient(item, clientId, clientEmail));
+      return matching;
     }
   } catch (err) {
     console.warn('Supabase client verifications query error, checking local store:', err);
@@ -251,8 +313,15 @@ export async function fetchVerificationsForClient(clientId, clientEmail = '') {
 
   // Fallback to local
   const localItems = getLocalVerifications()
-    .filter(item => item.album_id !== 'CHAT_MESSAGE' && !deletedIds.includes(item.id))
+    .filter(item => {
+      if (!item || !item.id) return false;
+      if (SYSTEM_ALBUM_IDS.includes(item.album_id)) return false;
+      if (item.status === 'deleted') return false;
+      if (deletedIds.includes(item.id) || (item.client_id && deletedIds.includes(item.client_id))) return false;
+      return true;
+    })
     .map(unpackVerification);
+
   return localItems.filter(item => matchClient(item, clientId, clientEmail));
 }
 
@@ -276,7 +345,7 @@ export async function createVerification(payload) {
   }
 
   const newRecord = {
-    id: `verif-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+    id: `verif_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
     client_id: payload.client_id || 'client-default',
     client_name: payload.client_name || 'Valued Client',
     client_email: payload.client_email || null,
@@ -340,29 +409,47 @@ export async function createVerification(payload) {
 
 /**
  * Permanently delete a verification record (Admin action)
+ * Deletes from Supabase, registers cloud tombstone, and removes from local storage across all devices.
  */
 export async function deleteVerification(id) {
   if (!id) return { success: false };
 
-  // 1. Add to permanent deleted tracking
+  // 1. Add to permanent local deleted tracking
   try {
     const deleted = getDeletedVerificationIds();
     if (!deleted.includes(id)) {
       deleted.push(id);
-      localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(deleted));
+      saveDeletedVerificationIds(deleted);
     }
 
     // 2. Remove from local store
     const local = getLocalVerifications();
-    const updated = local.filter(item => item.id !== id);
+    const updated = local.filter(item => item.id !== id && item.client_id !== id);
     saveLocalVerifications(updated);
   } catch (e) {}
 
-  // 3. Delete from Supabase
+  // 3. Delete row from Supabase verifications table
   try {
     await supabase.from('verifications').delete().eq('id', id);
+    await supabase.from('verifications').delete().eq('client_id', id);
   } catch (e) {
     console.warn('Supabase delete verification error:', e);
+  }
+
+  // 4. Mark / Tombstone in Supabase so other laptops instantly drop the record
+  try {
+    const tombstoneId = `del_${String(id).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+    await supabase.from('verifications').upsert([{
+      id: tombstoneId,
+      album_id: 'SYSTEM_DELETED_REGISTRY',
+      client_id: id,
+      client_name: 'DELETED_VERIFICATION',
+      status: 'deleted',
+      sent_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }], { onConflict: 'id' });
+  } catch (e) {
+    console.warn('Supabase tombstone insert error:', e);
   }
 
   notifyVerificationChange('deleted', { id });
