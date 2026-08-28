@@ -357,12 +357,13 @@ export default function AdminChatPanel() {
 
   const handleSend = async (e, directText = null) => {
     if (e) e.preventDefault();
-    const textToSend = directText || inputText;
-    const imageToSend = selectedImage;
-
-    const targetWorker = selectedWorker;
-    const targetWorkerId = targetWorker?.email || targetWorker?.id || selectedWorkerId;
+    const targetWorker = selectedWorker || (safeWorkers.length > 0 ? safeWorkers[0] : null);
+    const targetWorkerId = targetWorker?.email || targetWorker?.id || selectedWorkerId || 'worker-primary';
     if ((!textToSend.trim() && !imageToSend) || !targetWorkerId || sending) return;
+
+    if (!selectedWorkerId && targetWorker?.id) {
+      setSelectedWorkerId(targetWorker.id);
+    }
 
     setSending(true);
     setInputText('');

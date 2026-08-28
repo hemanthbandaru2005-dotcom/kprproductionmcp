@@ -282,7 +282,42 @@ export async function fetchWorkersForChat() {
     }
   }
 
-  // 1. Fetch from Supabase verifications cloud registry
+  // 1. Include default studio staff team members
+  const defaultWorkers = [
+    { id: 'worker-primary', full_name: 'Studio Senior Photographer', email: 'worker@kpr.com', role: 'worker', status: 'active', skill: 'Photographer & Cinematographer' },
+    { id: 'worker-editor', full_name: 'Color Lab Senior Editor', email: 'editor@kpr.com', role: 'worker', status: 'active', skill: 'Album Layout & Color Grading' },
+    { id: 'worker-staff', full_name: 'Studio Operations Staff', email: 'staff@kpr.com', role: 'worker', status: 'active', skill: 'Production & Field Crew' }
+  ];
+  defaultWorkers.forEach(addWorker);
+
+  // 2. Fetch from Supabase verifications chat records (all active worker conversations)
+  try {
+    const { data: cData, error: cErr } = await supabase
+      .from('verifications')
+      .select('client_id, client_name, client_email, photo_items')
+      .eq('album_id', CHAT_ALBUM_FLAG)
+      .order('sent_at', { ascending: false });
+
+    if (!cErr && Array.isArray(cData)) {
+      cData.forEach(item => {
+        const rawId = item.client_id || '';
+        const email = item.client_email?.toLowerCase().trim() || (rawId.includes('@') ? rawId.toLowerCase().trim() : `${rawId.replace(/^worker[-_]/, '')}@kpr.com`);
+        const name = item.client_name || formatNameFromEmailOrId(rawId || email);
+        if (rawId || email) {
+          addWorker({
+            id: rawId || `worker-${email.split('@')[0]}`,
+            full_name: name,
+            email: email,
+            role: 'worker',
+            status: 'active',
+            skill: 'Photographer / Editor'
+          });
+        }
+      });
+    }
+  } catch (err) {}
+
+  // 3. Fetch from Supabase verifications cloud registry
   try {
     const { data: vData, error: vErr } = await supabase
       .from('verifications')
@@ -306,7 +341,7 @@ export async function fetchWorkersForChat() {
     }
   } catch (err) {}
 
-  // 2. Fetch from Supabase profiles table
+  // 4. Fetch from Supabase profiles table
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -330,7 +365,7 @@ export async function fetchWorkersForChat() {
     }
   } catch (err) {}
 
-  // 3. Merge from localStorage added workers
+  // 5. Merge from localStorage added workers
   try {
     const raw = localStorage.getItem('kpr_registered_workers_v1');
     const parsed = raw ? JSON.parse(raw) : [];
