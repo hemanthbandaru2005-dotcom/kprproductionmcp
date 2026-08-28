@@ -114,7 +114,6 @@ function ensureSharedChannel() {
   return _sharedChannel;
 }
 
-// Real workers registry (No fake demo fallbacks)
 export const DEFAULT_DEMO_WORKERS = [];
 
 function getLocalMessages() {
@@ -171,14 +170,17 @@ export function normalizeMessage(record) {
   const senderName = meta.sender_name ||
     (isMsgAdmin ? (record.event_title?.startsWith('Admin: ') ? record.event_title.replace('Admin: ', '') : defaultAdminName) : (record.client_name || defaultWorkerName));
 
+  const imageUrl = record.image_url || meta.image_url || null;
+
   return {
-    id: record.id || `msg_${Date.now()}_${Math.random()}`,
+    id: record.id || meta.id || `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
     thread_id: record.event_id || `thread_${record.client_id || 'unknown'}`,
     worker_id: record.client_id || meta.worker_id || 'worker-user',
     sender_id: meta.sender_id || (isMsgAdmin ? 'admin_user' : record.client_id),
     sender_name: senderName,
     sender_role: role,
     content: record.client_note || meta.content || '',
+    image_url: imageUrl,
     created_at: record.sent_at || record.created_at || new Date().toISOString(),
     read_at: record.responded_at || meta.read_at || null
   };
@@ -228,7 +230,6 @@ export function resolveWorkerEmailId(workerId) {
     return normalizeWorkerId(str.split('@')[0]);
   }
   
-  // If it's a UUID or registry key, try looking up the registered worker's email
   if (isUUID(str) || str.startsWith('worker_reg_')) {
     try {
       const raw = localStorage.getItem('kpr_registered_workers_v1');
@@ -254,8 +255,8 @@ function isUUID(str) {
  * Deduplicates by email to prevent same person showing up twice
  */
 export async function fetchWorkersForChat() {
-  const workerByEmail = new Map(); // primary dedup key = email
-  const workerById = new Map();    // secondary lookup by id
+  const workerByEmail = new Map();
+  const workerById = new Map();
 
   function addWorker(wObj) {
     if (!wObj || isFakeWorker(wObj)) return;
@@ -263,14 +264,11 @@ export async function fetchWorkersForChat() {
     const key = email || wObj.id || '';
     if (!key) return;
 
-    // If we already have this worker by email, merge (prefer existing name, keep profiles UUID as id)
     if (email && workerByEmail.has(email)) {
       const existing = workerByEmail.get(email);
-      // Keep UUID id from profiles table if available (it's the auth id)
       if (wObj.id && !existing.id?.includes('-') && wObj.id.includes('-')) {
         existing.id = wObj.id;
       }
-      // Keep the better name
       if (wObj.full_name && (!existing.full_name || existing.full_name === formatNameFromEmailOrId(email))) {
         existing.full_name = wObj.full_name;
       }
@@ -284,7 +282,7 @@ export async function fetchWorkersForChat() {
     }
   }
 
-  // 1. Fetch from Supabase verifications cloud registry (Works across all laptops & devices)
+  // 1. Fetch from Supabase verifications cloud registry
   try {
     const { data: vData, error: vErr } = await supabase
       .from('verifications')
@@ -330,9 +328,7 @@ export async function fetchWorkersForChat() {
         }
       });
     }
-  } catch (err) {
-    console.warn('Could not fetch workers from profiles table:', err);
-  }
+  } catch (err) {}
 
   // 3. Merge from localStorage added workers
   try {
@@ -353,7 +349,6 @@ export async function fetchWorkersForChat() {
       }
     });
 
-    // Remove deleted workers
     deleted.forEach(delEmail => {
       workerByEmail.delete(delEmail.toLowerCase().trim());
     });
@@ -373,7 +368,6 @@ export async function fetchMessagesForWorker(workerId) {
   const legacyThreadId = `${CHAT_EVENT_ID_PREFIX}${workerId}`;
   const emailThreadId = `${CHAT_EVENT_ID_PREFIX}${emailBasedId}`;
 
-  // All possible IDs this worker might appear under
   const allWorkerIds = new Set([workerId, normalizedId, emailBasedId]);
 
   const isMatchingWorker = (m) => {
@@ -405,7 +399,6 @@ export async function fetchMessagesForWorker(workerId) {
     if (!error && Array.isArray(data)) {
       const remoteMessages = data.map(normalizeMessage).filter(Boolean);
       
-      // Merge remote and local by id
       const map = new Map();
       localList.forEach(m => { if (m && m.id) map.set(m.id, m); });
       remoteMessages.forEach(m => { if (m && m.id) map.set(m.id, m); });
@@ -453,18 +446,18 @@ export async function fetchAllChatThreadsForAdmin() {
 }
 
 /**
- * Send a new private message and save directly into Supabase Database
+ * Send a new private message (text + image attachment) and save directly into Supabase Database
  */
-export async function sendChatMessage({ workerId, senderId, senderName, senderRole, content }) {
-  if (!workerId || !content || !content.trim()) return null;
+export async function sendChatMessage({ workerId, senderId, senderName, senderRole, content, imageUrl = null }) {
+  if (!workerId || (!content?.trim() && !imageUrl)) return null;
 
   const normalizedRole = (senderRole === 'admin' || senderRole === 'Admin') ? 'admin' : 'staff';
   const emailBasedId = resolveWorkerEmailId(workerId);
-  const normalizedWorkerId = emailBasedId; // Always use email-based ID for consistency
+  const normalizedWorkerId = emailBasedId;
   const threadId = `${CHAT_EVENT_ID_PREFIX}${normalizedWorkerId}`;
   const msgId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
   const timestamp = new Date().toISOString();
-  const cleanContent = content.trim();
+  const cleanContent = (content || '').trim();
   const cleanSenderName = senderName || (normalizedRole === 'admin' ? 'KPR Fotography Admin' : 'Staff Worker');
 
   const msgPayload = {
@@ -475,30 +468,9 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
     sender_name: cleanSenderName,
     sender_role: normalizedRole,
     content: cleanContent,
+    image_url: imageUrl || null,
     created_at: timestamp,
     read_at: null
-  };
-
-  const supabaseRecord = {
-    id: msgId,
-    client_id: normalizedWorkerId,
-    client_name: normalizedRole === 'staff' ? cleanSenderName : 'Staff Worker',
-    client_email: `${normalizedWorkerId}@kpr.com`,
-    event_id: threadId,
-    event_title: `Admin: ${cleanSenderName}`,
-    album_id: CHAT_ALBUM_FLAG,
-    client_note: cleanContent,
-    status: normalizedRole,
-    sent_at: timestamp,
-    responded_at: null,
-    photo_items: [{
-      sender_id: msgPayload.sender_id,
-      sender_name: cleanSenderName,
-      sender_role: normalizedRole,
-      worker_id: normalizedWorkerId,
-      content: cleanContent,
-      read_at: null
-    }]
   };
 
   // 1. Broadcast on instant BroadcastChannel & shared Realtime channel
@@ -521,7 +493,31 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
     console.warn('Broadcast channel error:', bErr);
   }
 
-  // 2. Persist to Supabase Database
+  // 2. Persist to Supabase Database (Omit 'id' so database assigns valid primary key without schema errors)
+  const supabaseRecord = {
+    client_id: normalizedWorkerId,
+    client_name: normalizedRole === 'staff' ? cleanSenderName : 'Staff Worker',
+    client_email: `${normalizedWorkerId}@kpr.com`,
+    event_id: threadId,
+    event_title: `Admin: ${cleanSenderName}`,
+    album_id: CHAT_ALBUM_FLAG,
+    client_note: cleanContent,
+    image_url: imageUrl || null,
+    status: normalizedRole,
+    sent_at: timestamp,
+    responded_at: null,
+    photo_items: [{
+      id: msgId,
+      sender_id: msgPayload.sender_id,
+      sender_name: cleanSenderName,
+      sender_role: normalizedRole,
+      worker_id: normalizedWorkerId,
+      content: cleanContent,
+      image_url: imageUrl || null,
+      read_at: null
+    }]
+  };
+
   try {
     const { data, error } = await supabase
       .from('verifications')
@@ -535,13 +531,13 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
       return normalized;
     }
     if (error) {
-      console.warn('Supabase chat insert error:', error);
+      console.warn('Supabase chat insert notice:', error);
     }
   } catch (err) {
     console.warn('Failed to insert chat record into Supabase database:', err);
   }
 
-  // 3. Fallback to local
+  // 3. Fallback / local save
   const local = getLocalMessages().filter(m => m && m.id !== msgId);
   saveLocalMessages([...local, msgPayload]);
   return msgPayload;
@@ -651,48 +647,61 @@ export async function clearAllChatHistory() {
  */
 export async function clearThreadMessages(workerId) {
   if (!workerId) return;
-  const threadId = `${CHAT_EVENT_ID_PREFIX}${workerId}`;
+  const normalizedWorkerId = normalizeWorkerId(workerId);
+  const emailBasedId = resolveWorkerEmailId(workerId);
+  const threadId = `${CHAT_EVENT_ID_PREFIX}${normalizedWorkerId}`;
+  const legacyThreadId = `${CHAT_EVENT_ID_PREFIX}${workerId}`;
+  const emailThreadId = `${CHAT_EVENT_ID_PREFIX}${emailBasedId}`;
 
   try {
     const bc = getChatBroadcastChannel();
     if (bc) {
-      bc.postMessage({ type: 'chat_cleared', payload: { worker_id: workerId } });
+      bc.postMessage({ type: 'chat_cleared', payload: { worker_id: normalizedWorkerId } });
     }
+
+    const deleteIds = Array.from(new Set([
+      threadId,
+      legacyThreadId,
+      emailThreadId,
+      `thread_${workerId}`,
+      `thread_${normalizedWorkerId}`,
+      `thread_${emailBasedId}`
+    ])).filter(Boolean);
 
     await supabase
       .from('verifications')
       .delete()
       .eq('album_id', CHAT_ALBUM_FLAG)
-      .eq('event_id', threadId);
+      .in('event_id', deleteIds);
 
     const channel = ensureSharedChannel();
     channel.send({
       type: 'broadcast',
       event: 'chat_cleared',
-      payload: { worker_id: workerId }
+      payload: { worker_id: normalizedWorkerId }
     }).catch(() => {});
   } catch (err) {
-    console.warn('Error deleting worker thread messages from Supabase database:', err);
+    console.warn('Error clearing worker thread chat messages from Supabase database:', err);
   }
 
-  const local = getLocalMessages().filter(m => m && m.worker_id !== workerId && m.thread_id !== threadId);
+  const allWorkerIds = new Set([workerId, normalizedWorkerId, emailBasedId]);
+  const local = getLocalMessages().filter(m => {
+    if (!m) return false;
+    return !allWorkerIds.has(m.worker_id) && !allWorkerIds.has(normalizeWorkerId(m.worker_id));
+  });
   saveLocalMessages(local);
-  return { success: true };
 }
 
-/**
- * Real-time subscription hook for Admin & Worker
- */
-export function subscribeToChatChannel(onNewMessage, onMessagesRead, onChatCleared) {
+export function subscribeToChatChannel(onNewMessage, onMessageUpdated, onChatCleared) {
   ensureSharedChannel();
-
+  
   if (onNewMessage) _listeners.new_message.add(onNewMessage);
-  if (onMessagesRead) _listeners.messages_read.add(onMessagesRead);
+  if (onMessageUpdated) _listeners.messages_read.add(onMessageUpdated);
   if (onChatCleared) _listeners.chat_cleared.add(onChatCleared);
 
   return () => {
     if (onNewMessage) _listeners.new_message.delete(onNewMessage);
-    if (onMessagesRead) _listeners.messages_read.delete(onMessagesRead);
+    if (onMessageUpdated) _listeners.messages_read.delete(onMessageUpdated);
     if (onChatCleared) _listeners.chat_cleared.delete(onChatCleared);
   };
 }

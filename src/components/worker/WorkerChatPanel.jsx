@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, MessageSquare, Sparkles, RefreshCw,
-  Check, CheckCheck, Circle, Trash2
+  Check, CheckCheck, Circle, Trash2,
+  Image as ImageIcon, X, Eye
 } from 'lucide-react';
 import {
   fetchMessagesForWorker,
@@ -41,8 +42,9 @@ function mergeAndDeduplicateMessages(existingList, newMsg) {
     const sameWorker = m.worker_id === newMsg.worker_id;
     const sameRole = m.sender_role === newMsg.sender_role;
     const sameContent = (m.content || '').trim() === (newMsg.content || '').trim();
+    const sameImage = m.image_url === newMsg.image_url;
     const timeDiff = Math.abs(new Date(m.created_at || 0) - new Date(newMsg.created_at || 0));
-    return sameWorker && sameRole && sameContent && timeDiff < 10000;
+    return sameWorker && sameRole && sameContent && sameImage && timeDiff < 10000;
   });
 
   if (isDuplicate) {
@@ -51,6 +53,7 @@ function mergeAndDeduplicateMessages(existingList, newMsg) {
         m.worker_id === newMsg.worker_id &&
         m.sender_role === newMsg.sender_role &&
         (m.content || '').trim() === (newMsg.content || '').trim() &&
+        m.image_url === newMsg.image_url &&
         Math.abs(new Date(m.created_at || 0) - new Date(newMsg.created_at || 0)) < 10000
       )) {
         return { ...m, ...newMsg };
@@ -69,9 +72,12 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [lightboxImage, setLightboxImage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
+  const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = (behavior = 'smooth') => {
@@ -168,20 +174,41 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
     };
   }, [workerId]);
 
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Please select an image smaller than 10MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (loadEvt) => {
+      setSelectedImage(loadEvt.target?.result || null);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSend = async (e, directText = null) => {
     if (e) e.preventDefault();
     const textToSend = directText || inputText;
-    if (!textToSend.trim() || sending) return;
+    const imageToSend = selectedImage;
+
+    if ((!textToSend.trim() && !imageToSend) || sending) return;
 
     setSending(true);
     setInputText('');
+    setSelectedImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
 
     try {
       const sent = await sendChatMessage({
         workerId,
         senderRole: 'staff',
         senderName: workerName,
-        content: textToSend.trim()
+        content: textToSend.trim() || (imageToSend ? 'Attached photo 📷' : ''),
+        imageUrl: imageToSend
       });
 
       if (sent) {
@@ -294,7 +321,25 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
                       : 'bg-white text-[#111111] border border-[#E7E8EB] rounded-tl-none'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content || ''}</p>
+                  {/* Image Attachment Preview */}
+                  {msg.image_url && (
+                    <div className="mb-2 relative rounded-xl overflow-hidden group cursor-pointer border border-white/20 bg-black/20">
+                      <img
+                        src={msg.image_url}
+                        alt="Photo Attachment"
+                        className="max-h-64 w-full object-cover rounded-xl transition-transform duration-200 group-hover:scale-102"
+                        onClick={() => setLightboxImage(msg.image_url)}
+                      />
+                      <div
+                        onClick={() => setLightboxImage(msg.image_url)}
+                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-bold"
+                      >
+                        <Eye className="w-4 h-4" /> Click to View Full Photo
+                      </div>
+                    </div>
+                  )}
+
+                  {msg.content && <p className="whitespace-pre-wrap">{msg.content}</p>}
 
                   {/* Timestamp & Read Receipt */}
                   <div className={`flex items-center justify-end gap-1.5 text-[10px] mt-1.5 ${
@@ -337,8 +382,51 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
         ))}
       </div>
 
-      {/* 4. Bottom Message Input Bar */}
+      {/* Selected Image Attachment Preview Bar */}
+      {selectedImage && (
+        <div className="px-4 py-2 bg-[#F3F4F6] border-t border-[#E7E8EB] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <img src={selectedImage} alt="Attachment" className="w-10 h-10 object-cover rounded-lg border border-[#D1D5DB]" />
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[#111111] truncate">Photo Attached</p>
+              <p className="text-[10px] text-[#6B7280]">Ready to send to Studio Admin</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedImage(null);
+              if (fileInputRef.current) fileInputRef.current.value = '';
+            }}
+            className="p-1 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-900 cursor-pointer"
+            title="Remove photo"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* 4. Bottom Message Input Bar with Photo Upload */}
       <form onSubmit={handleSend} className="p-3 sm:p-4 bg-white border-t border-[#E7E8EB] flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Hidden File Input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          onChange={handleImageSelect}
+          className="hidden"
+        />
+
+        {/* Photo Upload Button */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="p-2.5 rounded-full bg-[#F7F8FA] hover:bg-[#EEF0F2] text-[#6B7280] hover:text-[#111111] border border-[#E7E8EB] transition-colors cursor-pointer shrink-0"
+          title="Attach photo"
+        >
+          <ImageIcon className="w-4 h-4 text-[#1E74FF]" />
+        </button>
+
         <input
           type="text"
           placeholder="Type a message to Studio Admin…"
@@ -349,13 +437,35 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
 
         <button
           type="submit"
-          disabled={!inputText.trim() || sending}
+          disabled={(!inputText.trim() && !selectedImage) || sending}
           className="px-5 py-2.5 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
         >
           {sending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           <span className="hidden sm:inline">Send</span>
         </button>
       </form>
+
+      {/* ════════ FULL-SCREEN IMAGE LIGHTBOX MODAL ════════ */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
+          onClick={() => setLightboxImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors cursor-pointer"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img
+              src={lightboxImage}
+              alt="Full Preview"
+              className="max-h-[80vh] w-auto max-w-full rounded-2xl object-contain shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
 
     </div>
   );

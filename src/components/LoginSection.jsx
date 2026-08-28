@@ -143,7 +143,7 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
         cleanEmail = `${cleanEmail}@kpr.com`;
       }
 
-      const result = await signIn(cleanEmail, formData.password);
+      const result = await signIn(cleanEmail, formData.password, activePortal);
 
       if (result.error) {
         setErrorMsg(result.error);

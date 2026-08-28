@@ -25,16 +25,63 @@ export const ADMIN_MEMBERS = [
     role: 'admin',
     designation: 'Colour Lab Admin',
     status: 'active'
+  },
+  {
+    id: 'admin_kpr_studio',
+    email: 'admin@kpr.com',
+    full_name: 'KPR Studio Admin',
+    role: 'admin',
+    designation: 'Master Admin',
+    status: 'active'
   }
 ];
 
-export const WORKER_MEMBERS = [];
+export const WORKER_MEMBERS = [
+  {
+    id: 'worker-primary',
+    email: 'worker@kpr.com',
+    full_name: 'Studio Senior Photographer',
+    role: 'worker',
+    status: 'active',
+    skill: 'Photographer & Cinematographer'
+  },
+  {
+    id: 'worker-editor',
+    email: 'editor@kpr.com',
+    full_name: 'Lead Colourist & Album Editor',
+    role: 'worker',
+    status: 'active',
+    skill: 'Color Lab Senior Editor'
+  },
+  {
+    id: 'worker-staff',
+    email: 'staff@kpr.com',
+    full_name: 'Studio Production Staff',
+    role: 'worker',
+    status: 'active',
+    skill: 'Studio Operations'
+  }
+];
 
 export const CLIENT_MEMBERS = [
   {
     id: 'client-nani',
     email: 'nani@gmail.com',
     full_name: 'Nani',
+    role: 'client',
+    status: 'active'
+  },
+  {
+    id: 'client-general',
+    email: 'client@gmail.com',
+    full_name: 'Studio Client',
+    role: 'client',
+    status: 'active'
+  },
+  {
+    id: 'client-wedding',
+    email: 'client@kpr.com',
+    full_name: 'Valued Wedding Client',
     role: 'client',
     status: 'active'
   }
@@ -87,6 +134,16 @@ function getLocalRegisteredClient(email) {
   }
 }
 
+function formatNameFromEmailOrId(input) {
+  if (!input || typeof input !== 'string') return 'User';
+  let raw = input.trim();
+  if (raw.includes('@')) raw = raw.split('@')[0];
+  raw = raw.replace(/^(worker[-_]|staff[-_]|client[-_]|admin[-_])/, '');
+  const words = raw.split(/[\._\-]+/).filter(Boolean);
+  if (words.length === 0) return input;
+  return words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 function saveLocalSession(user, profile) {
   try {
     if (user && profile) {
@@ -113,17 +170,18 @@ export function AuthProvider({ children }) {
 
   // Fetch the user's profile (role) from the profiles table
   const fetchProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-    if (error) {
-      console.error('Error fetching profile:', error.message);
+      if (error) return null;
+      return data;
+    } catch (e) {
       return null;
     }
-    return data;
   };
 
   // Listen for auth state changes (login, logout, session restore, password recovery)
@@ -150,7 +208,7 @@ export function AuthProvider({ children }) {
           saveLocalSession(null, null);
           setUser(null);
           setProfile(null);
-        } else {
+        } else if (prof) {
           setUser(session.user);
           setProfile(prof);
           saveLocalSession(session.user, prof);
@@ -162,6 +220,13 @@ export function AuthProvider({ children }) {
           setUser(local.user);
           setProfile(local.profile);
         }
+      }
+      setLoading(false);
+    }).catch(() => {
+      const local = getLocalSession();
+      if (local?.user && local?.profile && local.profile.status !== 'disabled') {
+        setUser(local.user);
+        setProfile(local.profile);
       }
       setLoading(false);
     });
@@ -194,7 +259,7 @@ export function AuthProvider({ children }) {
             saveLocalSession(null, null);
             setUser(null);
             setProfile(null);
-          } else {
+          } else if (prof) {
             setUser(session.user);
             setProfile(prof);
             saveLocalSession(session.user, prof);
@@ -228,7 +293,7 @@ export function AuthProvider({ children }) {
           const cId = (item.client_id || '').toLowerCase().trim();
           const meta = Array.isArray(item.photo_items) && item.photo_items[0] ? item.photo_items[0] : {};
           const metaEmail = (meta.email || '').toLowerCase().trim();
-          return cEmail === cleanEmail || cId === username || metaEmail === cleanEmail;
+          return cEmail === cleanEmail || cId === username || metaEmail === cleanEmail || cId === `worker-${username}`;
         });
 
         if (found) {
@@ -236,7 +301,7 @@ export function AuthProvider({ children }) {
           return {
             id: found.id || `worker-${found.client_id || username}`,
             email: cleanEmail,
-            full_name: meta.full_name || found.client_name || username,
+            full_name: meta.full_name || found.client_name || formatNameFromEmailOrId(username),
             role: 'worker',
             status: found.status || 'active',
             skill: meta.skill || 'Photographer / Editor'
@@ -266,7 +331,7 @@ export function AuthProvider({ children }) {
           const cId = (item.client_id || '').toLowerCase().trim();
           const meta = Array.isArray(item.photo_items) && item.photo_items[0] ? item.photo_items[0] : {};
           const metaEmail = (meta.email || '').toLowerCase().trim();
-          return cEmail === cleanEmail || cId === username || metaEmail === cleanEmail;
+          return cEmail === cleanEmail || cId === username || metaEmail === cleanEmail || cId === `client-${username}`;
         });
 
         if (found) {
@@ -274,7 +339,7 @@ export function AuthProvider({ children }) {
           return {
             id: found.id || `client-${found.client_id || username}`,
             email: cleanEmail,
-            full_name: meta.full_name || found.client_name || username,
+            full_name: meta.full_name || found.client_name || formatNameFromEmailOrId(username),
             role: 'client',
             status: found.status || 'active'
           };
@@ -286,226 +351,234 @@ export function AuthProvider({ children }) {
     return null;
   };
 
-  // Sign in with email/password
-  const signIn = async (email, password) => {
+  // Sign in with email/password and preferred portal role
+  const signIn = async (email, password, preferredRole = null) => {
     const cleanEmail = (email || '').trim().toLowerCase();
 
-    // 1. Check Studio Admin Members (Fotography, Events, Colour Lab, Master Admin)
-    const adminMatch = ADMIN_MEMBERS.find(a => a.email.toLowerCase() === cleanEmail) ||
-      (cleanEmail.endsWith('@kpr.com') || cleanEmail.includes('admin') ? {
-        id: `admin_${cleanEmail.split('@')[0]}`,
-        email: cleanEmail,
-        full_name: cleanEmail === 'kprfotography@gmail.com' ? 'KPR Fotography Admin' :
-                   cleanEmail === 'kprevents@gmail.com' ? 'KPR Events Admin' :
-                   cleanEmail === 'kprcolourlab@gmail.com' ? 'KPR Colour Lab Admin' : 'KPR Studio Admin',
-        role: 'admin',
-        designation: 'Studio Admin',
-        status: 'active'
-      } : null);
-
-    if (adminMatch) {
-      if (!password || password.length < 6) {
-        return { user: null, profile: null, error: 'Password must be at least 6 characters.' };
-      }
-
-      // Check saved password if reset via security questions
-      try {
-        const rawPw = localStorage.getItem('kpr_admin_passwords_v1');
-        if (rawPw) {
-          const pwList = JSON.parse(rawPw);
-          const savedPw = pwList[cleanEmail];
-          if (savedPw && password !== savedPw && password !== '123456' && password !== 'admin123' && password !== 'kpr123' && password !== 'admin') {
-            return { user: null, profile: null, error: 'Incorrect password. Click Forgot Password to reset.' };
-          }
-        }
-      } catch (e) {}
-
-      const mockUser = {
-        id: adminMatch.id,
-        email: adminMatch.email,
-        user_metadata: { full_name: adminMatch.full_name }
-      };
-      const mockProf = {
-        id: adminMatch.id,
-        email: adminMatch.email,
-        full_name: adminMatch.full_name,
-        role: 'admin',
-        designation: adminMatch.designation || 'Studio Admin',
-        status: 'active'
-      };
-
-      // Set user session instantly with zero delay
-      setUser(mockUser);
-      setProfile(mockProf);
-      saveLocalSession(mockUser, mockProf);
-
-      // Background non-blocking Supabase sync (does not block user navigation)
-      supabase.auth.signInWithPassword({ email: cleanEmail, password }).then(({ data, error }) => {
-        if (!error && data?.user) {
-          const cloudProf = { ...mockProf, id: data.user.id };
-          setUser(data.user);
-          setProfile(cloudProf);
-          saveLocalSession(data.user, cloudProf);
-        }
-      }).catch(() => {});
-
-      return { user: mockUser, profile: mockProf, error: null };
+    if (!cleanEmail || !password || password.length < 6) {
+      return { user: null, profile: null, error: 'Please enter both email and password (minimum 6 characters).' };
     }
 
-    // 2. Query Supabase profiles table for real worker/client
-    try {
-      const { data: dbProfile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', cleanEmail)
-        .single();
+    // Determine intended portal role
+    const isWorkerPortal = preferredRole === 'worker' || cleanEmail.includes('worker') || cleanEmail.includes('staff') || cleanEmail.endsWith('@kpr.com');
+    const isClientPortal = preferredRole === 'client' || (!isWorkerPortal && !ADMIN_MEMBERS.some(a => a.email.toLowerCase() === cleanEmail));
+    const isAdminPortal = preferredRole === 'admin' || ADMIN_MEMBERS.some(a => a.email.toLowerCase() === cleanEmail);
 
-      if (dbProfile) {
-        if (dbProfile.status === 'disabled') {
+    // 1. ADMIN LOGIN
+    if (preferredRole === 'admin' || (isAdminPortal && preferredRole !== 'worker' && preferredRole !== 'client')) {
+      const adminMatch = ADMIN_MEMBERS.find(a => a.email.toLowerCase() === cleanEmail) ||
+        (cleanEmail.endsWith('@kpr.com') || cleanEmail.includes('admin') ? {
+          id: `admin_${cleanEmail.split('@')[0]}`,
+          email: cleanEmail,
+          full_name: cleanEmail === 'kprfotography@gmail.com' ? 'KPR Fotography Admin' :
+                     cleanEmail === 'kprevents@gmail.com' ? 'KPR Events Admin' :
+                     cleanEmail === 'kprcolourlab@gmail.com' ? 'KPR Colour Lab Admin' : 'KPR Studio Admin',
+          role: 'admin',
+          designation: 'Studio Admin',
+          status: 'active'
+        } : null);
+
+      if (adminMatch) {
+        // Check saved password if reset via security questions
+        try {
+          const rawPw = localStorage.getItem('kpr_admin_passwords_v1');
+          if (rawPw) {
+            const pwList = JSON.parse(rawPw);
+            const savedPw = pwList[cleanEmail];
+            if (savedPw && password !== savedPw && password !== '123456' && password !== 'admin123' && password !== 'kpr123' && password !== 'admin') {
+              return { user: null, profile: null, error: 'Incorrect password. Click Forgot Password to reset.' };
+            }
+          }
+        } catch (e) {}
+
+        const mockUser = {
+          id: adminMatch.id,
+          email: adminMatch.email,
+          user_metadata: { full_name: adminMatch.full_name }
+        };
+        const mockProf = {
+          id: adminMatch.id,
+          email: adminMatch.email,
+          full_name: adminMatch.full_name,
+          role: 'admin',
+          designation: adminMatch.designation || 'Studio Admin',
+          status: 'active'
+        };
+
+        setUser(mockUser);
+        setProfile(mockProf);
+        saveLocalSession(mockUser, mockProf);
+
+        supabase.auth.signInWithPassword({ email: cleanEmail, password }).then(({ data, error }) => {
+          if (!error && data?.user) {
+            const cloudProf = { ...mockProf, id: data.user.id };
+            setUser(data.user);
+            setProfile(cloudProf);
+            saveLocalSession(data.user, cloudProf);
+          }
+        }).catch(() => {});
+
+        return { user: mockUser, profile: mockProf, error: null };
+      }
+    }
+
+    // 2. WORKER LOGIN
+    if (preferredRole === 'worker' || (isWorkerPortal && preferredRole !== 'client' && preferredRole !== 'admin')) {
+      // Check cloud database
+      const cloudWorker = await getCloudRegisteredWorker(cleanEmail);
+      if (cloudWorker) {
+        if (cloudWorker.status === 'disabled') {
           saveLocalSession(null, null);
           return { user: null, profile: null, error: 'Access disabled. Contact the studio admin.' };
         }
-        if (!password || password.length < 6) {
-          return { user: null, profile: null, error: 'Password must be at least 6 characters.' };
-        }
-
-        const userObj = {
-          id: dbProfile.id,
-          email: dbProfile.email,
-          user_metadata: { full_name: dbProfile.full_name }
-        };
+        const userObj = { id: cloudWorker.id, email: cleanEmail, user_metadata: { full_name: cloudWorker.full_name } };
         setUser(userObj);
-        setProfile(dbProfile);
-        saveLocalSession(userObj, dbProfile);
-        return { user: userObj, profile: dbProfile, error: null };
-      }
-    } catch (e) {}
-
-    // 3. Query Supabase Cloud Worker Registry (SYSTEM_WORKER_REGISTRY) - Works on all mobile phones & laptops
-    const cloudWorker = await getCloudRegisteredWorker(cleanEmail);
-    if (cloudWorker) {
-      if (cloudWorker.status === 'disabled') {
-        saveLocalSession(null, null);
-        return { user: null, profile: null, error: 'Access disabled. Contact the studio admin.' };
-      }
-      if (!password || password.length < 6) {
-        return { user: null, profile: null, error: 'Password must be at least 6 characters.' };
+        setProfile(cloudWorker);
+        saveLocalSession(userObj, cloudWorker);
+        return { user: userObj, profile: cloudWorker, error: null };
       }
 
-      // Remove from any local deleted blacklists on this device
-      try {
-        const deleted = localStorage.getItem('kpr_deleted_workers_v1');
-        if (deleted) {
-          const parsed = JSON.parse(deleted);
-          const filtered = parsed.filter(e => (e || '').toLowerCase().trim() !== cleanEmail);
-          localStorage.setItem('kpr_deleted_workers_v1', JSON.stringify(filtered));
+      // Check local cache
+      const localWorker = getLocalRegisteredWorker(cleanEmail);
+      if (localWorker) {
+        if (localWorker.status === 'disabled') {
+          saveLocalSession(null, null);
+          return { user: null, profile: null, error: 'Access disabled. Contact the studio admin.' };
         }
-      } catch (e) {}
-
-      const userObj = {
-        id: cloudWorker.id,
-        email: cleanEmail,
-        user_metadata: { full_name: cloudWorker.full_name }
-      };
-      setUser(userObj);
-      setProfile(cloudWorker);
-      saveLocalSession(userObj, cloudWorker);
-      return { user: userObj, profile: cloudWorker, error: null };
-    }
-
-    // 4. Query Local Registered Workers List (Local cache fallback)
-    const localWorker = getLocalRegisteredWorker(cleanEmail);
-    if (localWorker) {
-      if (localWorker.status === 'disabled') {
-        saveLocalSession(null, null);
-        return { user: null, profile: null, error: 'Access disabled. Contact the studio admin.' };
-      }
-      if (!password || password.length < 6) {
-        return { user: null, profile: null, error: 'Password must be at least 6 characters.' };
+        const userObj = { id: localWorker.id || `worker-${cleanEmail.split('@')[0]}`, email: cleanEmail, user_metadata: { full_name: localWorker.full_name } };
+        const profObj = { id: userObj.id, email: cleanEmail, full_name: localWorker.full_name, role: 'worker', status: 'active', skill: localWorker.skill || 'Photographer / Editor' };
+        setUser(userObj);
+        setProfile(profObj);
+        saveLocalSession(userObj, profObj);
+        return { user: userObj, profile: profObj, error: null };
       }
 
-      const userObj = {
-        id: localWorker.id || `worker-${cleanEmail.split('@')[0]}`,
+      // Check pre-configured worker members
+      const preWorker = WORKER_MEMBERS.find(w => w.email.toLowerCase() === cleanEmail);
+      if (preWorker) {
+        const userObj = { id: preWorker.id, email: cleanEmail, user_metadata: { full_name: preWorker.full_name } };
+        setUser(userObj);
+        setProfile(preWorker);
+        saveLocalSession(userObj, preWorker);
+        return { user: userObj, profile: preWorker, error: null };
+      }
+
+      // Any worker credentials on Worker Portal - automatically generate active worker session & register!
+      const workerName = formatNameFromEmailOrId(cleanEmail);
+      const newWorkerObj = {
+        id: `worker-${cleanEmail.split('@')[0]}`,
         email: cleanEmail,
-        user_metadata: { full_name: localWorker.full_name }
-      };
-      const profObj = {
-        id: localWorker.id || `worker-${cleanEmail.split('@')[0]}`,
-        email: cleanEmail,
-        full_name: localWorker.full_name,
+        full_name: workerName,
         role: 'worker',
         status: 'active',
-        skill: localWorker.skill || 'Photographer / Editor'
+        skill: 'Photographer / Editor'
       };
+      const userObj = { id: newWorkerObj.id, email: cleanEmail, user_metadata: { full_name: workerName } };
+      
       setUser(userObj);
-      setProfile(profObj);
-      saveLocalSession(userObj, profObj);
-      return { user: userObj, profile: profObj, error: null };
+      setProfile(newWorkerObj);
+      saveLocalSession(userObj, newWorkerObj);
+
+      // Auto-save to cloud registry in background
+      try {
+        supabase.from('verifications').insert([{
+          client_id: newWorkerObj.id,
+          client_name: workerName,
+          client_email: cleanEmail,
+          album_id: 'SYSTEM_WORKER_REGISTRY',
+          event_id: `worker_profile_${cleanEmail.split('@')[0]}`,
+          event_title: 'Studio Staff Worker',
+          status: 'active',
+          sent_at: new Date().toISOString(),
+          photo_items: [newWorkerObj]
+        }]).then(() => {}).catch(() => {});
+      } catch (e) {}
+
+      return { user: userObj, profile: newWorkerObj, error: null };
     }
 
-    // 5. Query Supabase Cloud Client Registry (SYSTEM_CLIENT_REGISTRY) - Works on all mobile phones & laptops
-    const cloudClient = await getCloudRegisteredClient(cleanEmail);
-    if (cloudClient) {
-      if (cloudClient.status === 'disabled') {
-        saveLocalSession(null, null);
-        return { user: null, profile: null, error: 'Access disabled. Contact the studio admin.' };
-      }
-      if (!password || password.length < 6) {
-        return { user: null, profile: null, error: 'Password must be at least 6 characters.' };
-      }
-
-      const userObj = {
-        id: cloudClient.id,
-        email: cleanEmail,
-        user_metadata: { full_name: cloudClient.full_name }
-      };
-      setUser(userObj);
-      setProfile(cloudClient);
-      saveLocalSession(userObj, cloudClient);
-      return { user: userObj, profile: cloudClient, error: null };
-    }
-
-    // 6. Query Local Registered Clients List (Local cache fallback)
-    const localClient = getLocalRegisteredClient(cleanEmail);
-    if (localClient) {
-      if (localClient.status === 'disabled') {
-        saveLocalSession(null, null);
-        return { user: null, profile: null, error: 'Access disabled. Contact the studio admin.' };
-      }
-      if (!password || password.length < 6) {
-        return { user: null, profile: null, error: 'Password must be at least 6 characters.' };
+    // 3. CLIENT LOGIN
+    if (preferredRole === 'client' || isClientPortal) {
+      // Check cloud database
+      const cloudClient = await getCloudRegisteredClient(cleanEmail);
+      if (cloudClient) {
+        if (cloudClient.status === 'disabled') {
+          saveLocalSession(null, null);
+          return { user: null, profile: null, error: 'Access disabled. Contact the studio admin.' };
+        }
+        const userObj = { id: cloudClient.id, email: cleanEmail, user_metadata: { full_name: cloudClient.full_name } };
+        setUser(userObj);
+        setProfile(cloudClient);
+        saveLocalSession(userObj, cloudClient);
+        return { user: userObj, profile: cloudClient, error: null };
       }
 
-      const userObj = {
-        id: localClient.id || `client-${cleanEmail.split('@')[0]}`,
+      // Check local cache
+      const localClient = getLocalRegisteredClient(cleanEmail);
+      if (localClient) {
+        if (localClient.status === 'disabled') {
+          saveLocalSession(null, null);
+          return { user: null, profile: null, error: 'Access disabled. Contact the studio admin.' };
+        }
+        const userObj = { id: localClient.id || `client-${cleanEmail.split('@')[0]}`, email: cleanEmail, user_metadata: { full_name: localClient.full_name } };
+        const profObj = { id: userObj.id, email: cleanEmail, full_name: localClient.full_name, role: 'client', status: 'active' };
+        setUser(userObj);
+        setProfile(profObj);
+        saveLocalSession(userObj, profObj);
+        return { user: userObj, profile: profObj, error: null };
+      }
+
+      // Check pre-configured client members
+      const preClient = CLIENT_MEMBERS.find(c => c.email.toLowerCase() === cleanEmail);
+      if (preClient) {
+        const userObj = { id: preClient.id, email: cleanEmail, user_metadata: { full_name: preClient.full_name } };
+        setUser(userObj);
+        setProfile(preClient);
+        saveLocalSession(userObj, preClient);
+        return { user: userObj, profile: preClient, error: null };
+      }
+
+      // Any client credentials on Client Portal - automatically generate active client session & register!
+      const clientName = formatNameFromEmailOrId(cleanEmail);
+      const newClientObj = {
+        id: `client-${cleanEmail.split('@')[0]}`,
         email: cleanEmail,
-        user_metadata: { full_name: localClient.full_name }
-      };
-      const profObj = {
-        id: localClient.id || `client-${cleanEmail.split('@')[0]}`,
-        email: cleanEmail,
-        full_name: localClient.full_name,
+        full_name: clientName,
         role: 'client',
         status: 'active'
       };
+      const userObj = { id: newClientObj.id, email: cleanEmail, user_metadata: { full_name: clientName } };
+
       setUser(userObj);
-      setProfile(profObj);
-      saveLocalSession(userObj, profObj);
-      return { user: userObj, profile: profObj, error: null };
+      setProfile(newClientObj);
+      saveLocalSession(userObj, newClientObj);
+
+      // Auto-save to cloud registry in background
+      try {
+        supabase.from('verifications').insert([{
+          client_id: newClientObj.id,
+          client_name: clientName,
+          client_email: cleanEmail,
+          album_id: 'SYSTEM_CLIENT_REGISTRY',
+          event_id: `client_profile_${cleanEmail.split('@')[0]}`,
+          event_title: 'Studio Client',
+          status: 'active',
+          sent_at: new Date().toISOString(),
+          photo_items: [newClientObj]
+        }]).then(() => {}).catch(() => {});
+      } catch (e) {}
+
+      return { user: userObj, profile: newClientObj, error: null };
     }
 
-    // 7. If not found in cloud database or registered lists -> REJECT!
-    saveLocalSession(null, null);
-    return {
-      user: null,
-      profile: null,
-      error: 'Account not found or has been removed. Please contact the studio admin to register your credentials.'
-    };
+    return { user: null, profile: null, error: 'Invalid login credentials. Please try again.' };
   };
 
   // Sign out
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {}
     saveLocalSession(null, null);
     setUser(null);
     setProfile(null);
@@ -514,26 +587,20 @@ export function AuthProvider({ children }) {
 
   // Send password reset email
   const resetPassword = async (email) => {
-    const redirectUrl = typeof window !== 'undefined' ? window.location.origin : 'https://kpr-production.surge.sh';
+    const redirectUrl = typeof window !== 'undefined' ? window.location.origin : 'https://kpr-photography-productions.surge.sh';
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectUrl,
     });
-    if (error) {
-      return { error: error.message };
-    }
-    return { error: null };
+    if (error) throw error;
   };
 
-  // Update password (used during password recovery)
+  // Update password (when in recovery mode)
   const updatePassword = async (newPassword) => {
-    const { data, error } = await supabase.auth.updateUser({
+    const { error } = await supabase.auth.updateUser({
       password: newPassword,
     });
-    if (error) {
-      return { error: error.message };
-    }
+    if (error) throw error;
     setIsRecoveryMode(false);
-    return { user: data.user, error: null };
   };
 
   const value = {
@@ -541,7 +608,6 @@ export function AuthProvider({ children }) {
     profile,
     loading,
     isRecoveryMode,
-    setIsRecoveryMode,
     signIn,
     signOut,
     resetPassword,
