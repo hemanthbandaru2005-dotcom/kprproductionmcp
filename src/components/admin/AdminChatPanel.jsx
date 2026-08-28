@@ -18,7 +18,8 @@ import {
   DEFAULT_DEMO_WORKERS,
   formatNameFromEmailOrId,
   normalizeWorkerId,
-  matchesWorker
+  matchesWorker,
+  generateUUID
 } from '../../utils/chatService';
 
 const QUICK_PROMPTS = [
@@ -322,11 +323,10 @@ export default function AdminChatPanel() {
     setSending(true);
     setInputText('');
     setSelectedImage(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-
-    // Immediate optimistic message rendering
+    // Immediate optimistic message rendering with UUID
+    const msgUUID = generateUUID();
     const optimisticMsg = {
-      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      id: msgUUID,
       thread_id: `thread_${normalizeWorkerId(targetWorkerId)}`,
       worker_id: normalizeWorkerId(targetWorkerId),
       sender_id: user?.id || user?.email || 'admin_user',
@@ -349,7 +349,8 @@ export default function AdminChatPanel() {
           senderName: currentAdminName || 'KPR Fotography Admin',
           senderId: user?.id || user?.email || 'admin_user',
           content: textToSend.trim() || (imageToSend ? 'Attached photo 📷' : ''),
-          imageUrl: imageToSend
+          imageUrl: imageToSend,
+          customId: msgUUID
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Send timeout')), 8000))
       ]);

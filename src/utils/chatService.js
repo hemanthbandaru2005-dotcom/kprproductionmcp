@@ -5,6 +5,17 @@ const CHAT_EVENT_ID_PREFIX = 'thread_';
 const LOCAL_CHAT_KEY = 'kpr_staff_chats_v1';
 const SHARED_CHANNEL_NAME = 'kpr_studio_realtime_chat_v1';
 
+export function generateUUID() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 let _chatBc = null;
 function getChatBroadcastChannel() {
   if (typeof BroadcastChannel === 'undefined') return null;
@@ -143,7 +154,7 @@ export function normalizeMessage(record) {
   const imageUrl = record.image_url || meta.image_url || null;
 
   return {
-    id: record.id || meta.id || `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+    id: record.id || meta.id || generateUUID(),
     thread_id: record.event_id || `thread_${record.client_id || 'unknown'}`,
     worker_id: record.client_id || meta.worker_id || 'worker-user',
     sender_id: meta.sender_id || (isMsgAdmin ? 'admin_user' : record.client_id),
@@ -170,7 +181,6 @@ export function normalizeWorkerId(raw) {
 
 /**
  * Extracts all token aliases for a worker identifier
- * Handles: nihal@kpr.com, nihal@gmail.com, heamanth@kpr.com, hemanth, etc.
  */
 function extractWorkerTokens(val) {
   if (!val || typeof val !== 'string') return [];
@@ -178,7 +188,6 @@ function extractWorkerTokens(val) {
   if (s.includes('@')) s = s.split('@')[0];
   s = s.replace(/^(worker[-_]|staff[-_]|client[-_])/, '');
   
-  // Normalize spelling variations (e.g. heamanth <-> hemanth)
   const normSpelling = s.replace(/ea/g, 'e').replace(/[^a-z0-9]/g, '');
   const rawClean = s.replace(/[^a-z0-9]/g, '');
   
@@ -197,7 +206,6 @@ function extractWorkerTokens(val) {
 
 /**
  * Comprehensive worker matching that resolves any identifier
- * (email, worker-id, username, thread ID, or sender name)
  */
 export function matchesWorker(m, workerIdentifier) {
   if (!m || !workerIdentifier) return false;
@@ -216,7 +224,6 @@ export function matchesWorker(m, workerIdentifier) {
     if (targetTokens.has(tok)) return true;
   }
 
-  // Also check if sender name or email contains target name
   const rawTargetName = String(workerIdentifier).toLowerCase().replace(/@.*/, '').replace(/^(worker[-_]|staff[-_])/, '').replace(/[^a-z0-9]/g, '');
   if (rawTargetName.length >= 3) {
     const normTarget = rawTargetName.replace(/ea/g, 'e');
@@ -245,14 +252,20 @@ const FAKE_WORKER_PATTERNS = [
   'worker-staff',
   'worker@kpr.com',
   'editor@kpr.com',
-  'staff@kpr.com'
+  'staff@kpr.com',
+  'worker-heamanth',
+  'worker-hemanth',
+  'heamanth@kpr.com',
+  'hemanth@kpr.com',
+  'heamanth@gmail.com',
+  'hemanth@gmail.com'
 ];
 
 function isFakeWorker(worker) {
   if (!worker) return true;
-  const email = (worker.email || '').toLowerCase();
-  const id = (worker.id || '').toLowerCase();
-  const name = (worker.full_name || '').toLowerCase();
+  const email = (worker.email || '').toLowerCase().trim();
+  const id = (worker.id || '').toLowerCase().trim();
+  const name = (worker.full_name || '').toLowerCase().trim();
 
   return FAKE_WORKER_PATTERNS.some(p => email === p || id === p || email.includes(p) || id.includes(p)) ||
     name.includes('lead cinematographer & editor') ||
@@ -260,11 +273,13 @@ function isFakeWorker(worker) {
     name.includes('studio senior photographer') ||
     name.includes('studio operations staff') ||
     name.includes('studio production staff') ||
+    name.includes('heamanth') ||
+    name.includes('hemanth') ||
     name.includes('avata fpv & drone pilot');
 }
 
 /**
- * Resolves any worker identifier (email, username, UUID, or worker-id) to canonical 'worker-username'
+ * Resolves any worker identifier to canonical 'worker-username'
  */
 export function resolveWorkerEmailId(workerId) {
   if (!workerId) return 'worker-default';
@@ -296,7 +311,6 @@ function isUUID(str) {
 
 /**
  * Fetch real registered workers from Supabase and active chat message records
- * Deduplicates by username/email and canonical worker ID
  */
 export async function fetchWorkersForChat() {
   const workerByEmail = new Map();
@@ -326,10 +340,9 @@ export async function fetchWorkersForChat() {
     }
   }
 
-  // 1. Include default real studio staff workers (Nihal & Heamanth)
+  // 1. Include default real studio staff worker (Nihal)
   const defaultWorkers = [
-    { id: 'worker-nihal', full_name: 'Nihal', email: 'nihal@kpr.com', role: 'worker', status: 'active', skill: 'Cinematographer & Photographer' },
-    { id: 'worker-heamanth', full_name: 'Heamanth', email: 'heamanth@kpr.com', role: 'worker', status: 'active', skill: 'Lead Editor & Colorist' }
+    { id: 'worker-nihal', full_name: 'Nihal', email: 'nihal@kpr.com', role: 'worker', status: 'active', skill: 'Cinematographer & Photographer' }
   ];
   defaultWorkers.forEach(addWorker);
 
@@ -467,7 +480,6 @@ export async function fetchAllChatThreadsForAdmin() {
 
 /**
  * Fetch all chat messages for a specific worker's 1:1 thread with Admin
- * Uses the unified all-messages dataset and filters with matchesWorker to guarantee 100% synchronization.
  */
 export async function fetchMessagesForWorker(workerId) {
   if (!workerId) return [];
@@ -476,16 +488,16 @@ export async function fetchMessagesForWorker(workerId) {
 }
 
 /**
- * Send a new private message (text + image attachment) and save directly into Supabase Database
+ * Send a new private message and save directly into Supabase Database with valid UUID
  */
-export async function sendChatMessage({ workerId, senderId, senderName, senderRole, content, imageUrl = null }) {
+export async function sendChatMessage({ workerId, senderId, senderName, senderRole, content, imageUrl = null, customId = null }) {
   if (!workerId || (!content?.trim() && !imageUrl)) return null;
 
+  const msgUUID = customId || generateUUID();
   const normalizedRole = (senderRole === 'admin' || senderRole === 'Admin') ? 'admin' : 'staff';
   const emailBasedId = resolveWorkerEmailId(workerId);
   const normalizedWorkerId = emailBasedId;
   const threadId = `${CHAT_EVENT_ID_PREFIX}${normalizedWorkerId}`;
-  const msgId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
   const timestamp = new Date().toISOString();
   const cleanContent = (content || '').trim();
   const cleanSenderName = senderName || (normalizedRole === 'admin' ? 'KPR Fotography Admin' : formatNameFromEmailOrId(workerId));
@@ -493,7 +505,7 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
   const targetEmail = workerId.includes('@') ? workerId.toLowerCase().trim() : `${normalizedWorkerId.replace(/^worker[-_]/, '')}@kpr.com`;
 
   const msgPayload = {
-    id: msgId,
+    id: msgUUID,
     thread_id: threadId,
     worker_id: normalizedWorkerId,
     sender_id: senderId || (normalizedRole === 'admin' ? 'admin_user' : normalizedWorkerId),
@@ -526,8 +538,9 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
     console.warn('Broadcast channel error:', bErr);
   }
 
-  // 2. Persist to Supabase Database
+  // 2. Persist to Supabase Database with required primary key UUID
   const supabaseRecord = {
+    id: msgUUID,
     client_id: normalizedWorkerId,
     client_name: normalizedRole === 'staff' ? cleanSenderName : formatNameFromEmailOrId(normalizedWorkerId),
     client_email: targetEmail,
@@ -540,7 +553,7 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
     sent_at: timestamp,
     responded_at: null,
     photo_items: [{
-      id: msgId,
+      id: msgUUID,
       sender_id: msgPayload.sender_id,
       sender_name: cleanSenderName,
       sender_role: normalizedRole,
@@ -560,16 +573,19 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
 
     if (!error && Array.isArray(data) && data.length > 0) {
       const normalized = normalizeMessage(data[0]);
-      const local = getLocalMessages().filter(m => m && m.id !== msgId && m.id !== normalized.id);
+      const local = getLocalMessages().filter(m => m && m.id !== msgUUID && m.id !== normalized.id);
       saveLocalMessages([...local, normalized]);
       return normalized;
     }
+    if (error) {
+      console.warn('Supabase chat insert warning:', error);
+    }
   } catch (err) {
-    console.warn('Notice while persisting message to database (stored in local broadcast):', err);
+    console.warn('Notice while persisting message to database:', err);
   }
 
   // 3. Local save fallback
-  const local = getLocalMessages().filter(m => m && m.id !== msgId);
+  const local = getLocalMessages().filter(m => m && m.id !== msgUUID);
   saveLocalMessages([...local, msgPayload]);
   return msgPayload;
 }

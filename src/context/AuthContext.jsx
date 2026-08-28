@@ -39,19 +39,19 @@ export const ADMIN_MEMBERS = [
 export const WORKER_MEMBERS = [
   {
     id: 'worker-nihal',
-    email: 'nihal@gmail.com',
+    email: 'nihal@kpr.com',
     full_name: 'Nihal',
     role: 'worker',
     status: 'active',
     skill: 'Cinematographer & Photographer'
   },
   {
-    id: 'worker-hemanth',
-    email: 'hemanth@gmail.com',
-    full_name: 'Hemanth',
+    id: 'worker-nihal-alt',
+    email: 'nihal@gmail.com',
+    full_name: 'Nihal',
     role: 'worker',
     status: 'active',
-    skill: 'Lead Editor & Colorist'
+    skill: 'Cinematographer & Photographer'
   }
 ];
 

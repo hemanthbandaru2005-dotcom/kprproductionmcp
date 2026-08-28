@@ -13,7 +13,8 @@ import {
   clearThreadMessages,
   formatNameFromEmailOrId,
   normalizeWorkerId,
-  matchesWorker
+  matchesWorker,
+  generateUUID
 } from '../../utils/chatService';
 
 const WORKER_QUICK_PROMPTS = [
@@ -192,9 +193,10 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
     if (fileInputRef.current) fileInputRef.current.value = '';
 
     const effectiveTargetId = workerEmail || workerId || 'worker-primary';
+    const msgUUID = generateUUID();
 
     const optimisticMsg = {
-      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      id: msgUUID,
       thread_id: `thread_${normalizeWorkerId(effectiveTargetId)}`,
       worker_id: normalizeWorkerId(effectiveTargetId),
       sender_id: workerUser?.id || workerUser?.email || effectiveTargetId,
@@ -218,7 +220,8 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
           senderName: workerName,
           senderId: workerUser?.id || workerUser?.email || effectiveTargetId,
           content: textToSend.trim() || (imageToSend ? 'Attached photo 📷' : ''),
-          imageUrl: imageToSend
+          imageUrl: imageToSend,
+          customId: msgUUID
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Send timeout')), 8000))
       ]);
