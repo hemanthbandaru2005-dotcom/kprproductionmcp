@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from './supabaseClient.js';
 
 const CHAT_ALBUM_FLAG = 'CHAT_MESSAGE';
 const CHAT_EVENT_ID_PREFIX = 'thread_';
@@ -548,7 +548,6 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
     event_title: `Admin: ${cleanSenderName}`,
     album_id: CHAT_ALBUM_FLAG,
     client_note: cleanContent,
-    image_url: imageUrl || null,
     status: normalizedRole,
     sent_at: timestamp,
     responded_at: null,
