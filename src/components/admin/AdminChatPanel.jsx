@@ -131,6 +131,63 @@ export default function AdminChatPanel() {
     }
   };
 
+  // Safe data definitions computed in top scope
+  const safeWorkers = Array.isArray(workers) ? workers : [];
+  const safeAllMessages = Array.isArray(allMessages) ? allMessages : [];
+  const safeMessages = Array.isArray(messages) ? messages : [];
+
+  const selectedWorker = selectedWorkerId
+    ? (safeWorkers.find(w => {
+        if (!w) return false;
+        if (w.id === selectedWorkerId) return true;
+        if (normalizeWorkerId(w.id || w.email) === normalizeWorkerId(selectedWorkerId)) return true;
+        if (w.email && normalizeWorkerId(w.email) === normalizeWorkerId(selectedWorkerId)) return true;
+        return false;
+      }) ||
+       { id: selectedWorkerId, full_name: formatNameFromEmailOrId(selectedWorkerId), email: `${selectedWorkerId.replace(/^worker[-_]/, '')}@kpr.com`, skill: 'Photographer / Editor' })
+    : (safeWorkers.length > 0 ? safeWorkers[0] : null);
+  const activeWorkerId = selectedWorker?.id || selectedWorkerId || null;
+
+  const activeWorkerThreads = safeWorkers.map(worker => {
+    const workerIds = new Set();
+    if (worker.id) workerIds.add(worker.id);
+    if (worker.id) workerIds.add(normalizeWorkerId(worker.id));
+    if (worker.email) {
+      workerIds.add(normalizeWorkerId(worker.email));
+      workerIds.add(`worker-${worker.email.split('@')[0].toLowerCase()}`);
+    }
+
+    const threadMsgs = safeAllMessages.filter(m => {
+      if (!m) return false;
+      const msgWorkerId = m.worker_id || '';
+      const msgNorm = normalizeWorkerId(msgWorkerId);
+      return workerIds.has(msgWorkerId) || workerIds.has(msgNorm);
+    });
+    const lastMsg = threadMsgs.length > 0 ? threadMsgs[threadMsgs.length - 1] : null;
+    const unreadCount = threadMsgs.filter(m => m && m.sender_role === 'staff' && !m.read_at).length;
+
+    return {
+      worker,
+      lastMsg,
+      unreadCount
+    };
+  }).sort((a, b) => {
+    const timeA = a.lastMsg?.created_at ? new Date(a.lastMsg.created_at).getTime() : 0;
+    const timeB = b.lastMsg?.created_at ? new Date(b.lastMsg.created_at).getTime() : 0;
+    return timeB - timeA;
+  });
+
+  const filteredThreads = activeWorkerThreads.filter(t => {
+    if (!t || !t.worker) return false;
+    const s = (search || '').toLowerCase();
+    return (
+      (t.worker.full_name || '').toLowerCase().includes(s) ||
+      (t.worker.email || '').toLowerCase().includes(s) ||
+      (t.worker.skill || '').toLowerCase().includes(s) ||
+      (t.lastMsg?.content || '').toLowerCase().includes(s)
+    );
+  });
+
   // 1. Load workers and message previews on mount
   useEffect(() => {
     let isMounted = true;
@@ -218,10 +275,11 @@ export default function AdminChatPanel() {
       try {
         const threadMsgs = await fetchMessagesForWorker(selectedWorkerId);
         if (!isMounted) return;
-        setMessages(threadMsgs || []);
+
+        setMessages(Array.isArray(threadMsgs) ? threadMsgs : []);
+        setTimeout(() => scrollToBottom('auto'), 100);
+
         await markThreadAsRead(selectedWorkerId, 'admin');
-        setAllMessages(prev => prev.map(m => (m.worker_id === selectedWorkerId || m.worker_id === normalizeWorkerId(selectedWorkerId)) ? { ...m, read_at: new Date().toISOString() } : m));
-        setTimeout(() => scrollToBottom('auto'), 150);
       } catch (err) {
         console.error('Error loading worker thread:', err);
       } finally {
@@ -236,28 +294,25 @@ export default function AdminChatPanel() {
     };
   }, [selectedWorkerId]);
 
-  // 3. Auto-poll for new messages every 5 seconds (ensures real-time even without Supabase Realtime)
+  // 3. Auto-poll for incoming worker messages every 3 seconds
   useEffect(() => {
     let isMounted = true;
 
     const pollInterval = setInterval(async () => {
       if (!isMounted) return;
       try {
-        // Fetch all thread previews for sidebar
         const latestAll = await fetchAllChatThreadsForAdmin();
         if (!isMounted) return;
         if (Array.isArray(latestAll)) {
           setAllMessages(latestAll);
         }
 
-        // Fetch active thread messages
         const activeId = selectedWorkerIdRef.current;
         if (activeId) {
           const threadMsgs = await fetchMessagesForWorker(activeId);
           if (!isMounted) return;
           if (Array.isArray(threadMsgs)) {
             setMessages(prev => {
-              // Only update if new messages arrived (avoid unnecessary re-renders)
               if (threadMsgs.length !== prev.length || (threadMsgs.length > 0 && prev.length > 0 && threadMsgs[threadMsgs.length - 1]?.id !== prev[prev.length - 1]?.id)) {
                 setTimeout(() => scrollToBottom('smooth'), 100);
                 return threadMsgs;
@@ -280,17 +335,18 @@ export default function AdminChatPanel() {
   const handleSend = async (e, directText = null) => {
     if (e) e.preventDefault();
     const textToSend = directText || inputText;
-    if (!textToSend.trim() || !selectedWorkerId || sending) return;
+    const targetWorker = selectedWorker;
+    const targetWorkerId = targetWorker?.email || targetWorker?.id || selectedWorkerId;
+    if (!textToSend.trim() || !targetWorkerId || sending) return;
 
     setSending(true);
     setInputText('');
 
     try {
-      const targetWorkerId = selectedWorker?.email || selectedWorkerId;
       const sent = await sendChatMessage({
         workerId: targetWorkerId,
         senderRole: 'admin',
-        senderName: currentAdminName,
+        senderName: currentAdminName || 'KPR Fotography Admin',
         senderId: user?.id || user?.email || 'admin_user',
         content: textToSend.trim()
       });
@@ -315,63 +371,6 @@ export default function AdminChatPanel() {
     setAllMessages(prev => prev.filter(m => m.worker_id !== selectedWorkerId));
     await clearThreadMessages(selectedWorkerId);
   };
-
-  const safeWorkers = Array.isArray(workers) ? workers : [];
-  const safeAllMessages = Array.isArray(allMessages) ? allMessages : [];
-  const safeMessages = Array.isArray(messages) ? messages : [];
-
-  const activeWorkerThreads = safeWorkers.map(worker => {
-    // Build a set of all possible IDs for this worker
-    const workerIds = new Set();
-    if (worker.id) workerIds.add(worker.id);
-    if (worker.id) workerIds.add(normalizeWorkerId(worker.id));
-    if (worker.email) {
-      workerIds.add(normalizeWorkerId(worker.email));
-      workerIds.add(`worker-${worker.email.split('@')[0].toLowerCase()}`);
-    }
-
-    const threadMsgs = safeAllMessages.filter(m => {
-      if (!m) return false;
-      const msgWorkerId = m.worker_id || '';
-      const msgNorm = normalizeWorkerId(msgWorkerId);
-      return workerIds.has(msgWorkerId) || workerIds.has(msgNorm);
-    });
-    const lastMsg = threadMsgs.length > 0 ? threadMsgs[threadMsgs.length - 1] : null;
-    const unreadCount = threadMsgs.filter(m => m && m.sender_role === 'staff' && !m.read_at).length;
-
-    return {
-      worker,
-      lastMsg,
-      unreadCount
-    };
-  }).sort((a, b) => {
-    const timeA = a.lastMsg?.created_at ? new Date(a.lastMsg.created_at).getTime() : 0;
-    const timeB = b.lastMsg?.created_at ? new Date(b.lastMsg.created_at).getTime() : 0;
-    return timeB - timeA;
-  });
-
-  const filteredThreads = activeWorkerThreads.filter(t => {
-    if (!t || !t.worker) return false;
-    const s = (search || '').toLowerCase();
-    return (
-      (t.worker.full_name || '').toLowerCase().includes(s) ||
-      (t.worker.email || '').toLowerCase().includes(s) ||
-      (t.worker.skill || '').toLowerCase().includes(s) ||
-      (t.lastMsg?.content || '').toLowerCase().includes(s)
-    );
-  });
-
-  const selectedWorker = selectedWorkerId
-    ? (safeWorkers.find(w => {
-        if (!w) return false;
-        if (w.id === selectedWorkerId) return true;
-        if (normalizeWorkerId(w.id || w.email) === normalizeWorkerId(selectedWorkerId)) return true;
-        if (w.email && normalizeWorkerId(w.email) === normalizeWorkerId(selectedWorkerId)) return true;
-        return false;
-      }) ||
-       { id: selectedWorkerId, full_name: formatNameFromEmailOrId(selectedWorkerId), email: `${selectedWorkerId.replace(/^worker[-_]/, '')}@kpr.com`, skill: 'Photographer / Editor' })
-    : (safeWorkers.length > 0 ? safeWorkers[0] : null);
-  const activeWorkerId = selectedWorker?.id || selectedWorkerId || null;
 
   return (
     <div className="flex flex-col md:flex-row h-[750px] bg-white border border-[#E7E8EB] rounded-[20px] overflow-hidden shadow-xs animate-fadeIn flex-1 min-h-0">
