@@ -140,8 +140,20 @@ export default function AdminChatPanel() {
   const safeWorkers = Array.isArray(workers) ? workers : [];
   const safeAllMessages = Array.isArray(allMessages) ? allMessages : [];
 
+  const uniqueWorkers = useMemo(() => {
+    const map = new Map();
+    safeWorkers.forEach(w => {
+      if (!w) return;
+      const key = (w.email ? w.email.split('@')[0] : (w.id || w.full_name || '')).toLowerCase().replace(/^(worker[-_]|staff[-_])/, '');
+      if (key && !map.has(key)) {
+        map.set(key, w);
+      }
+    });
+    return Array.from(map.values());
+  }, [safeWorkers]);
+
   const selectedWorker = selectedWorkerId
-    ? (safeWorkers.find(w => {
+    ? (uniqueWorkers.find(w => {
         if (!w) return false;
         if (w.id === selectedWorkerId) return true;
         if (normalizeWorkerId(w.id || w.email) === normalizeWorkerId(selectedWorkerId)) return true;
@@ -149,11 +161,11 @@ export default function AdminChatPanel() {
         return false;
       }) ||
        { id: selectedWorkerId, full_name: formatNameFromEmailOrId(selectedWorkerId), email: `${selectedWorkerId.replace(/^worker[-_]/, '')}@kpr.com`, skill: 'Photographer / Editor' })
-    : (safeWorkers.length > 0 ? safeWorkers[0] : null);
+    : (uniqueWorkers.length > 0 ? uniqueWorkers[0] : null);
   const activeWorkerId = selectedWorker?.id || selectedWorkerId || null;
 
-  // Derive active threads for the sidebar from safeAllMessages
-  const activeWorkerThreads = safeWorkers.map(worker => {
+  // Derive active threads for the sidebar from safeAllMessages using deduplicated workers
+  const activeWorkerThreads = uniqueWorkers.map(worker => {
     const threadMsgs = safeAllMessages.filter(m => matchesWorker(m, worker.id || worker.email || worker.full_name));
     const lastMsg = threadMsgs.length > 0 ? threadMsgs[threadMsgs.length - 1] : null;
     const unreadCount = threadMsgs.filter(m => m && m.sender_role === 'staff' && !m.read_at).length;
@@ -814,13 +826,13 @@ export default function AdminChatPanel() {
             </div>
 
             <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-              {safeWorkers.length === 0 ? (
+              {uniqueWorkers.length === 0 ? (
                 <div className="p-6 text-center text-xs text-[#9CA0A6] space-y-1">
                   <p className="font-bold text-[#111111]">No Workers Added Yet</p>
                   <p>Go to the Workers tab to register staff emails.</p>
                 </div>
               ) : (
-                safeWorkers.map((w) => {
+                uniqueWorkers.map((w) => {
                   const initials = getInitials(w.full_name || w.email, 'ST');
                   return (
                     <button

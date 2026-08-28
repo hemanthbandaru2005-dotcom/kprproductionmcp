@@ -305,31 +305,53 @@ function isUUID(str) {
  * Fetch real registered workers from Supabase and active chat message records
  */
 export async function fetchWorkersForChat() {
-  const workerByEmail = new Map();
-  const workerById = new Map();
+  const workerMap = new Map();
+
+  function getCanonicalKey(w) {
+    if (!w) return '';
+    const email = (w.email || '').toLowerCase().trim();
+    if (email) {
+      return email.split('@')[0].replace(/^(worker[-_]|staff[-_]|client[-_])/, '');
+    }
+    const id = (w.id || '').toLowerCase().trim().replace(/^(worker[-_]|staff[-_]|client[-_])/, '');
+    if (id && !id.startsWith('worker_reg_')) {
+      return id;
+    }
+    const name = (w.full_name || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+    if (name && name.length >= 3) return name;
+    return id || 'unknown';
+  }
 
   function addWorker(wObj) {
     if (!wObj || isFakeWorker(wObj)) return;
-    const email = (wObj.email || '').toLowerCase().trim();
-    const key = email || wObj.id || '';
-    if (!key) return;
+    const key = getCanonicalKey(wObj);
+    if (!key || key === 'unknown') return;
 
-    if (email && workerByEmail.has(email)) {
-      const existing = workerByEmail.get(email);
-      if (wObj.id && !existing.id?.includes('-') && wObj.id.includes('-')) {
-        existing.id = wObj.id;
+    const email = (wObj.email || `${key}@kpr.com`).toLowerCase().trim();
+    const fullName = wObj.full_name || formatNameFromEmailOrId(email || key);
+
+    if (workerMap.has(key)) {
+      const existing = workerMap.get(key);
+      if (email.endsWith('@kpr.com') && !existing.email?.endsWith('@kpr.com')) {
+        existing.email = email;
       }
-      if (wObj.full_name && (!existing.full_name || existing.full_name === formatNameFromEmailOrId(email))) {
-        existing.full_name = wObj.full_name;
+      if (fullName && fullName.length > (existing.full_name || '').length) {
+        existing.full_name = fullName;
+      }
+      if (wObj.phone && wObj.phone !== 'N/A') {
+        existing.phone = wObj.phone;
       }
       return;
     }
 
-    if (email) {
-      workerByEmail.set(email, { ...wObj });
-    } else {
-      workerById.set(wObj.id, { ...wObj });
-    }
+    workerMap.set(key, {
+      id: `worker-${key}`,
+      full_name: fullName,
+      email: email,
+      role: 'worker',
+      status: wObj.status || 'active',
+      skill: wObj.skill || 'Photographer / Editor'
+    });
   }
 
   // 1. Include default real studio staff worker (Nihal)
@@ -352,7 +374,7 @@ export async function fetchWorkersForChat() {
         const email = (item.client_email || meta.email || '').toLowerCase().trim();
         const username = item.client_id || email.split('@')[0];
         addWorker({
-          id: item.id || `worker-${username}`,
+          id: `worker-${username}`,
           full_name: meta.full_name || item.client_name || formatNameFromEmailOrId(email || username),
           email: email || `${username}@kpr.com`,
           role: 'worker',
@@ -378,7 +400,7 @@ export async function fetchWorkersForChat() {
         const name = item.client_name || formatNameFromEmailOrId(rawId || email);
         if (rawId || email) {
           addWorker({
-            id: rawId || `worker-${email.split('@')[0]}`,
+            id: `worker-${email.split('@')[0]}`,
             full_name: name,
             email: email,
             role: 'worker',
@@ -402,7 +424,7 @@ export async function fetchWorkersForChat() {
       data.forEach(w => {
         if (w && w.id) {
           addWorker({
-            id: w.id,
+            id: `worker-${(w.email || w.id).split('@')[0]}`,
             full_name: w.full_name || formatNameFromEmailOrId(w.email),
             email: (w.email || '').toLowerCase().trim(),
             role: 'worker',
@@ -423,7 +445,7 @@ export async function fetchWorkersForChat() {
     parsed.forEach(w => {
       if (w && w.email && !deleted.includes(w.email.toLowerCase())) {
         addWorker({
-          id: w.id || `worker-${w.email.split('@')[0]}`,
+          id: `worker-${w.email.split('@')[0]}`,
           full_name: w.full_name || formatNameFromEmailOrId(w.email),
           email: (w.email || '').toLowerCase().trim(),
           role: 'worker',
@@ -434,11 +456,12 @@ export async function fetchWorkersForChat() {
     });
 
     deleted.forEach(delEmail => {
-      workerByEmail.delete(delEmail.toLowerCase().trim());
+      const delKey = delEmail.split('@')[0].toLowerCase().replace(/^(worker[-_]|staff[-_])/, '');
+      workerMap.delete(delKey);
     });
   } catch (e) {}
 
-  return [...workerByEmail.values(), ...workerById.values()];
+  return Array.from(workerMap.values());
 }
 
 /**
