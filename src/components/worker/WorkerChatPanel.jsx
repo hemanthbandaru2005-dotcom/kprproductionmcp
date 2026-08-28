@@ -12,7 +12,8 @@ import {
   subscribeToChatChannel,
   clearThreadMessages,
   formatNameFromEmailOrId,
-  normalizeWorkerId
+  normalizeWorkerId,
+  matchesWorker
 } from '../../utils/chatService';
 
 const WORKER_QUICK_PROMPTS = [
@@ -39,18 +40,16 @@ function mergeAndDeduplicateMessages(existingList, newMsg) {
   const isDuplicate = list.some(m => {
     if (!m) return false;
     if (m.id === newMsg.id) return true;
-    const sameWorker = m.worker_id === newMsg.worker_id;
     const sameRole = m.sender_role === newMsg.sender_role;
     const sameContent = (m.content || '').trim() === (newMsg.content || '').trim();
     const sameImage = m.image_url === newMsg.image_url;
     const timeDiff = Math.abs(new Date(m.created_at || 0) - new Date(newMsg.created_at || 0));
-    return sameWorker && sameRole && sameContent && sameImage && timeDiff < 10000;
+    return sameRole && sameContent && sameImage && timeDiff < 10000;
   });
 
   if (isDuplicate) {
     return list.map(m => {
       if (m.id === newMsg.id || (
-        m.worker_id === newMsg.worker_id &&
         m.sender_role === newMsg.sender_role &&
         (m.content || '').trim() === (newMsg.content || '').trim() &&
         m.image_url === newMsg.image_url &&
@@ -67,8 +66,9 @@ function mergeAndDeduplicateMessages(existingList, newMsg) {
 
 export default function WorkerChatPanel({ workerUser, workerProfile }) {
   const workerEmail = (workerUser?.email || workerProfile?.email || '').toLowerCase().trim();
-  const workerId = normalizeWorkerId(workerEmail || workerUser?.id || workerProfile?.id || 'worker-user');
-  const workerName = workerProfile?.full_name || workerUser?.user_metadata?.full_name || formatNameFromEmailOrId(workerEmail || workerId);
+  const rawId = workerProfile?.id || workerUser?.id || workerEmail.split('@')[0] || 'worker-user';
+  const workerId = normalizeWorkerId(workerEmail || rawId);
+  const workerName = workerProfile?.full_name || workerUser?.user_metadata?.full_name || formatNameFromEmailOrId(workerEmail || rawId);
 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
@@ -88,11 +88,11 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
   const loadMessages = async () => {
     setLoading(true);
     try {
-      const msgs = await fetchMessagesForWorker(workerId);
+      const msgs = await fetchMessagesForWorker(workerEmail || workerId || workerName);
       setMessages(Array.isArray(msgs) ? msgs : []);
       setTimeout(() => scrollToBottom('auto'), 100);
 
-      await markThreadAsRead(workerId, 'staff');
+      await markThreadAsRead(workerEmail || workerId, 'staff');
     } catch (err) {
       console.error('Error loading worker messages:', err);
     } finally {
@@ -102,39 +102,29 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
 
   useEffect(() => {
     loadMessages();
-  }, [workerId]);
+  }, [workerId, workerEmail]);
 
   // Real-time channel listener
   useEffect(() => {
     const unsubscribe = subscribeToChatChannel(
       (newMsg) => {
         if (!newMsg) return;
-        const targetNorm = normalizeWorkerId(workerId);
-        const matchesWorker = (
-          newMsg.worker_id === workerId ||
-          newMsg.worker_id === targetNorm ||
-          normalizeWorkerId(newMsg.worker_id) === targetNorm ||
-          newMsg.thread_id === `thread_${workerId}` ||
-          newMsg.thread_id === `thread_${targetNorm}`
-        );
-
-        if (matchesWorker) {
+        if (matchesWorker(newMsg, workerEmail || workerId || workerName)) {
           setMessages(prev => mergeAndDeduplicateMessages(prev, newMsg));
           setTimeout(() => scrollToBottom('smooth'), 100);
 
           if (newMsg.sender_role === 'admin') {
-            markThreadAsRead(workerId, 'staff');
+            markThreadAsRead(workerEmail || workerId, 'staff');
           }
         }
       },
       (receipt) => {
         if (!receipt) return;
         const { worker_id, reader_role, read_at } = receipt;
-        const targetNorm = normalizeWorkerId(workerId);
-        if (reader_role === 'admin' && (worker_id === workerId || worker_id === targetNorm || normalizeWorkerId(worker_id) === targetNorm)) {
+        if (reader_role === 'admin' && matchesWorker({ worker_id }, workerEmail || workerId || workerName)) {
           setMessages(prev => (Array.isArray(prev) ? prev : []).map(m => {
             if (m && m.sender_role === 'staff' && !m.read_at) {
-              return { ...m, read_at };
+              return { ...m, read_at: read_at || new Date().toISOString() };
             }
             return m;
           }));
@@ -145,16 +135,16 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
     return () => {
       unsubscribe();
     };
-  }, [workerId, workerUser]);
+  }, [workerId, workerEmail, workerName]);
 
-  // Auto-poll for new messages every 3 seconds (ensures real-time sync across all devices)
+  // Auto-poll for new messages every 2.5 seconds (ensures real-time sync across all devices)
   useEffect(() => {
     let isMounted = true;
 
     const pollInterval = setInterval(async () => {
       if (!isMounted) return;
       try {
-        const threadMsgs = await fetchMessagesForWorker(workerId);
+        const threadMsgs = await fetchMessagesForWorker(workerEmail || workerId || workerName);
         if (!isMounted || !Array.isArray(threadMsgs)) return;
         setMessages(prev => {
           if (threadMsgs.length !== prev.length || (threadMsgs.length > 0 && prev.length > 0 && threadMsgs[threadMsgs.length - 1]?.id !== prev[prev.length - 1]?.id)) {
@@ -166,13 +156,13 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
       } catch (err) {
         // Silently ignore polling errors
       }
-    }, 3000);
+    }, 2500);
 
     return () => {
       isMounted = false;
       clearInterval(pollInterval);
     };
-  }, [workerId]);
+  }, [workerId, workerEmail, workerName]);
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
@@ -201,17 +191,20 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
     setSelectedImage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
 
+    const effectiveTargetId = workerEmail || workerId || 'worker-primary';
+
     const optimisticMsg = {
       id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
-      thread_id: `thread_${normalizeWorkerId(workerId)}`,
-      worker_id: normalizeWorkerId(workerId),
-      sender_id: workerUser?.id || workerUser?.email || workerId,
+      thread_id: `thread_${normalizeWorkerId(effectiveTargetId)}`,
+      worker_id: normalizeWorkerId(effectiveTargetId),
+      sender_id: workerUser?.id || workerUser?.email || effectiveTargetId,
       sender_name: workerName || 'Staff Member',
       sender_role: 'staff',
       content: textToSend.trim() || (imageToSend ? 'Attached photo 📷' : ''),
       image_url: imageToSend,
       created_at: new Date().toISOString(),
-      read_at: null
+      read_at: null,
+      client_email: workerEmail || `${normalizeWorkerId(effectiveTargetId).replace(/^worker[-_]/, '')}@kpr.com`
     };
 
     setMessages(prev => mergeAndDeduplicateMessages(prev, optimisticMsg));
@@ -220,9 +213,10 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
     try {
       const sent = await Promise.race([
         sendChatMessage({
-          workerId,
+          workerId: effectiveTargetId,
           senderRole: 'staff',
           senderName: workerName,
+          senderId: workerUser?.id || workerUser?.email || effectiveTargetId,
           content: textToSend.trim() || (imageToSend ? 'Attached photo 📷' : ''),
           imageUrl: imageToSend
         }),
@@ -243,7 +237,7 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
   const handleClearHistory = async () => {
     if (!window.confirm('Are you sure you want to clear your chat history with Admin?')) return;
     setMessages([]);
-    await clearThreadMessages(workerId);
+    await clearThreadMessages(workerEmail || workerId);
   };
 
   return (
@@ -260,56 +254,47 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
               <h3 className="text-sm font-bold text-[#111111] tracking-tight">KPR Studio Admin</h3>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-[#DFF5E3] text-[#13A52D]">
                 <Circle className="w-1.5 h-1.5 fill-current" />
-                Live Desk
+                Live Channel
               </span>
             </div>
-            <p className="text-[11px] text-[#9CA0A6]">Direct 1:1 communication channel with Studio Management</p>
+            <p className="text-[10px] text-[#9CA0A6]">
+              Logged in as <span className="font-semibold text-[#111111]">{workerName}</span> ({workerEmail || workerId})
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={loadMessages}
-            className="p-2 rounded-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] transition-colors cursor-pointer border border-[#E7E8EB]"
-            title="Refresh conversation"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-
-          <button
             onClick={handleClearHistory}
-            className="p-2 rounded-full bg-[#FEF2F2] text-[#DC2626] hover:bg-[#FEE2E2] transition-colors cursor-pointer border border-[#FCA5A5]"
+            className="p-2 rounded-full hover:bg-[#F1F2F4] text-[#6B7280] hover:text-[#DC2626] transition-colors cursor-pointer"
             title="Clear Chat History"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* 2. Message History Stream */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#F7F8FA]">
+      {/* 2. Message List */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4 bg-[#F7F8FA]">
         {loading ? (
           <div className="p-16 text-center text-[#9CA0A6]">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#141414] mb-2" />
-            <p className="text-xs">Loading studio chat history…</p>
+            <p className="text-xs">Loading studio messages…</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="p-12 text-center text-[#9CA0A6] space-y-3">
             <div className="w-12 h-12 rounded-full bg-[#DCE9FF] text-[#1E74FF] flex items-center justify-center mx-auto mb-2">
               <MessageSquare className="w-6 h-6" />
             </div>
-            <h4 className="text-base font-bold text-[#111111]">Start a conversation with Admin</h4>
+            <h4 className="text-base font-bold text-[#111111]">1:1 Studio Direct Line</h4>
             <p className="text-xs text-[#6B7280] max-w-sm mx-auto">
-              Send updates on today's photoshoot, request equipment, report drive uploads, or coordinate shoot timelines.
+              Send updates, photos, questions about your shoot assignments, or notify Admin about Drive uploads here.
             </p>
           </div>
         ) : (
           messages.map((msg, idx) => {
             if (!msg) return null;
-            const isOutgoingWorker = msg.sender_role === 'staff';
-            const authorName = isOutgoingWorker
-              ? (msg.sender_name || workerName || 'Staff Member')
-              : (msg.sender_name || 'Studio Admin');
+            const isMe = msg.sender_role === 'staff';
 
             return (
               <motion.div
@@ -317,25 +302,23 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
                 initial={{ opacity: 0, y: 6, scale: 0.99 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.15 }}
-                className={`flex flex-col ${isOutgoingWorker ? 'items-end' : 'items-start'}`}
+                className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
               >
-                {/* Sender Identification Header */}
                 <div className="flex items-center gap-1.5 mb-1 px-1">
-                  <span className={`text-[11px] font-bold ${isOutgoingWorker ? 'text-[#111111]' : 'text-[#D97706]'}`}>
-                    {isOutgoingWorker ? `You (${authorName})` : authorName}
+                  <span className={`text-[11px] font-bold ${isMe ? 'text-[#1E74FF]' : 'text-[#111111]'}`}>
+                    {isMe ? 'You' : (msg.sender_name || 'KPR Studio Admin')}
                   </span>
                   <span className={`text-[9px] font-bold uppercase px-1.5 py-0.2 rounded-full ${
-                    isOutgoingWorker ? 'bg-[#DCE9FF] text-[#1E74FF]' : 'bg-[#FFE8CC] text-[#D97706]'
+                    isMe ? 'bg-[#DCE9FF] text-[#1E74FF]' : 'bg-[#FFE8CC] text-[#D97706]'
                   }`}>
-                    {isOutgoingWorker ? 'Staff' : 'Studio Admin'}
+                    {isMe ? 'Staff' : 'Admin'}
                   </span>
                 </div>
 
-                {/* Message Bubble */}
                 <div
                   className={`max-w-[85%] sm:max-w-md px-4 py-3 rounded-2xl text-xs leading-relaxed break-words shadow-2xs ${
-                    isOutgoingWorker
-                      ? 'bg-[#141414] text-white rounded-tr-none'
+                    isMe
+                      ? 'bg-[#1E74FF] text-white rounded-tr-none'
                       : 'bg-white text-[#111111] border border-[#E7E8EB] rounded-tl-none'
                   }`}
                 >
@@ -359,14 +342,13 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
 
                   {msg.content && <p className="whitespace-pre-wrap">{msg.content}</p>}
 
-                  {/* Timestamp & Read Receipt */}
-                  <div className={`flex items-center justify-end gap-1.5 text-[10px] mt-1.5 ${
-                    isOutgoingWorker ? 'text-white/60' : 'text-[#9CA0A6]'
+                  <div className={`flex items-center justify-end gap-1 text-[10px] mt-1.5 ${
+                    isMe ? 'text-white/70' : 'text-[#9CA0A6]'
                   }`}>
                     <span>{formatMessageTime(msg.created_at)}</span>
-                    {isOutgoingWorker && (
+                    {isMe && (
                       msg.read_at ? (
-                        <span className="flex items-center text-[#38BDF8] font-bold" title="Seen by Admin">
+                        <span className="flex items-center text-[#E0F2FE] font-bold" title="Seen by Admin">
                           <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
                         </span>
                       ) : (
@@ -384,8 +366,8 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 3. Quick Canned Prompts Bar */}
-      <div className="px-4 sm:px-6 py-2 bg-white border-t border-[#E7E8EB] flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0 z-20">
+      {/* 3. Quick Canned Prompts */}
+      <div className="px-4 sm:px-6 py-2 bg-white border-t border-[#E7E8EB] flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
         <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E74FF] shrink-0 flex items-center gap-1">
           <Sparkles className="w-3 h-3" /> Quick:
         </span>
@@ -407,7 +389,7 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
             <img src={selectedImage} alt="Attachment" className="w-10 h-10 object-cover rounded-lg border border-[#D1D5DB]" />
             <div className="min-w-0">
               <p className="text-xs font-bold text-[#111111] truncate">Photo Attached</p>
-              <p className="text-[10px] text-[#6B7280]">Ready to send to Studio Admin</p>
+              <p className="text-[10px] text-[#6B7280]">Ready to send to Admin</p>
             </div>
           </div>
           <button
@@ -424,9 +406,8 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
         </div>
       )}
 
-      {/* 4. Bottom Message Input Bar with Photo Upload */}
+      {/* 4. Input Form with Photo Upload */}
       <form onSubmit={handleSend} className="p-3 sm:p-4 bg-white border-t border-[#E7E8EB] flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Hidden File Input */}
         <input
           type="file"
           ref={fileInputRef}
@@ -435,21 +416,21 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
           className="hidden"
         />
 
-        {/* Photo Upload Button */}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           className="p-2.5 rounded-full bg-[#F7F8FA] hover:bg-[#EEF0F2] text-[#6B7280] hover:text-[#111111] border border-[#E7E8EB] transition-colors cursor-pointer shrink-0"
-          title="Attach photo"
+          title="Attach photo / image"
         >
           <ImageIcon className="w-4 h-4 text-[#1E74FF]" />
         </button>
 
         <input
           type="text"
-          placeholder="Type a message to Studio Admin…"
+          placeholder="Type message to Studio Admin…"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
+          onFocus={() => setTimeout(() => scrollToBottom('smooth'), 200)}
           className="flex-1 px-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
         />
 
@@ -463,7 +444,7 @@ export default function WorkerChatPanel({ workerUser, workerProfile }) {
         </button>
       </form>
 
-      {/* ════════ FULL-SCREEN IMAGE LIGHTBOX MODAL ════════ */}
+      {/* 5. Fullscreen Lightbox Modal */}
       {lightboxImage && (
         <div
           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"

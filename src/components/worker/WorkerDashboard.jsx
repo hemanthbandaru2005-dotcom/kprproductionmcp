@@ -110,7 +110,8 @@ export default function WorkerDashboard({ onLogout }) {
   // Fetch unread messages
   const fetchUnreadCount = async () => {
     try {
-      const msgs = await fetchMessagesForWorker(workerId);
+      const emailOrId = user?.email || profile?.email || workerId;
+      const msgs = await fetchMessagesForWorker(emailOrId);
       const unread = (msgs || []).filter(m => m.sender_role === 'admin' && !m.read_at).length;
       setUnreadChatCount(unread);
     } catch (e) {}
@@ -171,6 +172,32 @@ export default function WorkerDashboard({ onLogout }) {
   useEffect(() => {
     fetchMyJobs();
     fetchUnreadCount();
+
+    // Auto-register worker profile to Supabase SYSTEM_WORKER_REGISTRY so Admin Chat lists them immediately across all devices
+    const curEmail = (user?.email || profile?.email || '').toLowerCase().trim();
+    if (curEmail) {
+      const curName = profile?.full_name || user?.user_metadata?.full_name || formatNameFromEmailOrId(curEmail);
+      const curId = (profile?.id || user?.id || curEmail.split('@')[0]).replace(/^worker-/, '');
+      supabase.from('verifications').insert([{
+        id: `worker_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        client_id: `worker-${curId}`,
+        client_name: curName,
+        client_email: curEmail,
+        album_id: 'SYSTEM_WORKER_REGISTRY',
+        event_id: `worker_profile_${curId}`,
+        event_title: 'Studio Staff Worker',
+        status: 'active',
+        sent_at: new Date().toISOString(),
+        photo_items: [{
+          id: `worker-${curId}`,
+          email: curEmail,
+          full_name: curName,
+          role: 'worker',
+          status: 'active',
+          skill: profile?.skill || 'Photographer / Editor'
+        }]
+      }]).then(() => {}).catch(() => {});
+    }
 
     const unsubscribeJobs = subscribeToJobsRealtime(() => {
       fetchMyJobs();

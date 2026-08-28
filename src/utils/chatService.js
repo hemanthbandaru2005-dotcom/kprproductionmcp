@@ -135,7 +135,7 @@ export function normalizeMessage(record) {
   const role = isMsgAdmin ? 'admin' : 'staff';
 
   const defaultAdminName = 'KPR Fotography Admin';
-  const defaultWorkerName = formatNameFromEmailOrId(record.client_id || 'Staff Member');
+  const defaultWorkerName = formatNameFromEmailOrId(record.client_id || record.client_email || 'Staff Member');
 
   const senderName = meta.sender_name ||
     (isMsgAdmin ? (record.event_title?.startsWith('Admin: ') ? record.event_title.replace('Admin: ', '') : defaultAdminName) : (record.client_name || defaultWorkerName));
@@ -152,7 +152,8 @@ export function normalizeMessage(record) {
     content: record.client_note || meta.content || '',
     image_url: imageUrl,
     created_at: record.sent_at || record.created_at || new Date().toISOString(),
-    read_at: record.responded_at || meta.read_at || null
+    read_at: record.responded_at || meta.read_at || null,
+    client_email: record.client_email || meta.email || null
   };
 }
 
@@ -168,31 +169,67 @@ export function normalizeWorkerId(raw) {
 }
 
 /**
+ * Extracts all token aliases for a worker identifier
+ * Handles: nihal@kpr.com, nihal@gmail.com, heamanth@kpr.com, hemanth, etc.
+ */
+function extractWorkerTokens(val) {
+  if (!val || typeof val !== 'string') return [];
+  let s = val.toLowerCase().trim();
+  if (s.includes('@')) s = s.split('@')[0];
+  s = s.replace(/^(worker[-_]|staff[-_]|client[-_])/, '');
+  
+  // Normalize spelling variations (e.g. heamanth <-> hemanth)
+  const normSpelling = s.replace(/ea/g, 'e').replace(/[^a-z0-9]/g, '');
+  const rawClean = s.replace(/[^a-z0-9]/g, '');
+  
+  return [
+    s,
+    rawClean,
+    normSpelling,
+    `worker-${rawClean}`,
+    `worker-${normSpelling}`,
+    `thread_worker-${rawClean}`,
+    `thread_worker-${normSpelling}`,
+    `thread_${rawClean}`,
+    `thread_${normSpelling}`
+  ].filter(Boolean);
+}
+
+/**
  * Comprehensive worker matching that resolves any identifier
  * (email, worker-id, username, thread ID, or sender name)
  */
 export function matchesWorker(m, workerIdentifier) {
   if (!m || !workerIdentifier) return false;
-  const target = String(workerIdentifier).toLowerCase().trim();
-  const targetNorm = normalizeWorkerId(target);
-  const targetClean = target.replace(/^(worker[-_]|staff[-_]|client[-_])/, '');
-  const targetUser = target.includes('@') ? target.split('@')[0] : targetClean;
 
-  const msgWorker = String(m.worker_id || '').toLowerCase().trim();
-  const msgNorm = normalizeWorkerId(msgWorker);
-  const msgClean = msgWorker.replace(/^(worker[-_]|staff[-_]|client[-_])/, '');
-  const msgThread = String(m.thread_id || '').replace(/^thread_/, '').toLowerCase().trim();
-  const msgThreadNorm = normalizeWorkerId(msgThread);
-  const msgSender = String(m.sender_name || '').toLowerCase().trim();
+  const targetTokens = new Set(extractWorkerTokens(workerIdentifier));
 
-  const candidateIds = new Set([target, targetNorm, targetClean, targetUser]);
+  const msgTokens = [
+    ...extractWorkerTokens(m.worker_id),
+    ...extractWorkerTokens(m.client_id),
+    ...extractWorkerTokens(m.client_email),
+    ...extractWorkerTokens(m.thread_id),
+    ...extractWorkerTokens(m.sender_id)
+  ];
 
-  return candidateIds.has(msgWorker) ||
-    candidateIds.has(msgNorm) ||
-    candidateIds.has(msgClean) ||
-    candidateIds.has(msgThread) ||
-    candidateIds.has(msgThreadNorm) ||
-    (m.sender_role === 'staff' && (candidateIds.has(msgSender) || (targetUser.length > 2 && msgSender.includes(targetUser))));
+  for (const tok of msgTokens) {
+    if (targetTokens.has(tok)) return true;
+  }
+
+  // Also check if sender name or email contains target name
+  const rawTargetName = String(workerIdentifier).toLowerCase().replace(/@.*/, '').replace(/^(worker[-_]|staff[-_])/, '').replace(/[^a-z0-9]/g, '');
+  if (rawTargetName.length >= 3) {
+    const normTarget = rawTargetName.replace(/ea/g, 'e');
+    const rawMsgSender = String(m.sender_name || '').toLowerCase().replace(/[^a-z0-9]/g, '').replace(/ea/g, 'e');
+    const rawMsgEmail = String(m.client_email || '').toLowerCase().replace(/[^a-z0-9]/g, '').replace(/ea/g, 'e');
+    const rawMsgWorker = String(m.worker_id || '').toLowerCase().replace(/[^a-z0-9]/g, '').replace(/ea/g, 'e');
+
+    if (rawMsgSender.includes(normTarget) || rawMsgEmail.includes(normTarget) || rawMsgWorker.includes(normTarget)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 const FAKE_WORKER_PATTERNS = [
@@ -217,7 +254,7 @@ function isFakeWorker(worker) {
   const id = (worker.id || '').toLowerCase();
   const name = (worker.full_name || '').toLowerCase();
 
-  return FAKE_WORKER_PATTERNS.some(p => email.includes(p) || id.includes(p)) ||
+  return FAKE_WORKER_PATTERNS.some(p => email === p || id === p || email.includes(p) || id.includes(p)) ||
     name.includes('lead cinematographer & editor') ||
     name.includes('color lab senior editor') ||
     name.includes('studio senior photographer') ||
@@ -259,7 +296,7 @@ function isUUID(str) {
 
 /**
  * Fetch real registered workers from Supabase and active chat message records
- * Deduplicates by email and canonical worker ID
+ * Deduplicates by username/email and canonical worker ID
  */
 export async function fetchWorkersForChat() {
   const workerByEmail = new Map();
@@ -289,14 +326,39 @@ export async function fetchWorkersForChat() {
     }
   }
 
-  // 1. Include real staff team members (Nihal & Hemanth)
+  // 1. Include default real studio staff workers (Nihal & Heamanth)
   const defaultWorkers = [
-    { id: 'worker-nihal', full_name: 'Nihal', email: 'nihal@gmail.com', role: 'worker', status: 'active', skill: 'Cinematographer & Photographer' },
-    { id: 'worker-hemanth', full_name: 'Hemanth', email: 'hemanth@gmail.com', role: 'worker', status: 'active', skill: 'Lead Editor & Colorist' }
+    { id: 'worker-nihal', full_name: 'Nihal', email: 'nihal@kpr.com', role: 'worker', status: 'active', skill: 'Cinematographer & Photographer' },
+    { id: 'worker-heamanth', full_name: 'Heamanth', email: 'heamanth@kpr.com', role: 'worker', status: 'active', skill: 'Lead Editor & Colorist' }
   ];
   defaultWorkers.forEach(addWorker);
 
-  // 2. Fetch from Supabase verifications chat records (all active worker conversations)
+  // 2. Fetch from Supabase verifications cloud registry (All workers added from admin Workers page or worker login)
+  try {
+    const { data: vData, error: vErr } = await supabase
+      .from('verifications')
+      .select('*')
+      .eq('album_id', 'SYSTEM_WORKER_REGISTRY')
+      .order('sent_at', { ascending: false });
+
+    if (!vErr && Array.isArray(vData)) {
+      vData.forEach(item => {
+        const meta = Array.isArray(item.photo_items) && item.photo_items[0] ? item.photo_items[0] : {};
+        const email = (item.client_email || meta.email || '').toLowerCase().trim();
+        const username = item.client_id || email.split('@')[0];
+        addWorker({
+          id: item.id || `worker-${username}`,
+          full_name: meta.full_name || item.client_name || formatNameFromEmailOrId(email || username),
+          email: email || `${username}@kpr.com`,
+          role: 'worker',
+          status: item.status || 'active',
+          skill: meta.skill || 'Photographer / Editor'
+        });
+      });
+    }
+  } catch (err) {}
+
+  // 3. Fetch from Supabase verifications chat records (all active worker conversations)
   try {
     const { data: cData, error: cErr } = await supabase
       .from('verifications')
@@ -319,30 +381,6 @@ export async function fetchWorkersForChat() {
             skill: 'Photographer / Editor'
           });
         }
-      });
-    }
-  } catch (err) {}
-
-  // 3. Fetch from Supabase verifications cloud registry
-  try {
-    const { data: vData, error: vErr } = await supabase
-      .from('verifications')
-      .select('*')
-      .eq('album_id', 'SYSTEM_WORKER_REGISTRY')
-      .order('sent_at', { ascending: false });
-
-    if (!vErr && Array.isArray(vData)) {
-      vData.forEach(item => {
-        const meta = Array.isArray(item.photo_items) && item.photo_items[0] ? item.photo_items[0] : {};
-        const email = (item.client_email || meta.email || '').toLowerCase().trim();
-        addWorker({
-          id: item.id || `worker-${item.client_id || email.split('@')[0]}`,
-          full_name: meta.full_name || item.client_name || formatNameFromEmailOrId(email),
-          email: email,
-          role: 'worker',
-          status: item.status || 'active',
-          skill: meta.skill || 'Photographer / Editor'
-        });
       });
     }
   } catch (err) {}
@@ -450,7 +488,9 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
   const msgId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
   const timestamp = new Date().toISOString();
   const cleanContent = (content || '').trim();
-  const cleanSenderName = senderName || (normalizedRole === 'admin' ? 'KPR Fotography Admin' : 'Staff Worker');
+  const cleanSenderName = senderName || (normalizedRole === 'admin' ? 'KPR Fotography Admin' : formatNameFromEmailOrId(workerId));
+
+  const targetEmail = workerId.includes('@') ? workerId.toLowerCase().trim() : `${normalizedWorkerId.replace(/^worker[-_]/, '')}@kpr.com`;
 
   const msgPayload = {
     id: msgId,
@@ -462,7 +502,8 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
     content: cleanContent,
     image_url: imageUrl || null,
     created_at: timestamp,
-    read_at: null
+    read_at: null,
+    client_email: targetEmail
   };
 
   // 1. Broadcast immediately on instant BroadcastChannel & shared Realtime channel
@@ -488,8 +529,8 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
   // 2. Persist to Supabase Database
   const supabaseRecord = {
     client_id: normalizedWorkerId,
-    client_name: normalizedRole === 'staff' ? cleanSenderName : 'Staff Worker',
-    client_email: `${normalizedWorkerId}@kpr.com`,
+    client_name: normalizedRole === 'staff' ? cleanSenderName : formatNameFromEmailOrId(normalizedWorkerId),
+    client_email: targetEmail,
     event_id: threadId,
     event_title: `Admin: ${cleanSenderName}`,
     album_id: CHAT_ALBUM_FLAG,
@@ -506,7 +547,8 @@ export async function sendChatMessage({ workerId, senderId, senderName, senderRo
       worker_id: normalizedWorkerId,
       content: cleanContent,
       image_url: imageUrl || null,
-      read_at: null
+      read_at: null,
+      email: targetEmail
     }]
   };
 
