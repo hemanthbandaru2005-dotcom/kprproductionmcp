@@ -202,7 +202,13 @@ const FAKE_WORKER_PATTERNS = [
   'worker-rajesh',
   'worker-priya',
   'worker-vikram',
-  'worker-123'
+  'worker-123',
+  'worker-primary',
+  'worker-editor',
+  'worker-staff',
+  'worker@kpr.com',
+  'editor@kpr.com',
+  'staff@kpr.com'
 ];
 
 function isFakeWorker(worker) {
@@ -214,6 +220,9 @@ function isFakeWorker(worker) {
   return FAKE_WORKER_PATTERNS.some(p => email.includes(p) || id.includes(p)) ||
     name.includes('lead cinematographer & editor') ||
     name.includes('color lab senior editor') ||
+    name.includes('studio senior photographer') ||
+    name.includes('studio operations staff') ||
+    name.includes('studio production staff') ||
     name.includes('avata fpv & drone pilot');
 }
 
@@ -280,11 +289,10 @@ export async function fetchWorkersForChat() {
     }
   }
 
-  // 1. Include default studio staff team members
+  // 1. Include real staff team members (Nihal & Hemanth)
   const defaultWorkers = [
-    { id: 'worker-primary', full_name: 'Studio Senior Photographer', email: 'worker@kpr.com', role: 'worker', status: 'active', skill: 'Photographer & Cinematographer' },
-    { id: 'worker-editor', full_name: 'Color Lab Senior Editor', email: 'editor@kpr.com', role: 'worker', status: 'active', skill: 'Album Layout & Color Grading' },
-    { id: 'worker-staff', full_name: 'Studio Operations Staff', email: 'staff@kpr.com', role: 'worker', status: 'active', skill: 'Production & Field Crew' }
+    { id: 'worker-nihal', full_name: 'Nihal', email: 'nihal@gmail.com', role: 'worker', status: 'active', skill: 'Cinematographer & Photographer' },
+    { id: 'worker-hemanth', full_name: 'Hemanth', email: 'hemanth@gmail.com', role: 'worker', status: 'active', skill: 'Lead Editor & Colorist' }
   ];
   defaultWorkers.forEach(addWorker);
 

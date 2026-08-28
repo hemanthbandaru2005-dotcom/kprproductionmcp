@@ -38,28 +38,20 @@ export const ADMIN_MEMBERS = [
 
 export const WORKER_MEMBERS = [
   {
-    id: 'worker-primary',
-    email: 'worker@kpr.com',
-    full_name: 'Studio Senior Photographer',
+    id: 'worker-nihal',
+    email: 'nihal@gmail.com',
+    full_name: 'Nihal',
     role: 'worker',
     status: 'active',
-    skill: 'Photographer & Cinematographer'
+    skill: 'Cinematographer & Photographer'
   },
   {
-    id: 'worker-editor',
-    email: 'editor@kpr.com',
-    full_name: 'Lead Colourist & Album Editor',
+    id: 'worker-hemanth',
+    email: 'hemanth@gmail.com',
+    full_name: 'Hemanth',
     role: 'worker',
     status: 'active',
-    skill: 'Color Lab Senior Editor'
-  },
-  {
-    id: 'worker-staff',
-    email: 'staff@kpr.com',
-    full_name: 'Studio Production Staff',
-    role: 'worker',
-    status: 'active',
-    skill: 'Studio Operations'
+    skill: 'Lead Editor & Colorist'
   }
 ];
 
