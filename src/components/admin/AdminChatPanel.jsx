@@ -263,23 +263,32 @@ export default function AdminChatPanel() {
     setTimeout(() => scrollToBottom('auto'), 80);
   }, [selectedWorkerId]);
 
-  // 3. Auto-poll for incoming messages every 2.5 seconds
+  // 3. Auto-poll for incoming messages and new staff workers every 2.5 seconds
   useEffect(() => {
     let isMounted = true;
 
     const pollInterval = setInterval(async () => {
       if (!isMounted) return;
       try {
-        const latestAll = await fetchAllChatThreadsForAdmin();
-        if (!isMounted || !Array.isArray(latestAll)) return;
+        const [latestAll, latestWorkers] = await Promise.all([
+          fetchAllChatThreadsForAdmin(),
+          fetchWorkersForChat()
+        ]);
+        if (!isMounted) return;
 
-        setAllMessages(prev => {
-          if (latestAll.length !== prev.length || (latestAll.length > 0 && prev.length > 0 && latestAll[latestAll.length - 1]?.id !== prev[prev.length - 1]?.id)) {
-            setTimeout(() => scrollToBottom('smooth'), 100);
-            return latestAll;
-          }
-          return prev;
-        });
+        if (Array.isArray(latestWorkers) && latestWorkers.length > 0) {
+          setWorkers(latestWorkers);
+        }
+
+        if (Array.isArray(latestAll)) {
+          setAllMessages(prev => {
+            if (latestAll.length !== prev.length || (latestAll.length > 0 && prev.length > 0 && latestAll[latestAll.length - 1]?.id !== prev[prev.length - 1]?.id)) {
+              setTimeout(() => scrollToBottom('smooth'), 100);
+              return latestAll;
+            }
+            return prev;
+          });
+        }
       } catch (err) {
         // Silently ignore polling errors
       }
@@ -290,6 +299,15 @@ export default function AdminChatPanel() {
       clearInterval(pollInterval);
     };
   }, []);
+
+  // Reload workers list whenever New Chat modal opens
+  useEffect(() => {
+    if (newChatModalOpen) {
+      fetchWorkersForChat().then(w => {
+        if (Array.isArray(w) && w.length > 0) setWorkers(w);
+      }).catch(() => {});
+    }
+  }, [newChatModalOpen]);
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];

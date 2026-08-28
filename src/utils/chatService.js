@@ -252,13 +252,7 @@ const FAKE_WORKER_PATTERNS = [
   'worker-staff',
   'worker@kpr.com',
   'editor@kpr.com',
-  'staff@kpr.com',
-  'worker-heamanth',
-  'worker-hemanth',
-  'heamanth@kpr.com',
-  'hemanth@kpr.com',
-  'heamanth@gmail.com',
-  'hemanth@gmail.com'
+  'staff@kpr.com'
 ];
 
 function isFakeWorker(worker) {
@@ -267,15 +261,13 @@ function isFakeWorker(worker) {
   const id = (worker.id || '').toLowerCase().trim();
   const name = (worker.full_name || '').toLowerCase().trim();
 
-  return FAKE_WORKER_PATTERNS.some(p => email === p || id === p || email.includes(p) || id.includes(p)) ||
-    name.includes('lead cinematographer & editor') ||
-    name.includes('color lab senior editor') ||
-    name.includes('studio senior photographer') ||
-    name.includes('studio operations staff') ||
-    name.includes('studio production staff') ||
-    name.includes('heamanth') ||
-    name.includes('hemanth') ||
-    name.includes('avata fpv & drone pilot');
+  return FAKE_WORKER_PATTERNS.some(p => email === p || id === p) ||
+    name === 'studio senior photographer' ||
+    name === 'studio operations staff' ||
+    name === 'studio production staff' ||
+    name === 'lead cinematographer & editor' ||
+    name === 'color lab senior editor' ||
+    name === 'avata fpv & drone pilot';
 }
 
 /**
