@@ -215,11 +215,15 @@ const server = http.createServer(async (req, res) => {
             projectTitle
           });
 
+          const clientOrigin = req.headers.origin || (req.headers.referer ? new URL(req.headers.referer).origin : '*');
+
           const sessionInfo = await initiateResumableUploadSession({
             fileName,
             mimeType,
             fileSize,
-            parentFolderId: folderInfo.folderId
+            folderId: folderInfo.folderId,
+            parentFolderId: folderInfo.folderId,
+            origin: clientOrigin
           });
 
           console.log(`\n[Google Drive API] Resumable session created for "${fileName}" (${fileSize} bytes)`);

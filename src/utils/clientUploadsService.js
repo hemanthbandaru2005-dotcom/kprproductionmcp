@@ -540,17 +540,35 @@ export async function uploadClientFile({
         try {
           const chunkStartTime = performance.now();
 
-          // DIRECT BROWSER → GOOGLE DRIVE PUT REQUEST
-          const chunkRes = await fetch(uploadUrl, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': mimeType,
-              'Content-Range': contentRange,
-              'Content-Length': String(chunkLength)
-            },
-            body: chunkBlob,
-            signal: abortController.signal
-          });
+          let chunkRes = null;
+          try {
+            // DIRECT BROWSER → GOOGLE DRIVE PUT REQUEST
+            chunkRes = await fetch(uploadUrl, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': mimeType,
+                'Content-Range': contentRange,
+                'Content-Length': String(chunkLength)
+              },
+              body: chunkBlob,
+              signal: abortController.signal
+            });
+          } catch (directErr) {
+            if (directErr.name === 'AbortError' || directErr.message === 'PAUSED_BY_USER') {
+              throw directErr;
+            }
+            console.warn('[Google Drive] Direct chunk PUT interrupted, streaming via backend proxy fallback...', directErr);
+            chunkRes = await fetch(`${apiBase}/app/api/drive/upload/chunk`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': mimeType,
+                'Content-Range': contentRange,
+                'x-upload-url': uploadUrl
+              },
+              body: chunkBlob,
+              signal: abortController.signal
+            });
+          }
 
           // -------------------------------------------------------------
           // Case A: 404 / 410 Expired Session -> Re-initiate & Resume

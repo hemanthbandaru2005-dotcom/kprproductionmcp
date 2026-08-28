@@ -249,7 +249,9 @@ export function driveApiPlugin() {
                 fileName,
                 fileSize,
                 mimeType: effectiveMime,
-                folderId: folderInfo.folderId
+                folderId: folderInfo.folderId,
+                parentFolderId: folderInfo.folderId,
+                origin: req.headers.origin || '*'
               });
 
               res.statusCode = 200;
