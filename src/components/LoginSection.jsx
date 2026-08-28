@@ -167,12 +167,12 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
       setLoginSuccess(true);
       setIsLoading(false);
 
-      // Navigate to the appropriate dashboard after a brief delay
+      // Instant transition to dashboard
       setTimeout(() => {
         if (onLoginSuccess) {
           onLoginSuccess(activePortal);
         }
-      }, 1200);
+      }, 150);
 
     } catch (err) {
       setErrorMsg('An unexpected error occurred. Please try again.');
