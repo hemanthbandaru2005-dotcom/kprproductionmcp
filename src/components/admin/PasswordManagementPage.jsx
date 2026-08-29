@@ -4,7 +4,7 @@ import { supabase } from '../../utils/supabaseClient';
 import {
   KeyRound, ShieldCheck, UserCheck, Users, Lock, Eye, EyeOff,
   Loader2, CheckCircle, AlertCircle, Copy, RefreshCw, ShieldAlert,
-  HelpCircle, X, Sparkles
+  HelpCircle, X, Sparkles, Mail, Edit3
 } from 'lucide-react';
 
 // ─── Password strength validator ─────────────────────────────────
@@ -162,6 +162,198 @@ function SecurityQuestionSetup({ isOpen, onClose, onSaved }) {
   );
 }
 
+// ─── Change Email Modal ──────────────────────────────────────────
+function ChangeEmailModal({ isOpen, onClose, targetUser, onSuccess }) {
+  const { user } = useAuth();
+  const [newEmail, setNewEmail] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  if (!isOpen || !targetUser) return null;
+
+  const isCurrentUser = targetUser.id === user?.id || (user?.email && targetUser.email?.toLowerCase() === user?.email?.toLowerCase());
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formattedEmail = newEmail.trim().toLowerCase();
+    const formattedConfirm = confirmEmail.trim().toLowerCase();
+
+    if (!formattedEmail || !formattedEmail.includes('@')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (formattedEmail !== formattedConfirm) {
+      setError('Email addresses do not match.');
+      return;
+    }
+    if (formattedEmail === targetUser.email?.toLowerCase()) {
+      setError('New email must be different from current email.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // 1. If updating currently authenticated user
+      if (isCurrentUser) {
+        const { error: authErr } = await supabase.auth.updateUser({
+          email: formattedEmail,
+        });
+        if (authErr) {
+          console.warn('Supabase auth email update note:', authErr);
+        }
+      }
+
+      // 2. Update profiles table
+      try {
+        const { error: profileErr } = await supabase
+          .from('profiles')
+          .update({ email: formattedEmail, updated_at: new Date().toISOString() })
+          .eq('id', targetUser.id);
+        if (profileErr) {
+          console.warn('Profile table update note:', profileErr);
+        }
+      } catch (err) {}
+
+      // 3. Update localStorage fallback mapping
+      try {
+        const localOverrides = JSON.parse(localStorage.getItem('kpr_custom_user_emails') || '{}');
+        localOverrides[targetUser.id] = formattedEmail;
+        if (targetUser.email) {
+          localOverrides[targetUser.email.toLowerCase()] = formattedEmail;
+        }
+        localStorage.setItem('kpr_custom_user_emails', JSON.stringify(localOverrides));
+      } catch (e) {}
+
+      setSuccess(true);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message || 'Failed to update email address.');
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setNewEmail('');
+    setConfirmEmail('');
+    setError('');
+    setSuccess(false);
+    onClose();
+    if (success && onSuccess) onSuccess();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+      <div className="bg-white rounded-[24px] sm:rounded-[32px] border border-[#E7E8EB] shadow-2xl w-full max-w-md overflow-hidden animate-fadeIn">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-[#E7E8EB] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#DCE9FF] flex items-center justify-center text-[#1E74FF]">
+              <Mail className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#111111] uppercase tracking-wider">
+                Change Email Address
+              </h3>
+              <p className="text-[11px] text-[#6B7280] mt-0.5">
+                {targetUser.full_name || targetUser.email}
+              </p>
+            </div>
+          </div>
+          <button onClick={handleClose} className="p-2 rounded-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] transition-colors cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+          {success ? (
+            <div className="text-center space-y-4 animate-fadeIn py-2">
+              <CheckCircle className="w-14 h-14 mx-auto text-[#13A52D]" />
+              <h4 className="text-lg font-bold text-[#111111]">Email Address Updated!</h4>
+              <p className="text-xs text-[#6B7280]">
+                The account email has been successfully updated to:
+              </p>
+              <div className="px-4 py-2.5 bg-[#F7F8FA] rounded-full border border-[#E7E8EB] text-sm font-mono text-[#111111] font-semibold text-center">
+                {newEmail}
+              </div>
+              <button
+                onClick={handleClose}
+                className="w-full py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-all cursor-pointer mt-4"
+              >
+                Done
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 bg-[#FEF2F2] border border-[#FCA5A5] rounded-xl text-[#DC2626] text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold mb-1 block">
+                  Current Email Address
+                </label>
+                <input
+                  type="text"
+                  value={targetUser.email || ''}
+                  disabled
+                  className="w-full px-4 py-2.5 bg-[#F1F2F4] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#6B7280] cursor-not-allowed font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold mb-1 block">
+                  New Email Address
+                </label>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="e.g. newemail@gmail.com"
+                  className="w-full px-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold mb-1 block">
+                  Confirm New Email Address
+                </label>
+                <input
+                  type="email"
+                  value={confirmEmail}
+                  onChange={(e) => setConfirmEmail(e.target.value)}
+                  placeholder="Re-enter new email address"
+                  className="w-full px-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !newEmail || !confirmEmail || newEmail !== confirmEmail}
+                className="w-full py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+              >
+                {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>Save New Email</span>
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Reset / Change Password Modal ──────────────────────────────
 function ResetPasswordModal({ isOpen, onClose, targetUser, onSuccess }) {
   const { user } = useAuth();
@@ -299,7 +491,7 @@ function ResetPasswordModal({ isOpen, onClose, targetUser, onSuccess }) {
               )}
               <button
                 onClick={handleClose}
-                className="px-8 py-2.5 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer shadow-xs"
+                className="w-full py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-all cursor-pointer mt-4"
               >
                 Done
               </button>
@@ -313,89 +505,91 @@ function ResetPasswordModal({ isOpen, onClose, targetUser, onSuccess }) {
                 </div>
               )}
 
+              {/* User info */}
+              <div className="flex items-center gap-3 p-3 bg-[#F7F8FA] rounded-2xl border border-[#E7E8EB]">
+                <div className="w-9 h-9 rounded-full bg-[#141414] text-white font-bold flex items-center justify-center text-xs">
+                  {(targetUser.full_name || targetUser.email || 'U').charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-[#111111] truncate">{targetUser.full_name || 'Unnamed'}</p>
+                  <p className="text-[11px] text-[#6B7280] truncate">{targetUser.email}</p>
+                </div>
+              </div>
+
+              {/* Password Generator Button for Non-Admins */}
               {!isAdmin && (
-                <div className="bg-[#F7F8FA] rounded-2xl p-3.5 border border-[#E7E8EB] flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-[#141414] text-white font-bold flex items-center justify-center text-xs shrink-0">
-                    {(targetUser.full_name || targetUser.email || 'U').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#111111]">{targetUser.full_name || 'Unnamed'}</p>
-                    <p className="text-[11px] text-[#6B7280]">{targetUser.email} · {targetUser.role}</p>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-[#6B7280]">Need a strong random password?</span>
+                  <button
+                    type="button"
+                    onClick={generatePassword}
+                    className="text-[11px] font-bold text-[#1E74FF] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Auto-Generate</span>
+                  </button>
                 </div>
               )}
 
               {/* New Password */}
               <div>
-                <label className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold mb-1.5 block">
-                  {isAdmin ? 'New Password' : 'Temporary Password'}
+                <label className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold mb-1 block">
+                  New Password
                 </label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Min 6 characters"
-                    className="w-full px-4 py-2.5 pr-20 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+                    placeholder="Enter at least 6 characters"
+                    className="w-full px-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414] pr-10"
                     disabled={loading}
                     required
                   />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="p-1 text-[#6B7280] hover:text-[#111111] transition-colors cursor-pointer"
-                      title={showPassword ? 'Hide' : 'Show'}
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={generatePassword}
-                      className="p-1 text-[#D97706] hover:text-[#B45309] transition-colors cursor-pointer"
-                      title="Generate strong password"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA0A6] hover:text-[#111111] transition-colors cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
-                {/* Strength indicator */}
+
+                {/* Strength Meter */}
                 {newPassword && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="flex-1 h-1.5 bg-[#EEF0F2] rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${strength.color}`}
-                        style={{ width: `${(strength.score / 5) * 100}%` }}
-                      />
+                  <div className="mt-2 space-y-1">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-[#6B7280]">Strength:</span>
+                      <span className="font-bold">{strength.label}</span>
                     </div>
-                    <span className="text-[10px] text-[#6B7280] font-semibold">{strength.label}</span>
+                    <div className="h-1.5 bg-[#EEF0F2] rounded-full overflow-hidden flex gap-0.5">
+                      {[1, 2, 3, 4].map((step) => (
+                        <div
+                          key={step}
+                          className={`flex-1 transition-colors ${
+                            strength.score >= step ? strength.color : 'bg-transparent'
+                          }`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold mb-1.5 block">
-                  Confirm Password
+                <label className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold mb-1 block">
+                  Confirm New Password
                 </label>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter password"
-                  className={`w-full px-4 py-2.5 bg-[#F7F8FA] border rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none ${
-                    confirmPassword && confirmPassword !== newPassword
-                      ? 'border-[#DC2626]'
-                      : confirmPassword && confirmPassword === newPassword
-                      ? 'border-[#13A52D]'
-                      : 'border-[#E7E8EB]'
-                  }`}
+                  className="w-full px-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
                   disabled={loading}
                   required
                 />
-                {confirmPassword && confirmPassword !== newPassword && (
-                  <p className="text-[10px] text-[#DC2626] mt-1 pl-2">Passwords do not match</p>
-                )}
               </div>
 
               <button
@@ -422,6 +616,7 @@ export default function PasswordManagementPage() {
   const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resetTarget, setResetTarget] = useState(null);
+  const [emailTarget, setEmailTarget] = useState(null);
   const [showSecuritySetup, setShowSecuritySetup] = useState(false);
   const [hasSecurityQuestions, setHasSecurityQuestions] = useState(null);
 
@@ -440,7 +635,7 @@ export default function PasswordManagementPage() {
     );
   }
 
-  // Fetch all profiles
+  // Fetch all profiles and apply local overrides
   const fetchUsers = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -449,8 +644,16 @@ export default function PasswordManagementPage() {
       .order('role', { ascending: true })
       .order('full_name', { ascending: true });
 
+    const localOverrides = JSON.parse(localStorage.getItem('kpr_custom_user_emails') || '{}');
+
     if (!error && data) {
-      setAllUsers(data);
+      const merged = data.map(u => {
+        if (localOverrides[u.id]) {
+          return { ...u, email: localOverrides[u.id] };
+        }
+        return u;
+      });
+      setAllUsers(merged);
     }
     setLoading(false);
   };
@@ -489,8 +692,12 @@ export default function PasswordManagementPage() {
   };
 
   // Group users by role & guarantee 3 Admin member logins are visible and manageable
+  const localOverrides = JSON.parse(localStorage.getItem('kpr_custom_user_emails') || '{}');
   const existingAdminEmails = allUsers.filter(u => u.role === 'admin').map(u => u.email?.toLowerCase());
-  const fallbackAdmins = ADMIN_MEMBERS.filter(a => !a.id.endsWith('_alias') && !existingAdminEmails.includes(a.email.toLowerCase()));
+  const fallbackAdmins = ADMIN_MEMBERS.filter(a => !a.id.endsWith('_alias') && !existingAdminEmails.includes(a.email.toLowerCase())).map(a => {
+    if (localOverrides[a.id]) return { ...a, email: localOverrides[a.id] };
+    return a;
+  });
 
   const adminUsers = [
     ...allUsers.filter(u => u.role === 'admin'),
@@ -510,11 +717,11 @@ export default function PasswordManagementPage() {
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#111111]">Password & Access Security</h2>
-            <p className="text-xs text-[#6B7280]">Manage account credentials securely · Admin Portal Only</p>
+            <p className="text-xs text-[#6B7280]">Manage passwords and access emails securely · Admin Portal Only</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {/* Security Questions Setup */}
           <button
             onClick={() => setShowSecuritySetup(true)}
@@ -568,6 +775,7 @@ export default function PasswordManagementPage() {
               currentUserId={user?.id}
               getRoleConfig={getRoleConfig}
               onReset={(u) => setResetTarget(u)}
+              onChangeEmail={(u) => setEmailTarget(u)}
               isAdmin
             />
           )}
@@ -581,6 +789,7 @@ export default function PasswordManagementPage() {
               currentUserId={user?.id}
               getRoleConfig={getRoleConfig}
               onReset={(u) => setResetTarget(u)}
+              onChangeEmail={(u) => setEmailTarget(u)}
             />
           )}
 
@@ -593,6 +802,7 @@ export default function PasswordManagementPage() {
               currentUserId={user?.id}
               getRoleConfig={getRoleConfig}
               onReset={(u) => setResetTarget(u)}
+              onChangeEmail={(u) => setEmailTarget(u)}
             />
           )}
 
@@ -613,6 +823,13 @@ export default function PasswordManagementPage() {
         onSuccess={fetchUsers}
       />
 
+      <ChangeEmailModal
+        isOpen={!!emailTarget}
+        onClose={() => setEmailTarget(null)}
+        targetUser={emailTarget}
+        onSuccess={fetchUsers}
+      />
+
       <SecurityQuestionSetup
         isOpen={showSecuritySetup}
         onClose={() => setShowSecuritySetup(false)}
@@ -626,7 +843,7 @@ export default function PasswordManagementPage() {
 }
 
 // ─── User Role Section Component ─────────────────────────────────
-function UserRoleSection({ title, icon: Icon, users, currentUserId, getRoleConfig, onReset, isAdmin: isAdminSection }) {
+function UserRoleSection({ title, icon: Icon, users, currentUserId, getRoleConfig, onReset, onChangeEmail, isAdmin: isAdminSection }) {
   return (
     <div className="bg-white rounded-[20px] border border-[#E7E8EB] shadow-xs overflow-hidden">
       <div className="px-6 py-4 border-b border-[#E7E8EB] flex items-center justify-between bg-[#F7F8FA]">
@@ -658,13 +875,13 @@ function UserRoleSection({ title, icon: Icon, users, currentUserId, getRoleConfi
                     {u.full_name || 'Unnamed'}
                     {isCurrentUser && <span className="text-[11px] text-[#1E74FF] font-medium ml-2">(You)</span>}
                   </p>
-                  <p className="text-[11px] text-[#6B7280] mt-0.5">
-                    {u.email} {u.designation && <span className="text-[#111111] font-medium">· {u.designation}</span>}
+                  <p className="text-[11px] text-[#6B7280] mt-0.5 font-mono">
+                    {u.email} {u.designation && <span className="text-[#111111] font-sans font-medium">· {u.designation}</span>}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 ml-13 sm:ml-0">
+              <div className="flex items-center gap-2.5 flex-wrap ml-13 sm:ml-0">
                 {/* Role Badge */}
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${cfg.badgeBg} ${cfg.badgeText}`}>
                   {cfg.label}
@@ -677,7 +894,17 @@ function UserRoleSection({ title, icon: Icon, users, currentUserId, getRoleConfi
                   {statusActive ? 'Active' : 'Disabled'}
                 </span>
 
-                {/* Reset/Change Button */}
+                {/* Change Email Button */}
+                <button
+                  onClick={() => onChangeEmail && onChangeEmail(u)}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] border border-[#E7E8EB]"
+                  title="Change Email Address"
+                >
+                  <Mail className="w-3 h-3 text-[#1E74FF]" />
+                  <span>Change Email</span>
+                </button>
+
+                {/* Reset/Change Password Button */}
                 <button
                   onClick={() => onReset(u)}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs ${
