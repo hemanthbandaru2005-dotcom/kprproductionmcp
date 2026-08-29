@@ -1296,19 +1296,135 @@ export function subscribeToUploadActivityMessages(onUpdate) {
 }
 
 /**
- * Real-time subscription helper for client uploads
+ * Real-time subscription helper for client uploads.
+ * Subscribes to:
+ *   1. Supabase Realtime on `verifications` table (SYSTEM_DELETED_UPLOADS) — cross-device deletion sync
+ *   2. Supabase Realtime on `client_uploads` table — INSERT / DELETE events
+ *   3. Supabase Realtime on `job_files` table — INSERT / DELETE events
+ *   4. BroadcastChannel (same browser, different tabs)
+ *   5. window custom events (same tab)
  */
 export function subscribeToClientUploadsRealtime(onUpdate) {
+  const channels = [];
+
+  // ─── 1. Supabase Realtime: verifications table (deletion blacklist) ───
+  try {
+    const deletionChannel = supabase
+      .channel('kpr_deletion_sync_v2')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'verifications', filter: 'album_id=eq.SYSTEM_DELETED_UPLOADS' },
+        (payload) => {
+          const rec = payload.new;
+          if (!rec) return;
+          // Parse the deletion record and add to local blacklist so it stays deleted
+          const deletedId = rec.event_id || rec.client_id;
+          const deletedFileName = rec.client_note || '';
+          let filePath = '', fileUrl = '';
+          try {
+            const parsed = typeof rec.notes === 'string' ? JSON.parse(rec.notes) : rec.notes;
+            if (parsed) {
+              filePath = parsed.filePath || '';
+              fileUrl = parsed.fileUrl || '';
+            }
+          } catch (e) {}
+          // Persist to this device's local blacklist
+          if (deletedId) {
+            addDeletedUploadId(deletedId, filePath, fileUrl, deletedFileName);
+          }
+          // Notify the UI to remove immediately
+          if (onUpdate) {
+            onUpdate({ type: 'delete', uploadId: deletedId, cleanId: deletedId ? String(deletedId).replace(/^worker_jf_/, '') : '', fileName: deletedFileName });
+          }
+        }
+      )
+      .subscribe();
+    channels.push(deletionChannel);
+  } catch (e) {
+    console.warn('Supabase Realtime deletion channel error:', e);
+  }
+
+  // ─── 2. Supabase Realtime: client_uploads table ───
+  try {
+    const uploadsChannel = supabase
+      .channel('kpr_client_uploads_rt_v2')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'client_uploads' },
+        (payload) => {
+          if (onUpdate) onUpdate({ type: 'insert', record: payload.new });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'client_uploads' },
+        (payload) => {
+          if (onUpdate) onUpdate({ type: 'update', record: payload.new });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'client_uploads' },
+        (payload) => {
+          const old = payload.old;
+          if (old && old.id) {
+            addDeletedUploadId(old.id, old.file_path, old.file_url, old.file_name);
+            if (onUpdate) onUpdate({ type: 'delete', uploadId: old.id, cleanId: old.id, fileName: old.file_name || '' });
+          }
+        }
+      )
+      .subscribe();
+    channels.push(uploadsChannel);
+  } catch (e) {
+    console.warn('Supabase Realtime client_uploads channel error:', e);
+  }
+
+  // ─── 3. Supabase Realtime: job_files table ───
+  try {
+    const jobFilesChannel = supabase
+      .channel('kpr_job_files_rt_v2')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'job_files' },
+        (payload) => {
+          if (onUpdate) onUpdate({ type: 'insert', record: payload.new });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'job_files' },
+        (payload) => {
+          const old = payload.old;
+          if (old && old.id) {
+            const prefixedId = `worker_jf_${old.id}`;
+            addDeletedUploadId(old.id, old.file_path, null, old.file_name);
+            addDeletedUploadId(prefixedId, old.file_path, null, old.file_name);
+            if (onUpdate) onUpdate({ type: 'delete', uploadId: prefixedId, cleanId: old.id, fileName: old.file_name || '' });
+          }
+        }
+      )
+      .subscribe();
+    channels.push(jobFilesChannel);
+  } catch (e) {
+    console.warn('Supabase Realtime job_files channel error:', e);
+  }
+
+  // ─── 4. BroadcastChannel (same browser, different tabs) ───
   let bc = null;
   if (typeof BroadcastChannel !== 'undefined') {
     try {
       bc = new BroadcastChannel('kpr_client_uploads_bc_v1');
       bc.onmessage = (event) => {
+        if (event.data && event.data.type === 'delete') {
+          // Persist to local blacklist on this tab too
+          addDeletedUploadId(event.data.uploadId, null, null, event.data.fileName);
+        }
         if (onUpdate) onUpdate(event.data);
       };
     } catch (e) {}
   }
 
+  // ─── 5. Window custom events (same tab) ───
   const handleCustomEvent = (e) => {
     if (onUpdate) onUpdate(e.detail);
   };
@@ -1317,7 +1433,11 @@ export function subscribeToClientUploadsRealtime(onUpdate) {
     window.addEventListener('kpr_client_uploads_updated', handleCustomEvent);
   }
 
+  // ─── Cleanup function ───
   return () => {
+    channels.forEach(ch => {
+      try { supabase.removeChannel(ch); } catch (e) {}
+    });
     if (bc) {
       try { bc.close(); } catch (e) {}
     }

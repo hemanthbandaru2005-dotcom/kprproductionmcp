@@ -64,24 +64,36 @@ export default function ClientUploadsManager() {
       }).catch(() => {});
     }, 4000);
 
-    // Subscribe to real-time events for upload records
-    const unsubscribeUploads = subscribeToClientUploadsRealtime(({ type, record }) => {
-      if (!record) return;
+    // Subscribe to real-time events for upload records (cross-device via Supabase Realtime)
+    const unsubscribeUploads = subscribeToClientUploadsRealtime((event) => {
+      if (!event) return;
 
-      if (type === 'insert') {
+      if (event.type === 'insert' && event.record) {
         setUploads((prev) => {
-          if (prev.some(item => item.id === record.id)) {
-            return prev.map(item => item.id === record.id ? { ...item, ...record } : item);
+          if (prev.some(item => item.id === event.record.id)) {
+            return prev.map(item => item.id === event.record.id ? { ...item, ...event.record } : item);
           }
-          return [{ ...record, isNew: true }, ...prev];
+          return [{ ...event.record, isNew: true }, ...prev];
         });
-        const uploaderType = (record.uploader_role === 'worker' || record.is_worker_upload) ? 'Worker' : 'Client';
-        showNotice(`🔔 ${uploaderType} ${record.uploader_name || record.client_name || ''} uploaded: "${record.file_name}"`, 'success');
+        const uploaderType = (event.record.uploader_role === 'worker' || event.record.is_worker_upload) ? 'Worker' : 'Client';
+        showNotice(`🔔 ${uploaderType} ${event.record.uploader_name || event.record.client_name || ''} uploaded: "${event.record.file_name}"`, 'success');
         loadActivityMessages();
-      } else if (type === 'update') {
-        setUploads((prev) => prev.map(item => item.id === record.id ? { ...item, ...record } : item));
-      } else if (type === 'delete') {
-        setUploads((prev) => prev.filter(item => item.id !== record.id));
+      } else if (event.type === 'update' && event.record) {
+        setUploads((prev) => prev.map(item => item.id === event.record.id ? { ...item, ...event.record } : item));
+      } else if (event.type === 'delete') {
+        // Instant cross-device deletion — remove by uploadId, cleanId, and fileName
+        const delId = event.uploadId || (event.record && event.record.id);
+        const cleanId = event.cleanId || (delId ? String(delId).replace(/^worker_jf_/, '') : '');
+        const delFileName = event.fileName || (event.record && event.record.file_name) || '';
+        setUploads((prev) => prev.filter(item =>
+          item.id !== delId &&
+          item.id !== cleanId &&
+          item.id !== `worker_jf_${cleanId}` &&
+          (!delFileName || item.file_name !== delFileName)
+        ));
+        if (previewFile && (previewFile.id === delId || previewFile.id === cleanId || (delFileName && previewFile.file_name === delFileName))) {
+          setPreviewFile(null);
+        }
       }
     });
 

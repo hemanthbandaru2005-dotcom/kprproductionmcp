@@ -99,7 +99,12 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
         const delId = event.uploadId;
         const cleanId = event.cleanId || (delId ? String(delId).replace(/^worker_jf_/, '') : '');
         const delFileName = event.fileName;
-        setUploads(prev => prev.filter(u => u.id !== delId && u.id !== cleanId && (!delFileName || u.file_name !== delFileName)));
+        setUploads(prev => prev.filter(u =>
+          u.id !== delId &&
+          u.id !== cleanId &&
+          u.id !== `worker_jf_${cleanId}` &&
+          (!delFileName || u.file_name !== delFileName)
+        ));
       } else if (event.type === 'insert' && event.record) {
         setUploads(prev => {
           if (prev.some(item => item.id === event.record.id)) {
@@ -117,7 +122,12 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
         const delId = e.detail.uploadId;
         const cleanId = e.detail.cleanId || (delId ? String(delId).replace(/^worker_jf_/, '') : '');
         const delFileName = e.detail.fileName;
-        setUploads(prev => prev.filter(u => u.id !== delId && u.id !== cleanId && (!delFileName || u.file_name !== delFileName)));
+        setUploads(prev => prev.filter(u =>
+          u.id !== delId &&
+          u.id !== cleanId &&
+          u.id !== `worker_jf_${cleanId}` &&
+          (!delFileName || u.file_name !== delFileName)
+        ));
       } else {
         loadUploads();
       }
