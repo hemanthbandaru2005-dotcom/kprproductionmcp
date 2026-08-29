@@ -22,7 +22,6 @@ export default function InstantQuoteWidget({
       try {
         const data = await fetchSitePackages('photography');
         if (data && data.length > 0) {
-          // Strictly filter only photography packages
           const filtered = data.filter(p => (p.type === 'photography' || !p.type) && p.status !== 'hidden');
           if (filtered.length > 0) {
             setPhotoPackages(filtered);
@@ -43,10 +42,13 @@ export default function InstantQuoteWidget({
   // Selected category filter tab
   const [activeCategoryTab, setActiveCategoryTab] = useState('ALL');
 
-  // Manual Custom Price & Hours state (allows manual entry or auto-fill)
+  // Manual Custom Price state
   const [isManualPrice, setIsManualPrice] = useState(false);
   const [customPriceInput, setCustomPriceInput] = useState('');
-  const [customHoursInput, setCustomHoursInput] = useState('');
+
+  // Manual Custom Duration state
+  const [isManualDuration, setIsManualDuration] = useState(false);
+  const [customDurationInput, setCustomDurationInput] = useState('');
 
   // Find active package
   const activePackage = useMemo(() => {
@@ -54,13 +56,13 @@ export default function InstantQuoteWidget({
     return found || photoPackages[0] || OFFICIAL_PHOTOGRAPHY_PACKAGES[0];
   }, [photoPackages, selectedId]);
 
-  // Extract duration string or numeric hours
-  const displayHours = useMemo(() => {
-    if (customHoursInput.trim()) return customHoursInput.trim();
-    if (!activePackage?.duration) return '6';
-    const match = activePackage.duration.match(/(\d+)\s*hour/i);
-    return match ? match[1] : activePackage.duration;
-  }, [activePackage, customHoursInput]);
+  // Extract effective duration
+  const effectiveDuration = useMemo(() => {
+    if (isManualDuration && customDurationInput.trim()) {
+      return customDurationInput.trim();
+    }
+    return activePackage?.duration || '6 hours';
+  }, [activePackage, isManualDuration, customDurationInput]);
 
   // Active Effective Price
   const effectivePrice = useMemo(() => {
@@ -92,19 +94,22 @@ export default function InstantQuoteWidget({
   // Handle switching packages
   const handleSelectPackage = (pkg) => {
     setSelectedId(pkg.id);
-    // Reset manual overrides when clicking a new package to show exact package price
     setIsManualPrice(false);
     setCustomPriceInput('');
-    setCustomHoursInput('');
+    setIsManualDuration(false);
+    setCustomDurationInput('');
   };
 
   // WhatsApp formatted link
   const buildWhatsAppLink = () => {
-    const hoursLabel = displayHours.includes('hour') || displayHours.includes('min') || displayHours.includes('sheet')
-      ? displayHours
-      : `${displayHours} hours`;
+    const durationText = effectiveDuration.toLowerCase().includes('hour') ||
+      effectiveDuration.toLowerCase().includes('min') ||
+      effectiveDuration.toLowerCase().includes('sheet') ||
+      effectiveDuration.toLowerCase().includes('day')
+      ? effectiveDuration
+      : `${effectiveDuration} hours`;
 
-    const message = `Hi, I'd like a quote for ${activePackage?.name || 'Photography'} — Package: ${formattedPrice} for ${hoursLabel}. Please confirm availability.`;
+    const message = `Hi, I'd like a quote for ${activePackage?.name || 'Photography'} — Package: ${formattedPrice} for ${durationText}. Please confirm availability.`;
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
   };
 
@@ -163,18 +168,17 @@ export default function InstantQuoteWidget({
           >
             {photoPackages.map((pkg) => (
               <option key={pkg.id} value={pkg.id} className="bg-[#1A1A1A] text-white">
-                {pkg.name} — ₹{Number(pkg.price).toLocaleString('en-IN')} ({pkg.duration})
+                {pkg.name} ({pkg.duration})
               </option>
             ))}
           </select>
         </div>
 
-        {/* Interactive Photography Packages Grid (All Photography Packages) */}
+        {/* Interactive Photography Packages Grid (No Prices on Cards) */}
         <div className="relative z-10 mb-7 max-h-[310px] overflow-y-auto pr-1 custom-scrollbar">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
             {visiblePackages.map((pkg) => {
               const isSelected = String(selectedId) === String(pkg.id);
-              const pkgPrice = `₹${Number(pkg.price).toLocaleString('en-IN')}`;
 
               return (
                 <button
@@ -196,17 +200,20 @@ export default function InstantQuoteWidget({
                     )}
                   </div>
 
-                  <span className={`text-xs sm:text-sm font-serif font-medium leading-tight mb-1.5 ${isSelected ? 'text-white font-semibold' : 'text-white/90 group-hover:text-white'}`}>
+                  <span className={`text-xs sm:text-sm font-serif font-medium leading-tight mb-2 ${isSelected ? 'text-white font-semibold' : 'text-white/90 group-hover:text-white'}`}>
                     {pkg.name}
                   </span>
 
                   <div className="flex items-center justify-between pt-1.5 border-t border-white/10 mt-auto">
-                    <span className="text-[11px] font-bold text-[#E8D4B8]">
-                      {pkgPrice}
+                    <span className="text-[10px] text-[#C5A880]/80 font-medium truncate flex items-center gap-1">
+                      <Clock className="w-2.5 h-2.5 shrink-0" />
+                      <span>{pkg.duration}</span>
                     </span>
-                    <span className="text-[9px] text-white/40 font-light truncate">
-                      {pkg.duration}
-                    </span>
+                    {pkg.popular && (
+                      <span className="text-[8px] bg-[#C5A880]/20 text-[#E8D4B8] px-1.5 py-0.5 rounded-sm uppercase tracking-wider font-semibold">
+                        Popular
+                      </span>
+                    )}
                   </div>
                 </button>
               );
@@ -253,9 +260,9 @@ export default function InstantQuoteWidget({
             )}
           </div>
 
-          {/* Right Stats: Package Price & Duration with Manual Edit Option */}
+          {/* Right Stats: Package Price & Duration with Manual Edit Option on BOTH */}
           <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-4 bg-black/50 border border-white/10 rounded-xl p-4 sm:p-5 shrink-0">
-            {/* Price Box */}
+            {/* Price Box with Edit Option */}
             <div className="text-center sm:text-left min-w-[140px]">
               <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1">
                 <Tag className="w-3 h-3 text-[#C5A880]" />
@@ -266,11 +273,11 @@ export default function InstantQuoteWidget({
                     setIsManualPrice(!isManualPrice);
                     if (!isManualPrice) setCustomPriceInput(String(activePackage.price || ''));
                   }}
-                  title="Click to manually enter/edit price"
+                  title="Click to edit price"
                   className="ml-1 text-[9px] text-[#C5A880] hover:text-white underline cursor-pointer inline-flex items-center gap-0.5"
                 >
                   <Edit3 className="w-2.5 h-2.5" />
-                  <span>{isManualPrice ? 'Default' : 'Edit'}</span>
+                  <span>{isManualPrice ? 'Reset' : 'Edit'}</span>
                 </button>
               </div>
 
@@ -282,7 +289,7 @@ export default function InstantQuoteWidget({
                     value={customPriceInput}
                     onChange={(e) => setCustomPriceInput(e.target.value)}
                     placeholder={String(activePackage.price)}
-                    className="w-32 bg-[#222222] border border-[#C5A880] rounded-lg pl-6 pr-2 py-1 text-base text-[#E8D4B8] font-bold focus:outline-none"
+                    className="w-32 bg-[#222222] border border-[#C5A880] rounded-lg pl-6 pr-2 py-1 text-base text-[#E8D4B8] font-bold focus:outline-none focus:ring-1 focus:ring-[#C5A880]"
                   />
                 </div>
               ) : (
@@ -294,15 +301,40 @@ export default function InstantQuoteWidget({
 
             <div className="hidden sm:block w-[1px] h-12 bg-white/15" />
 
-            {/* Duration Box */}
-            <div className="text-center sm:text-left min-w-[120px]">
-              <div className="text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1 flex items-center justify-center sm:justify-start gap-1">
+            {/* Duration Box with Edit Option */}
+            <div className="text-center sm:text-left min-w-[130px]">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1">
                 <Clock className="w-3 h-3 text-[#C5A880]" />
                 <span>Duration / Scope</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsManualDuration(!isManualDuration);
+                    if (!isManualDuration) setCustomDurationInput(String(activePackage.duration || '6 hours'));
+                  }}
+                  title="Click to edit duration / scope"
+                  className="ml-1 text-[9px] text-[#C5A880] hover:text-white underline cursor-pointer inline-flex items-center gap-0.5"
+                >
+                  <Edit3 className="w-2.5 h-2.5" />
+                  <span>{isManualDuration ? 'Reset' : 'Edit'}</span>
+                </button>
               </div>
-              <div className="text-sm sm:text-base text-white font-bold tracking-wide">
-                {activePackage.duration || '6 hours'}
-              </div>
+
+              {isManualDuration ? (
+                <div className="mt-1">
+                  <input
+                    type="text"
+                    value={customDurationInput}
+                    onChange={(e) => setCustomDurationInput(e.target.value)}
+                    placeholder="e.g. 6 hours / Full Day"
+                    className="w-36 bg-[#222222] border border-[#C5A880] rounded-lg px-2.5 py-1 text-xs text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#C5A880]"
+                  />
+                </div>
+              ) : (
+                <div className="text-sm sm:text-base text-white font-bold tracking-wide mt-0.5">
+                  {effectiveDuration}
+                </div>
+              )}
             </div>
           </div>
         </div>
