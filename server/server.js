@@ -429,6 +429,89 @@ const server = http.createServer(async (req, res) => {
   }
 
   // -------------------------------------------------------------
+  // 7a. DELETE /app/api/drive/upload/:id & /app/api/drive/uploads/:id
+  // -------------------------------------------------------------
+  if ((normalizedPath.startsWith('/app/api/drive/upload/') ||
+       normalizedPath.startsWith('/api/drive/upload/') ||
+       normalizedPath.startsWith('/drive/upload/') ||
+       normalizedPath.startsWith('/app/api/drive/uploads/') ||
+       normalizedPath.startsWith('/api/drive/uploads/')) && req.method === 'DELETE') {
+    res.setHeader('Content-Type', 'application/json');
+    try {
+      const uploadId = decodeURIComponent(normalizedPath.split('/').pop() || '');
+      const cleanId = uploadId.replace(/^worker_jf_/, '');
+
+      // 1. Remove from server memory
+      let targetFile = null;
+      for (let i = serverClientUploads.length - 1; i >= 0; i--) {
+        const item = serverClientUploads[i];
+        if (item.id === uploadId || item.id === cleanId || item.drive_file_id === uploadId || item.file_name === uploadId) {
+          targetFile = item;
+          serverClientUploads.splice(i, 1);
+        }
+      }
+
+      // 2. If Google Drive file ID is known, delete from Google Drive
+      const driveFileId = targetFile?.drive_file_id || (!uploadId.startsWith('upload_') && !uploadId.startsWith('worker_') ? uploadId : null);
+      if (driveFileId) {
+        try {
+          const drive = getDriveClient();
+          if (drive) {
+            await drive.files.delete({ fileId: driveFileId, supportsAllDrives: true });
+          }
+        } catch (e) {}
+      }
+
+      // 3. Delete from Supabase & Broadcast deletion
+      const supabase = getServerSupabase();
+      if (supabase) {
+        try {
+          await supabase.from('client_uploads').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+          await supabase.from('job_files').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+          if (targetFile?.file_name) {
+            await supabase.from('client_uploads').delete().eq('file_name', targetFile.file_name);
+          }
+
+          // Insert blacklist record with valid UUID
+          const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
+          await supabase.from('verifications').insert([{
+            id: uuid,
+            client_id: uploadId,
+            client_name: 'SYSTEM_DELETION_SYNC',
+            client_email: 'sync@kpr.com',
+            album_id: 'SYSTEM_DELETED_UPLOADS',
+            event_id: uploadId,
+            event_title: targetFile?.file_name || 'Deleted Upload',
+            client_note: targetFile?.file_name || '',
+            status: 'deleted',
+            notes: JSON.stringify({ id: uploadId, cleanId, fileName: targetFile?.file_name, deleted_at: new Date().toISOString() }),
+            sent_at: new Date().toISOString()
+          }]);
+
+          // Realtime broadcast to all devices
+          await supabase.channel('kpr_client_uploads_broadcast_v1').send({
+            type: 'broadcast',
+            event: 'delete_upload',
+            payload: { uploadId, cleanId, fileName: targetFile?.file_name }
+          });
+        } catch (supaErr) {
+          console.warn('Supabase delete sync warning:', supaErr.message);
+        }
+      }
+
+      res.statusCode = 200;
+      return res.end(JSON.stringify({ success: true, message: 'Upload permanently deleted' }));
+    } catch (err) {
+      res.statusCode = 500;
+      return res.end(JSON.stringify({ error: err.message || 'Failed to delete upload' }));
+    }
+  }
+
+  // -------------------------------------------------------------
   // 8. GET /app/api/jobs & /api/jobs (Sync across all Admins & Workers)
   // -------------------------------------------------------------
   if (['/app/api/jobs', '/api/jobs', '/jobs'].includes(normalizedPath) && req.method === 'GET') {

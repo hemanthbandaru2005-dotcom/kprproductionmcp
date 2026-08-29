@@ -595,6 +595,71 @@ export function driveApiPlugin() {
         }
 
         // -------------------------------------------------------------
+        // 5a. DELETE /app/api/drive/upload/:id & /api/drive/upload/:id - Delete Upload
+        // -------------------------------------------------------------
+        if ((pathname.startsWith('/app/api/drive/upload/') ||
+             pathname.startsWith('/api/drive/upload/') ||
+             pathname.startsWith('/app/api/drive/uploads/') ||
+             pathname.startsWith('/api/drive/uploads/')) && req.method === 'DELETE') {
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const uploadId = decodeURIComponent(pathname.split('/').pop() || '');
+            const cleanId = uploadId.replace(/^worker_jf_/, '');
+
+            let targetFile = null;
+            for (let i = serverClientUploads.length - 1; i >= 0; i--) {
+              const item = serverClientUploads[i];
+              if (item.id === uploadId || item.id === cleanId || item.drive_file_id === uploadId || item.file_name === uploadId) {
+                targetFile = item;
+                serverClientUploads.splice(i, 1);
+              }
+            }
+
+            const serverSupabase = getServerSupabase();
+            if (serverSupabase) {
+              try {
+                await serverSupabase.from('client_uploads').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+                await serverSupabase.from('job_files').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+                if (targetFile?.file_name) {
+                  await serverSupabase.from('client_uploads').delete().eq('file_name', targetFile.file_name);
+                }
+
+                const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                  const r = Math.random() * 16 | 0;
+                  const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                  return v.toString(16);
+                });
+                await serverSupabase.from('verifications').insert([{
+                  id: uuid,
+                  client_id: uploadId,
+                  client_name: 'SYSTEM_DELETION_SYNC',
+                  client_email: 'sync@kpr.com',
+                  album_id: 'SYSTEM_DELETED_UPLOADS',
+                  event_id: uploadId,
+                  event_title: targetFile?.file_name || 'Deleted Upload',
+                  client_note: targetFile?.file_name || '',
+                  status: 'deleted',
+                  notes: JSON.stringify({ id: uploadId, cleanId, fileName: targetFile?.file_name, deleted_at: new Date().toISOString() }),
+                  sent_at: new Date().toISOString()
+                }]);
+
+                await serverSupabase.channel('kpr_client_uploads_broadcast_v1').send({
+                  type: 'broadcast',
+                  event: 'delete_upload',
+                  payload: { uploadId, cleanId, fileName: targetFile?.file_name }
+                });
+              } catch (e) {}
+            }
+
+            res.statusCode = 200;
+            return res.end(JSON.stringify({ success: true, message: 'Upload deleted from dev server and cloud' }));
+          } catch (err) {
+            res.statusCode = 500;
+            return res.end(JSON.stringify({ error: err.message || 'Failed to delete upload' }));
+          }
+        }
+
+        // -------------------------------------------------------------
         // 6. Job Sync Endpoints for All Admins & Workers
         // -------------------------------------------------------------
         if ((pathname === '/app/api/jobs' || pathname === '/api/jobs') && req.method === 'GET') {

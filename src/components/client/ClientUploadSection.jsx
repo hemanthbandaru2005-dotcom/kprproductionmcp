@@ -3,13 +3,14 @@ import {
   Upload, CloudUpload, FileText, Image as ImageIcon, FileCheck,
   AlertCircle, CheckCircle, RefreshCw, HardDrive,
   ExternalLink, Eye, X, ChevronDown, Sparkles, ShieldCheck, Pause, Play, RotateCcw,
-  Archive, Film, Music
+  Archive, Film, Music, Trash2
 } from 'lucide-react';
 import {
   uploadClientFile,
   pauseClientUpload,
   cancelClientUpload,
   fetchClientUploads,
+  deleteClientUpload,
   subscribeToClientUploadsRealtime,
   formatFileSize,
   getFileCategory
@@ -354,6 +355,26 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
     e.stopPropagation();
     cancelClientUpload(queueId);
     setUploadQueue((prev) => prev.filter((item) => item.id !== queueId));
+  };
+
+  const handleDeleteUpload = async (fileItem, e) => {
+    if (e) e.stopPropagation();
+    if (!fileItem || !fileItem.id) return;
+    const fileName = fileItem.file_name || 'this file';
+    if (window.confirm(`Are you sure you want to PERMANENTLY delete "${fileName}" from your vault and Google Drive?`)) {
+      const delId = fileItem.id;
+      const cleanId = String(delId).replace(/^worker_jf_/, '');
+      setUploads((prev) => prev.filter((u) => u.id !== delId && u.id !== cleanId && (!fileName || u.file_name !== fileName)));
+      if (previewModalFile && (previewModalFile.id === delId || previewModalFile.id === cleanId)) {
+        setPreviewModalFile(null);
+      }
+      showToast(`"${fileName}" deleted from vault`, 'success');
+      try {
+        await deleteClientUpload(delId);
+      } catch (err) {
+        console.error('Client deletion error:', err);
+      }
+    }
   };
 
   const handleDrag = (e) => {
@@ -766,21 +787,34 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
                     </div>
                   </div>
 
-                  {/* Client Confirmation Badge */}
+                  {/* Client Confirmation Badge & Actions */}
                   <div className="pt-2 border-t border-[#E7E8EB] flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#13A52D]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#13A52D]" />
                       <span>Saved & Secured</span>
                     </span>
 
-                    <button
-                      onClick={() => setPreviewModalFile(fileItem)}
-                      className="p-1 text-[#6B7280] hover:text-[#111111] transition-colors flex items-center gap-1 text-[11px] font-semibold"
-                      title="View Preview"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Preview</span>
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewModalFile(fileItem);
+                        }}
+                        className="p-1.5 text-[#6B7280] hover:text-[#111111] hover:bg-[#F1F2F4] rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                        title="View Preview"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Preview</span>
+                      </button>
+
+                      <button
+                        onClick={(e) => handleDeleteUpload(fileItem, e)}
+                        className="p-1.5 text-[#9CA0A6] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                        title="Delete file"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -874,16 +908,27 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
               )}
             </div>
 
-            {/* Modal Footer info */}
+            {/* Modal Footer info & Delete Action */}
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs text-[#6B7280]">
               <div className="flex items-center gap-4">
                 <span>Size: <strong className="text-[#111111]">{formatFileSize(previewModalFile.file_size)}</strong></span>
                 <span>Type: <strong className="text-[#111111] font-mono uppercase">.{previewModalFile.file_type}</strong></span>
               </div>
 
-              <div className="flex items-center gap-1 text-[#13A52D] text-xs font-bold">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Verified in Studio Archive</span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={(e) => handleDeleteUpload(previewModalFile, e)}
+                  className="px-3 py-1.5 rounded-full text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 font-semibold transition-all flex items-center gap-1.5 cursor-pointer text-xs"
+                  title="Permanently delete file"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete File</span>
+                </button>
+
+                <div className="flex items-center gap-1 text-[#13A52D] text-xs font-bold">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Verified Archive</span>
+                </div>
               </div>
             </div>
           </div>
