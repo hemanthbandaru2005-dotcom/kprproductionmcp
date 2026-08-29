@@ -237,18 +237,45 @@ export async function fetchAllClientUploadsForAdmin() {
 }
 
 /**
- * Delete an uploaded file
+ * Delete an uploaded file permanently from storage, Google Drive, and database
  */
 export async function deleteClientUpload(uploadId) {
   if (!uploadId) return { success: false };
   const apiBase = getBackendApiUrl();
 
+  // 1. Fetch file record to obtain file_path / drive IDs before deletion
+  let fileRecord = null;
+  try {
+    const { data } = await supabase
+      .from('client_uploads')
+      .select('*')
+      .eq('id', uploadId)
+      .maybeSingle();
+    fileRecord = data;
+  } catch (e) {}
+
+  if (!fileRecord) {
+    const local = getLocalClientUploads();
+    fileRecord = local.find(item => item.id === uploadId);
+  }
+
+  // 2. Delete from Backend Google Drive Storage API
   try {
     await fetch(`${apiBase}/app/api/drive/upload/${uploadId}`, {
       method: 'DELETE'
     });
   } catch (e) {}
 
+  // 3. Delete directly from Supabase Storage buckets if path exists
+  if (fileRecord?.file_path) {
+    try {
+      await supabase.storage.from('client-uploads').remove([fileRecord.file_path]);
+      await supabase.storage.from('job-files').remove([fileRecord.file_path]);
+      await supabase.storage.from('portfolio').remove([fileRecord.file_path]);
+    } catch (e) {}
+  }
+
+  // 4. Delete from Supabase Database tables
   try {
     await supabase
       .from('client_uploads')
@@ -256,9 +283,28 @@ export async function deleteClientUpload(uploadId) {
       .eq('id', uploadId);
   } catch (e) {}
 
+  try {
+    await supabase
+      .from('job_files')
+      .delete()
+      .eq('id', uploadId);
+  } catch (e) {}
+
+  // 5. Clean up IndexedDB sessions
+  try {
+    await removeUploadSession(uploadId);
+  } catch (e) {}
+
+  // 6. Delete from LocalStorage cache
   const local = getLocalClientUploads();
   saveLocalClientUploads(local.filter(item => item.id !== uploadId));
 
+  // 7. Clean up any related activity alert messages
+  try {
+    await deleteUploadActivityMessage(uploadId);
+  } catch (e) {}
+
+  // 8. Broadcast permanent deletion across all windows
   if (typeof BroadcastChannel !== 'undefined') {
     try {
       const bc = new BroadcastChannel('kpr_client_uploads_bc_v1');

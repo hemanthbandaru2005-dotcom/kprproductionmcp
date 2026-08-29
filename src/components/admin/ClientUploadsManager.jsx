@@ -162,11 +162,14 @@ export default function ClientUploadsManager() {
   };
 
   const handleDelete = async (uploadId, e) => {
-    e.stopPropagation();
-    if (window.confirm('Delete this upload record?')) {
+    if (e) e.stopPropagation();
+    if (window.confirm('Are you sure you want to PERMANENTLY delete this file from storage and Google Drive?')) {
       await deleteClientUpload(uploadId);
+      if (previewFile?.id === uploadId) {
+        setPreviewFile(null);
+      }
       loadUploads();
-      showNotice('Upload record deleted', 'success');
+      showNotice('File permanently deleted from storage and Google Drive', 'success');
     }
   };
 
@@ -893,6 +896,16 @@ export default function ClientUploadsManager() {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => handleDelete(previewFile.id, e)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FEF2F2] hover:bg-[#FEE2E2] text-[#DC2626] text-xs font-bold tracking-wider uppercase transition-all shadow-xs border border-[#FCA5A5] cursor-pointer"
+                  title="Permanently delete this file from storage and Google Drive"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete from Storage</span>
+                </button>
+
                 {(previewFile.drive_file_url || previewFile.drive_file_id || previewFile.file_url) && (
                   <a
                     href={previewFile.drive_file_url || previewFile.file_url || `https://drive.google.com/file/d/${previewFile.drive_file_id}/view`}

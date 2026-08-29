@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Upload, CloudUpload, FileText, Image as ImageIcon, FileCheck,
-  AlertCircle, CheckCircle, RefreshCw, HardDrive, Trash2,
+  AlertCircle, CheckCircle, RefreshCw, HardDrive,
   ExternalLink, Eye, X, ChevronDown, Sparkles, ShieldCheck, Pause, Play, RotateCcw,
   Archive, Film, Music
 } from 'lucide-react';
@@ -10,7 +10,6 @@ import {
   pauseClientUpload,
   cancelClientUpload,
   fetchClientUploads,
-  deleteClientUpload,
   formatFileSize,
   getFileCategory
 } from '../../utils/clientUploadsService';
@@ -323,14 +322,6 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFiles(e.dataTransfer.files);
-    }
-  };
-
-  const handleDelete = async (uploadId, e) => {
-    e.stopPropagation();
-    if (window.confirm('Are you sure you want to remove this file from your uploads?')) {
-      await deleteClientUpload(uploadId);
-      loadUploads();
     }
   };
 
@@ -704,15 +695,6 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
                     <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-white/90 shadow-xs text-[9px] font-mono text-[#111111] uppercase font-bold">
                       .{fileItem.file_type || 'file'}
                     </span>
-
-                    {/* Delete button */}
-                    <button
-                      onClick={(e) => handleDelete(fileItem.id, e)}
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 hover:bg-[#FEF2F2] text-[#9CA0A6] hover:text-[#DC2626] transition-colors shadow-xs"
-                      title="Delete file"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
 
                   {/* Details */}

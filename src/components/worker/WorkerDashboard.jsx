@@ -22,7 +22,7 @@ import {
   Briefcase, CheckCircle, Clock, UploadCloud, FileText,
   LogOut, Bell, Calendar, RefreshCw, AlertCircle,
   File, Image as ImageIcon, Video, ChevronRight, Loader2, Sparkles, UserCheck,
-  MessageSquare, User, ArrowUpRight, Trash2, HardDrive, Link as LinkIcon, ExternalLink,
+  MessageSquare, User, ArrowUpRight, HardDrive, Link as LinkIcon, ExternalLink,
   Plus, Copy
 } from 'lucide-react';
 
@@ -703,17 +703,6 @@ export default function WorkerDashboard({ onLogout }) {
                               <Calendar className="w-3.5 h-3.5 text-[#1E74FF]" />
                               <span>Shoot Date: {formatShootDate(shootDateStr)}</span>
                             </span>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteJob(job);
-                              }}
-                              className="p-1 text-[#9CA0A6] hover:text-[#DC2626] rounded-full"
-                              title="Delete / Dismiss"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
                           </div>
                         </div>
                       );
@@ -744,13 +733,6 @@ export default function WorkerDashboard({ onLogout }) {
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${STATUS_CONFIG[selectedJob.status]?.bg || 'bg-[#DCE9FF]'} ${STATUS_CONFIG[selectedJob.status]?.text || 'text-[#1E74FF]'}`}>
                           {STATUS_CONFIG[selectedJob.status]?.label || selectedJob.status}
                         </span>
-                        <button
-                          onClick={() => handleDeleteJob(selectedJob)}
-                          className="p-1.5 text-[#9CA0A6] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-full transition-colors cursor-pointer"
-                          title="Delete / Remove Shoot"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </div>
 
@@ -984,15 +966,6 @@ export default function WorkerDashboard({ onLogout }) {
                                       <span>Open in Drive</span>
                                       <ArrowUpRight className="w-3.5 h-3.5" />
                                     </a>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDeleteJobFile(file)}
-                                      className="p-1.5 text-[#9CA0A6] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-full transition-colors cursor-pointer"
-                                      title="Delete Link"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
                                   </div>
                                 </div>
                               );
