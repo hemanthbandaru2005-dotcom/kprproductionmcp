@@ -5,7 +5,7 @@ import heroMobile from '../assets/hero_flatlay_mobile.jpg';
 import showcasePhotoLogoExact from '../assets/showcase_photo_logo_exact.png';
 import showcaseColorLabLogoExact from '../assets/showcase_colorlab_logo_exact.png';
 import showcaseEventsLogoExact from '../assets/showcase_events_logo_exact.png';
-import cardApertureReal from '../assets/card_aperture_lens_real.jpg';
+import heroApertureSquare from '../assets/hero_aperture_lens_square.jpg';
 import cardAlbumReal from '../assets/card_album_photobook_real.jpg';
 import cardStageReal from '../assets/card_event_stage_real.jpg';
 
@@ -17,8 +17,8 @@ const SERVICES = [
     showTitleText: true,
     accentColor: '#D32F2F', // Vibrant Red Accent
     logoSrc: showcasePhotoLogoExact,
-    cardImage: cardApertureReal,
-    cardAlt: 'High-Clarity Professional DSLR Camera & Lens',
+    cardImage: heroApertureSquare,
+    cardAlt: 'DSLR Multi-Blade Aperture Lens',
     description: 'Capturing emotions, moments and stories that last forever.',
     buttonText: 'EXPLORE',
   },
