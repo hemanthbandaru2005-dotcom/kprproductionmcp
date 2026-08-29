@@ -210,15 +210,15 @@ export default function AlbumPreviewPage() {
         {/* ═══ Page Header ═══ */}
         <div className="text-center mb-8 sm:mb-12 space-y-3">
           <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block">
-            Album Flipbook Studio
+            Album Preview Tool
           </span>
           <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#1A1A1A] font-light">
-            Upload Your Albums
+            Preview Your Album
           </h1>
           <div className="w-16 h-0.5 bg-[#C5A880] mx-auto my-3" />
           <p className="text-xs sm:text-sm text-[#666666] font-light leading-relaxed max-w-xl mx-auto">
-            Upload your photos or album sheets directly and experience them as a beautiful 3D page-turning album. 
-            See how your memories look in a KPR luxury handcrafted album.
+            Upload your photos and experience them as a beautiful page-turning album. 
+            See how your memories would look in a KPR luxury handcrafted album.
           </p>
         </div>
 
