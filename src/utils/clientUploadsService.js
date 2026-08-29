@@ -93,6 +93,72 @@ export function getFileCategory(filename) {
   return 'other';
 }
 
+const DELETED_UPLOADS_STORAGE_KEY = 'kpr_deleted_uploads_v1';
+
+export function getDeletedUploadIds() {
+  try {
+    const raw = localStorage.getItem(DELETED_UPLOADS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export function addDeletedUploadId(id, filePath, fileUrl) {
+  try {
+    const current = getDeletedUploadIds();
+    const set = new Set(current);
+    if (id) {
+      set.add(id);
+      set.add(id.replace(/^worker_jf_/, ''));
+      set.add(`worker_jf_${id}`);
+    }
+    if (filePath) set.add(filePath);
+    if (fileUrl) set.add(fileUrl);
+    const updated = Array.from(set);
+    localStorage.setItem(DELETED_UPLOADS_STORAGE_KEY, JSON.stringify(updated));
+
+    // Also persist deletion record in verifications table so cross-device sync deletes it everywhere
+    supabase.from('verifications').insert([{
+      id: `del_up_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      client_id: id || 'deleted_upload',
+      album_id: 'SYSTEM_DELETED_UPLOADS',
+      event_id: id || '',
+      client_note: filePath || fileUrl || '',
+      notes: JSON.stringify({ id, filePath, fileUrl, deleted_at: new Date().toISOString() })
+    }]).then(() => {}).catch(() => {});
+  } catch (e) {}
+}
+
+export function formatUploaderDisplayName(name, email, role) {
+  if (!name || name.startsWith('worker_reg_') || name.startsWith('client_reg_') || name.startsWith('usr_') || name.startsWith('worker-') || name.startsWith('job_')) {
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('kpr_registered_workers_v1');
+        if (raw) {
+          const workers = JSON.parse(raw);
+          const found = workers.find(w => w.id === name || (email && w.email === email));
+          if (found && found.full_name) return found.full_name;
+        }
+      } catch (e) {}
+    }
+    if (email && email.includes('@')) {
+      const p = email.split('@')[0];
+      return p.charAt(0).toUpperCase() + p.slice(1).replace(/[._-]/g, ' ');
+    }
+    return role === 'worker' ? 'Studio Staff Member' : 'Valued Client';
+  }
+  return name;
+}
+
+export function formatProjectDisplayName(title) {
+  if (!title) return 'Studio Deliverables';
+  if (title.includes('job_') || title.includes('job-') || title.startsWith('#job_')) {
+    return 'Studio Photoshoot Deliverables';
+  }
+  return title;
+}
+
 /**
  * Retrieve local uploads cache
  */
@@ -173,10 +239,10 @@ export async function fetchClientUploads(clientId) {
             drive_sync_status: 'synced',
             client_id: jf.job_id || 'studio',
             client_name: jf.client_name || 'Studio Production',
-            project_title: jf.job_title || `Photoshoot Order #${jf.job_id || ''}`,
+            project_title: formatProjectDisplayName(jf.job_title || jf.project_title),
             uploader_role: 'worker',
-            uploader_name: jf.uploaded_by || 'Staff Photographer / Editor',
-            uploader_email: 'worker@kpr.com',
+            uploader_name: formatUploaderDisplayName(jf.uploaded_by, jf.uploaded_by_email || 'worker@kpr.com', 'worker'),
+            uploader_email: jf.uploaded_by_email || 'worker@kpr.com',
             created_at: jf.created_at || new Date().toISOString()
           });
         }
@@ -205,9 +271,9 @@ export async function fetchClientUploads(clientId) {
                     drive_file_url: jf.file_path || jf.drive_link,
                     drive_sync_status: 'synced',
                     client_name: 'Studio Production',
-                    project_title: `Photoshoot Order #${jf.job_id || ''}`,
+                    project_title: formatProjectDisplayName(jf.job_title || jf.project_title),
                     uploader_role: 'worker',
-                    uploader_name: jf.uploaded_by || 'Staff Worker',
+                    uploader_name: formatUploaderDisplayName(jf.uploaded_by, 'worker@kpr.com', 'worker'),
                     created_at: jf.created_at || new Date().toISOString()
                   });
                 }
@@ -219,9 +285,42 @@ export async function fetchClientUploads(clientId) {
     }
   } catch (e) {}
 
-  const allRecords = Array.from(map.values()).sort(
-    (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-  );
+  // Fetch deleted upload IDs from Supabase + localStorage
+  const deletedSet = new Set(getDeletedUploadIds());
+  try {
+    const { data: delData } = await supabase
+      .from('verifications')
+      .select('*')
+      .eq('album_id', 'SYSTEM_DELETED_UPLOADS');
+    if (Array.isArray(delData)) {
+      delData.forEach(d => {
+        if (d.event_id) deletedSet.add(d.event_id);
+        if (d.client_id) deletedSet.add(d.client_id);
+        if (d.client_note) deletedSet.add(d.client_note);
+        try {
+          const parsed = typeof d.notes === 'string' ? JSON.parse(d.notes) : d.notes;
+          if (parsed?.id) deletedSet.add(parsed.id);
+          if (parsed?.filePath) deletedSet.add(parsed.filePath);
+          if (parsed?.fileUrl) deletedSet.add(parsed.fileUrl);
+        } catch (err) {}
+      });
+    }
+  } catch (e) {}
+
+  // Filter out all deleted items
+  const allRecords = Array.from(map.values())
+    .filter(item => {
+      if (!item || !item.id) return false;
+      const cleanId = item.id.replace(/^worker_jf_/, '');
+      if (deletedSet.has(item.id) || deletedSet.has(cleanId) || deletedSet.has(`worker_jf_${item.id}`)) return false;
+      if (item.file_path && deletedSet.has(item.file_path)) return false;
+      if (item.file_url && deletedSet.has(item.file_url)) return false;
+      if (item.drive_file_url && deletedSet.has(item.drive_file_url)) return false;
+      return true;
+    })
+    .sort(
+      (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    );
 
   if (clientId) {
     return allRecords.filter(r => r.client_id === clientId || !r.client_id);
@@ -241,6 +340,7 @@ export async function fetchAllClientUploadsForAdmin() {
  */
 export async function deleteClientUpload(uploadId) {
   if (!uploadId) return { success: false };
+  const cleanId = uploadId.replace(/^worker_jf_/, '');
   const apiBase = getBackendApiUrl();
 
   // 1. Fetch file record to obtain file_path / drive IDs before deletion
@@ -249,72 +349,109 @@ export async function deleteClientUpload(uploadId) {
     const { data } = await supabase
       .from('client_uploads')
       .select('*')
-      .eq('id', uploadId)
+      .or(`id.eq.${uploadId},id.eq.${cleanId}`)
       .maybeSingle();
     fileRecord = data;
   } catch (e) {}
 
   if (!fileRecord) {
     const local = getLocalClientUploads();
-    fileRecord = local.find(item => item.id === uploadId);
+    fileRecord = local.find(item => item.id === uploadId || item.id === cleanId);
   }
 
-  // 2. Delete from Backend Google Drive Storage API
+  const filePath = fileRecord?.file_path || fileRecord?.drive_file_url || fileRecord?.file_url;
+  const fileUrl = fileRecord?.file_url || fileRecord?.drive_file_url;
+
+  // 2. Add to deleted blacklist permanently so it never resurrects
+  addDeletedUploadId(uploadId, filePath, fileUrl);
+  if (cleanId !== uploadId) {
+    addDeletedUploadId(cleanId, filePath, fileUrl);
+  }
+
+  // 3. Delete from Backend Google Drive Storage API
   try {
-    await fetch(`${apiBase}/app/api/drive/upload/${uploadId}`, {
-      method: 'DELETE'
-    });
+    await fetch(`${apiBase}/app/api/drive/upload/${uploadId}`, { method: 'DELETE' });
+    if (cleanId !== uploadId) {
+      await fetch(`${apiBase}/app/api/drive/upload/${cleanId}`, { method: 'DELETE' });
+    }
   } catch (e) {}
 
-  // 3. Delete directly from Supabase Storage buckets if path exists
-  if (fileRecord?.file_path) {
+  // 4. Delete directly from Supabase Storage buckets if path exists
+  if (filePath) {
     try {
-      await supabase.storage.from('client-uploads').remove([fileRecord.file_path]);
-      await supabase.storage.from('job-files').remove([fileRecord.file_path]);
-      await supabase.storage.from('portfolio').remove([fileRecord.file_path]);
+      await supabase.storage.from('client-uploads').remove([filePath]);
+      await supabase.storage.from('job-files').remove([filePath]);
+      await supabase.storage.from('portfolio').remove([filePath]);
     } catch (e) {}
   }
 
-  // 4. Delete from Supabase Database tables
+  // 5. Delete from Supabase Database tables
   try {
-    await supabase
-      .from('client_uploads')
-      .delete()
-      .eq('id', uploadId);
+    await supabase.from('client_uploads').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+    if (filePath) {
+      await supabase.from('client_uploads').delete().eq('file_path', filePath);
+    }
   } catch (e) {}
 
   try {
-    await supabase
-      .from('job_files')
-      .delete()
-      .eq('id', uploadId);
+    await supabase.from('job_files').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+    if (filePath) {
+      await supabase.from('job_files').delete().eq('file_path', filePath);
+    }
   } catch (e) {}
 
-  // 5. Clean up IndexedDB sessions
+  try {
+    await supabase.from('verifications').delete().or(`event_id.eq.${uploadId},event_id.eq.${cleanId},id.eq.${uploadId},id.eq.${cleanId}`);
+  } catch (e) {}
+
+  // 6. Clean up IndexedDB sessions
   try {
     await removeUploadSession(uploadId);
+    await removeUploadSession(cleanId);
   } catch (e) {}
 
-  // 6. Delete from LocalStorage cache
+  // 7. Delete from LocalStorage cache
   const local = getLocalClientUploads();
-  saveLocalClientUploads(local.filter(item => item.id !== uploadId));
+  saveLocalClientUploads(local.filter(item => item.id !== uploadId && item.id !== cleanId && item.file_path !== filePath));
 
-  // 7. Clean up any related activity alert messages
+  // 8. Delete from all local job files caches (kpr_job_files_*)
+  if (typeof localStorage !== 'undefined') {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('kpr_job_files_')) {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              const filtered = list.filter(f => f.id !== uploadId && f.id !== cleanId && f.file_path !== filePath && f.file_path !== fileUrl && f.drive_link !== fileUrl);
+              localStorage.setItem(k, JSON.stringify(filtered));
+            }
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
+  // 9. Clean up any related activity alert messages
   try {
     await deleteUploadActivityMessage(uploadId);
+    if (cleanId !== uploadId) {
+      await deleteUploadActivityMessage(cleanId);
+    }
   } catch (e) {}
 
-  // 8. Broadcast permanent deletion across all windows
+  // 10. Broadcast permanent deletion across all windows
   if (typeof BroadcastChannel !== 'undefined') {
     try {
       const bc = new BroadcastChannel('kpr_client_uploads_bc_v1');
-      bc.postMessage({ type: 'delete', uploadId });
+      bc.postMessage({ type: 'delete', uploadId, cleanId });
       bc.close();
     } catch (e) {}
   }
 
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('kpr_client_uploads_updated', { detail: { uploadId, type: 'delete' } }));
+    window.dispatchEvent(new CustomEvent('kpr_client_uploads_updated', { detail: { uploadId, cleanId, type: 'delete' } }));
   }
 
   return { success: true };

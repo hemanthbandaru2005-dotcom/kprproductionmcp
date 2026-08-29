@@ -16,7 +16,9 @@ import {
   fetchUploadActivityMessages,
   deleteUploadActivityMessage,
   clearAllUploadActivityMessages,
-  subscribeToUploadActivityMessages
+  subscribeToUploadActivityMessages,
+  formatUploaderDisplayName,
+  formatProjectDisplayName
 } from '../../utils/clientUploadsService';
 
 export default function ClientUploadsManager() {
@@ -164,11 +166,15 @@ export default function ClientUploadsManager() {
   const handleDelete = async (uploadId, e) => {
     if (e) e.stopPropagation();
     if (window.confirm('Are you sure you want to PERMANENTLY delete this file from storage and Google Drive?')) {
-      await deleteClientUpload(uploadId);
-      if (previewFile?.id === uploadId) {
+      const cleanId = String(uploadId).replace(/^worker_jf_/, '');
+      // Optimistic instant UI removal
+      setUploads(prev => prev.filter(item => item.id !== uploadId && item.id !== cleanId));
+      if (previewFile?.id === uploadId || previewFile?.id === cleanId) {
         setPreviewFile(null);
       }
-      loadUploads();
+      showNotice('Deleting permanently from storage and Google Drive…', 'success');
+      await deleteClientUpload(uploadId);
+      await loadUploads();
       showNotice('File permanently deleted from storage and Google Drive', 'success');
     }
   };
@@ -561,19 +567,19 @@ export default function ClientUploadsManager() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto rounded-2xl border border-[#E7E8EB]">
+            <table className="w-full text-left border-collapse min-w-[850px]">
               <thead>
                 <tr className="border-b border-[#E7E8EB] text-[10px] text-[#6B7280] uppercase tracking-wider bg-[#F7F8FA]">
-                  <th className="px-6 py-3.5">File Details</th>
-                  <th className="px-6 py-3.5">Uploaded By</th>
-                  <th className="px-6 py-3.5">Target Shoot / Project</th>
-                  <th className="px-6 py-3.5">Size & Date</th>
-                  <th className="px-6 py-3.5">Google Drive Status</th>
-                  <th className="px-6 py-3.5 text-right">Actions & Drive Jump</th>
+                  <th className="px-5 py-3.5 whitespace-nowrap min-w-[240px]">File Details</th>
+                  <th className="px-5 py-3.5 whitespace-nowrap min-w-[170px]">Uploaded By</th>
+                  <th className="px-5 py-3.5 whitespace-nowrap min-w-[190px]">Target Shoot / Project</th>
+                  <th className="px-5 py-3.5 whitespace-nowrap min-w-[120px]">Size & Date</th>
+                  <th className="px-5 py-3.5 whitespace-nowrap min-w-[170px]">Google Drive Status</th>
+                  <th className="px-5 py-3.5 whitespace-nowrap min-w-[180px] text-right">Actions & Storage</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E7E8EB]">
+              <tbody className="divide-y divide-[#E7E8EB] bg-white">
                 {filteredUploads.map((item) => {
                   const isPhoto = item.file_category === 'photo';
                   const isPdf = item.file_category === 'pdf';
@@ -584,8 +590,9 @@ export default function ClientUploadsManager() {
                   const isWorker = isWorkerUpload(item);
                   const driveLink = item.drive_file_url || item.file_url || (item.drive_file_id ? `https://drive.google.com/file/d/${item.drive_file_id}/view` : null);
 
-                  const uploaderName = item.uploader_name || item.client_name || (isWorker ? 'Staff Member' : 'Valued Client');
+                  const uploaderName = formatUploaderDisplayName(item.uploader_name || item.client_name, item.uploader_email || item.client_email, isWorker ? 'worker' : 'client');
                   const uploaderEmail = item.uploader_email || item.client_email || '';
+                  const projectTitle = formatProjectDisplayName(item.project_title);
 
                   return (
                     <tr
@@ -596,7 +603,7 @@ export default function ClientUploadsManager() {
                     >
                       
                       {/* File Details */}
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-[#F1F2F4] border border-[#E7E8EB] flex items-center justify-center shrink-0 overflow-hidden relative shadow-2xs">
                             {isPhoto && item.file_url ? (
@@ -613,7 +620,7 @@ export default function ClientUploadsManager() {
                               <FileText className="w-5 h-5 text-[#1E74FF]" />
                             )}
                           </div>
-                          <div className="max-w-xs truncate">
+                          <div className="max-w-[200px] sm:max-w-xs truncate">
                             <p className="text-xs font-bold text-[#111111] truncate" title={item.file_name}>
                               {item.file_name}
                             </p>
@@ -632,35 +639,35 @@ export default function ClientUploadsManager() {
                       </td>
 
                       {/* Uploaded By (Client vs Worker Badge) */}
-                      <td className="px-6 py-4 space-y-1">
+                      <td className="px-5 py-4 space-y-1">
                         {isWorker ? (
                           <div>
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#EAF8EE] text-[#13A52D] border border-[#BBF7D0]">
+                            <span className="whitespace-nowrap inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#EAF8EE] text-[#13A52D] border border-[#BBF7D0]">
                               <Briefcase className="w-3 h-3" />
                               Worker Deliverable
                             </span>
-                            <p className="text-xs font-bold text-[#111111] mt-1">{uploaderName}</p>
-                            {uploaderEmail && <p className="text-[10px] text-[#6B7280] font-mono">{uploaderEmail}</p>}
+                            <p className="text-xs font-bold text-[#111111] mt-1 truncate max-w-[160px]">{uploaderName}</p>
+                            {uploaderEmail && <p className="text-[10px] text-[#6B7280] font-mono truncate max-w-[160px]">{uploaderEmail}</p>}
                           </div>
                         ) : (
                           <div>
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#EBF3FF] text-[#1E74FF] border border-[#BFDBFE]">
+                            <span className="whitespace-nowrap inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#EBF3FF] text-[#1E74FF] border border-[#BFDBFE]">
                               <User className="w-3 h-3" />
                               Client Upload
                             </span>
-                            <p className="text-xs font-bold text-[#111111] mt-1">{uploaderName}</p>
-                            {uploaderEmail && <p className="text-[10px] text-[#6B7280] font-mono">{uploaderEmail}</p>}
+                            <p className="text-xs font-bold text-[#111111] mt-1 truncate max-w-[160px]">{uploaderName}</p>
+                            {uploaderEmail && <p className="text-[10px] text-[#6B7280] font-mono truncate max-w-[160px]">{uploaderEmail}</p>}
                           </div>
                         )}
                       </td>
 
                       {/* Shoot / Project */}
-                      <td className="px-6 py-4 space-y-1">
+                      <td className="px-5 py-4 space-y-1">
                         <div className="flex items-center gap-1.5 text-xs font-semibold text-[#111111] max-w-xs truncate">
                           <Folder className="w-3.5 h-3.5 text-[#141414] shrink-0" />
-                          <span className="truncate">{item.project_title || 'Studio Deliverables'}</span>
+                          <span className="truncate">{projectTitle}</span>
                         </div>
-                        {item.client_name && (
+                        {item.client_name && !item.client_name.startsWith('worker_reg_') && (
                           <p className="text-[10px] text-[#6B7280] truncate">
                             Booking / Shoot: {item.client_name}
                           </p>
@@ -668,11 +675,11 @@ export default function ClientUploadsManager() {
                       </td>
 
                       {/* Size & Date */}
-                      <td className="px-6 py-4 space-y-0.5 text-xs text-[#6B7280]">
-                        <p className="font-mono text-[11px] font-semibold text-[#111111]">
+                      <td className="px-5 py-4 space-y-0.5 text-xs text-[#6B7280]">
+                        <p className="font-mono text-[11px] font-semibold text-[#111111] whitespace-nowrap">
                           {item.file_size > 0 ? formatFileSize(item.file_size) : 'Drive Link'}
                         </p>
-                        <p className="text-[10px] text-[#9CA0A6]">
+                        <p className="text-[10px] text-[#9CA0A6] whitespace-nowrap">
                           {item.created_at ? new Date(item.created_at).toLocaleDateString('en-US', {
                             month: 'short', day: 'numeric', year: 'numeric'
                           }) : '—'}
@@ -680,10 +687,10 @@ export default function ClientUploadsManager() {
                       </td>
 
                       {/* Drive Sync Status & Folder Path */}
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-4">
                         {isSynced ? (
                           <div className="space-y-1">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#DFF5E3] text-[#13A52D]">
+                            <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#DFF5E3] text-[#13A52D] border border-[#BBF7D0]">
                               <CheckCircle2 className="w-3.5 h-3.5 text-[#13A52D]" />
                               Synced to Google Drive
                             </span>
@@ -696,7 +703,7 @@ export default function ClientUploadsManager() {
                         ) : isFailed ? (
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-2">
-                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] text-[#DC2626]">
+                              <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FEF2F2] text-[#DC2626] border border-[#FCA5A5]">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]" />
                                 Sync failed
                               </span>
@@ -704,7 +711,7 @@ export default function ClientUploadsManager() {
                               <button
                                 onClick={(e) => handleRetry(item.id, e)}
                                 disabled={isRetrying}
-                                className="px-2.5 py-1 bg-[#FEF3C7] hover:bg-[#FDE68A] text-[#D97706] rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
+                                className="whitespace-nowrap px-2.5 py-1 bg-[#FEF3C7] hover:bg-[#FDE68A] text-[#D97706] rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
                                 title="Retry Drive Sync"
                               >
                                 <RotateCcw className={`w-3 h-3 ${isRetrying ? 'animate-spin' : ''}`} />
@@ -719,14 +726,14 @@ export default function ClientUploadsManager() {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#DCE9FF] text-[#1E74FF]">
+                            <span className="whitespace-nowrap inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#DCE9FF] text-[#1E74FF] border border-[#BFDBFE]">
                               <RefreshCw className="w-3 h-3 animate-spin" />
                               Sync Pending
                             </span>
                             <button
                               onClick={(e) => handleRetry(item.id, e)}
                               disabled={isRetrying}
-                              className="px-2 py-0.5 bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] rounded-full text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                              className="whitespace-nowrap px-2 py-0.5 bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] rounded-full text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
                             >
                               Push Now
                             </button>
@@ -735,7 +742,7 @@ export default function ClientUploadsManager() {
                       </td>
 
                       {/* Actions & Direct Google Drive Link */}
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           
                           {/* Direct Google Drive Link Button */}
@@ -744,7 +751,7 @@ export default function ClientUploadsManager() {
                               href={driveLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3.5 py-1.5 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs shrink-0 cursor-pointer"
+                              className="whitespace-nowrap px-3.5 py-1.5 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs shrink-0 cursor-pointer"
                               title="Open Directly in Google Drive"
                             >
                               <HardDrive className="w-3.5 h-3.5 text-[#13A52D]" />
@@ -756,20 +763,20 @@ export default function ClientUploadsManager() {
                           {/* App Preview */}
                           <button
                             onClick={() => setPreviewFile(item)}
-                            className="px-3 py-1.5 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer border border-[#E7E8EB]"
+                            className="whitespace-nowrap px-3 py-1.5 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-[#E7E8EB]"
                             title="Preview File"
                           >
                             <Eye className="w-3.5 h-3.5 text-[#6B7280]" />
-                            <span className="hidden sm:inline">Preview</span>
+                            <span>Preview</span>
                           </button>
 
-                          {/* Delete */}
+                          {/* Delete Permanently */}
                           <button
                             onClick={(e) => handleDelete(item.id, e)}
-                            className="p-1.5 text-[#9CA0A6] hover:text-[#DC2626] transition-colors cursor-pointer rounded-full hover:bg-[#FEF2F2]"
-                            title="Delete Record"
+                            className="p-1.5 text-[#DC2626] hover:text-[#B91C1C] transition-colors cursor-pointer rounded-full bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FECACA]"
+                            title="Permanently Delete File from Storage & Drive"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
