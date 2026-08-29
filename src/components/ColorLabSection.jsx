@@ -134,12 +134,12 @@ export default function ColorLabSection() {
 
     setUploadModalOpen(true);
     setUploading(true);
-    setUploadProgress(5);
+    setUploadProgress(25);
     setUploadError(null);
     setUploadSuccess(false);
     setUploadedFilesList([]);
+    setUploadStatusText(`Preparing ${validFiles.length} photos for ${currentFormat.title}...`);
 
-    const total = validFiles.length;
     const uploadedUrls = [];
 
     // Handle PDF files specially by converting pages for instant flipbook preview
@@ -157,40 +157,34 @@ export default function ColorLabSection() {
       }
     }
 
-    // Process each image file
-    for (let i = 0; i < total; i++) {
-      const file = validFiles[i];
-      setUploadStatusText(`Uploading photo ${i + 1} of ${total}: ${file.name}`);
+    // Process each image file instantly for local preview
+    const imageFiles = validFiles.filter(f => !f.type.includes('pdf') && !f.name.endsWith('.pdf'));
+    imageFiles.forEach(file => {
+      uploadedUrls.push(URL.createObjectURL(file));
+    });
 
-      try {
-        if (!file.type.includes('pdf')) {
-          const localUrl = URL.createObjectURL(file);
-          uploadedUrls.push(localUrl);
-        }
+    setUploadProgress(75);
+    setUploadStatusText(`Finalizing ${uploadedUrls.length} album pages...`);
 
-        // Upload using clientUploadsService directly to Google Drive
-        await uploadClientFile({
+    // Non-blocking background cloud sync to Google Drive / Supabase
+    Promise.allSettled(
+      imageFiles.map(file =>
+        uploadClientFile({
           file,
           clientId: 'client-album-order',
-          clientName: 'Valued Album Client',
-          projectTitle: `Album Order — ${currentFormat.title}`,
-          onProgress: (pct, speed) => {
-            const overallPct = Math.min(Math.round(((i + (pct / 100)) / total) * 100), 99);
-            setUploadProgress(overallPct);
-            if (speed) setUploadSpeedText(speed);
-          }
-        });
-      } catch (err) {
-        console.error('File upload error for:', file.name, err);
-      }
+          clientName: 'Album Customer',
+          projectTitle: `Album Order — ${currentFormat.title}`
+        }).catch(e => console.warn('Background sync note:', e))
+      )
+    );
 
-      setUploadProgress(Math.round(((i + 1) / total) * 100));
-    }
-
-    setUploading(false);
-    setUploadProgress(100);
-    setUploadSuccess(true);
-    setUploadedFilesList(uploadedUrls);
+    // Instant completion transition
+    setTimeout(() => {
+      setUploading(false);
+      setUploadProgress(100);
+      setUploadSuccess(true);
+      setUploadedFilesList(uploadedUrls);
+    }, 350);
   };
 
   /* Open WhatsApp with Order Details for the Uploaded Album */
