@@ -12,6 +12,7 @@ import ClientDashboard from './components/client/ClientDashboard';
 import LightboxModal from './components/LightboxModal';
 import MoodboardDrawer from './components/MoodboardDrawer';
 import ContactSection from './components/ContactSection';
+import AboutSection from './components/AboutSection';
 import Footer from './components/Footer';
 import AlbumPreviewPage from './components/AlbumPreviewPage';
 import ServicesShowcase from './components/ServicesShowcase';
@@ -20,7 +21,7 @@ import { SOCIAL_LINKS } from './utils/socialLinks';
 function getInitialPage() {
   try {
     const hash = window.location.hash.replace('#', '').trim();
-    const validPages = ['home', 'media', 'colorlab', 'events', 'login', 'contact', 'album-preview', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'];
+    const validPages = ['home', 'media', 'colorlab', 'events', 'login', 'contact', 'about', 'album-preview', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'];
     if (validPages.includes(hash)) return hash;
   } catch (e) {}
   return 'home';
@@ -323,6 +324,12 @@ function AppContent() {
         {activePage === 'contact' && (
           <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
             <ContactSection />
+          </div>
+        )}
+
+        {activePage === 'about' && (
+          <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
+            <AboutSection />
           </div>
         )}
 

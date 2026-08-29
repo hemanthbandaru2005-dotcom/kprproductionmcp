@@ -117,6 +117,18 @@ export default function Navbar({ activePage, onSelectPage }) {
             <span>CONTACT US</span>
           </button>
 
+          {/* ABOUT US */}
+          <button
+            onClick={() => handlePageClick('about')}
+            className={`transition-all duration-300 py-1 cursor-pointer ${
+              activePage === 'about'
+                ? 'text-[#D32F2F] font-black'
+                : 'text-[#333333] hover:text-[#000000]'
+            }`}
+          >
+            <span>ABOUT US</span>
+          </button>
+
         </nav>
 
         {/* 3. RIGHT: LOGIN Button */}
@@ -172,9 +184,15 @@ export default function Navbar({ activePage, onSelectPage }) {
             </button>
             <button
               onClick={() => handlePageClick('contact')}
-              className={`text-left py-2 ${activePage === 'contact' ? 'text-[#D32F2F]' : 'text-white/90'}`}
+              className={`text-left py-2 border-b border-white/5 ${activePage === 'contact' ? 'text-[#D32F2F]' : 'text-white/90'}`}
             >
               CONTACT US
+            </button>
+            <button
+              onClick={() => handlePageClick('about')}
+              className={`text-left py-2 ${activePage === 'about' ? 'text-[#D32F2F]' : 'text-white/90'}`}
+            >
+              ABOUT US
             </button>
           </div>
           

@@ -1,115 +1,88 @@
 import React from 'react';
-import { Award, Camera, ShieldCheck, Heart } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Sparkles, Camera, Award, Clock, Heart, Users } from 'lucide-react';
+import kprLogo from '../assets/kpr_logo.png';
+import kprProductionsLogo from '../assets/kpr_productions_logo.png';
 
-export default function AboutSection({ onOpenInquire }) {
+export default function AboutSection() {
   return (
-    <section id="about" className="relative bg-[#121212] text-white overflow-hidden">
-      
-      {/* Banner Section matching bottom image in screenshot */}
-      <div className="relative h-[450px] md:h-[550px] w-full flex items-center justify-center overflow-hidden">
-        <img
-          src="/images/bride_portrait.png"
-          alt="We are known for our expertise"
-          className="w-full h-full object-cover object-center scale-105 filter brightness-75"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-black/50 to-black/60" />
+    <section id="about" className="w-full min-h-[75vh] bg-[#0D0B08] text-white py-16 sm:py-24 px-4 sm:px-8 lg:px-12 flex flex-col justify-center select-none">
+      <div className="max-w-5xl mx-auto w-full">
         
-        <div className="relative z-10 text-center px-6 max-w-3xl">
-          <p className="text-[11px] md:text-[12px] tracking-[0.4em] uppercase text-[#C5A880] font-medium mb-3">
-            WE ARE KNOWN FOR OUR
-          </p>
-          <h2 className="font-serif text-4xl sm:text-6xl md:text-7xl tracking-[0.18em] uppercase text-white font-extralight mb-6 leading-none">
-            EXPERTISE & ELEGANCE
-          </h2>
-          <p className="text-[#E2D9CC] font-serif italic text-lg md:text-xl font-light">
-            "We don't just take photographs; we compose heirlooms for generations to come."
-          </p>
-        </div>
-      </div>
+        {/* Header Badge & Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center space-y-4 mb-14"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-[#C5A880]/30 text-[#E8D4B8] text-xs font-semibold uppercase tracking-[0.3em]">
+            <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+            <span>KPR PRODUCTIONS</span>
+          </div>
 
-      {/* Photographer Profile & Studio Philosophy */}
-      <div className="max-w-6xl mx-auto px-6 md:px-12 py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          {/* Bio Text Column */}
-          <div className="lg:col-span-7 space-y-6">
-            <span className="text-[11px] tracking-[0.35em] uppercase text-[#C5A880] font-medium block">
-              BEHIND THE LENS
-            </span>
-            <h3 className="font-serif text-3xl sm:text-4xl md:text-5xl text-white font-light leading-snug">
-              Meet Leo Spin, Master Photographer
+          <h1 className="font-serif text-4xl sm:text-6xl text-white font-light tracking-wide">
+            About Us
+          </h1>
+
+          <div className="w-20 h-0.5 bg-[#C5A880] mx-auto my-3" />
+
+          <p className="text-sm sm:text-base text-white/60 font-light max-w-2xl mx-auto leading-relaxed">
+            Preserving sacred celebrations, fine art cinematic storytelling, master colour lab printing, and royal event productions across generations.
+          </p>
+        </motion.div>
+
+        {/* Clean Luxury Content Area (Ready for Information) */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="bg-[#14120E] border border-white/10 rounded-2xl p-8 sm:p-14 shadow-2xl relative overflow-hidden text-center"
+        >
+          {/* Subtle Ambient Glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#C5A880]/5 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Logo Watermark */}
+          <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-6 opacity-80 flex items-center justify-center">
+            <img
+              src={kprProductionsLogo}
+              alt="KPR Productions"
+              className="w-full h-full object-contain filter brightness-110 drop-shadow-md"
+            />
+          </div>
+
+          <div className="space-y-4 max-w-xl mx-auto">
+            <h3 className="font-serif text-2xl sm:text-3xl text-[#E8D4B8] font-light">
+              Our Story & Heritage
             </h3>
-            <p className="text-white/80 text-[14px] leading-relaxed font-light">
-              With over 12 years of capturing worldwide celebrations across Paris, Amalfi, New York, and Houston, 
-              Leo Spin leads a studio built on discretion, artistic perfection, and genuine human connection.
+            <p className="text-sm sm:text-base text-white/50 font-light leading-relaxed">
+              Information and full studio story will be presented here.
             </p>
-            <p className="text-white/70 text-[14px] leading-relaxed font-light">
-              Combining classic medium format film aesthetic with state-of-the-art 100MP digital cinema cameras, 
-              we curate moments of unscripted tenderness into iconic, editorial artwork.
-            </p>
+          </div>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-6 pt-6 border-t border-white/10">
-              <div>
-                <p className="font-serif text-3xl md:text-4xl text-[#C5A880]">350+</p>
-                <p className="text-[10px] tracking-widest uppercase text-white/60 mt-1">Weddings Captured</p>
-              </div>
-              <div>
-                <p className="font-serif text-3xl md:text-4xl text-[#C5A880]">18</p>
-                <p className="text-[10px] tracking-widest uppercase text-white/60 mt-1">Countries Visited</p>
-              </div>
-              <div>
-                <p className="font-serif text-3xl md:text-4xl text-[#C5A880]">100%</p>
-                <p className="text-[10px] tracking-widest uppercase text-white/60 mt-1">Client Satisfaction</p>
-              </div>
+          {/* Feature Highlights Placeholder Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-12 pt-10 border-t border-white/10">
+            <div className="p-5 rounded-xl bg-white/[0.03] border border-white/5 space-y-2">
+              <Camera className="w-6 h-6 text-[#C5A880] mx-auto" />
+              <h4 className="text-xs uppercase font-bold tracking-widest text-white">Fine Art Photography</h4>
+              <p className="text-[11px] text-white/40 font-light">Cinematic wedding coverage</p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-white/[0.03] border border-white/5 space-y-2">
+              <Award className="w-6 h-6 text-[#C5A880] mx-auto" />
+              <h4 className="text-xs uppercase font-bold tracking-widest text-white">Master Colour Lab</h4>
+              <p className="text-[11px] text-white/40 font-light">Museum-grade archival prints</p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-white/[0.03] border border-white/5 space-y-2">
+              <Sparkles className="w-6 h-6 text-[#C5A880] mx-auto" />
+              <h4 className="text-xs uppercase font-bold tracking-widest text-white">Event Production</h4>
+              <p className="text-[11px] text-white/40 font-light">Grand mandap & stage decor</p>
             </div>
           </div>
 
-          {/* Gear & Quality Highlights */}
-          <div className="lg:col-span-5 bg-[#1E1E1E] p-8 border border-white/10 space-y-6">
-            <h4 className="font-serif text-2xl text-[#C5A880]">The Studio Standard</h4>
-            
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="p-2.5 bg-[#2A2A2A] text-[#C5A880] rounded">
-                  <Camera className="w-5 h-5" />
-                </div>
-                <div>
-                  <h5 className="text-sm font-semibold text-white">State-of-the-Art Gear</h5>
-                  <p className="text-xs text-white/60 mt-0.5">Dual-slot redundancy, Leica & Hasselblad 100MP optics.</p>
-                </div>
-              </div>
+        </motion.div>
 
-              <div className="flex items-start gap-4">
-                <div className="p-2.5 bg-[#2A2A2A] text-[#C5A880] rounded">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h5 className="text-sm font-semibold text-white">Triple Cloud Backup</h5>
-                  <p className="text-xs text-white/60 mt-0.5">Instant offsite and encrypted physical drive backups.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="p-2.5 bg-[#2A2A2A] text-[#C5A880] rounded">
-                  <Award className="w-5 h-5" />
-                </div>
-                <div>
-                  <h5 className="text-sm font-semibold text-white">Award-Winning Colorist</h5>
-                  <p className="text-xs text-white/60 mt-0.5">Bespoke film emulation tones tailored to your skin tone.</p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={onOpenInquire}
-              className="w-full py-3 bg-[#C5A880] hover:bg-[#A4865E] text-white text-[11px] tracking-[0.25em] uppercase font-medium transition-colors text-center block mt-4"
-            >
-              SCHEDULE A CONSULTATION
-            </button>
-          </div>
-
-        </div>
       </div>
     </section>
   );
