@@ -104,7 +104,12 @@ export function getDeletedUploadIds() {
   }
 }
 
-export function addDeletedUploadId(id, filePath, fileUrl, fileName) {
+/**
+ * Add an upload ID to the permanent deletion blacklist.
+ * Persists to BOTH localStorage (this device) AND Supabase verifications table (all devices).
+ */
+export async function addDeletedUploadId(id, filePath, fileUrl, fileName) {
+  // 1. Always persist to localStorage first (instant, same device)
   try {
     const current = getDeletedUploadIds();
     const set = new Set(current);
@@ -118,17 +123,27 @@ export function addDeletedUploadId(id, filePath, fileUrl, fileName) {
     if (fileName) set.add(fileName);
     const updated = Array.from(set);
     localStorage.setItem(DELETED_UPLOADS_STORAGE_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.error('[KPR Delete] localStorage blacklist save failed:', e);
+  }
 
-    // Also persist deletion record in verifications table so cross-device sync deletes it everywhere
-    supabase.from('verifications').insert([{
-      id: `del_up_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+  // 2. Persist deletion record to Supabase verifications table (cross-device sync)
+  const recordId = `del_${Date.now()}_${Math.random().toString(36).substr(2, 7)}`;
+  try {
+    const { error } = await supabase.from('verifications').upsert([{
+      id: recordId,
       client_id: id || 'deleted_upload',
       album_id: 'SYSTEM_DELETED_UPLOADS',
       event_id: id || '',
       client_note: fileName || filePath || fileUrl || '',
       notes: JSON.stringify({ id, filePath, fileUrl, fileName, deleted_at: new Date().toISOString() })
-    }]).then(() => {}).catch(() => {});
-  } catch (e) {}
+    }], { onConflict: 'id' });
+    if (error) {
+      console.error('[KPR Delete] Supabase blacklist insert failed:', error.message, error);
+    }
+  } catch (e) {
+    console.error('[KPR Delete] Supabase blacklist insert exception:', e);
+  }
 }
 
 export function formatUploaderDisplayName(name, email, role) {
@@ -286,7 +301,7 @@ export async function fetchClientUploads(clientId) {
     }
   } catch (e) {}
 
-  // Fetch deleted upload IDs from Supabase + localStorage
+  // ═══ FETCH DELETION BLACKLIST FROM SUPABASE (cross-device) + localStorage (this device) ═══
   const deletedSet = new Set(getDeletedUploadIds());
   try {
     const { data: delData } = await supabase
@@ -295,21 +310,42 @@ export async function fetchClientUploads(clientId) {
       .eq('album_id', 'SYSTEM_DELETED_UPLOADS');
     if (Array.isArray(delData)) {
       delData.forEach(d => {
-        if (d.event_id) deletedSet.add(d.event_id);
-        if (d.client_id) deletedSet.add(d.client_id);
+        if (d.event_id) {
+          deletedSet.add(d.event_id);
+          deletedSet.add(d.event_id.replace(/^worker_jf_/, ''));
+          deletedSet.add(`worker_jf_${d.event_id}`);
+        }
+        if (d.client_id && d.client_id !== 'deleted_upload') {
+          deletedSet.add(d.client_id);
+          deletedSet.add(d.client_id.replace(/^worker_jf_/, ''));
+          deletedSet.add(`worker_jf_${d.client_id}`);
+        }
         if (d.client_note) deletedSet.add(d.client_note);
         try {
           const parsed = typeof d.notes === 'string' ? JSON.parse(d.notes) : d.notes;
-          if (parsed?.id) deletedSet.add(parsed.id);
+          if (parsed?.id) {
+            deletedSet.add(parsed.id);
+            deletedSet.add(parsed.id.replace(/^worker_jf_/, ''));
+            deletedSet.add(`worker_jf_${parsed.id}`);
+          }
           if (parsed?.filePath) deletedSet.add(parsed.filePath);
           if (parsed?.fileUrl) deletedSet.add(parsed.fileUrl);
           if (parsed?.fileName) deletedSet.add(parsed.fileName);
         } catch (err) {}
       });
+      // Sync cloud blacklist into localStorage so it persists on this device too
+      if (delData.length > 0) {
+        try {
+          const updated = Array.from(deletedSet);
+          localStorage.setItem(DELETED_UPLOADS_STORAGE_KEY, JSON.stringify(updated));
+        } catch (e) {}
+      }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[KPR] Failed to fetch deletion blacklist from Supabase:', e);
+  }
 
-  // Purge any deleted items from local client uploads cache so client phone drops it
+  // Purge any deleted items from local client uploads cache
   const currentLocal = getLocalClientUploads();
   const cleanedLocal = currentLocal.filter(r => {
     if (!r || !r.id) return false;
@@ -324,7 +360,7 @@ export async function fetchClientUploads(clientId) {
     saveLocalClientUploads(cleanedLocal);
   }
 
-  // Filter out all deleted items
+  // Filter out all deleted items from the merged map
   const allRecords = Array.from(map.values())
     .filter(item => {
       if (!item || !item.id) return false;
@@ -372,6 +408,18 @@ export async function deleteClientUpload(uploadId) {
     fileRecord = data;
   } catch (e) {}
 
+  // Also try job_files if not found in client_uploads
+  if (!fileRecord) {
+    try {
+      const { data } = await supabase
+        .from('job_files')
+        .select('*')
+        .or(`id.eq.${uploadId},id.eq.${cleanId}`)
+        .maybeSingle();
+      fileRecord = data;
+    } catch (e) {}
+  }
+
   if (!fileRecord) {
     const local = getLocalClientUploads();
     fileRecord = local.find(item => item.id === uploadId || item.id === cleanId);
@@ -381,10 +429,10 @@ export async function deleteClientUpload(uploadId) {
   const fileUrl = fileRecord?.file_url || fileRecord?.drive_file_url;
   const fileName = fileRecord?.file_name;
 
-  // 2. Add to deleted blacklist permanently so it never resurrects
-  addDeletedUploadId(uploadId, filePath, fileUrl, fileName);
+  // 2. Add to deleted blacklist permanently (AWAIT to ensure it persists to Supabase)
+  await addDeletedUploadId(uploadId, filePath, fileUrl, fileName);
   if (cleanId !== uploadId) {
-    addDeletedUploadId(cleanId, filePath, fileUrl, fileName);
+    await addDeletedUploadId(cleanId, filePath, fileUrl, fileName);
   }
 
   // 3. Delete from Backend Google Drive Storage API
@@ -406,7 +454,8 @@ export async function deleteClientUpload(uploadId) {
 
   // 5. Delete from Supabase Database tables
   try {
-    await supabase.from('client_uploads').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+    const { error: e1 } = await supabase.from('client_uploads').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+    if (e1) console.warn('[KPR Delete] client_uploads delete by id failed:', e1.message);
     if (filePath) {
       await supabase.from('client_uploads').delete().eq('file_path', filePath);
     }
@@ -416,7 +465,8 @@ export async function deleteClientUpload(uploadId) {
   } catch (e) {}
 
   try {
-    await supabase.from('job_files').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+    const { error: e2 } = await supabase.from('job_files').delete().or(`id.eq.${uploadId},id.eq.${cleanId}`);
+    if (e2) console.warn('[KPR Delete] job_files delete by id failed:', e2.message);
     if (filePath) {
       await supabase.from('job_files').delete().eq('file_path', filePath);
     }
@@ -425,21 +475,25 @@ export async function deleteClientUpload(uploadId) {
     }
   } catch (e) {}
 
+  // 6. Delete ONLY non-blacklist verification records (DO NOT delete SYSTEM_DELETED_UPLOADS records!)
   try {
-    await supabase.from('verifications').delete().or(`event_id.eq.${uploadId},event_id.eq.${cleanId},id.eq.${uploadId},id.eq.${cleanId}`);
+    await supabase.from('verifications')
+      .delete()
+      .or(`event_id.eq.${uploadId},event_id.eq.${cleanId},id.eq.${uploadId},id.eq.${cleanId}`)
+      .neq('album_id', 'SYSTEM_DELETED_UPLOADS');
   } catch (e) {}
 
-  // 6. Clean up IndexedDB sessions
+  // 7. Clean up IndexedDB sessions
   try {
     await removeUploadSession(uploadId);
     await removeUploadSession(cleanId);
   } catch (e) {}
 
-  // 7. Delete from LocalStorage cache
+  // 8. Delete from LocalStorage cache
   const local = getLocalClientUploads();
   saveLocalClientUploads(local.filter(item => item.id !== uploadId && item.id !== cleanId && item.file_path !== filePath && item.file_name !== fileName));
 
-  // 8. Delete from all local job files caches (kpr_job_files_*)
+  // 9. Delete from all local job files caches (kpr_job_files_*)
   if (typeof localStorage !== 'undefined') {
     try {
       for (let i = 0; i < localStorage.length; i++) {
@@ -458,7 +512,7 @@ export async function deleteClientUpload(uploadId) {
     } catch (e) {}
   }
 
-  // 9. Clean up any related activity alert messages
+  // 10. Clean up any related activity alert messages
   try {
     await deleteUploadActivityMessage(uploadId);
     if (cleanId !== uploadId) {
@@ -466,7 +520,7 @@ export async function deleteClientUpload(uploadId) {
     }
   } catch (e) {}
 
-  // 10. Broadcast permanent deletion across all windows
+  // 11. Broadcast permanent deletion across all windows
   if (typeof BroadcastChannel !== 'undefined') {
     try {
       const bc = new BroadcastChannel('kpr_client_uploads_bc_v1');
