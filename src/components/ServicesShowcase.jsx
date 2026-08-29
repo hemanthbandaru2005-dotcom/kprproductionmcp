@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Camera, BookOpen, Sparkles } from 'lucide-react';
-import kprLogo from '../assets/kpr_logo.png';
-import kprColorLabLogo from '../assets/kpr_colorlab_logo.png';
-import kprEventsLogo from '../assets/kpr_events_logo.png';
-import cardAperture from '../assets/card_aperture.jpg';
-import cardAlbum from '../assets/card_album.jpg';
-import cardEvent from '../assets/card_event.jpg';
+import { ArrowRight, Sparkles } from 'lucide-react';
+import showcasePhotoLogoExact from '../assets/showcase_photo_logo_exact.png';
+import showcaseColorLabLogoExact from '../assets/showcase_colorlab_logo_exact.png';
+import showcaseEventsLogoExact from '../assets/showcase_events_logo_exact.png';
+import cardApertureReal from '../assets/card_aperture_lens_real.jpg';
+import cardAlbumReal from '../assets/card_album_photobook_real.jpg';
+import cardStageReal from '../assets/card_event_stage_real.jpg';
 
 const SERVICES = [
   {
@@ -14,10 +14,9 @@ const SERVICES = [
     route: 'media',
     title: 'PHOTOGRAPHY',
     accentColor: '#EF4444', // Red
-    logoSrc: kprLogo,
-    invertLogo: false,
-    cardImage: cardAperture,
-    cardAlt: 'DSLR Multi-Blade Aperture Lens',
+    logoSrc: showcasePhotoLogoExact,
+    cardImage: cardApertureReal,
+    cardAlt: 'High-Clarity DSLR Lens & Professional Camera',
     description: 'Fine art wedding, portrait & cinematic celebration photography.',
     buttonText: 'EXPLORE',
   },
@@ -25,11 +24,10 @@ const SERVICES = [
     id: 'colorlab',
     route: 'colorlab',
     title: 'COLOUR LAB',
-    accentColor: '#EF4444', // Consistent with Photography
-    logoSrc: kprColorLabLogo,
-    invertLogo: true,
-    cardImage: cardAlbum,
-    cardAlt: 'Luxury Layflat Telugu Wedding Album',
+    accentColor: '#3B82F6', // Blue Accent
+    logoSrc: showcaseColorLabLogoExact,
+    cardImage: cardAlbumReal,
+    cardAlt: 'High-Clarity Luxury Layflat Telugu Wedding Photobook Album',
     description: 'Master printing, luxury photobooks & acrylic mandap laser craft.',
     buttonText: 'EXPLORE',
   },
@@ -37,11 +35,10 @@ const SERVICES = [
     id: 'events',
     route: 'events',
     title: 'EVENTS',
-    accentColor: '#EF4444', // Consistent with Photography
-    logoSrc: kprEventsLogo,
-    invertLogo: true,
-    cardImage: cardEvent,
-    cardAlt: 'Royal Wedding Mandap & Stage Decor',
+    accentColor: '#EF4444', // Red Accent
+    logoSrc: showcaseEventsLogoExact,
+    cardImage: cardStageReal,
+    cardAlt: 'High-Clarity Grand Wedding Mandap & Stage Production',
     description: 'Bespoke stage decor, mandap lighting & complete event production.',
     buttonText: 'EXPLORE',
   }
@@ -102,57 +99,53 @@ export default function ServicesShowcase({ onSelectPage }) {
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.55, delay: index * 0.1, ease: 'easeOut' }}
                 onClick={() => handleCardClick(service.route)}
-                className="group relative bg-[#12192A] border border-white/[0.08] hover:border-white/30 rounded-[16px] p-8 sm:p-10 flex flex-col items-center text-center justify-between transition-all duration-400 cursor-pointer hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] shadow-xl"
+                className="group relative bg-[#12192A] border border-white/[0.12] hover:border-white/40 rounded-[18px] p-6 sm:p-8 flex flex-col items-center text-center justify-between transition-all duration-400 cursor-pointer hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(0,0,0,0.6)] shadow-xl"
               >
                 {/* Subtle card corner glow on hover */}
                 <div
-                  className="absolute inset-0 rounded-[16px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.12)_0%,transparent_70%)]"
+                  className="absolute inset-0 rounded-[18px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(239,68,68,0.12)_0%,transparent_70%)]"
                 />
 
-                {/* 1. Official Logo Badge Asset */}
-                <div className="relative w-24 h-24 sm:w-26 sm:h-26 rounded-full border-2 border-white/80 flex items-center justify-center mb-6 shadow-xl bg-black/60 group-hover:scale-105 transition-transform duration-300 overflow-hidden p-3.5">
+                {/* 1. Official Logo Badge Asset (Original Crisp Colors) */}
+                <div className="relative w-22 h-22 sm:w-26 sm:h-26 rounded-2xl border border-white/20 flex items-center justify-center mb-5 shadow-xl bg-[#0B101B]/80 backdrop-blur-md group-hover:scale-105 transition-transform duration-300 overflow-hidden p-3">
                   <img
                     src={service.logoSrc}
                     alt={service.title}
-                    className={`w-full h-full object-contain relative z-10 ${
-                      service.invertLogo
-                        ? 'brightness-0 invert drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]'
-                        : 'drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]'
-                    }`}
+                    className="w-full h-full object-contain relative z-10 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]"
                     loading="eager"
                   />
                 </div>
 
                 {/* 2. Bold Uppercase Title */}
-                <h3 className="text-2xl sm:text-[26px] font-extrabold tracking-widest text-white uppercase font-sans mb-3">
+                <h3 className="text-xl sm:text-2xl font-extrabold tracking-widest text-white uppercase font-sans mb-2">
                   {service.title}
                 </h3>
 
                 {/* 3. Short Horizontal Accent Underline */}
                 <div
-                  className="w-10 h-[2.5px] rounded-full mb-4 transition-all duration-300 group-hover:w-16"
+                  className="w-10 h-[2.5px] rounded-full mb-3.5 transition-all duration-300 group-hover:w-16"
                   style={{ backgroundColor: service.accentColor }}
                 />
 
                 {/* 4. One-Line Description */}
-                <p className="text-[15px] sm:text-[16px] text-[#A0A5B0] font-normal leading-relaxed mb-6 max-w-[280px]">
+                <p className="text-sm text-[#A0A5B0] font-normal leading-relaxed mb-5 max-w-[280px]">
                   {service.description}
                 </p>
 
-                {/* 5. Fixed-Size Real Supporting Visual Image */}
-                <div className="w-full h-32 my-2 relative overflow-hidden rounded-xl bg-black/40 border border-white/10 shadow-inner">
+                {/* 5. High-Clarity Real Supporting Visual Image (Generous Aspect Ratio) */}
+                <div className="w-full aspect-[16/10] my-2 relative overflow-hidden rounded-xl bg-black/60 border border-white/15 shadow-md">
                   <img
                     src={service.cardImage}
                     alt={service.cardAlt}
-                    className="w-full h-full object-cover object-center transform group-hover:scale-108 transition-transform duration-700 select-none"
+                    className="w-full h-full object-cover object-center transform group-hover:scale-106 transition-transform duration-700 select-none"
                     loading="eager"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                 </div>
 
-                {/* 6. "EXPLORE →" Button */}
-                <div className="w-full pt-6">
-                  <div className="w-full py-3 px-6 rounded-full border border-white/80 text-white font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-300 group-hover:bg-white group-hover:text-[#0D1420] shadow-md">
+                {/* 6. Outline Action Button */}
+                <div className="w-full pt-4 mt-1">
+                  <div className="w-full py-2.5 px-4 rounded-xl border border-white/20 group-hover:border-white group-hover:bg-white text-white group-hover:text-black font-extrabold text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all duration-300 shadow-md">
                     <span>{service.buttonText}</span>
                     <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                   </div>

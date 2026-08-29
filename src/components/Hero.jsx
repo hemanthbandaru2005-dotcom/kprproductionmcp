@@ -5,9 +5,9 @@ import heroMobile from '../assets/hero_flatlay_mobile.jpg';
 import showcasePhotoLogoExact from '../assets/showcase_photo_logo_exact.png';
 import showcaseColorLabLogoExact from '../assets/showcase_colorlab_logo_exact.png';
 import showcaseEventsLogoExact from '../assets/showcase_events_logo_exact.png';
-import heroApertureSquare from '../assets/hero_aperture_lens_square.jpg';
-import realAlbumPhoto from '../assets/card_album_photobook_real.jpg';
-import realStagePhoto from '../assets/card_event_stage_real.jpg';
+import cardApertureReal from '../assets/card_aperture_lens_real.jpg';
+import cardAlbumReal from '../assets/card_album_photobook_real.jpg';
+import cardStageReal from '../assets/card_event_stage_real.jpg';
 
 const SERVICES = [
   {
@@ -17,7 +17,8 @@ const SERVICES = [
     showTitleText: true,
     accentColor: '#D32F2F', // Vibrant Red Accent
     logoSrc: showcasePhotoLogoExact,
-    cardImage: heroApertureSquare,
+    cardImage: cardApertureReal,
+    cardAlt: 'High-Clarity Professional DSLR Camera & Lens',
     description: 'Capturing emotions, moments and stories that last forever.',
     buttonText: 'EXPLORE',
   },
@@ -25,10 +26,11 @@ const SERVICES = [
     id: 'colorlab',
     route: 'colorlab',
     title: 'COLOUR LAB',
-    showTitleText: false, // User requested removing redundant 'Colour Lab' font text below logo
+    showTitleText: false, // Avoid redundant 'Colour Lab' font text below logo
     accentColor: '#1E88E5', // Royal Blue Accent
     logoSrc: showcaseColorLabLogoExact,
-    cardImage: realAlbumPhoto,
+    cardImage: cardAlbumReal,
+    cardAlt: 'High-Clarity Luxury Wedding Layflat Photobook Album',
     description: 'Bringing your memories to life with perfect colours.',
     buttonText: 'EXPLORE',
   },
@@ -39,7 +41,8 @@ const SERVICES = [
     showTitleText: true,
     accentColor: '#D32F2F', // Vibrant Red Accent
     logoSrc: showcaseEventsLogoExact,
-    cardImage: realStagePhoto,
+    cardImage: cardStageReal,
+    cardAlt: 'High-Clarity Grand Wedding Stage & Mandap Decor',
     description: 'Planning and executing events that leave a lasting impression.',
     buttonText: 'EXPLORE',
   }
@@ -95,14 +98,14 @@ export default function Hero({ onOpenPage }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: index * 0.08, ease: 'easeOut' }}
               onClick={() => handleCardClick(service.route)}
-              className="min-w-[72vw] sm:min-w-[280px] md:min-w-0 snap-center shrink-0 md:shrink group relative bg-[#FAF7F2]/90 hover:bg-[#FFFFFF]/98 backdrop-blur-xl border border-[#D8CFC4]/90 hover:border-[#1A1A1A]/50 rounded-[20px] sm:rounded-[24px] p-3.5 sm:p-5 lg:p-6 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(0,0,0,0.18)] shadow-[0_10px_30px_rgba(0,0,0,0.10)]"
+              className="min-w-[72vw] sm:min-w-[280px] md:min-w-0 snap-center shrink-0 md:shrink group relative bg-[#FAF7F2]/95 hover:bg-[#FFFFFF] backdrop-blur-xl border border-[#D8CFC4]/90 hover:border-[#1A1A1A]/60 rounded-[20px] sm:rounded-[24px] p-3.5 sm:p-5 lg:p-6 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(0,0,0,0.22)] shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
             >
               {/* Card hover background subtle glow */}
               <div
-                className="absolute inset-0 rounded-[20px] sm:rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.03)_0%,transparent_70%)]"
+                className="absolute inset-0 rounded-[20px] sm:rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.04)_0%,transparent_70%)]"
               />
 
-              {/* 1. Official Logo Badge Asset */}
+              {/* 1. Official Logo Badge Asset (Crystal Clear) */}
               <div className="h-16 sm:h-22 w-full flex items-center justify-center mb-0.5">
                 <img
                   src={service.logoSrc}
@@ -132,12 +135,12 @@ export default function Hero({ onOpenPage }) {
                 {service.description}
               </p>
 
-              {/* 5. Supporting Visual Asset (Full Frame Display - Aperture Lens / Album / Mandap Stage) */}
-              <div className="w-full h-18 sm:h-24 lg:h-28 flex items-center justify-center my-1 relative">
+              {/* 5. Supporting Visual Asset (High Clarity Full Frame Display) */}
+              <div className="w-full h-22 sm:h-28 lg:h-32 flex items-center justify-center my-1 relative overflow-hidden rounded-xl border border-black/10 shadow-[0_8px_20px_rgba(0,0,0,0.16)] bg-white">
                 <img
                   src={service.cardImage}
-                  alt={service.title}
-                  className="w-full h-full max-w-[240px] object-cover rounded-xl border border-black/10 shadow-[0_8px_20px_rgba(0,0,0,0.18)] group-hover:scale-105 transition-transform duration-500 select-none"
+                  alt={service.cardAlt}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none"
                   loading="eager"
                 />
               </div>
