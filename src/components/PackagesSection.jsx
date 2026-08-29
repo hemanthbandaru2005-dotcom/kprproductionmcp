@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { fetchSitePackages } from '../utils/packagesService';
 import { Sparkles, ArrowLeft, PhoneCall } from 'lucide-react';
+import InstantQuoteWidget from './InstantQuoteWidget';
 
 export default function PackagesSection({
   onBackToGallery,
@@ -161,6 +162,12 @@ export default function PackagesSection({
             );
           })}
         </div>
+
+        {/* Instant Quote Estimator Widget (Bottom of Packages) */}
+        <InstantQuoteWidget
+          whatsappNumber={whatsappNumber}
+          displayPhone={displayPhone}
+        />
 
         {/* Global Booking Banner */}
         <div className="bg-[#121212] text-white p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 rounded-sm shadow-2xl border border-white/10 max-w-5xl mx-auto">
