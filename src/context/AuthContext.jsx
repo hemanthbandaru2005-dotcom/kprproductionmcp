@@ -25,14 +25,6 @@ export const ADMIN_MEMBERS = [
     role: 'admin',
     designation: 'Colour Lab Admin',
     status: 'active'
-  },
-  {
-    id: 'admin_kpr_studio',
-    email: 'admin@kpr.com',
-    full_name: 'KPR Studio Admin',
-    role: 'admin',
-    designation: 'Master Admin',
-    status: 'active'
   }
 ];
 

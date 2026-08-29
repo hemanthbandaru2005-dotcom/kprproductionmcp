@@ -766,8 +766,8 @@ export default function PasswordManagementPage() {
   });
 
   const adminUsers = [
-    ...allUsers.filter(u => u.role === 'admin'),
-    ...fallbackAdmins
+    ...allUsers.filter(u => u.role === 'admin' && u.id !== 'admin_kpr_studio' && u.full_name !== 'KPR Studio Admin' && u.designation !== 'Master Admin' && u.email !== 'admin@kpr.com'),
+    ...fallbackAdmins.filter(a => a.id !== 'admin_kpr_studio' && a.full_name !== 'KPR Studio Admin')
   ];
   const workerUsers = allUsers.filter(u => u.role === 'worker');
   const clientUsers = allUsers.filter(u => u.role === 'client');
