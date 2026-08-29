@@ -2,8 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles, Camera, Clock, Heart,
-  Building2, Printer, CheckCircle2,
-  Phone, Mail, ArrowUpRight
+  Building2, Printer, CheckCircle2
 } from 'lucide-react';
 import founderPortrait from '../assets/founder_portrait.jpg';
 
@@ -45,7 +44,7 @@ export default function AboutSection() {
     <div id="about" className="w-full bg-[#F7F3EE] py-4 px-2 sm:px-6 lg:px-12 transition-all duration-300">
       <div className="max-w-7xl mx-auto border border-[#E2D9CC] rounded-xl bg-white shadow-xl overflow-hidden transition-all duration-500">
         
-        {/* 1. Header Banner Bar (Matching Photography & ColorLab section design) */}
+        {/* 1. Header Banner Bar */}
         <div className="w-full bg-[#1A1A1A] text-white p-6 sm:p-10 md:p-12 flex flex-col items-center justify-center relative border-b border-black text-center overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(197,168,128,0.12)_0%,transparent_70%)] pointer-events-none" />
           
@@ -88,17 +87,17 @@ export default function AboutSection() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
 
                 {/* Badge Overlay */}
-                <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-black/75 backdrop-blur-md border border-white/15 text-white">
+                <div className="absolute bottom-4 left-4 right-4 p-3 sm:p-4 rounded-xl bg-black/75 backdrop-blur-md border border-white/15 text-white">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-serif text-lg sm:text-xl font-medium text-[#E8D4B8]">
+                      <h3 className="font-serif text-base sm:text-lg font-medium text-[#E8D4B8]">
                         Founder & Creative Director
                       </h3>
-                      <p className="text-[11px] text-white/70 tracking-wider uppercase font-light">
+                      <p className="text-[10px] sm:text-[11px] text-white/70 tracking-wider uppercase font-light">
                         KPR Productions • Est. 2007
                       </p>
                     </div>
-                    <div className="px-3 py-1 rounded bg-[#C5A880] text-black font-bold text-xs uppercase tracking-widest">
+                    <div className="px-2.5 py-1 rounded bg-[#C5A880] text-black font-bold text-[11px] uppercase tracking-widest">
                       20+ YRS
                     </div>
                   </div>
@@ -110,39 +109,35 @@ export default function AboutSection() {
               </div>
             </motion.div>
 
-            {/* Right: The KPR Brand Story */}
+            {/* Right: The KPR Brand Story (Concise & Compact) */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.15 }}
-              className="lg:col-span-7 space-y-6 text-[#1A1A1A]"
+              className="lg:col-span-7 space-y-5 text-[#1A1A1A]"
             >
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#C5A880] block">
                   THE JOURNEY BEHIND THE LENS
                 </span>
-                <h2 className="font-serif text-3xl sm:text-4xl text-[#1A1A1A] font-light leading-tight">
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[#1A1A1A] font-light leading-tight">
                   Crafting Timeless Legacies Since 2007
                 </h2>
               </div>
 
-              <div className="space-y-4 text-xs sm:text-sm text-[#555555] font-light leading-relaxed">
+              <div className="space-y-3 text-xs sm:text-[13px] text-[#555555] font-light leading-relaxed">
                 <p>
-                  Started in <strong className="text-[#1A1A1A] font-semibold">2007</strong> with an uncompromising devotion to authentic Indian storytelling, <strong className="text-[#1A1A1A] font-semibold">KPR Productions</strong> has grown over two decades into one of South India's premier creative powerhouses. With more than <strong className="text-[#1A1A1A] font-semibold">20 years of experience</strong> behind the lens, we have had the honor of immortalizing sacred milestones for thousands of families and leading corporate organizations.
+                  Started in <strong className="text-[#1A1A1A] font-semibold">2007</strong> with over <strong className="text-[#1A1A1A] font-semibold">20+ years of mastery</strong>, <strong className="text-[#1A1A1A] font-semibold">KPR Productions</strong> is South India's premier integrated creative house dedicated to immortalizing sacred milestones.
                 </p>
                 
                 <p>
-                  Having documented over <strong className="text-[#1A1A1A] font-semibold">2,000+ grand weddings</strong> and executed <strong className="text-[#1A1A1A] font-semibold">2,500+ corporate shoots</strong> alongside <strong className="text-[#1A1A1A] font-semibold">14+ mega corporate events</strong>, our philosophy remains unchanged: every sacred ritual, emotional gaze, and grand spectacle deserves to be preserved as a timeless heirloom.
-                </p>
-
-                <p>
-                  Today, KPR is uniquely integrated with its own <strong className="text-[#1A1A1A] font-semibold">Master Colour Lab</strong> equipped with 5+ advanced printing technologies (including Canon 60" fine art printing, archival layflat binding, and CNC laser crafting) alongside our dedicated <strong className="text-[#1A1A1A] font-semibold">Event Production & Decor</strong> division.
+                  With <strong className="text-[#1A1A1A] font-semibold">2,000+ weddings</strong>, <strong className="text-[#1A1A1A] font-semibold">2,500+ corporate shoots</strong>, and <strong className="text-[#1A1A1A] font-semibold">14+ mega corporate events</strong> delivered, we seamlessly unite fine art photography with our in-house <strong className="text-[#1A1A1A] font-semibold">Master Colour Lab</strong> and grand event production.
                 </p>
               </div>
 
               {/* Key Bullet Points */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                 <div className="flex items-center gap-2 text-xs font-medium text-[#333333]">
                   <CheckCircle2 className="w-4 h-4 text-[#C5A880] shrink-0" />
                   <span>20+ Years Dedicated Mastery</span>
@@ -159,26 +154,6 @@ export default function AboutSection() {
                   <CheckCircle2 className="w-4 h-4 text-[#C5A880] shrink-0" />
                   <span>In-House Master Colour Lab</span>
                 </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-4 flex flex-wrap items-center gap-3">
-                <a
-                  href="https://wa.me/919849443648?text=Hello%20KPR%20Productions,%20I%20would%20like%20to%20know%20more%20about%20your%20services%20and%20book%20a%20consultation."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-6 py-3 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black font-semibold text-[11px] tracking-widest uppercase rounded-lg transition-all shadow-md inline-flex items-center gap-2"
-                >
-                  <span>Connect with Founder</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </a>
-
-                <a
-                  href="#contact"
-                  className="px-6 py-3 bg-white hover:bg-[#EAE4DC] text-[#1A1A1A] border border-[#E2D9CC] font-semibold text-[11px] tracking-widest uppercase rounded-lg transition-all"
-                >
-                  Contact Studio
-                </a>
               </div>
 
             </motion.div>
