@@ -376,7 +376,7 @@ export default function ColorLabSection() {
             {/* ALBUMS SUBSECTION */}
             {activeSubTab === 'albums' && (
               <div className="animate-fadeIn space-y-12">
-                {/* Top Section Header with "Upload Your Images" Button */}
+                {/* Top Section Header */}
                 <div className="text-center max-w-2xl mx-auto mb-10">
                   <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block mb-1">
                     PHYSICAL HEIRLOOMS
@@ -385,19 +385,6 @@ export default function ColorLabSection() {
                   <p className="text-xs text-[#666666] font-light mt-2 leading-relaxed">
                     Designed sheet-by-sheet in our color lab, printed on museum archival paper that will be cherished for generations.
                   </p>
-                  
-                  {/* Renamed button: "Upload Your Images" */}
-                  <button
-                    onClick={() => setShowAlbumPreview(prev => !prev)}
-                    className={`mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer ${
-                      showAlbumPreview
-                        ? 'bg-[#C5A880] text-black hover:bg-[#b89560]'
-                        : 'bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black'
-                    }`}
-                  >
-                    {showAlbumPreview ? <X className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
-                    {showAlbumPreview ? 'Close Upload Tool' : 'Upload Your Images'}
-                  </button>
                 </div>
 
                 {/* Hidden File Input for Folder Card Trigger */}
@@ -409,13 +396,6 @@ export default function ColorLabSection() {
                   onChange={handleFolderFilesSelected}
                   className="hidden"
                 />
-
-                {/* Inline Album Upload & Preview Tool */}
-                {showAlbumPreview && (
-                  <div className="mb-10 border border-[#E2D9CC] rounded-2xl overflow-hidden bg-[#F7F3EE] shadow-inner animate-fadeIn">
-                    <AlbumPreviewPage />
-                  </div>
-                )}
 
                 {/* Album Cards Grid: Demo Card + Upload Your Images Folder Card */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
