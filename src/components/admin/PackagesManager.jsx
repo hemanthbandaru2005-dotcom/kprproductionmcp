@@ -16,6 +16,10 @@ import {
 } from '../../utils/packagesService';
 
 const PHOTOGRAPHY_CATEGORIES = [
+  'Corporate',
+  'Commercial',
+  'Government',
+  'Retail & Malls',
   'Photography',
   'Videography',
   'Aerial',
