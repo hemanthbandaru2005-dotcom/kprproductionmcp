@@ -331,48 +331,91 @@ export default function ColorLabSection() {
                   </p>
                 </div>
 
-                {/* 1. Before / After Interactive Retouching Studio */}
-                <div className="my-8">
-                  <div className="text-center mb-6">
-                    <span className="text-[10px] tracking-[0.3em] uppercase text-[#C5A880] font-semibold">
-                      INTERACTIVE STUDIO
-                    </span>
-                    <h4 className="font-serif text-2xl text-[#1A1A1A] font-light mt-1">
-                      Live Retouching & Color Grading Demo
-                    </h4>
-                    <p className="text-xs text-[#666666] font-light mt-1">
-                      Drag the slider to see raw capture vs KPR color-graded output
-                    </p>
-                  </div>
-                  <RetouchSlider />
+                {/* 6 Services Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
+                  {PRINTING_DESIGN_SERVICES.map((service) => (
+                    <div
+                      key={service.id}
+                      className="bg-white border border-[#E2D9CC] rounded-xl overflow-hidden flex flex-col justify-between shadow-md hover:shadow-2xl hover:border-[#C5A880]/60 transition-all duration-500 group"
+                    >
+                      {/* Image Header */}
+                      <div className="relative aspect-[16/10] overflow-hidden bg-[#121212]">
+                        <img
+                          src={service.image}
+                          alt={service.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        
+                        <div className="absolute top-3 left-3">
+                          <span className="bg-black/70 backdrop-blur-md text-[#E8D4B8] text-[9px] tracking-widest uppercase px-3 py-1 font-medium border border-white/10 rounded">
+                            {service.category}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content Body */}
+                      <div className="p-4 sm:p-6 space-y-3 flex-1 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <h4 className="font-serif text-xl text-[#1A1A1A] font-semibold group-hover:text-[#C5A880] transition-colors">
+                            {service.title}
+                          </h4>
+                          <p className="text-[11px] font-medium text-[#C5A880] tracking-wider uppercase">
+                            {service.tagline}
+                          </p>
+                          <p className="text-xs text-[#666666] font-light leading-relaxed pt-1">
+                            {service.description}
+                          </p>
+                        </div>
+
+                        {/* WhatsApp Action Button */}
+                        <div className="pt-4 border-t border-[#E8E1D5] flex items-center justify-end">
+                          <a
+                            href={`https://wa.me/919849443648?text=${encodeURIComponent(`Hello KPR Colour Lab! I am interested in your ${service.title} services. Please share details and pricing.`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full sm:w-auto text-center px-5 py-2.5 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-[10px] font-semibold tracking-widest uppercase transition-all duration-300 rounded shadow-sm hover:shadow"
+                          >
+                            Inquire Now
+                          </a>
+                        </div>
+                      </div>
+
+                    </div>
+                  ))}
                 </div>
 
-                {/* 2. Custom ColorLab Photos Showcase */}
+                {/* Additional Admin-Added Color Lab Showcase Photos */}
                 {customColorLabPhotos.length > 0 && (
-                  <div className="my-12">
-                    <div className="text-center mb-6">
-                      <span className="text-[10px] tracking-[0.3em] uppercase text-[#C5A880] font-semibold">
-                        STUDIO SHOWCASE
+                  <div className="pt-10 border-t border-[#E2D9CC] space-y-6">
+                    <div className="text-center max-w-2xl mx-auto">
+                      <span className="text-[10px] tracking-[0.3em] uppercase text-[#C5A880] font-semibold block mb-1">
+                        COLOR LAB GALLERY
                       </span>
-                      <h4 className="font-serif text-2xl text-[#1A1A1A] font-light mt-1">
-                        Featured Printing & Album Gallery
-                      </h4>
+                      <h4 className="font-serif text-2xl text-[#1A1A1A]">Featured Print & Framing Works</h4>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-6">
                       {customColorLabPhotos.map((photo) => (
-                        <div key={photo.id} className="relative group overflow-hidden rounded-xl border border-[#E2D9CC] bg-white shadow-sm hover:shadow-lg transition-all duration-300">
-                          <div className="aspect-[4/3] overflow-hidden bg-black/5">
+                        <div
+                          key={photo.id}
+                          className="bg-white border border-[#E2D9CC] rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group"
+                        >
+                          <div className="relative aspect-square overflow-hidden bg-black">
                             <img
-                              src={photo.url}
-                              alt={photo.title || 'ColorLab Showcase'}
+                              src={photo.file_url || photo.url}
+                              alt={photo.title || 'Color Lab Print'}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              loading="lazy"
                             />
+                            <div className="absolute top-2 left-2">
+                              <span className="bg-black/70 text-white text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-mono">
+                                {photo.category}
+                              </span>
+                            </div>
                           </div>
-                          {(photo.title || photo.caption) && (
-                            <div className="p-3 bg-white">
-                              {photo.title && <h5 className="font-serif text-sm text-[#1A1A1A] font-medium">{photo.title}</h5>}
-                              {photo.caption && <p className="text-[11px] text-[#666666] font-light mt-0.5">{photo.caption}</p>}
+                          {photo.title && (
+                            <div className="p-3">
+                              <p className="text-xs font-semibold text-[#1A1A1A] truncate">{photo.title}</p>
                             </div>
                           )}
                         </div>
@@ -380,91 +423,6 @@ export default function ColorLabSection() {
                     </div>
                   </div>
                 )}
-
-                {/* 3. Detailed Services Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 pt-4">
-                  {PRINTING_DESIGN_SERVICES.map((service) => (
-                    <div
-                      key={service.id}
-                      className="bg-white border border-[#E2D9CC] rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group"
-                    >
-                      <div className="relative aspect-[16/9] overflow-hidden bg-black">
-                        <img
-                          src={service.image}
-                          alt={service.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                        <div className="absolute bottom-3 left-4 right-4 text-white">
-                          <span className="text-[10px] tracking-widest text-[#C5A880] uppercase font-semibold">
-                            {service.category}
-                          </span>
-                          <h4 className="font-serif text-xl font-medium leading-tight mt-0.5">
-                            {service.title}
-                          </h4>
-                        </div>
-                      </div>
-
-                      <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4">
-                        <p className="text-xs text-[#666666] font-light leading-relaxed">
-                          {service.description}
-                        </p>
-
-                        {service.features && service.features.length > 0 && (
-                          <div className="space-y-1.5 pt-2 border-t border-[#E8E1D5]">
-                            <span className="text-[10px] uppercase tracking-wider text-[#999999] font-semibold block">
-                              Service Highlights:
-                            </span>
-                            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                              {service.features.map((feat, idx) => (
-                                <li key={idx} className="flex items-center gap-1.5 text-[11px] text-[#444444]">
-                                  <Check className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
-                                  <span className="truncate">{feat}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        <div className="pt-4 border-t border-[#E8E1D5] flex items-center justify-between gap-3">
-                          <a
-                            href={`https://wa.me/919849443648?text=${encodeURIComponent(`Hi KPR Colour Lab, I am interested in your ${service.title} service. Please share details and pricing.`)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-xs font-semibold tracking-wider uppercase rounded-lg transition-all duration-300 shadow-sm"
-                          >
-                            <Phone className="w-3.5 h-3.5" />
-                            <span>Inquire on WhatsApp</span>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* 4. Equipment Banner */}
-                <div className="bg-gradient-to-r from-[#1A1A1A] to-[#2E2820] text-white rounded-2xl p-6 sm:p-8 border border-[#C5A880]/30 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="space-y-2 text-center md:text-left">
-                    <span className="text-[10px] tracking-[0.25em] text-[#C5A880] uppercase font-semibold">
-                      STATE-OF-THE-ART LAB EQUIPMENT
-                    </span>
-                    <h4 className="font-serif text-2xl text-white font-medium">
-                      ColourJet Flex & Canon 60" 7-Colour Precision Photo Printer
-                    </h4>
-                    <p className="text-xs text-white/70 max-w-2xl font-light">
-                      Industry-leading Japanese & European printing hardware ensuring 100+ year archival anti-fade quality on every wedding album sheet, fine-art canvas, and commercial flex print.
-                    </p>
-                  </div>
-                  <a
-                    href="https://wa.me/919849443648?text=Hi%20KPR%20Colour%20Lab,%20I'd%20like%20to%20place%20a%20printing%20order"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-3 bg-[#C5A880] hover:bg-[#b89560] text-black font-semibold text-xs tracking-wider uppercase rounded-xl transition-all duration-300 shrink-0 shadow-md"
-                  >
-                    Place Print Order
-                  </a>
-                </div>
 
               </div>
             )}
