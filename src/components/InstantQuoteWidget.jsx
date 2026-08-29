@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   Calculator, Sparkles, Clock, CheckCircle2,
   ChevronRight, ShieldCheck, Tag, Edit3, RotateCcw,
-  Camera, Film, Video, Layers
+  Camera, Film, Video, Layers, IndianRupee
 } from 'lucide-react';
 import { fetchSitePackages, OFFICIAL_PHOTOGRAPHY_PACKAGES } from '../utils/packagesService';
 
@@ -42,8 +42,7 @@ export default function InstantQuoteWidget({
   // Selected category filter tab
   const [activeCategoryTab, setActiveCategoryTab] = useState('ALL');
 
-  // Manual Custom Price state
-  const [isManualPrice, setIsManualPrice] = useState(false);
+  // Manual Custom Price state (starts blank - 100% manual entry, NO default price shown)
   const [customPriceInput, setCustomPriceInput] = useState('');
 
   // Manual Custom Duration state
@@ -64,17 +63,13 @@ export default function InstantQuoteWidget({
     return activePackage?.duration || '6 hours';
   }, [activePackage, isManualDuration, customDurationInput]);
 
-  // Active Effective Price
-  const effectivePrice = useMemo(() => {
-    if (isManualPrice && customPriceInput !== '') {
-      return Number(customPriceInput) || 0;
+  // Formatted price string if entered manually
+  const formattedManualPrice = useMemo(() => {
+    if (!customPriceInput || isNaN(Number(customPriceInput)) || Number(customPriceInput) <= 0) {
+      return null;
     }
-    return Number(activePackage?.price) || 0;
-  }, [activePackage, isManualPrice, customPriceInput]);
-
-  const formattedPrice = useMemo(() => {
-    return `₹${effectivePrice.toLocaleString('en-IN')}`;
-  }, [effectivePrice]);
+    return `₹${Number(customPriceInput).toLocaleString('en-IN')}`;
+  }, [customPriceInput]);
 
   // Available categories for pill tabs
   const categories = useMemo(() => {
@@ -91,11 +86,9 @@ export default function InstantQuoteWidget({
     return photoPackages.filter(p => p.category === activeCategoryTab);
   }, [photoPackages, activeCategoryTab]);
 
-  // Handle switching packages
+  // Handle switching packages (no default price is populated)
   const handleSelectPackage = (pkg) => {
     setSelectedId(pkg.id);
-    setIsManualPrice(false);
-    setCustomPriceInput('');
     setIsManualDuration(false);
     setCustomDurationInput('');
   };
@@ -109,7 +102,13 @@ export default function InstantQuoteWidget({
       ? effectiveDuration
       : `${effectiveDuration} hours`;
 
-    const message = `Hi, I'd like a quote for ${activePackage?.name || 'Photography'} — Package: ${formattedPrice} for ${durationText}. Please confirm availability.`;
+    let message = '';
+    if (formattedManualPrice) {
+      message = `Hi, I'd like a quote for ${activePackage?.name || 'Photography'} — Proposed Package Budget: ${formattedManualPrice} for ${durationText}. Please confirm availability.`;
+    } else {
+      message = `Hi, I'd like a quote for ${activePackage?.name || 'Photography'} (${durationText}). Please share pricing and confirm availability.`;
+    }
+
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
   };
 
@@ -131,7 +130,7 @@ export default function InstantQuoteWidget({
             Get Your Instant Event Quote
           </h3>
           <p className="text-xs sm:text-sm text-white/60 font-light leading-relaxed">
-            Choose from any of our official photography & videography packages below to calculate instant pricing, adjust duration, and reserve your date.
+            Choose any photography or videography package below, customize duration/budget if needed, and send directly via WhatsApp.
           </p>
         </div>
 
@@ -221,7 +220,7 @@ export default function InstantQuoteWidget({
           </div>
         </div>
 
-        {/* Auto-Filled & Manually Editable Quote Breakdown Card */}
+        {/* Selected Package Breakdown Card with 100% Manual Price & Duration Editing */}
         <div className="relative z-10 bg-white/[0.04] border border-white/10 rounded-2xl p-5 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6 mb-7 backdrop-blur-md">
           {/* Left Details */}
           <div className="w-full lg:w-1/2 space-y-2 text-center lg:text-left">
@@ -260,49 +259,32 @@ export default function InstantQuoteWidget({
             )}
           </div>
 
-          {/* Right Stats: Package Price & Duration with Manual Edit Option on BOTH */}
+          {/* Right Inputs: Manual Package Price & Duration Scope */}
           <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-4 bg-black/50 border border-white/10 rounded-xl p-4 sm:p-5 shrink-0">
-            {/* Price Box with Edit Option */}
-            <div className="text-center sm:text-left min-w-[140px]">
+            {/* Manual Price Entry Box */}
+            <div className="text-center sm:text-left min-w-[150px] w-full sm:w-auto">
               <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1">
                 <Tag className="w-3 h-3 text-[#C5A880]" />
                 <span>Package Price</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsManualPrice(!isManualPrice);
-                    if (!isManualPrice) setCustomPriceInput(String(activePackage.price || ''));
-                  }}
-                  title="Click to edit price"
-                  className="ml-1 text-[9px] text-[#C5A880] hover:text-white underline cursor-pointer inline-flex items-center gap-0.5"
-                >
-                  <Edit3 className="w-2.5 h-2.5" />
-                  <span>{isManualPrice ? 'Reset' : 'Edit'}</span>
-                </button>
+                <span className="text-[9px] text-[#C5A880] font-normal">(Manual)</span>
               </div>
 
-              {isManualPrice ? (
-                <div className="relative mt-1">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-[#C5A880] font-bold">₹</span>
-                  <input
-                    type="number"
-                    value={customPriceInput}
-                    onChange={(e) => setCustomPriceInput(e.target.value)}
-                    placeholder={String(activePackage.price)}
-                    className="w-32 bg-[#222222] border border-[#C5A880] rounded-lg pl-6 pr-2 py-1 text-base text-[#E8D4B8] font-bold focus:outline-none focus:ring-1 focus:ring-[#C5A880]"
-                  />
-                </div>
-              ) : (
-                <div className="font-serif text-2xl sm:text-3xl text-[#E8D4B8] font-bold tracking-tight">
-                  {formattedPrice}
-                </div>
-              )}
+              <div className="relative mt-1">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-[#C5A880] font-bold">₹</span>
+                <input
+                  type="number"
+                  value={customPriceInput}
+                  onChange={(e) => setCustomPriceInput(e.target.value)}
+                  placeholder="Enter Price"
+                  className="w-full sm:w-36 bg-[#222222] border border-[#C5A880]/60 focus:border-[#C5A880] rounded-lg pl-6 pr-2.5 py-1.5 text-sm text-[#E8D4B8] font-bold focus:outline-none focus:ring-1 focus:ring-[#C5A880] placeholder-white/30"
+                />
+              </div>
             </div>
 
             <div className="hidden sm:block w-[1px] h-12 bg-white/15" />
 
             {/* Duration Box with Edit Option */}
-            <div className="text-center sm:text-left min-w-[130px]">
+            <div className="text-center sm:text-left min-w-[140px] w-full sm:w-auto">
               <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1">
                 <Clock className="w-3 h-3 text-[#C5A880]" />
                 <span>Duration / Scope</span>
@@ -327,11 +309,11 @@ export default function InstantQuoteWidget({
                     value={customDurationInput}
                     onChange={(e) => setCustomDurationInput(e.target.value)}
                     placeholder="e.g. 6 hours / Full Day"
-                    className="w-36 bg-[#222222] border border-[#C5A880] rounded-lg px-2.5 py-1 text-xs text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#C5A880]"
+                    className="w-full sm:w-36 bg-[#222222] border border-[#C5A880]/60 focus:border-[#C5A880] rounded-lg px-2.5 py-1.5 text-xs text-white font-medium focus:outline-none focus:ring-1 focus:ring-[#C5A880]"
                   />
                 </div>
               ) : (
-                <div className="text-sm sm:text-base text-white font-bold tracking-wide mt-0.5">
+                <div className="text-sm sm:text-base text-white font-bold tracking-wide mt-1">
                   {effectiveDuration}
                 </div>
               )}
