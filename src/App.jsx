@@ -12,9 +12,7 @@ import ClientDashboard from './components/client/ClientDashboard';
 import LightboxModal from './components/LightboxModal';
 import MoodboardDrawer from './components/MoodboardDrawer';
 import ContactSection from './components/ContactSection';
-import Footer from './components/Footer';
 import AlbumPreviewPage from './components/AlbumPreviewPage';
-import IntroVideo from './components/IntroVideo';
 import ServicesShowcase from './components/ServicesShowcase';
 import { SOCIAL_LINKS } from './utils/socialLinks';
 
@@ -454,23 +452,8 @@ class ErrorBoundary extends React.Component {
 }
 
 export default function App() {
-  const [showIntro, setShowIntro] = useState(() => {
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('intro') === '1' || urlParams.get('intro') === 'true' || urlParams.get('play_intro') === '1') {
-        return true;
-      }
-      return !sessionStorage.getItem('kpr_intro_shown');
-    } catch (e) {
-      return true;
-    }
-  });
-
   return (
     <ErrorBoundary>
-      {showIntro && (
-        <IntroVideo onComplete={() => setShowIntro(false)} />
-      )}
       <AuthProvider>
         <AppContent />
       </AuthProvider>
