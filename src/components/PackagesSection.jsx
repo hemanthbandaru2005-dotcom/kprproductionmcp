@@ -165,6 +165,7 @@ export default function PackagesSection({
 
         {/* Instant Quote Estimator Widget (Bottom of Packages) */}
         <InstantQuoteWidget
+          packages={packages}
           whatsappNumber={whatsappNumber}
           displayPhone={displayPhone}
         />

@@ -1,197 +1,317 @@
-import React, { useState } from 'react';
-import { Calculator, Sparkles, Clock, CheckCircle2, ChevronRight, Send, ShieldCheck, Tag } from 'lucide-react';
-
-export const INSTANT_QUOTE_EVENTS = {
-  'wedding': {
-    id: 'wedding',
-    name: 'Wedding Ceremony',
-    price: 24000,
-    hours: 6,
-    category: 'Wedding',
-    badge: 'Most Popular',
-    description: 'Complete traditional & candid coverage, master prime lens portraits, and all Telugu ritual highlights.'
-  },
-  'pre-wedding': {
-    id: 'pre-wedding',
-    name: 'Pre-Wedding Shoot',
-    price: 18000,
-    hours: 6,
-    category: 'Couple Shoot',
-    badge: 'Cinematic',
-    description: 'Outdoor cinematic couple portraits, 4K slow-motion gimbal stabilization, and aerial drone framing.'
-  },
-  'engagement': {
-    id: 'engagement',
-    name: 'Engagement Ceremony',
-    price: 14000,
-    hours: 6,
-    category: 'Family Event',
-    badge: 'Special',
-    description: 'Full ritual coverage, ring exchange highlights, family group portraits, and master colour grading.'
-  },
-  'birthday': {
-    id: 'birthday',
-    name: 'Birthday Celebration',
-    price: 10000,
-    hours: 4,
-    category: 'Celebration',
-    badge: 'Festive',
-    description: 'Cake cutting, guest reception, dynamic candid captures, and family celebration moments.'
-  },
-  'corporate': {
-    id: 'corporate',
-    name: 'Corporate Events',
-    price: 15000,
-    hours: 6,
-    category: 'Corporate',
-    badge: 'Enterprise',
-    description: 'Executive AGMs, leadership summits, keynote speakers, and same-day press release deliverables.'
-  },
-  'government': {
-    id: 'government',
-    name: 'Government Events',
-    price: 20000,
-    hours: 6,
-    category: 'Government',
-    badge: 'Official Protocol',
-    description: 'Official state protocol documentation, dignitary visits, and press-ready high-resolution cataloging.'
-  },
-  'retail': {
-    id: 'retail',
-    name: 'Shopping Malls & Retail Launch',
-    price: 18000,
-    hours: 6,
-    category: 'Commercial',
-    badge: 'Commercial Launch',
-    description: 'Store grand openings, celebrity ribbon cuttings, festive crowd engagements, and promotional photo reels.'
-  }
-};
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Calculator, Sparkles, Clock, CheckCircle2,
+  ChevronRight, ShieldCheck, Tag, Edit3, RotateCcw,
+  Camera, Film, Video, Layers
+} from 'lucide-react';
+import { fetchSitePackages, OFFICIAL_PHOTOGRAPHY_PACKAGES } from '../utils/packagesService';
 
 export default function InstantQuoteWidget({
+  packages: initialPackages,
   whatsappNumber = '919849443648',
   displayPhone = '+91 98494 43648'
 }) {
-  const [selectedKey, setSelectedKey] = useState('wedding');
-  const activeQuote = INSTANT_QUOTE_EVENTS[selectedKey] || INSTANT_QUOTE_EVENTS['wedding'];
+  const [photoPackages, setPhotoPackages] = useState(
+    Array.isArray(initialPackages) && initialPackages.length > 0
+      ? initialPackages.filter(p => p.type === 'photography' || !p.type)
+      : OFFICIAL_PHOTOGRAPHY_PACKAGES
+  );
 
-  const formattedPrice = `₹${Number(activeQuote.price).toLocaleString('en-IN')}`;
+  useEffect(() => {
+    async function loadFreshPackages() {
+      try {
+        const data = await fetchSitePackages('photography');
+        if (data && data.length > 0) {
+          // Strictly filter only photography packages
+          const filtered = data.filter(p => (p.type === 'photography' || !p.type) && p.status !== 'hidden');
+          if (filtered.length > 0) {
+            setPhotoPackages(filtered);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load fresh photography packages for quote widget:', e);
+      }
+    }
+    loadFreshPackages();
+  }, []);
 
+  // Selected package state
+  const [selectedId, setSelectedId] = useState(() => {
+    return photoPackages[0]?.id || 'pkg-corp-1';
+  });
+
+  // Selected category filter tab
+  const [activeCategoryTab, setActiveCategoryTab] = useState('ALL');
+
+  // Manual Custom Price & Hours state (allows manual entry or auto-fill)
+  const [isManualPrice, setIsManualPrice] = useState(false);
+  const [customPriceInput, setCustomPriceInput] = useState('');
+  const [customHoursInput, setCustomHoursInput] = useState('');
+
+  // Find active package
+  const activePackage = useMemo(() => {
+    const found = photoPackages.find(p => String(p.id) === String(selectedId));
+    return found || photoPackages[0] || OFFICIAL_PHOTOGRAPHY_PACKAGES[0];
+  }, [photoPackages, selectedId]);
+
+  // Extract duration string or numeric hours
+  const displayHours = useMemo(() => {
+    if (customHoursInput.trim()) return customHoursInput.trim();
+    if (!activePackage?.duration) return '6';
+    const match = activePackage.duration.match(/(\d+)\s*hour/i);
+    return match ? match[1] : activePackage.duration;
+  }, [activePackage, customHoursInput]);
+
+  // Active Effective Price
+  const effectivePrice = useMemo(() => {
+    if (isManualPrice && customPriceInput !== '') {
+      return Number(customPriceInput) || 0;
+    }
+    return Number(activePackage?.price) || 0;
+  }, [activePackage, isManualPrice, customPriceInput]);
+
+  const formattedPrice = useMemo(() => {
+    return `₹${effectivePrice.toLocaleString('en-IN')}`;
+  }, [effectivePrice]);
+
+  // Available categories for pill tabs
+  const categories = useMemo(() => {
+    const set = new Set();
+    photoPackages.forEach(p => {
+      if (p.category) set.add(p.category);
+    });
+    return ['ALL', ...Array.from(set)];
+  }, [photoPackages]);
+
+  // Filtered packages for the selector
+  const visiblePackages = useMemo(() => {
+    if (activeCategoryTab === 'ALL') return photoPackages;
+    return photoPackages.filter(p => p.category === activeCategoryTab);
+  }, [photoPackages, activeCategoryTab]);
+
+  // Handle switching packages
+  const handleSelectPackage = (pkg) => {
+    setSelectedId(pkg.id);
+    // Reset manual overrides when clicking a new package to show exact package price
+    setIsManualPrice(false);
+    setCustomPriceInput('');
+    setCustomHoursInput('');
+  };
+
+  // WhatsApp formatted link
   const buildWhatsAppLink = () => {
-    const message = `Hi, I'd like a quote for ${activeQuote.name} — Package: ${formattedPrice} for ${activeQuote.hours} hours. Please confirm availability.`;
+    const hoursLabel = displayHours.includes('hour') || displayHours.includes('min') || displayHours.includes('sheet')
+      ? displayHours
+      : `${displayHours} hours`;
+
+    const message = `Hi, I'd like a quote for ${activePackage?.name || 'Photography'} — Package: ${formattedPrice} for ${hoursLabel}. Please confirm availability.`;
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto my-8 sm:my-14">
-      {/* Glassmorphic Luxury Container */}
-      <div className="relative bg-gradient-to-b from-[#1E1E1E] to-[#121212] border border-[#C5A880]/30 rounded-2xl p-6 sm:p-10 shadow-2xl overflow-hidden backdrop-blur-xl">
-        {/* Ambient Glows */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[#C5A880]/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#C5A880]/5 rounded-full blur-2xl pointer-events-none -ml-20 -mb-20" />
+    <div className="w-full max-w-5xl mx-auto my-8 sm:my-14" id="instant-quote-calculator">
+      {/* Luxury Glassmorphic Container */}
+      <div className="relative bg-gradient-to-b from-[#1C1C1C] via-[#141414] to-[#0D0D0D] border border-[#C5A880]/30 rounded-2xl p-5 sm:p-10 shadow-2xl overflow-hidden backdrop-blur-xl">
+        {/* Ambient Warm Golden Glows */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#C5A880]/10 rounded-full blur-3xl pointer-events-none -mr-28 -mt-28" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#C5A880]/5 rounded-full blur-2xl pointer-events-none -ml-28 -mb-28" />
 
-        {/* Header Eyebrow & Title */}
-        <div className="relative z-10 text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+        {/* Eyebrow & Title */}
+        <div className="relative z-10 text-center max-w-2xl mx-auto mb-7 sm:mb-9">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/40 text-[#E8D4B8] text-[10px] sm:text-[11px] font-semibold tracking-[0.25em] uppercase mb-3 shadow-sm">
             <Calculator className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>Instant Estimator</span>
+            <span>Photography Packages Estimator</span>
           </div>
           <h3 className="font-serif text-2xl sm:text-4xl text-white font-light tracking-wide mb-2">
             Get Your Instant Event Quote
           </h3>
           <p className="text-xs sm:text-sm text-white/60 font-light leading-relaxed">
-            Select your event type below to calculate instant transparent pricing and book your dates directly.
+            Choose from any of our official photography & videography packages below to calculate instant pricing, adjust duration, and reserve your date.
           </p>
         </div>
 
-        {/* Interactive Event Selector */}
-        <div className="relative z-10 mb-8">
-          <label className="block text-[11px] uppercase tracking-[0.2em] text-[#C5A880] font-semibold mb-3 text-center sm:text-left">
-            1. Select Event Type:
+        {/* Category Tabs for Fast Browsing */}
+        <div className="relative z-10 mb-4 flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none justify-start sm:justify-center">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveCategoryTab(cat)}
+              className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] uppercase tracking-wider font-semibold transition-all shrink-0 cursor-pointer ${
+                activeCategoryTab === cat
+                  ? 'bg-[#C5A880] text-black shadow-md'
+                  : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border border-white/5'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Dropdown for Mobile / Compact Navigation */}
+        <div className="relative z-10 block sm:hidden mb-4">
+          <label className="block text-[10px] uppercase tracking-wider text-[#C5A880] font-semibold mb-1.5">
+            Select Photography Package:
           </label>
-          
-          {/* Responsive Button Group / Pills */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-            {Object.keys(INSTANT_QUOTE_EVENTS).map((key) => {
-              const eventItem = INSTANT_QUOTE_EVENTS[key];
-              const isSelected = selectedKey === key;
+          <select
+            value={selectedId}
+            onChange={(e) => {
+              const pkg = photoPackages.find(p => String(p.id) === String(e.target.value));
+              if (pkg) handleSelectPackage(pkg);
+            }}
+            className="w-full bg-[#242424] border border-[#C5A880]/40 rounded-xl px-4 py-3 text-white text-xs font-serif focus:outline-none focus:border-[#C5A880]"
+          >
+            {photoPackages.map((pkg) => (
+              <option key={pkg.id} value={pkg.id} className="bg-[#1A1A1A] text-white">
+                {pkg.name} — ₹{Number(pkg.price).toLocaleString('en-IN')} ({pkg.duration})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Interactive Photography Packages Grid (All Photography Packages) */}
+        <div className="relative z-10 mb-7 max-h-[310px] overflow-y-auto pr-1 custom-scrollbar">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
+            {visiblePackages.map((pkg) => {
+              const isSelected = String(selectedId) === String(pkg.id);
+              const pkgPrice = `₹${Number(pkg.price).toLocaleString('en-IN')}`;
 
               return (
                 <button
-                  key={key}
+                  key={pkg.id}
                   type="button"
-                  onClick={() => setSelectedKey(key)}
-                  className={`relative p-3 sm:p-3.5 rounded-xl text-left transition-all duration-300 border flex flex-col justify-between cursor-pointer ${
+                  onClick={() => handleSelectPackage(pkg)}
+                  className={`relative p-3 rounded-xl text-left transition-all duration-300 border flex flex-col justify-between cursor-pointer group ${
                     isSelected
-                      ? 'bg-gradient-to-br from-[#2A241D] to-[#1F1A14] border-[#C5A880] text-white shadow-lg shadow-[#C5A880]/10 scale-[1.02]'
+                      ? 'bg-gradient-to-br from-[#2A241D] to-[#1F1A14] border-[#C5A880] text-white shadow-lg shadow-[#C5A880]/15 ring-1 ring-[#C5A880]/50 scale-[1.01]'
                       : 'bg-white/[0.03] hover:bg-white/[0.07] border-white/10 text-white/70 hover:text-white hover:border-white/20'
                   }`}
                 >
-                  <div className="flex items-center justify-between w-full mb-1.5">
-                    <span className="text-[9px] uppercase tracking-widest text-[#C5A880] font-medium">
-                      {eventItem.category}
+                  <div className="flex items-center justify-between w-full mb-1">
+                    <span className="text-[8.5px] uppercase tracking-widest text-[#C5A880] font-semibold truncate max-w-[80%]">
+                      {pkg.category || 'Photography'}
                     </span>
                     {isSelected && (
-                      <CheckCircle2 className="w-4 h-4 text-[#C5A880] shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
                     )}
                   </div>
-                  <span className={`text-xs sm:text-sm font-serif font-medium leading-snug ${isSelected ? 'text-white' : 'text-white/80'}`}>
-                    {eventItem.name}
+
+                  <span className={`text-xs sm:text-sm font-serif font-medium leading-tight mb-1.5 ${isSelected ? 'text-white font-semibold' : 'text-white/90 group-hover:text-white'}`}>
+                    {pkg.name}
                   </span>
+
+                  <div className="flex items-center justify-between pt-1.5 border-t border-white/10 mt-auto">
+                    <span className="text-[11px] font-bold text-[#E8D4B8]">
+                      {pkgPrice}
+                    </span>
+                    <span className="text-[9px] text-white/40 font-light truncate">
+                      {pkg.duration}
+                    </span>
+                  </div>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Auto-Filled Quote Display Card */}
-        <div className="relative z-10 bg-white/[0.04] border border-white/10 rounded-xl p-5 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 mb-8 backdrop-blur-md">
-          <div className="w-full md:w-auto space-y-2 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2">
+        {/* Auto-Filled & Manually Editable Quote Breakdown Card */}
+        <div className="relative z-10 bg-white/[0.04] border border-white/10 rounded-2xl p-5 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6 mb-7 backdrop-blur-md">
+          {/* Left Details */}
+          <div className="w-full lg:w-1/2 space-y-2 text-center lg:text-left">
+            <div className="flex items-center justify-center lg:justify-start gap-2 flex-wrap">
               <span className="text-[10px] uppercase tracking-[0.2em] text-[#C5A880] font-semibold">
-                Event Selected:
+                Package Selected:
               </span>
               <span className="bg-[#C5A880]/20 text-[#E8D4B8] border border-[#C5A880]/30 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                {activeQuote.badge}
+                {activePackage.category || 'Photography'}
               </span>
+              {activePackage.popular && (
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" /> Popular
+                </span>
+              )}
             </div>
+
             <h4 className="font-serif text-xl sm:text-2xl text-white font-medium">
-              {activeQuote.name}
+              {activePackage.name}
             </h4>
-            <p className="text-xs text-white/60 font-light max-w-md leading-relaxed">
-              {activeQuote.description}
+
+            <p className="text-xs text-white/65 font-light leading-relaxed max-w-lg">
+              {activePackage.description || 'Full professional photographic coverage with high-resolution deliverables and color grading.'}
             </p>
+
+            {/* Quick Feature Checklist */}
+            {activePackage.features && activePackage.features.length > 0 && (
+              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-2 text-[10px] text-white/60">
+                {activePackage.features.slice(0, 3).map((feat, idx) => (
+                  <span key={idx} className="bg-white/5 px-2.5 py-1 rounded-md border border-white/5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-[#C5A880] rounded-full" />
+                    {feat}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Price & Duration Big Stat Display */}
-          <div className="flex items-center gap-4 sm:gap-6 bg-black/40 border border-white/10 rounded-xl p-4 sm:p-5 shrink-0 w-full md:w-auto justify-around md:justify-start">
-            <div className="text-center md:text-left">
-              <div className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5">
-                Package Price
+          {/* Right Stats: Package Price & Duration with Manual Edit Option */}
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-4 bg-black/50 border border-white/10 rounded-xl p-4 sm:p-5 shrink-0">
+            {/* Price Box */}
+            <div className="text-center sm:text-left min-w-[140px]">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1">
+                <Tag className="w-3 h-3 text-[#C5A880]" />
+                <span>Package Price</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsManualPrice(!isManualPrice);
+                    if (!isManualPrice) setCustomPriceInput(String(activePackage.price || ''));
+                  }}
+                  title="Click to manually enter/edit price"
+                  className="ml-1 text-[9px] text-[#C5A880] hover:text-white underline cursor-pointer inline-flex items-center gap-0.5"
+                >
+                  <Edit3 className="w-2.5 h-2.5" />
+                  <span>{isManualPrice ? 'Default' : 'Edit'}</span>
+                </button>
               </div>
-              <div className="font-serif text-2xl sm:text-3xl text-[#E8D4B8] font-bold tracking-tight">
-                {formattedPrice}
-              </div>
+
+              {isManualPrice ? (
+                <div className="relative mt-1">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-[#C5A880] font-bold">₹</span>
+                  <input
+                    type="number"
+                    value={customPriceInput}
+                    onChange={(e) => setCustomPriceInput(e.target.value)}
+                    placeholder={String(activePackage.price)}
+                    className="w-32 bg-[#222222] border border-[#C5A880] rounded-lg pl-6 pr-2 py-1 text-base text-[#E8D4B8] font-bold focus:outline-none"
+                  />
+                </div>
+              ) : (
+                <div className="font-serif text-2xl sm:text-3xl text-[#E8D4B8] font-bold tracking-tight">
+                  {formattedPrice}
+                </div>
+              )}
             </div>
 
-            <div className="w-[1px] h-10 bg-white/15" />
+            <div className="hidden sm:block w-[1px] h-12 bg-white/15" />
 
-            <div className="text-center md:text-left">
-              <div className="text-[10px] uppercase tracking-wider text-white/40 font-semibold mb-0.5 flex items-center gap-1">
+            {/* Duration Box */}
+            <div className="text-center sm:text-left min-w-[120px]">
+              <div className="text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1 flex items-center justify-center sm:justify-start gap-1">
                 <Clock className="w-3 h-3 text-[#C5A880]" />
-                <span>Duration</span>
+                <span>Duration / Scope</span>
               </div>
-              <div className="text-sm sm:text-base text-white font-bold tracking-wide mt-0.5">
-                {activeQuote.hours} Hours
+              <div className="text-sm sm:text-base text-white font-bold tracking-wide">
+                {activePackage.duration || '6 hours'}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Action Button: Send via WhatsApp */}
+        {/* Action Button: Send Quote via WhatsApp */}
         <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
-          <div className="flex items-center gap-2 text-white/50 text-[11px]">
+          <div className="flex items-center gap-2 text-white/50 text-[11px] text-center sm:text-left">
             <ShieldCheck className="w-4 h-4 text-[#C5A880] shrink-0" />
-            <span>Official KPR Studio direct response & date lock guaranteed</span>
+            <span>Direct WhatsApp booking with KPR Studio management</span>
           </div>
 
           <a
