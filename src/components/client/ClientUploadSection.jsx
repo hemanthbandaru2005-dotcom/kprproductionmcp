@@ -787,34 +787,21 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
                     </div>
                   </div>
 
-                  {/* Client Confirmation Badge & Actions */}
+                  {/* Client Confirmation Badge */}
                   <div className="pt-2 border-t border-[#E7E8EB] flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#13A52D]">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#13A52D]" />
                       <span>Saved & Secured</span>
                     </span>
 
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPreviewModalFile(fileItem);
-                        }}
-                        className="p-1.5 text-[#6B7280] hover:text-[#111111] hover:bg-[#F1F2F4] rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
-                        title="View Preview"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Preview</span>
-                      </button>
-
-                      <button
-                        onClick={(e) => handleDeleteUpload(fileItem, e)}
-                        className="p-1.5 text-[#9CA0A6] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
-                        title="Delete file"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setPreviewModalFile(fileItem)}
+                      className="p-1 text-[#6B7280] hover:text-[#111111] transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                      title="View Preview"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Preview</span>
+                    </button>
                   </div>
                 </div>
               );
@@ -908,27 +895,16 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
               )}
             </div>
 
-            {/* Modal Footer info & Delete Action */}
+            {/* Modal Footer info */}
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs text-[#6B7280]">
               <div className="flex items-center gap-4">
                 <span>Size: <strong className="text-[#111111]">{formatFileSize(previewModalFile.file_size)}</strong></span>
                 <span>Type: <strong className="text-[#111111] font-mono uppercase">.{previewModalFile.file_type}</strong></span>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={(e) => handleDeleteUpload(previewModalFile, e)}
-                  className="px-3 py-1.5 rounded-full text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 font-semibold transition-all flex items-center gap-1.5 cursor-pointer text-xs"
-                  title="Permanently delete file"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete File</span>
-                </button>
-
-                <div className="flex items-center gap-1 text-[#13A52D] text-xs font-bold">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Verified Archive</span>
-                </div>
+              <div className="flex items-center gap-1 text-[#13A52D] text-xs font-bold">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Verified in Studio Archive</span>
               </div>
             </div>
           </div>
