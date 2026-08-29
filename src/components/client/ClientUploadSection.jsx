@@ -10,6 +10,7 @@ import {
   pauseClientUpload,
   cancelClientUpload,
   fetchClientUploads,
+  subscribeToClientUploadsRealtime,
   formatFileSize,
   getFileCategory
 } from '../../utils/clientUploadsService';
@@ -43,7 +44,6 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
 
   // Load client's uploaded files
   const loadUploads = async () => {
-    setLoading(true);
     const data = await fetchClientUploads(clientId);
     setUploads(data || []);
     setLoading(false);
@@ -83,12 +83,52 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
     loadUploads();
     checkPendingUploads();
 
-    const handleUpdate = () => {
-      loadUploads();
+    // Auto-poll every 2.5s so cross-device deletions on laptop reflect immediately on mobile
+    const pollInterval = setInterval(() => {
+      fetchClientUploads(clientId).then(data => {
+        if (Array.isArray(data)) {
+          setUploads(data);
+        }
+      }).catch(() => {});
+    }, 2500);
+
+    // Subscribe to cross-tab & cross-device real-time events
+    const unsubscribeUploads = subscribeToClientUploadsRealtime((event) => {
+      if (!event) return;
+      if (event.type === 'delete') {
+        const delId = event.uploadId;
+        const cleanId = event.cleanId || (delId ? String(delId).replace(/^worker_jf_/, '') : '');
+        const delFileName = event.fileName;
+        setUploads(prev => prev.filter(u => u.id !== delId && u.id !== cleanId && (!delFileName || u.file_name !== delFileName)));
+      } else if (event.type === 'insert' && event.record) {
+        setUploads(prev => {
+          if (prev.some(item => item.id === event.record.id)) {
+            return prev.map(item => item.id === event.record.id ? { ...item, ...event.record } : item);
+          }
+          return [event.record, ...prev];
+        });
+      } else {
+        loadUploads();
+      }
+    });
+
+    const handleUpdate = (e) => {
+      if (e?.detail?.type === 'delete') {
+        const delId = e.detail.uploadId;
+        const cleanId = e.detail.cleanId || (delId ? String(delId).replace(/^worker_jf_/, '') : '');
+        const delFileName = e.detail.fileName;
+        setUploads(prev => prev.filter(u => u.id !== delId && u.id !== cleanId && (!delFileName || u.file_name !== delFileName)));
+      } else {
+        loadUploads();
+      }
     };
 
     window.addEventListener('kpr_client_uploads_updated', handleUpdate);
-    return () => window.removeEventListener('kpr_client_uploads_updated', handleUpdate);
+    return () => {
+      clearInterval(pollInterval);
+      unsubscribeUploads();
+      window.removeEventListener('kpr_client_uploads_updated', handleUpdate);
+    };
   }, [clientId]);
 
   // Show Toast notification
