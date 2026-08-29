@@ -82,49 +82,47 @@ export default function ColorLabSection() {
     <div id="colorlab" className="w-full bg-[#F7F3EE] py-4 px-2 sm:px-6 lg:px-12 transition-all duration-300">
       <div className="max-w-7xl mx-auto border border-[#E2D9CC] rounded-xl bg-white shadow-xl overflow-hidden transition-all duration-500">
         
-        {/* 1. Main Collapsible "COLOR LAB" Header Bar with Flanking Showcase Photos */}
+        {/* 1. Main Collapsible "COLOR LAB" Header Bar with Corner Spread Showcase Photos */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] px-3 py-3 sm:px-6 sm:py-5 md:px-8 md:py-6 flex items-center justify-between relative transition-all duration-300 group cursor-pointer focus:outline-none border-b border-[#E2D9CC] min-h-[95px] sm:min-h-[140px] md:min-h-[175px]"
+          className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] px-2 py-2 sm:px-6 sm:py-4 md:px-8 md:py-5 flex items-center justify-between relative transition-all duration-300 group cursor-pointer focus:outline-none border-b border-[#E2D9CC] min-h-[105px] sm:min-h-[150px] md:min-h-[185px] overflow-hidden"
           aria-label="Toggle KPR Colour Lab section"
         >
-          {/* Left Flanking Photo */}
-          <div className="flex items-center justify-center shrink-0">
-            <div className="relative overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl border-2 border-[#E2D9CC] group-hover:border-[#C5A880] shadow-sm sm:shadow-md transition-all duration-300 group-hover:scale-105 h-16 w-16 sm:h-24 sm:w-24 md:h-32 md:w-36 lg:h-36 lg:w-44 bg-[#F7F3EE]">
-              <img
-                src={colorLabHeaderLeft}
-                alt="KPR Color Lab - Luxury Heirloom Wooden & Leather Album Case"
-                className="w-full h-full object-cover object-center select-none"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
-            </div>
+          {/* Left Corner Spread Photo (Edge-to-Edge flush to corner, no box) */}
+          <div className="absolute left-0 top-0 bottom-0 h-full w-28 sm:w-44 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
+            <img
+              src={colorLabHeaderLeft}
+              alt="KPR Color Lab - Luxury Heirloom Wedding Albums Stack"
+              className="w-full h-full object-cover object-left transition-transform duration-700 group-hover:scale-105 select-none"
+            />
+            {/* Soft fade into white center */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white pointer-events-none" />
           </div>
 
-          {/* Center Logo Area */}
-          <div className="flex-1 flex items-center justify-center px-2 sm:px-4 md:px-6">
+          {/* Center Logo Area (Undisturbed & Prominent) */}
+          <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-8 md:px-12 pointer-events-none">
             <img
               src={kprColorLabLogo}
               alt="KPR Colour Lab"
-              className="h-14 sm:h-24 md:h-32 lg:h-40 w-auto max-w-[92%] object-contain transition-transform duration-300 group-hover:scale-105 select-none"
+              className="h-14 sm:h-24 md:h-32 lg:h-40 w-auto max-w-[85%] sm:max-w-[75%] object-contain transition-transform duration-300 group-hover:scale-105 select-none drop-shadow-sm"
             />
           </div>
 
-          {/* Right Flanking Photo */}
-          <div className="flex items-center justify-center shrink-0 mr-7 sm:mr-12 md:mr-14">
-            <div className="relative overflow-hidden rounded-lg sm:rounded-xl md:rounded-2xl border-2 border-[#E2D9CC] group-hover:border-[#C5A880] shadow-sm sm:shadow-md transition-all duration-300 group-hover:scale-105 h-16 w-16 sm:h-24 sm:w-24 md:h-32 md:w-36 lg:h-36 lg:w-44 bg-[#F7F3EE]">
-              <img
-                src={colorLabHeaderRight}
-                alt="KPR Color Lab - Signature Ruby Leatherette Photobook"
-                className="w-full h-full object-cover object-center select-none"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
-            </div>
+          {/* Right Corner Spread Photo (Edge-to-Edge flush to corner, no box) */}
+          <div className="absolute right-0 top-0 bottom-0 h-full w-28 sm:w-44 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
+            <img
+              src={colorLabHeaderRight}
+              alt="KPR Color Lab - Signature Telugu Wedding Album Spread"
+              className="w-full h-full object-cover object-right transition-transform duration-700 group-hover:scale-105 select-none"
+            />
+            {/* Soft fade into white center */}
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white pointer-events-none" />
           </div>
 
           {/* Chevron Rotate Animation */}
-          <div className="absolute right-2.5 sm:right-5 md:right-7 z-10">
-            <div className={`p-1.5 sm:p-2.5 rounded-full border transition-all duration-500 ${
-              isExpanded ? 'rotate-180 bg-[#C5A880] text-white border-[#C5A880]' : 'rotate-0 bg-[#F7F3EE] text-[#1A1A1A] border-[#E2D9CC] group-hover:bg-[#EAE4DC]'
+          <div className="relative z-20 mr-1.5 sm:mr-3 md:mr-5">
+            <div className={`p-1.5 sm:p-2.5 rounded-full border shadow-md backdrop-blur-md transition-all duration-500 ${
+              isExpanded ? 'rotate-180 bg-[#C5A880] text-white border-[#C5A880]' : 'rotate-0 bg-white/90 text-[#1A1A1A] border-[#E2D9CC] group-hover:bg-[#EAE4DC]'
             }`}>
               <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
             </div>
