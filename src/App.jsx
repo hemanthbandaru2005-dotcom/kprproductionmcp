@@ -12,6 +12,7 @@ import ClientDashboard from './components/client/ClientDashboard';
 import LightboxModal from './components/LightboxModal';
 import MoodboardDrawer from './components/MoodboardDrawer';
 import ContactSection from './components/ContactSection';
+import Footer from './components/Footer';
 import AlbumPreviewPage from './components/AlbumPreviewPage';
 import ServicesShowcase from './components/ServicesShowcase';
 import { SOCIAL_LINKS } from './utils/socialLinks';
