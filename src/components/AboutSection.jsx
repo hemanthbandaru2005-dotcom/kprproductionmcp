@@ -1,15 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-  Sparkles, Camera, Award, Clock, Heart, Users,
-  Building2, Printer, Calendar, CheckCircle2, ChevronRight,
+  Sparkles, Camera, Clock, Heart,
+  Building2, Printer, CheckCircle2,
   Phone, Mail, ArrowUpRight
 } from 'lucide-react';
 import founderPortrait from '../assets/founder_portrait.jpg';
-import kprProductionsLogo from '../assets/kpr_productions_logo.png';
-import kprLogo from '../assets/kpr_logo.png';
-import kprColorLabLogo from '../assets/kpr_colorlab_logo.png';
-import kprEventsLogo from '../assets/kpr_events_logo.png';
 
 const STATS = [
   {
@@ -41,30 +37,6 @@ const STATS = [
     label: 'Printing Media',
     sublabel: 'Archival Lab Technologies',
     icon: Printer,
-  },
-];
-
-const PILLARS = [
-  {
-    title: 'KPR FOTOGRAPHY',
-    logo: kprLogo,
-    tagline: 'Fine Art Wedding & Cinematic Storytelling',
-    description: 'Specializing in Telugu royal weddings, candid celebrations, cinematic reels, and heirloom portraits that freeze timeless emotion.',
-    accent: '#D32F2F',
-  },
-  {
-    title: 'KPR COLOUR LAB',
-    logo: kprColorLabLogo,
-    tagline: 'Master Layflat & Fine Art Printing Lab',
-    description: 'Museum-grade 12×18 & 24×18 flush-mount layflat wedding albums, 60" Canon archival photo printing, flex, and CNC laser crafting.',
-    accent: '#1E88E5',
-  },
-  {
-    title: 'KPR EVENTS',
-    logo: kprEventsLogo,
-    tagline: 'Grand Mandap & Complete Event Production',
-    description: 'Bespoke royal mandap stage design, immersive celebration lighting, audio-visual orchestration, and celebrity choreography.',
-    accent: '#D32F2F',
   },
 ];
 
@@ -215,7 +187,7 @@ export default function AboutSection() {
         </div>
 
         {/* 3. Milestone Numbers Banner (5 Core Stats) */}
-        <div className="p-6 sm:p-10 lg:p-12 bg-white border-b border-[#E2D9CC]">
+        <div className="p-6 sm:p-10 lg:p-12 bg-white">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block mb-1">
               PROVEN TRACK RECORD
@@ -256,61 +228,6 @@ export default function AboutSection() {
                 </motion.div>
               );
             })}
-          </div>
-        </div>
-
-        {/* 4. Three Integrated Creative Pillars */}
-        <div className="p-6 sm:p-10 lg:p-12 bg-[#FAF8F5]">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block mb-1">
-              THE COMPLETE ECOSYSTEM
-            </span>
-            <h3 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
-              Our Creative Disciplines
-            </h3>
-            <p className="text-xs text-[#666666] font-light mt-2">
-              Everything your celebration requires, meticulously curated by industry masters.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PILLARS.map((pillar, i) => (
-              <div
-                key={i}
-                className="bg-white border border-[#E2D9CC] rounded-xl p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-[#C5A880] transition-all duration-300 group"
-              >
-                <div className="space-y-4">
-                  <div className="h-16 w-full flex items-center justify-start mb-2">
-                    <img
-                      src={pillar.logo}
-                      alt={pillar.title}
-                      className="max-h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-300 select-none"
-                    />
-                  </div>
-
-                  <h4 className="font-serif text-xl text-[#1A1A1A] font-semibold group-hover:text-[#C5A880] transition-colors">
-                    {pillar.title}
-                  </h4>
-                  
-                  <p className="text-[11px] font-medium text-[#C5A880] uppercase tracking-wider">
-                    {pillar.tagline}
-                  </p>
-
-                  <p className="text-xs text-[#666666] font-light leading-relaxed">
-                    {pillar.description}
-                  </p>
-                </div>
-
-                <div className="pt-6 mt-6 border-t border-[#E8E1D5] flex items-center justify-between">
-                  <span className="text-[10px] font-bold tracking-widest text-[#999999] uppercase">
-                    KPR Production
-                  </span>
-                  <span className="text-xs text-[#C5A880] font-bold group-hover:translate-x-1 transition-transform">
-                    →
-                  </span>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
