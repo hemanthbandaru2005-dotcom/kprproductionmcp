@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import RetouchSlider from './RetouchSlider';
 import PackagesSection from './PackagesSection';
 import AlbumFlipbookViewer from './AlbumFlipbookViewer';
 import AlbumPreviewPage from './AlbumPreviewPage';
-import { Palette, Package, BookOpen, ChevronDown, Check, Sparkles, Eye, Loader2, Image as ImageIcon, Mail, Phone, Upload, X } from 'lucide-react';
+import {
+  Palette, Package, BookOpen, ChevronDown, Check, Sparkles,
+  Eye, Loader2, Image as ImageIcon, Mail, Phone, Upload, X,
+  FolderUp, ImagePlus, CloudUpload
+} from 'lucide-react';
 import { PRINTING_DESIGN_SERVICES } from '../data/servicesData';
 import { loadPdfPages } from '../utils/pdfLoader';
 import { fetchCustomSitePhotos } from '../utils/sitePhotosService';
@@ -18,6 +22,7 @@ export default function ColorLabSection() {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [showAlbumPreview, setShowAlbumPreview] = useState(false);
   const [customColorLabPhotos, setCustomColorLabPhotos] = useState([]);
+  const folderInputRef = useRef(null);
 
   useEffect(() => {
     async function loadCustom() {
@@ -52,6 +57,56 @@ export default function ColorLabSection() {
       }
     } else if (album.previewImages) {
       setFlipbookImages(album.previewImages);
+    }
+  };
+
+  /* Direct file picker trigger for custom album folder */
+  const handleDirectFolderClick = () => {
+    if (folderInputRef.current) {
+      folderInputRef.current.value = '';
+      folderInputRef.current.click();
+    }
+  };
+
+  /* Handle selected files from folder upload */
+  const handleFolderFilesSelected = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const validFiles = files.filter(f =>
+      f.type.startsWith('image/') ||
+      f.name.match(/\.(jpg|jpeg|png|webp|heic)$/i) ||
+      f.type === 'application/pdf' ||
+      f.name.endsWith('.pdf')
+    );
+
+    if (validFiles.length === 0) {
+      alert('Please select valid photos (JPG, PNG, WEBP) or an Album PDF.');
+      return;
+    }
+
+    const urls = [];
+    const pdfFile = validFiles.find(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+    if (pdfFile) {
+      setPdfLoading(true);
+      try {
+        const blobUrl = URL.createObjectURL(pdfFile);
+        const pages = await loadPdfPages(blobUrl, 2);
+        if (pages && pages.length > 0) urls.push(...pages);
+      } catch (err) {
+        console.warn('PDF preview extraction note:', err);
+      } finally {
+        setPdfLoading(false);
+      }
+    }
+
+    const imageFiles = validFiles.filter(f => !f.type.includes('pdf') && !f.name.endsWith('.pdf'));
+    imageFiles.forEach(f => {
+      urls.push(URL.createObjectURL(f));
+    });
+
+    if (urls.length > 0) {
+      setFlipbookImages(urls);
     }
   };
 
@@ -280,7 +335,7 @@ export default function ColorLabSection() {
                         >
                           <div className="relative aspect-square overflow-hidden bg-black">
                             <img
-                              src={photo.file_url}
+                              src={photo.file_url || photo.url}
                               alt={photo.title || 'Color Lab Print'}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
@@ -321,6 +376,7 @@ export default function ColorLabSection() {
             {/* ALBUMS SUBSECTION */}
             {activeSubTab === 'albums' && (
               <div className="animate-fadeIn space-y-12">
+                {/* Top Section Header with "Upload Your Images" Button */}
                 <div className="text-center max-w-2xl mx-auto mb-10">
                   <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block mb-1">
                     PHYSICAL HEIRLOOMS
@@ -329,27 +385,42 @@ export default function ColorLabSection() {
                   <p className="text-xs text-[#666666] font-light mt-2 leading-relaxed">
                     Designed sheet-by-sheet in our color lab, printed on museum archival paper that will be cherished for generations.
                   </p>
+                  
+                  {/* Renamed button: "Upload Your Images" */}
                   <button
                     onClick={() => setShowAlbumPreview(prev => !prev)}
-                    className={`mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer ${
+                    className={`mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer ${
                       showAlbumPreview
                         ? 'bg-[#C5A880] text-black hover:bg-[#b89560]'
                         : 'bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black'
                     }`}
                   >
                     {showAlbumPreview ? <X className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
-                    {showAlbumPreview ? 'Close Preview Tool' : 'Preview Your Album'}
+                    {showAlbumPreview ? 'Close Upload Tool' : 'Upload Your Images'}
                   </button>
                 </div>
 
-                {/* Inline Album Preview Tool */}
+                {/* Hidden File Input for Folder Card Trigger */}
+                <input
+                  ref={folderInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/heic,application/pdf"
+                  multiple
+                  onChange={handleFolderFilesSelected}
+                  className="hidden"
+                />
+
+                {/* Inline Album Upload & Preview Tool */}
                 {showAlbumPreview && (
                   <div className="mb-10 border border-[#E2D9CC] rounded-2xl overflow-hidden bg-[#F7F3EE] shadow-inner animate-fadeIn">
                     <AlbumPreviewPage />
                   </div>
                 )}
 
+                {/* Album Cards Grid: Demo Card + Upload Your Images Folder Card */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  
+                  {/* 1. Demo Album Card */}
                   {albumSheets.map((album, i) => (
                     <div key={i} className="bg-white border border-[#E2D9CC] rounded-lg overflow-hidden shadow-sm group hover:shadow-xl transition-all duration-300">
                       <div className="aspect-[4/3] overflow-hidden bg-black relative">
@@ -382,7 +453,7 @@ export default function ColorLabSection() {
                             ) : (
                               <Eye className="w-3.5 h-3.5" />
                             )}
-                            {pdfLoading && album.pdfSrc ? 'Loading…' : 'View Album'}
+                            {pdfLoading && album.pdfSrc ? 'Loading…' : 'View Demo'}
                           </button>
                           <a
                             href="https://wa.me/919849443648?text=Hi%20KPR%20Colour%20Lab,%20I'm%20interested%20in%20your%20luxury%20wedding%20albums!"
@@ -396,6 +467,54 @@ export default function ColorLabSection() {
                       </div>
                     </div>
                   ))}
+
+                  {/* 2. Upload Your Images Folder Card (Beside the Demo) */}
+                  <div
+                    onClick={handleDirectFolderClick}
+                    className="bg-white border-2 border-dashed border-[#C5A880]/70 hover:border-[#C5A880] rounded-lg overflow-hidden shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer bg-gradient-to-b from-[#FAF8F5] to-white relative"
+                  >
+                    {/* Folder Banner Area */}
+                    <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#1E1914] to-[#12100E] relative flex flex-col items-center justify-center p-6 text-center group-hover:from-[#2A231C] group-hover:to-[#1A1612] transition-colors">
+                      <div className="w-16 h-16 rounded-2xl bg-[#C5A880]/20 border border-[#C5A880]/40 flex items-center justify-center text-[#C5A880] group-hover:scale-110 transition-transform mb-2 shadow-inner">
+                        <FolderUp className="w-8 h-8 text-[#E8D4B8]" />
+                      </div>
+
+                      <div className="absolute top-3 left-3 bg-[#C5A880] text-black px-2.5 py-0.5 text-[9.5px] tracking-widest uppercase rounded font-bold shadow-sm">
+                        Custom Album
+                      </div>
+
+                      <h5 className="font-serif text-lg text-white font-medium">Upload Photos Folder</h5>
+                      <p className="text-[11px] text-[#C5A880] mt-0.5 font-light">Click to select photos or album PDF</p>
+                    </div>
+
+                    {/* Card Content Body */}
+                    <div className="p-4 sm:p-6 space-y-3 flex-1 flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-serif text-xl text-[#1A1A1A] group-hover:text-[#C5A880] transition-colors">
+                          Upload Your Images
+                        </h4>
+                        <p className="text-xs text-[#666666] font-light leading-relaxed mt-1">
+                          Directly upload your personal wedding photos or design files to generate an instant 3D page-turning preview.
+                        </p>
+                      </div>
+
+                      {/* Direct Upload Action Button */}
+                      <div className="pt-3 border-t border-[#E8E1D5] flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDirectFolderClick();
+                          }}
+                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#C5A880] hover:bg-[#b89560] text-black text-[10px] tracking-widest uppercase font-bold transition-all rounded shadow-sm cursor-pointer"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Upload Photos Directly</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
 
               </div>
