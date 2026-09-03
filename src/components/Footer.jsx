@@ -27,7 +27,7 @@ export default function Footer({
 
   return (
     <footer className="bg-[#0A0A0A] text-white border-t border-white/10 pt-10 sm:pt-16 pb-8 sm:pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
+      <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-8 md:px-12 lg:px-16">
         
         {/* Instagram Grid Teaser (Only visible when showInstagram is true) */}
         {showInstagram && (

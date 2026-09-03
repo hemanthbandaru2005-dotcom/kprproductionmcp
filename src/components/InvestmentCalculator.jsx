@@ -38,7 +38,7 @@ export default function InvestmentCalculator({ onOpenInquireWithPackage }) {
 
   return (
     <section id="investment" className="py-24 bg-[#F7F3EE] relative">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <div className="w-full max-w-[1920px] mx-auto px-6 md:px-12 lg:px-16">
         
         <div className="text-center max-w-3xl mx-auto mb-16">
           <p className="text-[11px] md:text-[12px] tracking-[0.4em] uppercase text-[#666666] font-medium mb-3">

@@ -35,11 +35,11 @@ const STATS = [
 
 export default function AboutSection() {
   return (
-    <div id="about" className="w-full bg-[#F7F3EE] py-4 px-2 sm:px-6 lg:px-12 transition-all duration-300">
-      <div className="max-w-7xl mx-auto border border-[#E2D9CC] rounded-xl bg-white shadow-xl overflow-hidden transition-all duration-500">
+    <div id="about" className="w-full bg-[#F7F3EE] transition-all duration-300">
+      <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
         {/* 1. Header Banner Bar */}
-        <div className="w-full bg-[#1A1A1A] text-white p-6 sm:p-10 md:p-12 flex flex-col items-center justify-center relative border-b border-black text-center overflow-hidden">
+        <div className="w-full bg-[#1A1A1A] text-white p-8 sm:p-14 md:p-16 flex flex-col items-center justify-center relative border-b border-black text-center overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(197,168,128,0.12)_0%,transparent_70%)] pointer-events-none" />
           
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-[#C5A880]/40 text-[#E8D4B8] text-[10px] sm:text-xs font-semibold uppercase tracking-[0.3em] mb-4">
@@ -59,8 +59,8 @@ export default function AboutSection() {
         </div>
 
         {/* 2. Main Story & Founder Section */}
-        <div className="p-4 sm:p-8 lg:p-12 bg-[#FAF8F5] border-b border-[#E2D9CC]">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        <div className="p-6 sm:p-12 lg:p-16 bg-[#FAF8F5] border-b border-[#E2D9CC] w-full">
+          <div className="max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
             
             {/* Left: Founder Portrait with Luxury Frame */}
             <motion.div
@@ -156,18 +156,19 @@ export default function AboutSection() {
         </div>
 
         {/* 3. Milestone Numbers Banner (4 Core Stats) */}
-        <div className="p-6 sm:p-10 lg:p-12 bg-white">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block mb-1">
-              PROVEN TRACK RECORD
-            </span>
-            <h3 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
-              Two Decades in Numbers
-            </h3>
-            <div className="w-12 h-0.5 bg-[#C5A880] mx-auto mt-2" />
-          </div>
+        <div className="p-6 sm:p-12 lg:p-16 bg-white w-full">
+          <div className="w-full max-w-[1920px] mx-auto">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block mb-1">
+                PROVEN TRACK RECORD
+              </span>
+              <h3 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
+                Two Decades in Numbers
+              </h3>
+              <div className="w-12 h-0.5 bg-[#C5A880] mx-auto mt-2" />
+            </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {STATS.map((stat, i) => {
               const Icon = stat.icon;
               return (
@@ -197,6 +198,7 @@ export default function AboutSection() {
                 </motion.div>
               );
             })}
+            </div>
           </div>
         </div>
 

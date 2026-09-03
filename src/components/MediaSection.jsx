@@ -12,8 +12,8 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
   const [activeTab, setActiveTab] = useState(initialTab === 'all' ? 'gallery' : initialTab);
 
   return (
-    <div id="media" data-section="photography-section" className="w-full bg-[#F7F3EE] py-4 px-2 sm:px-6 lg:px-12 transition-all duration-300">
-      <div id="photography-section" className="max-w-7xl mx-auto border border-[#E2D9CC] rounded-xl bg-white shadow-xl overflow-hidden transition-all duration-500">
+    <div id="media" data-section="photography-section" className="w-full bg-[#F7F3EE] transition-all duration-300">
+      <div id="photography-section" className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
         {/* 1. Main Collapsible "PHOTOGRAPHY" Header Bar */}
         <button
@@ -27,7 +27,7 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
           />
 
           {/* Chevron Rotate Animation Icon */}
-          <div className="absolute right-3 sm:right-8">
+          <div className="absolute right-4 sm:right-8 lg:right-12">
             <div className={`p-1.5 sm:p-2.5 rounded-full border transition-all duration-500 ${
               isExpanded ? 'rotate-180 bg-[#C5A880] text-white border-[#C5A880]' : 'rotate-0 bg-white/10 text-white border-white/20 group-hover:bg-white/20'
             }`}>
@@ -41,7 +41,7 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
           <div className="transition-all duration-300 ease-in-out">
           
           {/* 2. Subsections Navigation Tabs (Gallery | Packages) */}
-          <div className="bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-4 sm:px-8 lg:px-16 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             
             <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-[#666666] flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#C5A880] animate-pulse" />
@@ -79,7 +79,7 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
           </div>
 
           {/* 3. Subsections Content Area */}
-          <div className="p-2 sm:p-6 lg:p-8 bg-[#F7F3EE]">
+          <div className="w-full p-2 sm:p-6 lg:p-10 bg-[#F7F3EE]">
             
             {/* Gallery Subsection Content */}
             {activeTab === 'gallery' && (

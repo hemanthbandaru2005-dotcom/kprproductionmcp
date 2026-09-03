@@ -38,8 +38,8 @@ export default function PackagesSection({
   };
 
   return (
-    <div className="w-full bg-[#F7F3EE] py-2 sm:py-10">
-      <div className="max-w-7xl mx-auto px-1.5 sm:px-6 md:px-12">
+    <div className="w-full bg-[#F7F3EE] py-2 sm:py-8">
+      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-8 lg:px-12 xl:px-16">
         
         {/* Back Button */}
         {onBackToGallery && (
@@ -71,7 +71,7 @@ export default function PackagesSection({
         </div>
 
         {/* Services Grid (Dynamic from Supabase / Admin Editor) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-8 sm:mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-16">
           {packages.map((service, index) => {
             const displayDuration = (service.name === 'Candid Photography' || service.name === 'Cinematic Videography' || service.duration === 'Full Coverage') ? '6 hours' : service.duration;
             const whatsappLink = getWhatsAppUrl(service.name, service.price, displayDuration);

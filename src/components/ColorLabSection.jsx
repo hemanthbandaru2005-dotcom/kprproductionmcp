@@ -134,8 +134,8 @@ export default function ColorLabSection() {
   ];
 
   return (
-    <div id="colorlab" className="w-full bg-[#F7F3EE] py-4 px-2 sm:px-6 lg:px-12 transition-all duration-300">
-      <div className="max-w-7xl mx-auto border border-[#E2D9CC] rounded-xl bg-white shadow-xl overflow-hidden transition-all duration-500">
+    <div id="colorlab" className="w-full bg-[#F7F3EE] transition-all duration-300">
+      <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
         {/* 1. Main Collapsible "COLOR LAB" Header Bar with Corner Spread Showcase Photos */}
         <button
@@ -175,7 +175,7 @@ export default function ColorLabSection() {
           </div>
 
           {/* Chevron Rotate Animation */}
-          <div className="relative z-20 mr-1.5 sm:mr-3 md:mr-5">
+          <div className="relative z-20 mr-1.5 sm:mr-3 md:mr-6 lg:mr-10">
             <div className={`p-1.5 sm:p-2.5 rounded-full border shadow-md backdrop-blur-md transition-all duration-500 ${
               isExpanded ? 'rotate-180 bg-[#C5A880] text-white border-[#C5A880]' : 'rotate-0 bg-white/90 text-[#1A1A1A] border-[#E2D9CC] group-hover:bg-[#EAE4DC]'
             }`}>
@@ -190,7 +190,7 @@ export default function ColorLabSection() {
         }`}>
           
           {/* 2. Subsections Navigation Tabs: PRINTING & CUTTING | PACKAGES | ALBUMS */}
-          <div className="bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-4 sm:px-8 lg:px-16 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             
             <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-[#666666] flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#C5A880] animate-pulse" />
@@ -243,7 +243,8 @@ export default function ColorLabSection() {
           </div>
 
           {/* 3. Subsections Content Area */}
-          <div className="p-2 sm:p-6 lg:p-8 bg-[#F7F3EE]">
+          <div className="w-full p-3 sm:p-8 lg:p-12 bg-[#F7F3EE]">
+            <div className="w-full max-w-[1920px] mx-auto">
             
             {/* PRINTING & CUTTING SUBSECTION */}
             {activeSubTab === 'designs' && (
@@ -508,6 +509,7 @@ export default function ColorLabSection() {
               />
             )}
 
+            </div>
           </div>
 
         </div>

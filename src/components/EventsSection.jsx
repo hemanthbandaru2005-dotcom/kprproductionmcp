@@ -138,8 +138,8 @@ export default function EventsSection({ onOpenPage }) {
   };
 
   return (
-    <div id="events" className="w-full bg-[#F7F3EE] py-4 px-2 sm:px-6 lg:px-12 transition-all duration-300">
-      <div className="max-w-7xl mx-auto border border-[#E2D9CC] rounded-xl bg-white shadow-xl overflow-hidden transition-all duration-500">
+    <div id="events" className="w-full bg-[#F7F3EE] transition-all duration-300">
+      <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
         {/* 1. Main Collapsible "KPR EVENTS" Header Bar with Corner Spread Showcase Photos */}
         <button
@@ -179,7 +179,7 @@ export default function EventsSection({ onOpenPage }) {
           </div>
 
           {/* Chevron Rotate Animation */}
-          <div className="relative z-20 mr-1.5 sm:mr-3 md:mr-5">
+          <div className="relative z-20 mr-1.5 sm:mr-3 md:mr-6 lg:mr-10">
             <div className={`p-1.5 sm:p-2.5 rounded-full border shadow-md backdrop-blur-md transition-all duration-500 ${
               isExpanded ? 'rotate-180 bg-[#C5A880] text-white border-[#C5A880]' : 'rotate-0 bg-white/90 text-[#1A1A1A] border-[#E2D9CC] group-hover:bg-[#EAE4DC]'
             }`}>
@@ -194,7 +194,7 @@ export default function EventsSection({ onOpenPage }) {
         }`}>
           
           {/* 2. Subsections Navigation Tabs (Matching ColorLabSection pattern) */}
-          <div className="bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-4 sm:px-8 lg:px-16 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             
             <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-[#666666] flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#C5A880] animate-pulse" />
@@ -234,7 +234,8 @@ export default function EventsSection({ onOpenPage }) {
           </div>
 
           {/* 3. Subsections Content Area */}
-          <div className="p-4 sm:p-8 lg:p-10 space-y-10 bg-[#FAF8F5]">
+          <div className="w-full p-4 sm:p-8 lg:p-12 space-y-10 bg-[#FAF8F5]">
+            <div className="w-full max-w-[1920px] mx-auto space-y-10">
             
             {/* ══════════ TAB 1: STAGE & LIGHTING PRODUCTION ══════════ */}
             {activeSubTab === 'stage' && (
@@ -588,6 +589,7 @@ export default function EventsSection({ onOpenPage }) {
               </a>
             </div>
 
+            </div>
           </div>
 
         </div>

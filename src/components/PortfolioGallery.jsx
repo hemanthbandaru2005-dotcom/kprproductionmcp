@@ -111,8 +111,8 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
   );
 
   return (
-    <section id="portfolio" className="py-12 sm:py-16 bg-[#F7F3EE] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
+    <section id="portfolio" className="py-8 sm:py-12 bg-[#F7F3EE] relative overflow-hidden w-full">
+      <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-8 lg:px-12 xl:px-16">
         
         {/* Top Header */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 sm:mb-12">
@@ -171,7 +171,7 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0, y: 20, transition: { duration: 0.3, ease: 'easeOut' } }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8"
               >
                 {filteredItems.map((item, index) => {
                   const isSaved = moodboardIds.includes(item.id);

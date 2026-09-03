@@ -66,7 +66,7 @@ export default function ServicesShowcase({ onSelectPage }) {
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+      <div className="w-full max-w-[1920px] mx-auto px-6 sm:px-8 lg:px-16 relative z-10">
         
         {/* Section Header */}
         <motion.div

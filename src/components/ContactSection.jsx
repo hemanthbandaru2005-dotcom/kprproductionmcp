@@ -49,8 +49,8 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contact-section" className="w-full bg-[#11100F] text-white py-10 sm:py-16 px-3 sm:px-6 md:px-12 border-t border-[#C5A880]/20 relative">
-      <div className="max-w-7xl mx-auto space-y-8 sm:space-y-12">
+    <section id="contact-section" className="w-full bg-[#11100F] text-white py-12 sm:py-20 px-4 sm:px-8 lg:px-16 border-t border-[#C5A880]/20 relative">
+      <div className="w-full max-w-[1920px] mx-auto space-y-8 sm:space-y-12">
         
         {/* Section Header */}
         <div className="text-center space-y-2 sm:space-y-3 max-w-2xl mx-auto">

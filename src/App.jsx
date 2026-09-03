@@ -290,7 +290,7 @@ function AppContent() {
         )}
 
         {activePage === 'media' && (
-          <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
+          <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
             <MediaSection
               initialTab="gallery"
               onSelectPhoto={(photo) => setSelectedPhoto(photo)}
@@ -301,19 +301,19 @@ function AppContent() {
         )}
 
         {activePage === 'colorlab' && (
-          <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
+          <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
             <ColorLabSection />
           </div>
         )}
 
         {activePage === 'events' && (
-          <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
+          <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
             <EventsSection onOpenPage={handleSelectPage} />
           </div>
         )}
 
         {activePage === 'login' && (
-          <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
+          <div className="pt-20 sm:pt-24 pb-12 animate-fadeIn">
             <LoginSection
               onLoginSuccess={handleLoginSuccess}
               initialTab={loginTab}
@@ -322,19 +322,19 @@ function AppContent() {
         )}
 
         {activePage === 'contact' && (
-          <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
+          <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
             <ContactSection />
           </div>
         )}
 
         {activePage === 'about' && (
-          <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
+          <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
             <AboutSection />
           </div>
         )}
 
         {activePage === 'album-preview' && (
-          <div className="pt-24 sm:pt-28 pb-12 animate-fadeIn">
+          <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
             <AlbumPreviewPage />
           </div>
         )}
