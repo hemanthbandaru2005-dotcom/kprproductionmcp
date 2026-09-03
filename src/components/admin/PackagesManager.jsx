@@ -368,6 +368,14 @@ export default function PackagesManager() {
                       <h3 className="font-serif text-lg sm:text-2xl text-[#1A1A1A] font-medium leading-tight group-hover:text-[#C5A880] transition-colors">
                         {pkg.name}
                       </h3>
+
+                      {/* Highlights Text for Corporate & Commercial Events */}
+                      {(pkg.clientHighlights || (pkg.name && pkg.name.toLowerCase().includes('corporate'))) && (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#C5A880]/15 border border-[#C5A880]/30 rounded-md text-[#8C6D3F] text-[10px] font-semibold tracking-wide">
+                          <span>✨ Tata Tele & JSW • Government Events • RS Brothers</span>
+                        </div>
+                      )}
+
                       {pkg.description && (
                         <p className="text-xs text-[#666666] font-light leading-relaxed">
                           {pkg.description}

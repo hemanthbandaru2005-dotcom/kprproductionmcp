@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { PRINTING_DESIGN_SERVICES as INITIAL_COLORLAB_SERVICES } from '../data/servicesData';
 
-const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v15';
+const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v16';
 
 export const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
   {
@@ -237,96 +237,21 @@ export const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
   {
     id: 'pkg-corp-1',
     type: 'photography',
-    name: 'Corporate Events',
+    name: 'Corporate & Commercial Events',
+    clientHighlights: 'Tata Tele & JSW, Government Events, RS Brothers',
     price: 15000,
-    duration: '6 hours',
-    category: 'Corporate',
+    duration: '6 hours / Custom Scope',
+    category: 'Corporate & Commercial',
     image: '/images/packages/user_pkg_corporate_events.png',
     popular: true,
-    description: 'Comprehensive executive coverage for corporate annual general meetings, business conferences, leadership summits, and company celebrations.',
+    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, RS Brothers retail campaigns, corporate AGMs, and commercial launches.',
     features: [
-      '6 hours on-site executive event coverage',
-      'Keynote speakers, stage & audience captures',
-      'High-resolution color-graded photo set',
-      'Same-day press release & social media highlights'
+      'Tata Tele & JSW industrial summits & conferences',
+      'Government Events & official state protocol',
+      'RS Brothers & flagship retail showroom launches',
+      'Keynote speakers, VIP portraits & same-day media'
     ],
     display_order: 13,
-    status: 'active'
-  },
-  {
-    id: 'pkg-corp-2',
-    type: 'photography',
-    name: 'Tata Tele & JSW',
-    price: 25000,
-    duration: '6 hours',
-    category: 'Corporate',
-    image: '/images/packages/user_pkg_tatatele_jsw.png',
-    popular: true,
-    description: 'Enterprise-grade multi-camera photography and cinematic industrial summit documentation tailored for major conglomerates.',
-    features: [
-      '6 hours multi-camera enterprise coverage',
-      'VIP executive & board delegate portraits',
-      'Industrial infrastructure & ceremony documentation',
-      'Priority 4K master deliverables & cloud portal link'
-    ],
-    display_order: 14,
-    status: 'active'
-  },
-  {
-    id: 'pkg-corp-3',
-    type: 'photography',
-    name: 'Government Events',
-    price: 20000,
-    duration: '6 hours',
-    category: 'Government',
-    image: '/images/packages/user_pkg_government_events.png',
-    popular: false,
-    description: 'Official state protocol documentation, public summits, dignitary visits, ministry inaugurations, and foundation ceremonies.',
-    features: [
-      '6 hours official state protocol coverage',
-      'Dignitary stage presentations & VIP greetings',
-      'Press-ready rapid photo turnarounds',
-      'Formal archival high-resolution cataloging'
-    ],
-    display_order: 15,
-    status: 'active'
-  },
-  {
-    id: 'pkg-corp-4',
-    type: 'photography',
-    name: 'Shopping Malls',
-    price: 18000,
-    duration: '6 hours',
-    category: 'Retail & Malls',
-    image: '/images/packages/user_pkg_shopping_malls.png',
-    popular: true,
-    description: 'Dynamic commercial coverage for shopping mall grand openings, festive celebrity events, weekend promotions, and architectural retail ambience.',
-    features: [
-      '6 hours vibrant mall & retail coverage',
-      'Celebrity guest appearances & stage performances',
-      'Storefronts, atrium decor & shopper engagement',
-      'High-impact marketing & promotional photo reel'
-    ],
-    display_order: 16,
-    status: 'active'
-  },
-  {
-    id: 'pkg-corp-5',
-    type: 'photography',
-    name: "RS Brothers",
-    price: 22000,
-    duration: '6 hours',
-    category: 'Commercial',
-    image: '/images/packages/user_pkg_rs_brothers.png',
-    popular: true,
-    description: 'Signature mega-retail campaign and showroom grand launch photography for leading textile and jewelry brand stores.',
-    features: [
-      '6 hours flagship showroom launch coverage',
-      'Celebrity ribbon-cutting & lamp-lighting moments',
-      'Textile & jewelry collection commercial framing',
-      'Social media ready editorial deliverables'
-    ],
-    display_order: 17,
     status: 'active'
   }
 ];

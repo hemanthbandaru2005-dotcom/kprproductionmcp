@@ -201,81 +201,17 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
   {
     id: 'pkg-corp-1',
     type: 'photography',
-    name: 'Corporate Events',
+    name: 'Corporate & Commercial Events',
     price: 15000,
-    duration: '6 hours',
-    description: 'Comprehensive executive coverage for corporate annual general meetings, business conferences, leadership summits, and company celebrations.',
+    duration: '6 hours / Custom Scope',
+    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, RS Brothers retail campaigns, corporate AGMs, and commercial launches.',
     features: [
-      '6 hours on-site executive event coverage',
-      'Keynote speakers, stage & audience captures',
-      'High-resolution color-graded photo set',
-      'Same-day press release & social media highlights'
+      'Tata Tele & JSW industrial summits & conferences',
+      'Government Events & official state protocol',
+      'RS Brothers & flagship retail showroom launches',
+      'Keynote speakers, VIP portraits & same-day media'
     ],
     display_order: 13,
-    status: 'active'
-  },
-  {
-    id: 'pkg-corp-2',
-    type: 'photography',
-    name: 'Tata Tele & JSW',
-    price: 25000,
-    duration: '6 hours',
-    description: 'Enterprise-grade multi-camera photography and cinematic industrial summit documentation tailored for major conglomerates.',
-    features: [
-      '6 hours multi-camera enterprise coverage',
-      'VIP executive & board delegate portraits',
-      'Industrial infrastructure & ceremony documentation',
-      'Priority 4K master deliverables & cloud portal link'
-    ],
-    display_order: 14,
-    status: 'active'
-  },
-  {
-    id: 'pkg-corp-3',
-    type: 'photography',
-    name: 'Government Events',
-    price: 20000,
-    duration: '6 hours',
-    description: 'Official state protocol documentation, public summits, dignitary visits, ministry inaugurations, and foundation ceremonies.',
-    features: [
-      '6 hours official state protocol coverage',
-      'Dignitary stage presentations & VIP greetings',
-      'Press-ready rapid photo turnarounds',
-      'Formal archival high-resolution cataloging'
-    ],
-    display_order: 15,
-    status: 'active'
-  },
-  {
-    id: 'pkg-corp-4',
-    type: 'photography',
-    name: 'Shopping Malls',
-    price: 18000,
-    duration: '6 hours',
-    description: 'Dynamic commercial coverage for shopping mall grand openings, festive celebrity events, weekend promotions, and architectural retail ambience.',
-    features: [
-      '6 hours vibrant mall & retail coverage',
-      'Celebrity guest appearances & stage performances',
-      'Storefronts, atrium decor & shopper engagement',
-      'High-impact marketing & promotional photo reel'
-    ],
-    display_order: 16,
-    status: 'active'
-  },
-  {
-    id: 'pkg-corp-5',
-    type: 'photography',
-    name: "RS Brothers",
-    price: 22000,
-    duration: '6 hours',
-    description: 'Signature mega-retail campaign and showroom grand launch photography for leading textile and jewelry brand stores.',
-    features: [
-      '6 hours flagship showroom launch coverage',
-      'Celebrity ribbon-cutting & lamp-lighting moments',
-      'Textile & jewelry collection commercial framing',
-      'Social media ready editorial deliverables'
-    ],
-    display_order: 17,
     status: 'active'
   }
 ];
@@ -284,7 +220,7 @@ async function run() {
   console.log('Cleaning old packages from Supabase...');
   await supabase.from('packages').delete().neq('id', '9999999');
 
-  console.log('Inserting all 17 photography packages with verified prices into Supabase...');
+  console.log('Inserting all 13 photography packages into Supabase...');
   for (const pkg of OFFICIAL_PHOTOGRAPHY_PACKAGES) {
     const { data, error } = await supabase.from('packages').upsert({
       id: pkg.id,
@@ -307,7 +243,7 @@ async function run() {
     }
   }
 
-  console.log('--- ALL PACKAGES SUCCESSFULLY INSERTED IN SUPABASE DATABASE ---');
+  console.log('--- ALL 13 PACKAGES SUCCESSFULLY INSERTED IN SUPABASE DATABASE ---');
 }
 
 run();
