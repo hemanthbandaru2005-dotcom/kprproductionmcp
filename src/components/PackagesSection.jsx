@@ -11,7 +11,8 @@ export default function PackagesSection({
   displayPhone = '+91 98494 43648',
   categoryTitle = 'KPR PRODUCTION PACKAGES',
   categorySubtitle = 'Transparent pricing for our luxury photography, videography, aerial drone, live streaming, and post-production video editing services. Click Book Now to reserve your dates via WhatsApp.',
-  showEyebrow = true
+  showEyebrow = true,
+  showQuoteWidget = true
 }) {
   const [packages, setPackages] = useState(INITIAL_PHOTOGRAPHY_PACKAGES);
 
@@ -163,12 +164,14 @@ export default function PackagesSection({
           })}
         </div>
 
-        {/* Instant Quote Estimator Widget (Bottom of Packages) */}
-        <InstantQuoteWidget
-          packages={packages}
-          whatsappNumber={whatsappNumber}
-          displayPhone={displayPhone}
-        />
+        {/* Instant Quote Estimator Widget (Bottom of Packages - Not rendered in Color Lab) */}
+        {showQuoteWidget && packageType !== 'colorlab' && (
+          <InstantQuoteWidget
+            packages={packages}
+            whatsappNumber={whatsappNumber}
+            displayPhone={displayPhone}
+          />
+        )}
 
         {/* Global Booking Banner */}
         <div className="bg-[#121212] text-white p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 rounded-sm shadow-2xl border border-white/10 max-w-5xl mx-auto">

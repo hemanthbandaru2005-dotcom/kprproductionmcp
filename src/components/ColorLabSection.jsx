@@ -364,6 +364,7 @@ export default function ColorLabSection() {
                   whatsappNumber="919849443648"
                   displayPhone="+91 98494 43648"
                   showEyebrow={false}
+                  showQuoteWidget={false}
                   categoryTitle="PRINTING PACKAGES"
                   categorySubtitle="Transparent pricing for our fine art wedding album printing, framing, card printing, flex, and custom design services. Click Book Now to order via WhatsApp."
                 />
