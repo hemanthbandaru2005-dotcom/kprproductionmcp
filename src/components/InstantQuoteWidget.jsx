@@ -36,14 +36,16 @@ export default function InstantQuoteWidget({
 
   // Selected package state
   const [selectedId, setSelectedId] = useState(() => {
-    return photoPackages[0]?.id || 'pkg-corp-1';
+    return photoPackages[0]?.id || 'pkg-1';
   });
 
   // Selected category filter tab
   const [activeCategoryTab, setActiveCategoryTab] = useState('ALL');
 
-  // Manual Custom Price state (starts blank - 100% manual entry, NO default price shown)
-  const [customPriceInput, setCustomPriceInput] = useState('');
+  // Manual Custom Price state (initialized to active package price)
+  const [customPriceInput, setCustomPriceInput] = useState(() => {
+    return photoPackages[0]?.price ? String(photoPackages[0].price) : '6000';
+  });
 
   // Manual Custom Duration state
   const [isManualDuration, setIsManualDuration] = useState(false);
@@ -63,13 +65,13 @@ export default function InstantQuoteWidget({
     return activePackage?.duration || '6 hours';
   }, [activePackage, isManualDuration, customDurationInput]);
 
-  // Formatted price string if entered manually
+  // Formatted price string
   const formattedManualPrice = useMemo(() => {
     if (!customPriceInput || isNaN(Number(customPriceInput)) || Number(customPriceInput) <= 0) {
-      return null;
+      return activePackage?.price ? `₹${Number(activePackage.price).toLocaleString('en-IN')}/-` : null;
     }
-    return `₹${Number(customPriceInput).toLocaleString('en-IN')}`;
-  }, [customPriceInput]);
+    return `₹${Number(customPriceInput).toLocaleString('en-IN')}/-`;
+  }, [customPriceInput, activePackage]);
 
   // Available categories for pill tabs
   const categories = useMemo(() => {
@@ -86,11 +88,14 @@ export default function InstantQuoteWidget({
     return photoPackages.filter(p => p.category === activeCategoryTab);
   }, [photoPackages, activeCategoryTab]);
 
-  // Handle switching packages (no default price is populated)
+  // Handle switching packages
   const handleSelectPackage = (pkg) => {
     setSelectedId(pkg.id);
     setIsManualDuration(false);
     setCustomDurationInput('');
+    if (pkg.price) {
+      setCustomPriceInput(String(pkg.price));
+    }
   };
 
   // WhatsApp formatted link
@@ -204,15 +209,13 @@ export default function InstantQuoteWidget({
                   </span>
 
                   <div className="flex items-center justify-between pt-1.5 border-t border-white/10 mt-auto">
-                    <span className="text-[10px] text-[#C5A880]/80 font-medium truncate flex items-center gap-1">
+                    <span className="text-[10px] text-[#C5A880] font-bold">
+                      ₹{Number(pkg.price).toLocaleString('en-IN')}/-
+                    </span>
+                    <span className="text-[9.5px] text-white/60 font-medium truncate flex items-center gap-1">
                       <Clock className="w-2.5 h-2.5 shrink-0" />
                       <span>{pkg.duration}</span>
                     </span>
-                    {pkg.popular && (
-                      <span className="text-[8px] bg-[#C5A880]/20 text-[#E8D4B8] px-1.5 py-0.5 rounded-sm uppercase tracking-wider font-semibold">
-                        Popular
-                      </span>
-                    )}
                   </div>
                 </button>
               );

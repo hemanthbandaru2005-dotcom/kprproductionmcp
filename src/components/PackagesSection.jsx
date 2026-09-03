@@ -122,8 +122,18 @@ export default function PackagesSection({
                     </p>
                   </div>
 
-                  {/* Duration / Scope Details (No Price) */}
-                  <div className="pt-4 border-t border-[#E8E1D5] space-y-4">
+                  {/* Price & Duration / Scope Details */}
+                  <div className="pt-3 sm:pt-4 border-t border-[#E8E1D5] space-y-2.5">
+                    {service.price ? (
+                      <div className="flex items-center justify-between bg-[#FAF7F2] p-2.5 rounded-lg border border-[#E8E1D5]">
+                        <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold">Pricing</span>
+                        <span className="text-sm sm:text-base font-bold text-[#1A1A1A] font-serif">
+                          ₹{Number(service.price).toLocaleString('en-IN')}/-
+                          {service.unit ? ` (${service.unit})` : ''}
+                        </span>
+                      </div>
+                    ) : null}
+
                     <div className="flex items-center justify-between bg-[#FAF7F2] p-2.5 rounded-lg border border-[#E8E1D5]">
                       <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold">Duration / Scope</span>
                       <span className="text-xs font-bold text-[#1A1A1A]">
