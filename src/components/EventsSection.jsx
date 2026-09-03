@@ -249,8 +249,8 @@ const EVENTS_WHATSAPP_NUMBER = '919948972531';
 export default function EventsSection({ onOpenPage }) {
   // Collapsible toggle state
   const [isExpanded, setIsExpanded] = useState(true);
-  // Subsections toggle: 'stage' | 'choreography'
-  const [activeSubTab, setActiveSubTab] = useState('stage');
+  // Subsections toggle: 'gallery' | 'stage' | 'choreography'
+  const [activeSubTab, setActiveSubTab] = useState('gallery');
   const [selectedEventPhoto, setSelectedEventPhoto] = useState(null);
 
   const featuredEvent = EVENT_GALLERY.find(e => e.isFeatured) || EVENT_GALLERY[0];
@@ -318,37 +318,11 @@ export default function EventsSection({ onOpenPage }) {
           isExpanded ? 'max-h-[8000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}>
           
-          {/* 2. Subsections Navigation Tabs (Matching Pill Design) */}
+          {/* 2. Subsections Navigation Tabs (Matching Pill Design - Events Gallery 1st) */}
           <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-center">
             <div className="inline-flex justify-center items-center gap-1 sm:gap-2 p-1 bg-white border border-[#E2D9CC] rounded-full shadow-sm max-w-full overflow-x-auto">
               
-              {/* STAGE & LIGHTING TAB */}
-              <button
-                onClick={() => setActiveSubTab('stage')}
-                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
-                  activeSubTab === 'stage'
-                    ? 'bg-[#1A1A1A] text-white shadow-md'
-                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
-                }`}
-              >
-                <Sparkles className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'stage' ? 'text-[#C5A880]' : ''}`} />
-                <span>Stage & Lighting</span>
-              </button>
-
-              {/* CHOREOGRAPHY TAB */}
-              <button
-                onClick={() => setActiveSubTab('choreography')}
-                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
-                  activeSubTab === 'choreography'
-                    ? 'bg-[#1A1A1A] text-white shadow-md'
-                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
-                }`}
-              >
-                <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'choreography' ? 'text-[#C5A880]' : ''}`} />
-                <span>Choreography</span>
-              </button>
-
-              {/* EVENTS GALLERY TAB */}
+              {/* EVENTS GALLERY TAB (1ST) */}
               <button
                 onClick={() => setActiveSubTab('gallery')}
                 className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
@@ -361,6 +335,32 @@ export default function EventsSection({ onOpenPage }) {
                 <span>Events Gallery</span>
               </button>
 
+              {/* STAGE & LIGHTING TAB (2ND) */}
+              <button
+                onClick={() => setActiveSubTab('stage')}
+                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
+                  activeSubTab === 'stage'
+                    ? 'bg-[#1A1A1A] text-white shadow-md'
+                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
+                }`}
+              >
+                <Sparkles className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'stage' ? 'text-[#C5A880]' : ''}`} />
+                <span>Stage & Lighting</span>
+              </button>
+
+              {/* CHOREOGRAPHY TAB (3RD) */}
+              <button
+                onClick={() => setActiveSubTab('choreography')}
+                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
+                  activeSubTab === 'choreography'
+                    ? 'bg-[#1A1A1A] text-white shadow-md'
+                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
+                }`}
+              >
+                <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'choreography' ? 'text-[#C5A880]' : ''}`} />
+                <span>Choreography</span>
+              </button>
+
             </div>
           </div>
 
@@ -368,7 +368,51 @@ export default function EventsSection({ onOpenPage }) {
           <div className="w-full p-4 sm:p-8 lg:p-12 space-y-10 bg-[#FAF8F5]">
             <div className="w-full max-w-[1920px] mx-auto space-y-10">
             
-            {/* ══════════ TAB 1: STAGE & LIGHTING PRODUCTION ══════════ */}
+            {/* ══════════ TAB 1: EVENTS GALLERY (MATCHING PHOTOGRAPHY GALLERY STYLE) ══════════ */}
+            {activeSubTab === 'gallery' && (
+              <div className="space-y-6 sm:space-y-8 animate-fadeIn">
+                {/* Header matching photography collection style */}
+                <div className="text-center md:text-left max-w-2xl">
+                  <p className="text-[10px] sm:text-[12px] tracking-[0.4em] uppercase text-[#666666] font-medium mb-2 flex items-center justify-center md:justify-start gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                    <span>CURATED EVENT PRODUCTIONS</span>
+                  </p>
+                  <h2 className="font-serif text-3xl sm:text-5xl text-[#1A1A1A] font-light tracking-wide">
+                    EVENTS GALLERY
+                  </h2>
+                </div>
+
+                {/* Photo Grid matching photography gallery cards style */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                  {EVENTS_SHOWCASE_GALLERY.map((item) => (
+                    <div
+                      key={item.id}
+                      className="group relative bg-white p-2 sm:p-2.5 rounded-[14px] border border-[#E2D9CC] shadow-md transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl overflow-hidden transform-gpu cursor-pointer"
+                      onClick={() => setSelectedEventPhoto(item)}
+                    >
+                      {/* Image Container - Pure Photo Display matching photography gallery */}
+                      <div className="relative aspect-[4/5] overflow-hidden rounded-[10px] bg-[#1A1A1A]">
+                        <img
+                          src={item.image}
+                          alt={item.title || 'KPR Events'}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108 select-none"
+                          loading="lazy"
+                        />
+                        
+                        {/* Elegant Hover Overlay with Quick Actions (No Text) */}
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
+                          <div className="p-3.5 rounded-full bg-white/90 text-black shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                            <Maximize2 className="w-5 h-5" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ══════════ TAB 2: STAGE & LIGHTING PRODUCTION ══════════ */}
             {activeSubTab === 'stage' && (
               <div className="space-y-10 animate-fadeIn">
                 
@@ -692,90 +736,6 @@ export default function EventsSection({ onOpenPage }) {
 
                 </div>
 
-              </div>
-            )}
-
-            {/* ══════════ TAB 3: EVENTS GALLERY SHOWCASE (14 SHOWCASES) ══════════ */}
-            {activeSubTab === 'gallery' && (
-              <div className="space-y-8 animate-fadeIn">
-                {/* Gallery Intro Header */}
-                <div className="text-center max-w-3xl mx-auto space-y-2">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/30 text-[#8C6D3F] text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
-                    <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                    <span>14 Signature Event Productions</span>
-                  </div>
-                  <h3 className="font-serif text-2xl sm:text-4xl text-[#1A1A1A] font-light tracking-wide">
-                    EVENTS SHOWCASE GALLERY
-                  </h3>
-                  <p className="text-xs sm:text-sm text-[#666666] font-light max-w-xl mx-auto leading-relaxed">
-                    A curated visual archive of our grand mandap decor, concert truss rigs, floral pathways, intelligent lighting, and luxury wedding event productions across Telangana.
-                  </p>
-                </div>
-
-                {/* 14 Event Photo Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                  {EVENTS_SHOWCASE_GALLERY.map((item) => (
-                    <div
-                      key={item.id}
-                      className="group bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
-                    >
-                      {/* Image Header with Fullscreen Trigger */}
-                      <div 
-                        className="relative aspect-[4/3] bg-black overflow-hidden cursor-pointer"
-                        onClick={() => setSelectedEventPhoto(item)}
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                        
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3.5 justify-between">
-                          <span className="text-[11px] text-white font-medium flex items-center gap-1">
-                            <Maximize2 className="w-3.5 h-3.5 text-[#C5A880]" />
-                            <span>Click to Zoom</span>
-                          </span>
-                        </div>
-
-                        {/* Category Badge */}
-                        <div className="absolute top-3 left-3">
-                          <span className="px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-wider border border-white/10">
-                            {item.category}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Content Body */}
-                      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
-                        <div className="space-y-1.5">
-                          <h4 className="font-serif text-base sm:text-lg font-bold text-[#1A1A1A] group-hover:text-[#C5A880] transition-colors leading-snug">
-                            {item.title}
-                          </h4>
-                          <p className="text-xs text-[#666666] font-light line-clamp-2 leading-relaxed">
-                            {item.subtitle}
-                          </p>
-                        </div>
-
-                        {/* Location & Inquire Action */}
-                        <div className="pt-3 border-t border-[#E8E1D5] flex items-center justify-between gap-2">
-                          <span className="text-[10px] text-[#888888] flex items-center gap-1 font-mono truncate">
-                            <MapPin className="w-3 h-3 text-[#C5A880] shrink-0" />
-                            <span>{item.location}</span>
-                          </span>
-
-                          <button
-                            onClick={() => setSelectedEventPhoto(item)}
-                            className="p-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#C5A880] text-[#1A1A1A] hover:text-white transition-colors cursor-pointer shrink-0"
-                            title="View Fullscreen"
-                          >
-                            <Maximize2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
 
