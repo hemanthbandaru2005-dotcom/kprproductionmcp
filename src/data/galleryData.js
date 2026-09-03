@@ -1,5 +1,6 @@
 export const CATEGORIES = [
   "Corporate & Commercial Events",
+  "Shopping Malls",
   "21",
   "Birthday",
   "Engagement",
@@ -59,6 +60,42 @@ export const GALLERY_ITEMS = [
     "rawImage": "/images/corporate/photo_5.png",
     "location": "Tata Teleservices Townhall",
     "story": "Leadership address during the official Tata Teleservices Limited Employees' Townhall."
+  },
+  {
+    "id": "photo_shopping_mall-1",
+    "title": "Mega Showroom Grand Opening Ceremony",
+    "category": "Shopping Malls",
+    "image": "/images/shopping_malls/photo_1.jpg",
+    "rawImage": "/images/shopping_malls/photo_1.jpg",
+    "location": "Flagship Retail Mall Stage",
+    "story": "Celebrity Sreeleela and executive leadership inaugurating the mega showroom launch with confetti shower."
+  },
+  {
+    "id": "photo_shopping_mall-2",
+    "title": "Celebrity Media Press Meet & Launch",
+    "category": "Shopping Malls",
+    "image": "/images/shopping_malls/photo_2.jpg",
+    "rawImage": "/images/shopping_malls/photo_2.jpg",
+    "location": "Showroom Press Conference Arena",
+    "story": "Official media press conference and launch interaction against the royal silk collection backdrop."
+  },
+  {
+    "id": "photo_shopping_mall-3",
+    "title": "Grand Red Carpet Mall Entry",
+    "category": "Shopping Malls",
+    "image": "/images/shopping_malls/photo_3.jpg",
+    "rawImage": "/images/shopping_malls/photo_3.jpg",
+    "location": "Retail Mall Grand Entrance",
+    "story": "High-security celebrity arrival and grand entrance during the retail mall inauguration."
+  },
+  {
+    "id": "photo_shopping_mall-4",
+    "title": "Flagship Silk Saree Collection Unveil",
+    "category": "Shopping Malls",
+    "image": "/images/shopping_malls/photo_4.jpg",
+    "rawImage": "/images/shopping_malls/photo_4.jpg",
+    "location": "Bridal Silk Couture Showroom",
+    "story": "Celebrity unveil of the exclusive handcrafted gold-embossed silk saree collection."
   },
   {
     "id": "photo_21-1",

@@ -7,6 +7,38 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
   {
+    id: 'pkg-corp-1',
+    type: 'photography',
+    name: 'Corporate & Commercial Events',
+    price: 15000,
+    duration: '6 hours / Custom Scope',
+    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, corporate AGMs, and commercial launches.',
+    features: [
+      'Tata Tele & JSW industrial summits & conferences',
+      'Government Events & official state protocol',
+      'Corporate AGMs & commercial product launches',
+      'Keynote speakers, VIP portraits & same-day media'
+    ],
+    display_order: 1,
+    status: 'active'
+  },
+  {
+    id: 'pkg-mall-1',
+    type: 'photography',
+    name: 'Shopping Malls',
+    price: 18000,
+    duration: '6 hours / Custom Scope',
+    description: 'High-impact visual coverage for mega shopping mall inaugurations, celebrity showroom launches, red-carpet media meets, and retail campaigns.',
+    features: [
+      'Celebrity inaugurations & red-carpet arrivals',
+      'Showroom interior & visual merchandising showcases',
+      'Media press conferences & VIP ribbon-cutting',
+      'High-speed media turnaround for PR & print'
+    ],
+    display_order: 2,
+    status: 'active'
+  },
+  {
     id: 'pkg-1',
     type: 'photography',
     name: 'Traditional Photo',
@@ -19,7 +51,7 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
       'Colour corrected deliverables',
       'Direct cloud link delivery'
     ],
-    display_order: 1,
+    display_order: 3,
     status: 'active'
   },
   {
@@ -35,7 +67,7 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
       'Clean audio recording',
       'Complete event footage'
     ],
-    display_order: 2,
+    display_order: 4,
     status: 'active'
   },
   {
@@ -51,7 +83,7 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
       'High-speed prime lens portraits',
       'Social media teaser deliverable'
     ],
-    display_order: 3,
+    display_order: 5,
     status: 'active'
   },
   {
@@ -60,14 +92,14 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     name: 'Cinematic Video',
     price: 14000,
     duration: '6 hours',
-    description: '4K slow-motion cinematic camera recording with gimbal stabilization and artistic storytelling.',
+    description: 'Ultra-HD cinematic storytelling with gimbal stabilization, color graded highlights, and emotional score.',
     features: [
-      '6 hours 4K cinematic shoot',
-      'Gimbal & prime lens stabilization',
-      'Cinematic LUT colour grading',
-      'Highlight reel & master cuts'
+      '6 hours cinematic coverage',
+      '4K gimbal cinematography',
+      'Cinematic color grading',
+      'Signature highlight film'
     ],
-    display_order: 4,
+    display_order: 6,
     status: 'active'
   },
   {
@@ -76,14 +108,14 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     name: 'Drone',
     price: 6000,
     duration: '4 hours',
-    description: '4K aerial bird-eye views of grand wedding venues, baraat processions, and outdoor entry moments.',
+    description: 'High-altitude 4K aerial shots of wedding venue, baraat procession, and outdoor landscape perspectives.',
     features: [
       '4 hours aerial coverage',
-      '4K high-altitude views',
-      'Licensed drone pilot',
-      'Baraat & venue bird-eye shots'
+      '4K stabilized aerial video',
+      'Grand venue & baraat flybys',
+      'DGCA safety compliant pilot'
     ],
-    display_order: 5,
+    display_order: 7,
     status: 'active'
   },
   {
@@ -92,14 +124,15 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     name: 'LED Screen',
     price: 16000,
     duration: '6 hours (+ Transport Charges)',
-    description: 'High-brightness P3 outdoor/indoor high-definition LED wall for live event broadcast & stage visuals.',
+    description: 'Ultra-bright high-definition LED video wall display setup for real-time live telecast at wedding mandap and banquet halls.',
     features: [
-      '6 hours live stage display',
-      'P3 high-density LED wall',
-      'Live camera visual switching',
-      'On-site technical operator'
+      '6 hours display runtime',
+      'High-resolution P3 LED wall',
+      'Real-time live video feed display',
+      'On-site technical support team',
+      'Transport charges apply based on venue'
     ],
-    display_order: 6,
+    display_order: 8,
     status: 'active'
   },
   {
@@ -108,14 +141,14 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     name: 'Avata Drone',
     price: 12000,
     duration: '3 hours',
-    description: 'Ultra-fast acrobatic FPV drone flight capturing thrilling bride/groom entries, indoor fly-throughs, and dynamic reels.',
+    description: 'High-speed FPV Avata drone indoor-outdoor immersive fly-throughs with acrobatic cinematic angles.',
     features: [
-      '3 hours FPV dynamic coverage',
-      'Indoor & outdoor proximity flight',
-      'High-speed 4K 60fps recording',
-      'Cinematic reel ready motion'
+      '3 hours specialized FPV flight',
+      'Immersive indoor/outdoor fly-throughs',
+      'High-speed dynamic transitions',
+      '4K 60fps stabilized FPV footage'
     ],
-    display_order: 7,
+    display_order: 9,
     status: 'active'
   },
   {
@@ -124,14 +157,14 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     name: 'Live Link',
     price: 6000,
     duration: '4 hours',
-    description: 'Private or public Full HD multi-cam YouTube/custom live streaming link for global family viewing.',
+    description: 'Multi-platform live streaming to YouTube & private web links for NRI relatives and distant guests.',
     features: [
-      '4 hours unbroken HD stream',
-      'Multi-camera switcher setup',
-      'Private YouTube or web link',
-      'Immediate archive recording'
+      '4 hours live broadcast link',
+      '1080p full HD streaming',
+      'Private/public YouTube URL',
+      'Direct WhatsApp sharing link'
     ],
-    display_order: 8,
+    display_order: 10,
     status: 'active'
   },
   {
@@ -140,14 +173,14 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     name: 'Cinematic Teaser',
     price: 8000,
     duration: '4-5 min',
-    description: 'Premium 4-5 minute cinematic teaser trailer with custom sound design, dialogue mixing, and color grading.',
+    description: 'Short 4-5 minute viral-ready cinematic wedding teaser edited with curated audio sync and cinematic pacing.',
     features: [
-      '4-5 minute luxury teaser',
-      'Custom music sound design',
-      'Dialogue & speech integration',
-      'Instagram reel 9:16 export included'
+      '4 to 5 minutes duration',
+      'Curated audio sync',
+      'Instagram/Reels 4K export',
+      'Rapid delivery'
     ],
-    display_order: 9,
+    display_order: 11,
     status: 'active'
   },
   {
@@ -156,14 +189,15 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     name: 'Traditional Video Editing',
     price: 2000,
     duration: '1 hour',
-    description: 'Chronological full-length Telugu wedding ritual editing with titles, songs, transitions, and audio sync.',
+    category: 'Editing',
+    description: 'Complete ceremony editing with chapter titles, traditional Telugu background music, and smooth cuts.',
     features: [
-      '1 hour finished output',
-      'Complete ritual sequence',
-      'Custom background songs',
-      'Full HD master rendering'
+      'Per 1 hour finished footage',
+      'Traditional Telugu music overlays',
+      'Ceremony titles & credits',
+      'Clean master chaptering'
     ],
-    display_order: 10,
+    display_order: 12,
     status: 'active'
   },
   {
@@ -172,14 +206,14 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     name: 'Cinematic Video Editing',
     price: 6000,
     duration: '1 hour',
-    description: 'High-end cinematic documentary editing with colour grading, scene pacing, and audio mastering.',
+    description: 'Master film-grade cinematic timeline editing, speed ramps, sound design, and LUT color grading.',
     features: [
-      '1 hour cinematic documentary cut',
-      'Professional color correction',
-      'Multi-track audio mastering',
-      'High-bitrate 4K/FHD export'
+      'Per 1 hour cinematic timeline',
+      'LUT color grading',
+      'Sound design & audio mixing',
+      '4K master master output'
     ],
-    display_order: 11,
+    display_order: 13,
     status: 'active'
   },
   {
@@ -195,23 +229,7 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
       'Thermal UV gloss/matt coating',
       'High-density color fidelity'
     ],
-    display_order: 12,
-    status: 'active'
-  },
-  {
-    id: 'pkg-corp-1',
-    type: 'photography',
-    name: 'Corporate & Commercial Events',
-    price: 15000,
-    duration: '6 hours / Custom Scope',
-    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, corporate AGMs, and commercial launches.',
-    features: [
-      'Tata Tele & JSW industrial summits & conferences',
-      'Government Events & official state protocol',
-      'Corporate AGMs & commercial product launches',
-      'Keynote speakers, VIP portraits & same-day media'
-    ],
-    display_order: 13,
+    display_order: 14,
     status: 'active'
   }
 ];
@@ -220,7 +238,7 @@ async function run() {
   console.log('Cleaning old packages from Supabase...');
   await supabase.from('packages').delete().neq('id', '9999999');
 
-  console.log('Inserting all 13 photography packages into Supabase...');
+  console.log('Inserting all 14 photography packages into Supabase in priority order...');
   for (const pkg of OFFICIAL_PHOTOGRAPHY_PACKAGES) {
     const { data, error } = await supabase.from('packages').upsert({
       id: pkg.id,

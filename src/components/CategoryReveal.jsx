@@ -17,6 +17,20 @@ const REEL_CONFIGS = {
     accentColor: '#38BDF8',
     type: 'corporate'
   },
+  shoppingmalls: {
+    image: '/images/shopping_malls/photo_1.jpg',
+    title: 'SHOPPING MALLS & RETAIL LAUNCHES',
+    tagline: 'Celebrity Invocations, Mega Showroom Openings & Press Conferences',
+    accentColor: '#F59E0B',
+    type: 'shopping'
+  },
+  shopping: {
+    image: '/images/shopping_malls/photo_1.jpg',
+    title: 'SHOPPING MALLS & RETAIL LAUNCHES',
+    tagline: 'Celebrity Invocations, Mega Showroom Openings & Press Conferences',
+    accentColor: '#F59E0B',
+    type: 'shopping'
+  },
   '21': {
     image: '/images/reels/birthday.jpg',
     title: '21ST MILESTONE CELEBRATION',
@@ -134,6 +148,7 @@ export default function CategoryReveal({ animationType, onComplete }) {
   let config = REEL_CONFIGS[rawKey];
   if (!config) {
     if (rawKey.includes('corp') || rawKey.includes('commercial')) config = REEL_CONFIGS.corporate;
+    else if (rawKey.includes('shop') || rawKey.includes('mall')) config = REEL_CONFIGS.shoppingmalls;
     else if (rawKey === '21' || rawKey.includes('twenty')) config = REEL_CONFIGS['21'];
     else if (rawKey.includes('birth')) config = REEL_CONFIGS.birthday;
     else if (rawKey.includes('engage')) config = REEL_CONFIGS.engagement;

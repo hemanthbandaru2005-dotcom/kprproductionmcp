@@ -2,6 +2,7 @@ import { supabase } from './supabaseClient';
 
 export const PHOTOGRAPHY_CATEGORIES = [
   'Corporate & Commercial Events',
+  'Shopping Malls',
   'Wedding',
   'Pre Wedding',
   'Engagement',

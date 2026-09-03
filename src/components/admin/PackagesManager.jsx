@@ -369,10 +369,10 @@ export default function PackagesManager() {
                         {pkg.name}
                       </h3>
 
-                      {/* Highlights Text for Corporate & Commercial Events */}
-                      {(pkg.clientHighlights || (pkg.name && pkg.name.toLowerCase().includes('corporate'))) && (
+                      {/* Highlights Text for Corporate & Commercial Events and Shopping Malls */}
+                      {(pkg.clientHighlights || (pkg.name && (pkg.name.toLowerCase().includes('corporate') || pkg.name.toLowerCase().includes('shopping')))) && (
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#C5A880]/15 border border-[#C5A880]/30 rounded-md text-[#8C6D3F] text-[10px] font-semibold tracking-wide">
-                          <span>✨ Tata Tele & JSW • Government Events</span>
+                          <span>✨ {pkg.clientHighlights || (pkg.name.toLowerCase().includes('corporate') ? 'Tata Tele & JSW • Government Events' : 'Celebrity Invocations • Retail Campaigns • Mall Openings')}</span>
                         </div>
                       )}
 

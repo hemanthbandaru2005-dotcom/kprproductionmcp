@@ -118,10 +118,10 @@ export default function PackagesSection({
                       {service.name}
                     </h3>
 
-                    {/* Highlights Text for Corporate & Commercial Events */}
-                    {(service.clientHighlights || (service.name && service.name.toLowerCase().includes('corporate'))) && (
+                    {/* Highlights Text for Corporate & Commercial Events and Shopping Malls */}
+                    {(service.clientHighlights || (service.name && (service.name.toLowerCase().includes('corporate') || service.name.toLowerCase().includes('shopping')))) && (
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#C5A880]/15 border border-[#C5A880]/30 rounded-md text-[#8C6D3F] text-[11px] font-semibold tracking-wide">
-                        <span>✨ Tata Tele & JSW • Government Events</span>
+                        <span>✨ {service.clientHighlights || (service.name.toLowerCase().includes('corporate') ? 'Tata Tele & JSW • Government Events' : 'Celebrity Invocations • Retail Campaigns • Mall Openings')}</span>
                       </div>
                     )}
 
