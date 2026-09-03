@@ -3,6 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Heart, Camera, Sun, Crown, Gift, Flower2, Stars, Film, Play } from 'lucide-react';
 
 const REEL_CONFIGS = {
+  corporate: {
+    image: '/images/corporate/photo_1.jpg',
+    title: 'CORPORATE & COMMERCIAL EVENTS',
+    tagline: 'Enterprise Summits, VIP Keynotes, Springboard Panels & Brand Launches',
+    accentColor: '#38BDF8',
+    type: 'corporate'
+  },
+  'corporatecommercialevents': {
+    image: '/images/corporate/photo_1.jpg',
+    title: 'CORPORATE & COMMERCIAL EVENTS',
+    tagline: 'Enterprise Summits, VIP Keynotes, Springboard Panels & Brand Launches',
+    accentColor: '#38BDF8',
+    type: 'corporate'
+  },
   '21': {
     image: '/images/reels/birthday.jpg',
     title: '21ST MILESTONE CELEBRATION',
@@ -119,7 +133,8 @@ export default function CategoryReveal({ animationType, onComplete }) {
   const rawKey = (animationType || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   let config = REEL_CONFIGS[rawKey];
   if (!config) {
-    if (rawKey === '21' || rawKey.includes('twenty')) config = REEL_CONFIGS['21'];
+    if (rawKey.includes('corp') || rawKey.includes('commercial')) config = REEL_CONFIGS.corporate;
+    else if (rawKey === '21' || rawKey.includes('twenty')) config = REEL_CONFIGS['21'];
     else if (rawKey.includes('birth')) config = REEL_CONFIGS.birthday;
     else if (rawKey.includes('engage')) config = REEL_CONFIGS.engagement;
     else if (rawKey.includes('hald')) config = REEL_CONFIGS.haldi;

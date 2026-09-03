@@ -38,7 +38,8 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
       '/images/reels/reception.jpg',
       '/images/reels/saree.jpg',
       '/images/reels/wedding.jpg',
-      '/images/reels/modeling.jpg'
+      '/images/reels/modeling.jpg',
+      '/images/corporate/photo_1.jpg'
     ];
     reelImages.forEach((src) => {
       const img = new Image();

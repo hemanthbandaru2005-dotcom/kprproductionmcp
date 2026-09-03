@@ -1,4 +1,5 @@
 export const CATEGORIES = [
+  "Corporate & Commercial Events",
   "21",
   "Birthday",
   "Engagement",
@@ -14,6 +15,51 @@ export const CATEGORIES = [
 ];
 
 export const GALLERY_ITEMS = [
+  {
+    "id": "photo_corporate-1",
+    "title": "Leaders of Tomorrow Springboard Interview",
+    "category": "Corporate & Commercial Events",
+    "image": "/images/corporate/photo_1.jpg",
+    "rawImage": "/images/corporate/photo_1.jpg",
+    "location": "IDFC First Bank & ET NOW Stage",
+    "story": "High-profile executive stage interview at ET NOW Leaders of Tomorrow Springboard."
+  },
+  {
+    "id": "photo_corporate-2",
+    "title": "Tata Tele Business Connectivity Booth",
+    "category": "Corporate & Commercial Events",
+    "image": "/images/corporate/photo_2.png",
+    "rawImage": "/images/corporate/photo_2.png",
+    "location": "Tata Tele Business Services Summit",
+    "story": "Executive delegates networking at the Tata Tele Business Services DO BIG booth."
+  },
+  {
+    "id": "photo_corporate-3",
+    "title": "Leaders of Tomorrow Season 13 Panel",
+    "category": "Corporate & Commercial Events",
+    "image": "/images/corporate/photo_3.png",
+    "rawImage": "/images/corporate/photo_3.png",
+    "location": "ET NOW Season 13 Springboard",
+    "story": "Executive leadership panel forum on stage discussing business innovations."
+  },
+  {
+    "id": "photo_corporate-4",
+    "title": "Tata Tele Smartflo CPaaS Interactive Session",
+    "category": "Corporate & Commercial Events",
+    "image": "/images/corporate/photo_4.jpg",
+    "rawImage": "/images/corporate/photo_4.jpg",
+    "location": "Tata Tele Showcase Lounge",
+    "story": "Business leaders engaging at the Smartflo CPaaS converged communication display."
+  },
+  {
+    "id": "photo_corporate-5",
+    "title": "Tata Teleservices Employees' Townhall",
+    "category": "Corporate & Commercial Events",
+    "image": "/images/corporate/photo_5.png",
+    "rawImage": "/images/corporate/photo_5.png",
+    "location": "Tata Teleservices Townhall",
+    "story": "Leadership address during the official Tata Teleservices Limited Employees' Townhall."
+  },
   {
     "id": "photo_21-1",
     "title": "21 Story 01",
