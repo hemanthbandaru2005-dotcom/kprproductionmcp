@@ -94,8 +94,8 @@ export default function PackagesManager() {
 
   const openEditModal = (pkg) => {
     setEditingPkg(pkg);
-    setName(pkg.name);
-    setPrice(pkg.price);
+    setName(pkg.name || '');
+    setPrice(pkg.price !== undefined && pkg.price !== null ? String(pkg.price) : '');
     setDuration(pkg.duration || '');
     setCategory(pkg.category || (activeType === 'photography' ? 'Photography' : 'Album Artistry'));
     setImage(pkg.image || '');
@@ -375,11 +375,27 @@ export default function PackagesManager() {
                       )}
                     </div>
 
-                    {/* DURATION / SCOPE Box (Matches Screenshot 100%) */}
-                    <div className="pt-4 border-t border-[#E8E1D5] space-y-4">
-                      <div className="flex items-center justify-between bg-[#FAF7F2] p-2.5 rounded-lg border border-[#E8E1D5] gap-2">
-                        <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold shrink-0">
-                          Duration / Scope
+                    {/* PRICE & DURATION / SCOPE Box (Prominently displaying official rates) */}
+                    <div className="pt-4 border-t border-[#E8E1D5] space-y-2.5">
+                      {/* Price Badge */}
+                      <div className="flex items-center justify-between bg-[#1A1A1A] text-white px-3 py-2.5 rounded-lg border border-[#C5A880]/40 shadow-xs">
+                        <span className="text-[10px] uppercase tracking-wider text-[#C5A880] font-bold shrink-0 flex items-center gap-1.5">
+                          <Tag className="w-3.5 h-3.5 text-[#C5A880]" />
+                          <span>Package Rate</span>
+                        </span>
+                        <span className="text-sm sm:text-base font-bold text-[#E8D4B8] tracking-wide">
+                          ₹{Number(pkg.price || 0).toLocaleString('en-IN')}/-
+                          {pkg.unit === 'sheet' || pkg.name?.toLowerCase().includes('sheet') ? (
+                            <span className="text-[10px] font-normal text-white/70 ml-1">/sheet</span>
+                          ) : null}
+                        </span>
+                      </div>
+
+                      {/* Duration / Scope */}
+                      <div className="flex items-center justify-between bg-[#FAF7F2] px-3 py-2 rounded-lg border border-[#E8E1D5] gap-2">
+                        <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold shrink-0 flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-[#C5A880]" />
+                          <span>Duration / Scope</span>
                         </span>
                         <span className="text-xs font-bold text-[#1A1A1A] text-right truncate">
                           {displayDuration}
@@ -388,7 +404,7 @@ export default function PackagesManager() {
 
                       {/* Included Features List with Gold Dots */}
                       {pkg.features && pkg.features.length > 0 && (
-                        <ul className="space-y-1.5 text-[11px] text-[#555555]">
+                        <ul className="space-y-1.5 text-[11px] text-[#555555] pt-1">
                           {pkg.features.map((f, i) => (
                             <li key={i} className="flex items-start gap-1.5">
                               <span className="w-1.5 h-1.5 bg-[#C5A880] rounded-full shrink-0 mt-1" />
