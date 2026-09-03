@@ -116,17 +116,15 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
     <section id="portfolio" className="py-8 sm:py-12 bg-[#F7F3EE] relative overflow-hidden w-full">
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-8 lg:px-12 xl:px-16">
         
-        {/* Top Header */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 sm:mb-12">
-          <div className="text-center md:text-left max-w-2xl">
-            <p className="text-[10px] sm:text-[12px] tracking-[0.4em] uppercase text-[#666666] font-medium mb-2 flex items-center justify-center md:justify-start gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-              <span>CURATED WORKS ({items.length} TOTAL PHOTOS)</span>
-            </p>
-            <h2 className="font-serif text-3xl sm:text-5xl text-[#1A1A1A] font-light tracking-wide">
-              THE GALLERY COLLECTION
-            </h2>
-          </div>
+        {/* Top Header - Centered in Middle */}
+        <div className="w-full text-center max-w-3xl mx-auto mb-8 sm:mb-12 flex flex-col items-center justify-center">
+          <p className="text-[10px] sm:text-[12px] tracking-[0.4em] uppercase text-[#666666] font-medium mb-2 flex items-center justify-center gap-2">
+            <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+            <span>CURATED WORKS ({items.length} TOTAL PHOTOS)</span>
+          </p>
+          <h2 className="font-serif text-3xl sm:text-5xl text-[#1A1A1A] font-light tracking-wide text-center">
+            THE GALLERY COLLECTION
+          </h2>
         </div>
 
         {/* Category Filter Buttons */}
