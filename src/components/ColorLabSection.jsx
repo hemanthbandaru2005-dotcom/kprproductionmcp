@@ -186,19 +186,13 @@ export default function ColorLabSection() {
         }`}>
           
           {/* 2. Subsections Navigation Tabs: PRINTING & CUTTING | PACKAGES | ALBUMS */}
-          <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-4 sm:px-8 lg:px-16 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            
-            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-[#666666] flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#C5A880] animate-pulse" />
-              Color Lab Subsections:
-            </p>
-
-            <div className="inline-flex w-full sm:w-auto justify-center flex-wrap items-center gap-1.5 sm:gap-2 p-1 bg-white border border-[#E2D9CC] rounded-lg shadow-sm">
+          <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-center">
+            <div className="inline-flex justify-center items-center gap-1 sm:gap-2 p-1 bg-white border border-[#E2D9CC] rounded-full shadow-sm max-w-full overflow-x-auto">
               
               {/* PRINTING & CUTTING TAB */}
               <button
                 onClick={() => setActiveSubTab('designs')}
-                className={`flex-1 sm:flex-initial inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs font-semibold tracking-widest uppercase rounded-md transition-all duration-300 cursor-pointer ${
+                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
                   activeSubTab === 'designs'
                     ? 'bg-[#1A1A1A] text-white shadow-md'
                     : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
@@ -211,7 +205,7 @@ export default function ColorLabSection() {
               {/* PACKAGES TAB */}
               <button
                 onClick={() => setActiveSubTab('packages')}
-                className={`flex-1 sm:flex-initial inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs font-semibold tracking-widest uppercase rounded-md transition-all duration-300 cursor-pointer ${
+                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
                   activeSubTab === 'packages'
                     ? 'bg-[#1A1A1A] text-white shadow-md'
                     : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
@@ -224,7 +218,7 @@ export default function ColorLabSection() {
               {/* ALBUMS TAB */}
               <button
                 onClick={() => setActiveSubTab('albums')}
-                className={`flex-1 sm:flex-initial inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-xs font-semibold tracking-widest uppercase rounded-md transition-all duration-300 cursor-pointer ${
+                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
                   activeSubTab === 'albums'
                     ? 'bg-[#1A1A1A] text-white shadow-md'
                     : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
@@ -235,7 +229,6 @@ export default function ColorLabSection() {
               </button>
 
             </div>
-
           </div>
 
           {/* 3. Subsections Content Area */}
