@@ -450,14 +450,23 @@ export const OFFICIAL_COLORLAB_SERVICES = [
 
 function normalizePackageDurations(pkgs) {
   if (!Array.isArray(pkgs)) return [];
+  const officialLookup = [...OFFICIAL_PHOTOGRAPHY_PACKAGES, ...OFFICIAL_COLORLAB_SERVICES];
   return pkgs.map(p => {
-    if (p.name === 'Candid Photography' && (p.duration === 'Full Coverage' || !p.duration)) {
-      return { ...p, duration: '6 hours' };
+    const match = officialLookup.find(o => o.id === p.id || o.name === p.name);
+    const enriched = {
+      ...match,
+      ...p,
+      category: p.category || match?.category || (p.type === 'colorlab' ? 'Album Artistry' : 'Photography'),
+      image: p.image || match?.image || (p.type === 'colorlab' ? '/images/services/wedding_album_printing.png' : '/images/packages/user_pkg_candid_photo.png'),
+      popular: p.popular !== undefined ? p.popular : match?.popular || false,
+    };
+    if (enriched.name === 'Candid Photography' && (enriched.duration === 'Full Coverage' || !enriched.duration)) {
+      enriched.duration = '6 hours';
     }
-    if (p.name === 'Cinematic Videography' && (p.duration === 'Full Coverage' || !p.duration)) {
-      return { ...p, duration: '6 hours' };
+    if (enriched.name === 'Cinematic Videography' && (enriched.duration === 'Full Coverage' || !enriched.duration)) {
+      enriched.duration = '6 hours';
     }
-    return p;
+    return enriched;
   });
 }
 
@@ -501,9 +510,24 @@ export async function resetToDefaultPackages() {
   try {
     // Attempt to upsert to supabase
     for (const pkg of initial) {
-      await supabase.from('packages').upsert(pkg, { onConflict: 'id' });
+      const dbPayload = {
+        id: pkg.id,
+        type: pkg.type,
+        name: pkg.name,
+        price: pkg.price,
+        duration: pkg.duration,
+        description: pkg.description || '',
+        features: pkg.features || [],
+        display_order: pkg.display_order || 1,
+        status: pkg.status || 'active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      await supabase.from('packages').upsert(dbPayload, { onConflict: 'id' });
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Supabase reset error:', e);
+  }
 
   return initial;
 }
@@ -555,23 +579,37 @@ export async function saveSitePackage(pkgPayload) {
     created_at: pkgPayload.created_at || new Date().toISOString()
   };
 
+  const dbPayload = {
+    id: pkgData.id,
+    type: pkgData.type,
+    name: pkgData.name,
+    price: pkgData.price,
+    duration: pkgData.duration,
+    description: pkgData.description,
+    features: pkgData.features,
+    display_order: pkgData.display_order,
+    status: pkgData.status,
+    created_at: pkgData.created_at,
+    updated_at: pkgData.updated_at
+  };
+
   try {
     let res;
     if (isEdit) {
       res = await supabase
         .from('packages')
-        .update(pkgData)
-        .eq('id', pkgData.id)
+        .update(dbPayload)
+        .eq('id', dbPayload.id)
         .select();
     } else {
       res = await supabase
         .from('packages')
-        .insert([pkgData])
+        .insert([dbPayload])
         .select();
     }
 
     if (!res.error && res.data && res.data.length > 0) {
-      const saved = res.data[0];
+      const saved = { ...pkgData, ...res.data[0] };
       const local = getLocalPackages();
       if (isEdit) {
         saveLocalPackages(local.map(p => p.id === saved.id ? saved : p));
