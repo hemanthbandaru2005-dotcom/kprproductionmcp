@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles, Camera, Clock, Heart,
-  Building2, Printer, CheckCircle2
+  Printer, CheckCircle2
 } from 'lucide-react';
 import founderPortrait from '../assets/founder_portrait.jpg';
 
@@ -24,12 +24,6 @@ const STATS = [
     label: 'Corporate Shoots',
     sublabel: 'Commercial & Brand Shoots',
     icon: Camera,
-  },
-  {
-    number: '14+',
-    label: 'Corporate Events',
-    sublabel: 'Mega-Conferences & Galas',
-    icon: Building2,
   },
   {
     number: '5+',
@@ -132,7 +126,7 @@ export default function AboutSection() {
                 </p>
                 
                 <p>
-                  With <strong className="text-[#1A1A1A] font-semibold">2,000+ weddings</strong>, <strong className="text-[#1A1A1A] font-semibold">2,500+ corporate shoots</strong>, and <strong className="text-[#1A1A1A] font-semibold">14+ mega corporate events</strong> delivered, we seamlessly unite fine art photography with our in-house <strong className="text-[#1A1A1A] font-semibold">Master Colour Lab</strong> and grand event production.
+                  With <strong className="text-[#1A1A1A] font-semibold">2,000+ weddings</strong> and <strong className="text-[#1A1A1A] font-semibold">2,500+ corporate shoots</strong> delivered, we seamlessly unite fine art photography with our in-house <strong className="text-[#1A1A1A] font-semibold">Master Colour Lab</strong> and grand event production.
                 </p>
               </div>
 
@@ -161,7 +155,7 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* 3. Milestone Numbers Banner (5 Core Stats) */}
+        {/* 3. Milestone Numbers Banner (4 Core Stats) */}
         <div className="p-6 sm:p-10 lg:p-12 bg-white">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block mb-1">
@@ -173,7 +167,7 @@ export default function AboutSection() {
             <div className="w-12 h-0.5 bg-[#C5A880] mx-auto mt-2" />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {STATS.map((stat, i) => {
               const Icon = stat.icon;
               return (
