@@ -57,6 +57,135 @@ const EVENT_GALLERY = [
   }
 ];
 
+const EVENTS_SHOWCASE_GALLERY = [
+  {
+    id: 'evt-gallery-1',
+    title: 'Grand Wedding Mandap & Golden Illumination',
+    subtitle: 'Lavish traditional temple mandap with intricate floral artistry and warm architectural uplighting',
+    category: 'Royal Mandap & Floral Decor',
+    image: '/images/events_gallery/event_photo_1.jpg',
+    location: 'Grand Convention Center, Telangana',
+    features: ['Handcrafted Floral Pillars', 'Golden Warm Architectural Uplighting', 'Sacred Ritual Seating Setup', 'DMX Lighting Integration']
+  },
+  {
+    id: 'evt-gallery-2',
+    title: 'Royal Floral Canopy & Stage Arch',
+    subtitle: 'Opulent cascading floral chandeliers with multi-tier stage backdrop styling',
+    category: 'Stage Decor & Styling',
+    image: '/images/events_gallery/event_photo_2.jpg',
+    location: 'Heritage Wedding Resort, Telangana',
+    features: ['Cascading Exotic Fresh Florals', 'Grand Stage Archway', 'Intelligent Ambient Illumination', 'Bridal Pathway Alignment']
+  },
+  {
+    id: 'evt-gallery-3',
+    title: 'High-Impact Concert & Sangeet Production',
+    subtitle: 'Dynamic moving head beams, atmospheric stage haze, and high-energy live performance rig',
+    category: 'Stage & Truss Lighting',
+    image: '/images/events_gallery/event_photo_3.jpg',
+    location: 'Open Air Arena, Hyderabad',
+    features: ['Heavy Duty Aluminum Box Truss', 'Moving Head Sharp Beam Lights', 'Atmospheric Stage Haze System', 'Live DMX Console Control']
+  },
+  {
+    id: 'evt-gallery-4',
+    title: 'Traditional Wedding Reception Backdrop',
+    subtitle: 'Elegantly curated floral wall with gold accents and warm theatrical spotlighting',
+    category: 'Reception Production',
+    image: '/images/events_gallery/event_photo_4.jpg',
+    location: 'Convention Hall, Telangana',
+    features: ['Full Wall Botanical Backdrop', 'Golden Trim Accents', 'Theatrical Subject Spotlighting', 'VIP Portrait Setting']
+  },
+  {
+    id: 'evt-gallery-5',
+    title: 'Grand Entrance Pathway & Floral Tunnel',
+    subtitle: 'Illuminated red-carpet entrance tunnel with dense floral ceiling and fairy light chandeliers',
+    category: 'Grand Entrance & Walkway',
+    image: '/images/events_gallery/event_photo_5.jpg',
+    location: 'Palace Grounds, Telangana',
+    features: ['Illuminated Red Carpet Walkway', 'Fairy Light Arch Tunnel', 'Aisle Pillar Candle Accents', 'Floral Ceiling Canopy']
+  },
+  {
+    id: 'evt-gallery-6',
+    title: 'Traditional Telugu Kalyanam Mandapam',
+    subtitle: 'Auspicious traditional ceremonial mandap setup with marigold and jasmine garlands',
+    category: 'Ceremonial Mandap',
+    image: '/images/events_gallery/event_photo_6.jpg',
+    location: 'Telangana Heritage Grounds',
+    features: ['Fresh Marigold & Jasmine Weaves', 'Traditional Brass Urli Accents', 'Sacred Homam Stage Setup', 'Crisp Even Mandap Lighting']
+  },
+  {
+    id: 'evt-gallery-7',
+    title: 'VIP Gala Stage & Ambient Architectural Setup',
+    subtitle: 'Sophisticated event stage featuring synchronous visual wall and plush velvet seating',
+    category: 'VIP Stage & Lighting',
+    image: '/images/events_gallery/event_photo_7.jpg',
+    location: 'Luxury Banquet Hall, Telangana',
+    features: ['Synchronous Visual Screens', 'Plush Royal Velvet Seating', 'Warm Architectural Perimeter Uplights', 'Crystal Chandeliers']
+  },
+  {
+    id: 'evt-gallery-8',
+    title: 'Dynamic Sangeet Night Lighting & SFX',
+    subtitle: 'Atmospheric low fog, cold-pyro sparkles, and color-cycling stage wash',
+    category: 'Sangeet & SFX Production',
+    image: '/images/events_gallery/event_photo_8.jpg',
+    location: 'Open Air Resort Stage',
+    features: ['Dry Ice Low Fog Generation', 'Cold Spark Indoor Safe Pyro', 'RGBW Multi-Hue Wash Fixtures', 'Sound-Reactive Light Show']
+  },
+  {
+    id: 'evt-gallery-9',
+    title: 'Luxury Sangeet Dance Floor & Truss Rig',
+    subtitle: 'Illuminated LED chevron dance floor with overhead 360-degree beam light matrix',
+    category: 'Dance Floor & Truss',
+    image: '/images/events_gallery/event_photo_9.jpg',
+    location: 'Convention Center, Hyderabad',
+    features: ['LED Chevron Interactive Dance Floor', '360-Degree Overhead Truss Rig', 'Synchronized Strobe & Beam Effects', 'Live DJ Production Booth']
+  },
+  {
+    id: 'evt-gallery-10',
+    title: 'Royal Gold & Velvet Reception Stage',
+    subtitle: 'Opulent palace-inspired reception setup with crystal chandeliers and rich golden drapes',
+    category: 'Royal Reception Stage',
+    image: '/images/events_gallery/event_photo_10.jpg',
+    location: 'Royal Palace Convention Center',
+    features: ['Palace Column Architecture', 'Imported Crystal Chandeliers', 'Rich Velvet Drapery', 'Custom Monogram Stage Floor']
+  },
+  {
+    id: 'evt-gallery-11',
+    title: 'Intimate Haldi & Mehendi Themed Setup',
+    subtitle: 'Vibrant yellow and orange floral backdrop with traditional brass urlis and cushions',
+    category: 'Haldi & Mehendi Decor',
+    image: '/images/events_gallery/event_photo_11.jpg',
+    location: 'Outdoor Lawn, Telangana',
+    features: ['Vibrant Marigold Installations', 'Low Traditional Floor Seating', 'Daylight-Balanced Outdoor Fixtures', 'Quirky Photo Booth Elements']
+  },
+  {
+    id: 'evt-gallery-12',
+    title: 'Grand Banquet Hall Table & Floral Decor',
+    subtitle: 'Exquisite guest table arrangements with towering candelabras and custom floral runners',
+    category: 'Banquet & Table Styling',
+    image: '/images/events_gallery/event_photo_12.jpg',
+    location: '5-Star Ballroom, Telangana',
+    features: ['Towering Crystal Candelabras', 'Fresh Botanical Runners', 'Warm Ambient Table Pin-Spots', 'Fine Linen & Cutlery Coordination']
+  },
+  {
+    id: 'evt-gallery-13',
+    title: 'Outdoor Garden Night Fairytale Illumination',
+    subtitle: 'Enchanted tree canopy wrap with thousands of warm fairy lights and hanging glass orbs',
+    category: 'Landscape & Fairy Lighting',
+    image: '/images/events_gallery/event_photo_13.jpg',
+    location: 'Garden Lawn Venue, Telangana',
+    features: ['High-Density Fairy Light Canopy', 'Hanging Glass Candle Orbs', 'Tree Trunk Silhouette Wash', 'Romantic Walkway Lanterns']
+  },
+  {
+    id: 'evt-gallery-14',
+    title: 'Corporate Summit & Mega Stage Production',
+    subtitle: 'State-of-the-art enterprise conference stage with high-resolution wide LED display and sound',
+    category: 'Corporate & Mega Stage',
+    image: '/images/events_gallery/event_photo_14.jpg',
+    location: 'International Exhibition Center',
+    features: ['Ultra-Wide P2.6 LED Backdrop', 'JBL Line Array Sound System', 'Digital Podium & Stage Monitors', 'Broadcast-Ready Lighting Grid']
+  }
+];
+
 const CHOREOGRAPHY_SHOWCASES = [
   {
     id: 'sangeet-live-performance',
@@ -191,7 +320,7 @@ export default function EventsSection({ onOpenPage }) {
           
           {/* 2. Subsections Navigation Tabs (Matching Pill Design) */}
           <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-center">
-            <div className="inline-flex justify-center items-center gap-1 sm:gap-2 p-1 bg-white border border-[#E2D9CC] rounded-full shadow-sm max-w-full">
+            <div className="inline-flex justify-center items-center gap-1 sm:gap-2 p-1 bg-white border border-[#E2D9CC] rounded-full shadow-sm max-w-full overflow-x-auto">
               
               {/* STAGE & LIGHTING TAB */}
               <button
@@ -217,6 +346,19 @@ export default function EventsSection({ onOpenPage }) {
               >
                 <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'choreography' ? 'text-[#C5A880]' : ''}`} />
                 <span>Choreography</span>
+              </button>
+
+              {/* EVENTS GALLERY TAB */}
+              <button
+                onClick={() => setActiveSubTab('gallery')}
+                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
+                  activeSubTab === 'gallery'
+                    ? 'bg-[#1A1A1A] text-white shadow-md'
+                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
+                }`}
+              >
+                <Camera className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'gallery' ? 'text-[#C5A880]' : ''}`} />
+                <span>Events Gallery</span>
               </button>
 
             </div>
@@ -550,6 +692,90 @@ export default function EventsSection({ onOpenPage }) {
 
                 </div>
 
+              </div>
+            )}
+
+            {/* ══════════ TAB 3: EVENTS GALLERY SHOWCASE (14 SHOWCASES) ══════════ */}
+            {activeSubTab === 'gallery' && (
+              <div className="space-y-8 animate-fadeIn">
+                {/* Gallery Intro Header */}
+                <div className="text-center max-w-3xl mx-auto space-y-2">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/30 text-[#8C6D3F] text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
+                    <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                    <span>14 Signature Event Productions</span>
+                  </div>
+                  <h3 className="font-serif text-2xl sm:text-4xl text-[#1A1A1A] font-light tracking-wide">
+                    EVENTS SHOWCASE GALLERY
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#666666] font-light max-w-xl mx-auto leading-relaxed">
+                    A curated visual archive of our grand mandap decor, concert truss rigs, floral pathways, intelligent lighting, and luxury wedding event productions across Telangana.
+                  </p>
+                </div>
+
+                {/* 14 Event Photo Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                  {EVENTS_SHOWCASE_GALLERY.map((item) => (
+                    <div
+                      key={item.id}
+                      className="group bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                    >
+                      {/* Image Header with Fullscreen Trigger */}
+                      <div 
+                        className="relative aspect-[4/3] bg-black overflow-hidden cursor-pointer"
+                        onClick={() => setSelectedEventPhoto(item)}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3.5 justify-between">
+                          <span className="text-[11px] text-white font-medium flex items-center gap-1">
+                            <Maximize2 className="w-3.5 h-3.5 text-[#C5A880]" />
+                            <span>Click to Zoom</span>
+                          </span>
+                        </div>
+
+                        {/* Category Badge */}
+                        <div className="absolute top-3 left-3">
+                          <span className="px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-wider border border-white/10">
+                            {item.category}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content Body */}
+                      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
+                        <div className="space-y-1.5">
+                          <h4 className="font-serif text-base sm:text-lg font-bold text-[#1A1A1A] group-hover:text-[#C5A880] transition-colors leading-snug">
+                            {item.title}
+                          </h4>
+                          <p className="text-xs text-[#666666] font-light line-clamp-2 leading-relaxed">
+                            {item.subtitle}
+                          </p>
+                        </div>
+
+                        {/* Location & Inquire Action */}
+                        <div className="pt-3 border-t border-[#E8E1D5] flex items-center justify-between gap-2">
+                          <span className="text-[10px] text-[#888888] flex items-center gap-1 font-mono truncate">
+                            <MapPin className="w-3 h-3 text-[#C5A880] shrink-0" />
+                            <span>{item.location}</span>
+                          </span>
+
+                          <button
+                            onClick={() => setSelectedEventPhoto(item)}
+                            className="p-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#C5A880] text-[#1A1A1A] hover:text-white transition-colors cursor-pointer shrink-0"
+                            title="View Fullscreen"
+                          >
+                            <Maximize2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
