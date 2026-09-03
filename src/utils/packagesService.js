@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { PRINTING_DESIGN_SERVICES as INITIAL_COLORLAB_SERVICES } from '../data/servicesData';
 
-const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v16';
+const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v17';
 
 export const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
   {
@@ -238,17 +238,17 @@ export const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     id: 'pkg-corp-1',
     type: 'photography',
     name: 'Corporate & Commercial Events',
-    clientHighlights: 'Tata Tele & JSW, Government Events, RS Brothers',
+    clientHighlights: 'Tata Tele & JSW, Government Events',
     price: 15000,
     duration: '6 hours / Custom Scope',
     category: 'Corporate & Commercial',
     image: '/images/packages/user_pkg_corporate_events.png',
     popular: true,
-    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, RS Brothers retail campaigns, corporate AGMs, and commercial launches.',
+    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, corporate AGMs, and commercial launches.',
     features: [
       'Tata Tele & JSW industrial summits & conferences',
       'Government Events & official state protocol',
-      'RS Brothers & flagship retail showroom launches',
+      'Corporate AGMs & commercial product launches',
       'Keynote speakers, VIP portraits & same-day media'
     ],
     display_order: 13,

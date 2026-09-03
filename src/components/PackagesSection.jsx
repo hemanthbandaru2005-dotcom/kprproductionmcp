@@ -121,7 +121,7 @@ export default function PackagesSection({
                     {/* Highlights Text for Corporate & Commercial Events */}
                     {(service.clientHighlights || (service.name && service.name.toLowerCase().includes('corporate'))) && (
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#C5A880]/15 border border-[#C5A880]/30 rounded-md text-[#8C6D3F] text-[11px] font-semibold tracking-wide">
-                        <span>✨ Tata Tele & JSW • Government Events • RS Brothers</span>
+                        <span>✨ Tata Tele & JSW • Government Events</span>
                       </div>
                     )}
 

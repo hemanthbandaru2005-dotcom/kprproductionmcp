@@ -14,12 +14,12 @@ export const SERVICES_PACKAGES = [
   {
     id: 13,
     name: 'Corporate & Commercial Events',
-    clientHighlights: 'Tata Tele & JSW, Government Events, RS Brothers',
+    clientHighlights: 'Tata Tele & JSW, Government Events',
     price: 15000,
     duration: '6 hours / Custom Scope',
     category: 'Corporate & Commercial',
     image: '/images/packages/user_pkg_corporate_events.png',
     popular: true,
-    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, RS Brothers retail campaigns, corporate AGMs, and commercial launches.'
+    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, corporate AGMs, and commercial launches.'
   }
 ];

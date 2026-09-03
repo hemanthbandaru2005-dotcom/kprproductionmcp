@@ -204,11 +204,11 @@ const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
     name: 'Corporate & Commercial Events',
     price: 15000,
     duration: '6 hours / Custom Scope',
-    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, RS Brothers retail campaigns, corporate AGMs, and commercial launches.',
+    description: 'Enterprise & commercial coverage for Tata Tele & JSW summits, Government Events protocol, corporate AGMs, and commercial launches.',
     features: [
       'Tata Tele & JSW industrial summits & conferences',
       'Government Events & official state protocol',
-      'RS Brothers & flagship retail showroom launches',
+      'Corporate AGMs & commercial product launches',
       'Keynote speakers, VIP portraits & same-day media'
     ],
     display_order: 13,
