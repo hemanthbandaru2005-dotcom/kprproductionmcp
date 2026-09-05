@@ -92,36 +92,20 @@ export default function Footer({
           {/* Studio Contact Info */}
           <div className="md:col-span-4 space-y-3">
             <h4 className="text-[11px] tracking-[0.25em] uppercase text-[#C5A880] font-semibold">Studio Enquiries</h4>
-            <div className="space-y-3 text-xs text-white/70 font-light">
+            <div className="space-y-2.5 text-xs text-white/70 font-light">
               {showAddress && (
-                <div className="space-y-2">
-                  <a
-                    href={mapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-2 text-white/80 hover:text-[#C5A880] transition-colors group"
-                  >
-                    <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                    <div>
-                      <span className="text-[10px] font-bold text-[#C5A880] tracking-wider uppercase block">Color Lab Address</span>
-                      <span className="font-semibold text-white block">Grand Gayathri, 8-5-34</span>
-                      <span>TKS Commercial Complex, Warangal 506002</span>
-                    </div>
-                  </a>
-                  <a
-                    href="https://www.google.com/maps/search/?api=1&query=KPR+Dance+Zone+8GHV%2BHH5+Sriramana+Colony+Hastinapuram+Hyderabad+Telangana+500079"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-2 text-white/80 hover:text-[#C5A880] transition-colors group"
-                  >
-                    <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                    <div>
-                      <span className="text-[10px] font-bold text-[#C5A880] tracking-wider uppercase block">Events Address</span>
-                      <span className="font-semibold text-white block">KPR Dance Zone</span>
-                      <span>Sriramana Colony, Hastinapuram, Hyderabad 500079</span>
-                    </div>
-                  </a>
-                </div>
+                <a
+                  href={mapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-2 text-white/80 hover:text-[#C5A880] transition-colors group"
+                >
+                  <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <span className="font-semibold text-white block">Grand Gayathri, 8-5-34</span>
+                    <span>TKS Commercial Complex, Station Road, Warangal 506002</span>
+                  </div>
+                </a>
               )}
               <a
                 href={`mailto:${contactEmail}`}
