@@ -149,7 +149,7 @@ function AppContent() {
 
     // Route guards
     if (pageName === 'admin-dashboard') {
-      if (!user || profile?.role !== 'admin') {
+      if (!user || (profile?.role !== 'admin' && profile?.role !== 'superadmin')) {
         setLoginTab('admin');
         navigateToPage('login', { replace: true });
         return;
@@ -206,7 +206,7 @@ function AppContent() {
   // haven't re-rendered yet at this point, causing a redirect loop back to login.
   const handleLoginSuccess = (role) => {
     let target = 'home';
-    if (role === 'admin') target = 'admin-dashboard';
+    if (role === 'admin' || role === 'superadmin') target = 'admin-dashboard';
     else if (role === 'worker') target = 'worker-dashboard';
     else if (role === 'client') target = 'client-dashboard';
 
@@ -221,7 +221,7 @@ function AppContent() {
   // On initial load, if user is already logged in, go to dashboard
   useEffect(() => {
     if (!loading && user && profile) {
-      if (profile.role === 'admin' && (activePage === 'login' || activePage === 'home')) {
+      if ((profile.role === 'admin' || profile.role === 'superadmin') && (activePage === 'login' || activePage === 'home')) {
         handleSelectPage('admin-dashboard', { replace: true });
       } else if (profile.role === 'worker' && (activePage === 'login' || activePage === 'home')) {
         handleSelectPage('worker-dashboard', { replace: true });
@@ -245,7 +245,7 @@ function AppContent() {
 
   // Admin dashboard gets its own full-screen layout
   if (activePage === 'admin-dashboard') {
-    if (!user || profile?.role !== 'admin') {
+    if (!user || (profile?.role !== 'admin' && profile?.role !== 'superadmin')) {
       handleSelectPage('login', { replace: true, tab: 'admin' });
       return null;
     }

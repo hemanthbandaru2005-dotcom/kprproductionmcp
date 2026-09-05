@@ -25,8 +25,9 @@ import {
   subscribeToJobsRealtime
 } from '../../utils/jobsService';
 import PasswordManagementPage from './PasswordManagementPage';
+import ManageAdminsPage from './ManageAdminsPage';
 import {
-  LayoutDashboard, Users, UserCheck,
+  LayoutDashboard, Users, UserCheck, ShieldCheck,
   Edit3, LogOut, Menu, X, ChevronRight,
   Plus, UserPlus, Activity, Palette,
   MessageSquare, Bell, CheckCircle, HardDrive, KeyRound,
@@ -34,13 +35,13 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-const TOP_NAV_PILLS = [
+const BASE_NAV_PILLS = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'jobs', label: 'Jobs', icon: Briefcase },
   { key: 'uploads', label: 'Uploads', icon: HardDrive },
   { key: 'colorlab', label: 'Color Lab', icon: CheckCircle },
   { key: 'messages', label: 'Messages', icon: MessageSquare },
-  { key: 'workers', label: 'Workers', icon: UserCheck },
+  { key: 'workers', label: 'Employees', icon: UserCheck },
   { key: 'clients', label: 'Clients', icon: Users },
   { key: 'editor', label: 'Editor', icon: Edit3 },
   { key: 'passwords', label: 'Security', icon: KeyRound },
@@ -50,6 +51,16 @@ export default function AdminDashboard({ onLogout }) {
   const { user, profile, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isMasterAdmin = profile?.role === 'superadmin' || profile?.username === 'master';
+
+  const navPills = isMasterAdmin
+    ? [
+        ...BASE_NAV_PILLS.slice(0, 7),
+        { key: 'admins', label: 'Admins', icon: ShieldCheck },
+        ...BASE_NAV_PILLS.slice(7)
+      ]
+    : BASE_NAV_PILLS;
 
   // Modal states
   const [createJobOpen, setCreateJobOpen] = useState(false);
@@ -168,7 +179,7 @@ export default function AdminDashboard({ onLogout }) {
 
   const fetchUnreadCount = async () => {
     const allMsgs = await fetchAllChatThreadsForAdmin();
-    const unread = allMsgs.filter(m => m.sender_role === 'staff' && !m.read_at).length;
+    const unread = allMsgs.filter(m => (m.sender_role === 'staff' || m.sender_role === 'worker') && !m.read_at).length;
     setTotalUnreadMessages(unread);
   };
 
@@ -231,7 +242,7 @@ export default function AdminDashboard({ onLogout }) {
   };
 
   const totalJobs = statusCounts.in_progress + statusCounts.review + statusCounts.completed;
-  const userName = profile?.full_name || user?.email?.split('@')[0] || 'Admin';
+  const userName = profile?.full_name || profile?.username || user?.email?.split('@')[0] || 'Admin';
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] text-[#111111] font-sans antialiased p-2 sm:p-5 lg:p-8 flex flex-col items-center justify-start selection:bg-[#141414] selection:text-white">
@@ -249,22 +260,24 @@ export default function AdminDashboard({ onLogout }) {
           
           {/* Left: Logged-in Admin Identity */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#141414] flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-xs shrink-0">
-              {(profile?.full_name || user?.email || 'A').charAt(0).toUpperCase()}
+            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-xs shrink-0 ${
+              isMasterAdmin ? 'bg-[#7E22CE]' : 'bg-[#141414]'
+            }`}>
+              {(profile?.full_name || profile?.username || user?.email || 'A').charAt(0).toUpperCase()}
             </div>
             <div className="block">
               <span className="text-xs sm:text-[14px] font-bold text-[#111111] tracking-tight block leading-tight">
-                {profile?.full_name || (user?.email?.split('@')[0] || 'Admin')}
+                {profile?.full_name || profile?.username || (user?.email?.split('@')[0] || 'Admin')}
               </span>
-              <span className="text-[9px] sm:text-[10px] text-[#9CA0A6] font-medium tracking-wider block lowercase">
-                {user?.email || 'admin'}
+              <span className="text-[9px] sm:text-[10px] text-[#9CA0A6] font-medium tracking-wider block">
+                {isMasterAdmin ? 'Master Admin' : 'Studio Admin'} {profile?.username ? `(@${profile.username})` : ''}
               </span>
             </div>
           </div>
 
           {/* Centered Group of Nav Pills (Desktop) */}
           <nav className="hidden xl:flex items-center gap-1 bg-[#F7F8FA] p-1 rounded-full border border-[#E7E8EB]">
-            {TOP_NAV_PILLS.map((pill) => {
+            {navPills.map((pill) => {
               const isActive = activeSection === pill.key;
               const isMessages = pill.key === 'messages';
               const isUploads = pill.key === 'uploads';
@@ -313,7 +326,7 @@ export default function AdminDashboard({ onLogout }) {
             <button
               onClick={() => setActiveSection('messages')}
               className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] flex items-center justify-center text-[#6B7280] hover:text-[#111111] transition-colors cursor-pointer"
-              title="Staff Messages"
+              title="Employee Messages"
             >
               <Bell className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
               {totalUnreadMessages > 0 && (
@@ -348,7 +361,7 @@ export default function AdminDashboard({ onLogout }) {
             MOBILE HORIZONTAL SWIPE NAV BAR (ALWAYS ACCESSIBLE ON MOBILE & TABLET)
             ════════════════════════════════════════════════════════════════════════════ */}
         <div className="xl:hidden w-full flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1">
-          {TOP_NAV_PILLS.map((pill) => {
+          {navPills.map((pill) => {
             const Icon = pill.icon;
             const isActive = activeSection === pill.key;
             const isMessages = pill.key === 'messages';
@@ -384,7 +397,7 @@ export default function AdminDashboard({ onLogout }) {
         {/* Mobile Navigation Dropdown (Alternative grid when hamburger is tapped) */}
         {mobileMenuOpen && (
           <div className="xl:hidden bg-white rounded-2xl p-3 border border-[#E7E8EB] shadow-lg grid grid-cols-2 sm:grid-cols-3 gap-1.5 animate-fadeIn">
-            {TOP_NAV_PILLS.map((pill) => {
+            {navPills.map((pill) => {
               const Icon = pill.icon;
               const isActive = activeSection === pill.key;
               return (
@@ -416,9 +429,10 @@ export default function AdminDashboard({ onLogout }) {
               {activeSection === 'jobs' && 'Photoshoot Pipeline & Orders'}
               {activeSection === 'uploads' && 'Client Uploads & Drive Sync'}
               {activeSection === 'colorlab' && 'Color Lab & Print Verifications'}
-              {activeSection === 'messages' && 'Staff Live Communications'}
-              {activeSection === 'workers' && 'Studio Staff & Photographers'}
+              {activeSection === 'messages' && 'Employee Live Communications'}
+              {activeSection === 'workers' && 'Studio Employees & Photographers'}
               {activeSection === 'clients' && 'Client Directory & Accounts'}
+              {activeSection === 'admins' && 'Master Admin • Manage Studio Admins'}
               {activeSection === 'editor' && 'Studio Live Showcase Editor'}
               {activeSection === 'passwords' && 'Password & Access Security'}
             </h2>
@@ -429,13 +443,13 @@ export default function AdminDashboard({ onLogout }) {
 
           {(activeSection === 'dashboard' || activeSection === 'jobs') && (
             <div className="flex items-center gap-2 sm:gap-2.5 self-start sm:self-auto w-full sm:w-auto">
-              {/* Secondary Button: Assign Staff */}
+              {/* Secondary Button: Assign Employee */}
               <button
                 onClick={() => setAssignWorkerOpen(true)}
                 className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-full bg-white hover:bg-[#F1F2F4] text-[#111111] border border-[#E7E8EB] text-xs font-semibold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
               >
                 <UserPlus className="w-3.5 h-3.5" />
-                <span>Assign Staff</span>
+                <span>Assign Employee</span>
               </button>
 
               {/* Primary Action Button: + New task (Solid Dark Pill) */}
@@ -490,6 +504,7 @@ export default function AdminDashboard({ onLogout }) {
           {activeSection === 'messages' && <AdminChatPanel />}
           {activeSection === 'workers' && <WorkersPage />}
           {activeSection === 'clients' && <ClientsPage />}
+          {activeSection === 'admins' && isMasterAdmin && <ManageAdminsPage />}
           {activeSection === 'editor' && <AdminSettingsPage />}
           {activeSection === 'passwords' && <PasswordManagementPage />}
         </main>

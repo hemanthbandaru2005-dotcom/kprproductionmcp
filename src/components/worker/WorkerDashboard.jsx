@@ -473,14 +473,14 @@ export default function WorkerDashboard({ onLogout }) {
           
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#141414] flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0">
-              W
+              E
             </div>
             <div>
               <span className="text-sm sm:text-base font-bold text-[#111111] tracking-tight block leading-tight">
-                KPR Staff Portal
+                KPR Employee Portal
               </span>
               <span className="text-[10px] text-[#9CA0A6] font-medium tracking-wider uppercase">
-                Worker Desk & Assignments
+                Employee Desk & Assignments
               </span>
             </div>
           </div>

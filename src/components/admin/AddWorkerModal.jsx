@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { generateUUID } from '../../utils/chatService';
-import { X, UserPlus, Mail, Phone, Lock, User, Loader2, CheckCircle, AlertCircle, Copy, Key, ShieldCheck, Sparkles } from 'lucide-react';
+import { X, UserPlus, Mail, Phone, Lock, User, Loader2, CheckCircle, AlertCircle, Copy, Key, ShieldCheck, Sparkles, Eye, EyeOff, MessageSquare } from 'lucide-react';
 
 export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
   const [fullName, setFullName] = useState('');
@@ -9,6 +9,7 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
   const [realEmail, setRealEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [createdCredentials, setCreatedCredentials] = useState(null);
@@ -33,6 +34,7 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
     setRealEmail('');
     setPhone('');
     setPassword('');
+    setShowPassword(false);
     setErrorMsg('');
     setCreatedCredentials(null);
     setCopied(false);
@@ -62,7 +64,7 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
         }
       } catch (e) {}
 
-      // 2. Insert to Supabase verifications cloud database table (Accessible on all devices & laptops)
+      // 2. Insert to Supabase verifications cloud database table
       const workerKey = workerId.trim().toLowerCase();
       const workerRecordPayload = {
         id: generateUUID(),
@@ -71,7 +73,7 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
         client_email: loginEmail,
         album_id: 'SYSTEM_WORKER_REGISTRY',
         event_id: `worker_profile_${workerKey}`,
-        event_title: 'Studio Staff Worker',
+        event_title: 'Studio Staff Employee',
         client_note: phone.trim() || 'N/A',
         status: 'active',
         sent_at: new Date().toISOString(),
@@ -84,6 +86,9 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
           real_email: realEmail.trim() || 'N/A',
           role: 'worker',
           status: 'active',
+          temp_password: password,
+          is_temp_password: true,
+          first_login_at: null,
           skill: 'Photographer / Editor'
         }]
       };
@@ -115,6 +120,9 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
           phone: phone.trim() || null,
           role: 'worker',
           status: 'active',
+          temp_password: password,
+          is_temp_password: true,
+          first_login_at: null,
           updated_at: new Date().toISOString()
         }]);
       } catch (err) {}
@@ -129,6 +137,9 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
         real_email: realEmail.trim() || 'N/A',
         role: 'worker',
         status: 'active',
+        temp_password: password,
+        is_temp_password: true,
+        first_login_at: null,
         created_at: new Date().toISOString()
       };
 
@@ -147,11 +158,12 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
         email: loginEmail,
         password: password,
         realEmail: realEmail.trim() || null,
+        phone: phone.trim() || null,
       });
 
       if (onWorkerAdded) onWorkerAdded(newWorkerRecord);
     } catch (err) {
-      setErrorMsg(err.message || 'Failed to create worker account');
+      setErrorMsg(err.message || 'Failed to create employee account');
     } finally {
       setLoading(false);
     }
@@ -159,10 +171,18 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
 
   const handleCopyCredentials = () => {
     if (!createdCredentials) return;
-    const text = `KPR Studio Staff Login\nName: ${createdCredentials.name}\nLogin ID: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nPortal URL: https://kpr-photography-productions.surge.sh`;
+    const text = `KPR Studio Employee Login\nName: ${createdCredentials.name}\nLogin ID: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nPortal URL: ${window.location.origin}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShareWhatsApp = () => {
+    if (!createdCredentials) return;
+    const text = `*KPR Photography Studio - Employee Login*\n\nHello ${createdCredentials.name},\nHere are your login credentials:\n\n*Portal URL:* ${window.location.origin}\n*Login ID / Email:* ${createdCredentials.email}\n*Temporary Password:* ${createdCredentials.password}\n\nPlease log in and update your profile if needed.`;
+    const cleanPhone = (createdCredentials.phone || '').replace(/[^0-9]/g, '');
+    const url = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -176,8 +196,8 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-[#111111] uppercase tracking-wider">Add Worker Account</h3>
-              <p className="text-[11px] text-[#6B7280]">Provision login credentials for studio team member</p>
+              <h3 className="text-base font-bold text-[#111111] uppercase tracking-wider">Add Employee Account</h3>
+              <p className="text-[11px] text-[#6B7280]">Provision login credentials for studio employee</p>
             </div>
           </div>
           <button onClick={handleClose} className="p-2 rounded-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] transition-colors cursor-pointer">
@@ -191,14 +211,14 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
             <div className="p-4 bg-[#DFF5E3] border border-[#BBF7D0] rounded-2xl flex items-start gap-3">
               <CheckCircle className="w-5 h-5 text-[#13A52D] shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-bold text-[#13A52D]">Worker Account Created Successfully!</p>
-                <p className="text-xs text-[#6B7280] mt-0.5">Share these credentials with the team member to login.</p>
+                <p className="text-sm font-bold text-[#13A52D]">Employee Account Created Successfully!</p>
+                <p className="text-xs text-[#6B7280] mt-0.5">Share these credentials with the employee to login.</p>
               </div>
             </div>
 
             <div className="bg-[#F7F8FA] border border-[#E7E8EB] rounded-2xl p-4 space-y-3">
               <div>
-                <p className="text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Worker Name</p>
+                <p className="text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Employee Name</p>
                 <p className="text-sm font-bold text-[#111111]">{createdCredentials.name}</p>
               </div>
 
@@ -213,17 +233,24 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
               <button
                 onClick={handleCopyCredentials}
-                className="flex-1 py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="w-full sm:flex-1 py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
                 {copied ? <CheckCircle className="w-4 h-4 text-[#13A52D]" /> : <Copy className="w-4 h-4" />}
                 <span>{copied ? 'Credentials Copied!' : 'Copy Credentials'}</span>
               </button>
               <button
+                onClick={handleShareWhatsApp}
+                className="w-full sm:w-auto px-5 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>WhatsApp</span>
+              </button>
+              <button
                 onClick={handleClose}
-                className="px-6 py-3 bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3 bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer"
               >
                 Done
               </button>
@@ -239,17 +266,17 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
               </div>
             )}
 
-            {/* Worker Name */}
+            {/* Employee Name */}
             <div>
               <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider mb-1.5">
-                Worker Name *
+                Employee Name *
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
                 <input
                   type="text"
                   required
-                  placeholder="Enter worker name"
+                  placeholder="Enter employee name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
@@ -257,11 +284,11 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
               </div>
             </div>
 
-            {/* Worker ID + Preview */}
+            {/* Employee ID + Preview */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
-                  Worker ID *
+                  Employee ID *
                 </label>
                 {formattedLoginId && (
                   <span className="text-[11px] font-mono text-[#1E74FF] font-medium">
@@ -274,7 +301,7 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
                 <input
                   type="text"
                   required
-                  placeholder="Enter worker ID"
+                  placeholder="Enter employee ID"
                   value={workerId}
                   onChange={(e) => {
                     setWorkerId(e.target.value);
@@ -340,13 +367,21 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
               <div className="relative">
                 <Lock className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
                 <input
-                  type="text"
+                  type={showPassword ? "text" : "password"}
                   required
                   placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] font-mono placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+                  className="w-full pl-10 pr-10 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] font-mono placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3 text-[#9CA0A6] hover:text-[#111111] focus:outline-none cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -357,7 +392,7 @@ export default function AddWorkerModal({ isOpen, onClose, onWorkerAdded }) {
               className="w-full py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              <span>Create Worker Account</span>
+              <span>Create Employee Account</span>
             </button>
           </form>
         )}

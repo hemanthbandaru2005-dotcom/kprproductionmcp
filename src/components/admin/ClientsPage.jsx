@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import AddClientModal from './AddClientModal';
-import { Users, Plus, RefreshCw, Phone, Mail, ShieldAlert, ShieldCheck, Search, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Users, Plus, RefreshCw, Phone, Mail, ShieldAlert, ShieldCheck, Search, Trash2, AlertTriangle, X, Eye, EyeOff, Copy, CheckCircle } from 'lucide-react';
 
 const DELETED_CLIENTS_KEY = 'kpr_deleted_clients_v1';
 
@@ -21,12 +21,27 @@ export default function ClientsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteConfirmClient, setDeleteConfirmClient] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [revealedPasswords, setRevealedPasswords] = useState({});
+  const [copiedId, setCopiedId] = useState(null);
+
+  const togglePasswordVisibility = (id) => {
+    setRevealedPasswords(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const handleCopyPassword = (id, text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const fetchClients = async () => {
     const deletedEmails = getDeletedClientEmails();
     const clientMap = new Map();
 
-    // 1. Supabase verifications cloud registry (Works across all laptops & devices)
+    // 1. Supabase verifications cloud registry
     try {
       const { data: vData, error: vErr } = await supabase
         .from('verifications')
@@ -47,6 +62,9 @@ export default function ClientsPage() {
               phone: meta.phone || item.client_note || 'N/A',
               role: 'client',
               status: item.status || 'active',
+              temp_password: meta.temp_password || null,
+              is_temp_password: meta.is_temp_password || false,
+              first_login_at: meta.first_login_at || null,
               created_at: item.sent_at || item.created_at
             });
           }
@@ -65,8 +83,15 @@ export default function ClientsPage() {
       if (!error && Array.isArray(data) && data.length > 0) {
         data.forEach(c => {
           const email = (c.email || '').toLowerCase().trim();
-          if (email && !deletedEmails.includes(email) && !email.includes('example.com') && !clientMap.has(email)) {
-            clientMap.set(email, c);
+          if (email && !deletedEmails.includes(email) && !email.includes('example.com')) {
+            const existing = clientMap.get(email) || {};
+            clientMap.set(email, {
+              ...existing,
+              ...c,
+              email,
+              temp_password: c.temp_password || existing.temp_password || null,
+              first_login_at: c.first_login_at || existing.first_login_at || null,
+            });
           }
         });
       }
@@ -83,20 +108,6 @@ export default function ClientsPage() {
             if (email && !deletedEmails.includes(email) && !email.includes('example.com')) {
               if (!clientMap.has(email)) {
                 clientMap.set(email, c);
-                // Auto-sync local client to Supabase cloud database
-                supabase.from('verifications').insert([{
-                  id: `client_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-                  client_id: c.id || `client-${email.split('@')[0]}`,
-                  client_name: c.full_name || 'Client',
-                  client_email: email,
-                  album_id: 'SYSTEM_CLIENT_REGISTRY',
-                  event_id: `client_profile_${email.split('@')[0]}`,
-                  event_title: 'Studio Client Account',
-                  client_note: c.phone || 'N/A',
-                  status: c.status || 'active',
-                  sent_at: c.created_at || new Date().toISOString(),
-                  photo_items: [c]
-                }]).then(() => {}).catch(() => {});
               }
             }
           });
@@ -114,6 +125,8 @@ export default function ClientsPage() {
           phone: 'N/A',
           role: 'client',
           status: 'active',
+          temp_password: null,
+          first_login_at: '2026-01-01T00:00:00Z',
           created_at: new Date().toISOString()
         });
       }
@@ -163,7 +176,7 @@ export default function ClientsPage() {
 
     if (error) {
       console.error('Error toggling client status:', error.message);
-      fetchClients(); // Revert on failure
+      fetchClients();
     }
   };
 
@@ -286,6 +299,7 @@ export default function ClientsPage() {
                   <tr className="border-b border-[#E7E8EB] text-[10px] text-[#6B7280] uppercase tracking-wider bg-[#F7F8FA]">
                     <th className="px-6 py-3.5">Client Name</th>
                     <th className="px-6 py-3.5">Contact</th>
+                    <th className="px-6 py-3.5">Temp Password</th>
                     <th className="px-6 py-3.5">Date Added</th>
                     <th className="px-6 py-3.5">Status</th>
                     <th className="px-6 py-3.5 text-right">Actions</th>
@@ -294,6 +308,10 @@ export default function ClientsPage() {
                 <tbody className="divide-y divide-[#E7E8EB]">
                   {filteredClients.map((client) => {
                     const isActive = client.status !== 'disabled';
+                    const hasNeverLoggedIn = !client.first_login_at;
+                    const hasTempPw = hasNeverLoggedIn && client.temp_password;
+                    const isRevealed = revealedPasswords[client.id];
+
                     return (
                       <tr key={client.id} className="hover:bg-[#F7F8FA] transition-colors">
                         <td className="px-6 py-4">
@@ -318,6 +336,35 @@ export default function ClientsPage() {
                               <Phone className="w-3.5 h-3.5 text-[#9CA0A6]" />
                               <span>{client.phone}</span>
                             </div>
+                          )}
+                        </td>
+
+                        {/* Temp Password Column */}
+                        <td className="px-6 py-4">
+                          {hasTempPw ? (
+                            <div className="inline-flex items-center gap-2 bg-[#F1F2F4] px-2.5 py-1 rounded-lg border border-[#E7E8EB]">
+                              <span className="font-mono text-xs font-semibold text-[#111111]">
+                                {isRevealed ? client.temp_password : '••••••••'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => togglePasswordVisibility(client.id)}
+                                className="text-[#9CA0A6] hover:text-[#111111] transition-colors cursor-pointer"
+                                title={isRevealed ? "Hide Password" : "Show Password"}
+                              >
+                                {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyPassword(client.id, client.temp_password)}
+                                className="text-[#9CA0A6] hover:text-[#1E74FF] transition-colors cursor-pointer"
+                                title="Copy Password"
+                              >
+                                {copiedId === client.id ? <CheckCircle className="w-3.5 h-3.5 text-[#13A52D]" /> : <Copy className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-[#9CA0A6] italic">Set by user</span>
                           )}
                         </td>
 
@@ -377,6 +424,10 @@ export default function ClientsPage() {
             <div className="md:hidden divide-y divide-[#E7E8EB]">
               {filteredClients.map((client) => {
                 const isActive = client.status !== 'disabled';
+                const hasNeverLoggedIn = !client.first_login_at;
+                const hasTempPw = hasNeverLoggedIn && client.temp_password;
+                const isRevealed = revealedPasswords[client.id];
+
                 return (
                   <div key={client.id} className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
@@ -400,6 +451,24 @@ export default function ClientsPage() {
                         </span>
                       )}
                     </div>
+
+                    {hasTempPw && (
+                      <div className="flex items-center justify-between bg-[#F1F2F4] p-2 rounded-lg text-xs">
+                        <span className="text-[#6B7280] font-medium">Temp Password:</span>
+                        <div className="flex items-center gap-2">
+                          <code className="font-mono text-xs font-bold text-[#111111]">
+                            {isRevealed ? client.temp_password : '••••••••'}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => togglePasswordVisibility(client.id)}
+                            className="text-[#9CA0A6] hover:text-[#111111]"
+                          >
+                            {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {client.phone && client.phone !== 'N/A' && (
                       <div className="text-xs text-[#6B7280] flex items-center gap-1.5">

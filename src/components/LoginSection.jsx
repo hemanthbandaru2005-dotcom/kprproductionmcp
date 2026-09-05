@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Users, UserCheck, ShieldCheck, Lock, Mail, CheckCircle, AlertCircle, Loader2, KeyRound, ArrowLeft, RefreshCw, HelpCircle } from 'lucide-react';
+import { Users, UserCheck, ShieldCheck, Lock, Mail, CheckCircle, AlertCircle, Loader2, KeyRound, ArrowLeft, RefreshCw, HelpCircle, Eye, EyeOff, User } from 'lucide-react';
 import { useAuth, ADMIN_MEMBERS } from '../context/AuthContext';
 import { supabase } from '../utils/supabaseClient';
 
@@ -13,16 +13,20 @@ const THEMES = {
     primarySoft: '#C97DA8',
     label: 'ADMIN LOGIN',
     icon: ShieldCheck,
-    placeholder: 'name@gmail.com',
+    inputIcon: User,
+    fieldLabel: 'Username',
+    placeholder: 'Username (e.g. kprfotography, master)',
   },
   worker: {
     primary: '#2D6A8B',
     primaryDark: '#1E4F6A',
     primaryLight: '#3D8AB5',
     primarySoft: '#6BB3D4',
-    label: 'WORKER LOGIN',
+    label: 'EMPLOYEE LOGIN',
     icon: UserCheck,
-    placeholder: 'name@gmail.com',
+    inputIcon: Mail,
+    fieldLabel: 'Employee Email / ID',
+    placeholder: 'Employee Email or ID (e.g. nihal@kpr.com)',
   },
   client: {
     primary: '#C5A880',
@@ -31,7 +35,9 @@ const THEMES = {
     primarySoft: '#E8D4B8',
     label: 'CLIENT LOGIN',
     icon: Users,
-    placeholder: 'name@gmail.com',
+    inputIcon: Mail,
+    fieldLabel: 'Client Email',
+    placeholder: 'Client Email (e.g. name@gmail.com)',
   },
 };
 
@@ -40,6 +46,7 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
 
   const [activePortal, setActivePortal] = useState(initialTab || 'admin');
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -52,6 +59,8 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
   const [adminAnswer2, setAdminAnswer2] = useState('');
   const [adminNewPassword, setAdminNewPassword] = useState('');
   const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
+  const [showAdminPw, setShowAdminPw] = useState(false);
+  const [showAdminConfirmPw, setShowAdminConfirmPw] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [adminHasSecurityQ, setAdminHasSecurityQ] = useState(null);
 
@@ -78,6 +87,7 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
 
   const theme = THEMES[activePortal];
   const ThemeIcon = theme.icon;
+  const InputIcon = theme.inputIcon || Mail;
 
 
   // ── Measure the active tab and position the pill ──
@@ -153,11 +163,14 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
 
       // Check role matches the selected portal tab
       const userRole = result.profile?.role;
+      const isAuthorized = activePortal === 'admin'
+        ? (userRole === 'admin' || userRole === 'superadmin')
+        : (userRole === activePortal);
 
-      if (userRole !== activePortal) {
+      if (!isAuthorized) {
         // Role mismatch — sign them out and show error
         await signOut();
-        const roleLabel = activePortal.charAt(0).toUpperCase() + activePortal.slice(1);
+        const roleLabel = activePortal === 'worker' ? 'Employee' : (activePortal.charAt(0).toUpperCase() + activePortal.slice(1));
         setErrorMsg(`Not authorized as ${roleLabel}. Your account role is "${userRole || 'unknown'}".`);
         setIsLoading(false);
         return;
@@ -632,14 +645,22 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                     >
                       <Lock className="w-4.5 h-4.5 text-gray-400 absolute left-0 top-3" />
                       <input
-                        type="password"
+                        type={showAdminPw ? "text" : "password"}
                         required
                         placeholder="New Password (min 6 chars)"
                         value={adminNewPassword}
                         onChange={(e) => setAdminNewPassword(e.target.value)}
-                        className="w-full pl-8 pr-2 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
+                        className="w-full pl-8 pr-8 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
                         disabled={isLoading}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminPw(!showAdminPw)}
+                        className="absolute right-0 top-3 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer"
+                        tabIndex={-1}
+                      >
+                        {showAdminPw ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                      </button>
                     </div>
 
                     {/* Confirm Password */}
@@ -649,14 +670,22 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                     >
                       <Lock className="w-4.5 h-4.5 text-gray-400 absolute left-0 top-3" />
                       <input
-                        type="password"
+                        type={showAdminConfirmPw ? "text" : "password"}
                         required
                         placeholder="Confirm New Password"
                         value={adminConfirmPassword}
                         onChange={(e) => setAdminConfirmPassword(e.target.value)}
-                        className="w-full pl-8 pr-2 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
+                        className="w-full pl-8 pr-8 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
                         disabled={isLoading}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminConfirmPw(!showAdminConfirmPw)}
+                        className="absolute right-0 top-3 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer"
+                        tabIndex={-1}
+                      >
+                        {showAdminConfirmPw ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                      </button>
                     </div>
 
                     <div className="flex items-center justify-between pt-2 gap-3">
@@ -708,14 +737,22 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                     >
                       <Lock className="w-4.5 h-4.5 text-gray-400 absolute left-0 top-3" />
                       <input
-                        type="password"
+                        type={showAdminPw ? "text" : "password"}
                         required
                         placeholder="New Password (min 6 chars)"
                         value={adminNewPassword}
                         onChange={(e) => setAdminNewPassword(e.target.value)}
-                        className="w-full pl-8 pr-2 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
+                        className="w-full pl-8 pr-8 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
                         disabled={isLoading}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminPw(!showAdminPw)}
+                        className="absolute right-0 top-3 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer"
+                        tabIndex={-1}
+                      >
+                        {showAdminPw ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                      </button>
                     </div>
 
                     <div
@@ -724,14 +761,22 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                     >
                       <Lock className="w-4.5 h-4.5 text-gray-400 absolute left-0 top-3" />
                       <input
-                        type="password"
+                        type={showAdminConfirmPw ? "text" : "password"}
                         required
                         placeholder="Confirm New Password"
                         value={adminConfirmPassword}
                         onChange={(e) => setAdminConfirmPassword(e.target.value)}
-                        className="w-full pl-8 pr-2 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
+                        className="w-full pl-8 pr-8 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
                         disabled={isLoading}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminConfirmPw(!showAdminConfirmPw)}
+                        className="absolute right-0 top-3 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer"
+                        tabIndex={-1}
+                      >
+                        {showAdminConfirmPw ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                      </button>
                     </div>
 
                     <button
@@ -780,7 +825,7 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                   className="relative border-b-2 border-gray-300 transition-colors duration-300"
                   style={{ borderBottomColor: formData.email ? theme.primary : undefined }}
                 >
-                  <Mail className="w-4.5 h-4.5 text-gray-400 absolute left-0 top-3" />
+                  <InputIcon className="w-4.5 h-4.5 text-gray-400 absolute left-0 top-3" />
                   <input
                     type="text"
                     autoCapitalize="none"
@@ -800,16 +845,25 @@ export default function LoginSection({ onLoginSuccess, initialTab }) {
                 >
                   <Lock className="w-4.5 h-4.5 text-gray-400 absolute left-0 top-3" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck="false"
                     placeholder="Password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full pl-8 pr-2 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
+                    className="w-full pl-8 pr-8 py-3 bg-transparent text-sm text-[#1A1A1A] placeholder-gray-400 focus:outline-none"
                     disabled={isLoading}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-0 top-3 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer"
+                    tabIndex={-1}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                  </button>
                 </div>
 
                 <div className="flex items-center justify-between pt-2">

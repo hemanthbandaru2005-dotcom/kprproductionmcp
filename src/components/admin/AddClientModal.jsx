@@ -1,17 +1,40 @@
 import React, { useState } from 'react';
 import { supabase } from '../../utils/supabaseClient';
-import { X, UserPlus, Mail, Phone, Lock, User, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, UserPlus, Mail, Phone, Lock, User, Loader2, CheckCircle, AlertCircle, Eye, EyeOff, Sparkles, Copy, MessageSquare } from 'lucide-react';
 
 export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [createdCredentials, setCreatedCredentials] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
+
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$';
+    let pass = '';
+    for (let i = 0; i < 10; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setPassword(pass);
+  };
+
+  const handleClose = () => {
+    setFullName('');
+    setEmail('');
+    setPhone('');
+    setPassword('');
+    setShowPassword(false);
+    setErrorMsg('');
+    setCreatedCredentials(null);
+    setCopied(false);
+    onClose();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +45,6 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
 
     setLoading(true);
     setErrorMsg('');
-    setSuccessMsg('');
 
     try {
       const cleanEmail = email.trim().toLowerCase();
@@ -37,7 +59,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
         }
       } catch (e) {}
 
-      // 2. Insert to Supabase verifications cloud database table (Accessible across all laptops)
+      // 2. Insert to Supabase verifications cloud database table
       const clientId = `client-${cleanEmail.split('@')[0]}-${Date.now().toString(36)}`;
       const clientRecordPayload = {
         id: `client_reg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
@@ -56,7 +78,10 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
           email: cleanEmail,
           phone: phone.trim() || 'N/A',
           role: 'client',
-          status: 'active'
+          status: 'active',
+          temp_password: password,
+          is_temp_password: true,
+          first_login_at: null,
         }]
       };
 
@@ -87,6 +112,9 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
           phone: phone.trim() || null,
           role: 'client',
           status: 'active',
+          temp_password: password,
+          is_temp_password: true,
+          first_login_at: null,
           updated_at: new Date().toISOString()
         }]);
       } catch (err) {}
@@ -99,6 +127,9 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
         phone: phone.trim() || 'N/A',
         role: 'client',
         status: 'active',
+        temp_password: password,
+        is_temp_password: true,
+        first_login_at: null,
         created_at: new Date().toISOString()
       };
 
@@ -113,23 +144,36 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
         }
       } catch (storageErr) {}
 
-      setSuccessMsg(`Client account created successfully!`);
-      if (onClientAdded) onClientAdded(newClientRecord);
+      setCreatedCredentials({
+        name: fullName.trim(),
+        email: cleanEmail,
+        password: password,
+        phone: phone.trim() || null,
+      });
 
-      setTimeout(() => {
-        setFullName('');
-        setEmail('');
-        setPhone('');
-        setPassword('');
-        setSuccessMsg('');
-        setLoading(false);
-        onClose();
-      }, 900);
+      if (onClientAdded) onClientAdded(newClientRecord);
 
     } catch (err) {
       setErrorMsg(err.message || 'Failed to create client account');
+    } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopyCredentials = () => {
+    if (!createdCredentials) return;
+    const text = `KPR Studio Client Proofing Login\nName: ${createdCredentials.name}\nEmail: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nPortal URL: ${window.location.origin}`;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShareWhatsApp = () => {
+    if (!createdCredentials) return;
+    const text = `*KPR Photography Studio - Client Album Portal*\n\nHello ${createdCredentials.name},\nHere are your album proofing login credentials:\n\n*Portal URL:* ${window.location.origin}\n*Email:* ${createdCredentials.email}\n*Temporary Password:* ${createdCredentials.password}\n\nPlease log in to view and select your photos!`;
+    const cleanPhone = (createdCredentials.phone || '').replace(/[^0-9]/g, '');
+    const url = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -147,108 +191,172 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded }) {
               <p className="text-[11px] text-[#6B7280]">Provision login credentials for album proofing</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] transition-colors cursor-pointer">
+          <button onClick={handleClose} className="p-2 rounded-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] transition-colors cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
-          {errorMsg && (
-            <div className="p-3 bg-[#FEF2F2] border border-[#FCA5A5] rounded-xl text-xs text-[#DC2626] flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
+        {createdCredentials ? (
+          /* ──── SUCCESS CREDENTIALS SCREEN ──── */
+          <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
+            <div className="p-4 bg-[#DFF5E3] border border-[#BBF7D0] rounded-2xl flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-[#13A52D] shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-[#13A52D]">Client Account Created Successfully!</p>
+                <p className="text-xs text-[#6B7280] mt-0.5">Share these credentials with the client to access their album portal.</p>
+              </div>
             </div>
-          )}
 
-          {successMsg && (
-            <div className="p-3 bg-[#DFF5E3] border border-[#BBF7D0] rounded-xl text-xs text-[#13A52D] flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 shrink-0" />
-              <span>{successMsg}</span>
+            <div className="bg-[#F7F8FA] border border-[#E7E8EB] rounded-2xl p-4 space-y-3">
+              <div>
+                <p className="text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Client Name</p>
+                <p className="text-sm font-bold text-[#111111]">{createdCredentials.name}</p>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Login Email</p>
+                <code className="text-sm font-mono text-[#FF4D94] font-bold">{createdCredentials.email}</code>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Temporary Password</p>
+                <code className="text-sm font-mono text-[#13A52D] font-bold">{createdCredentials.password}</code>
+              </div>
             </div>
-          )}
 
-          {/* Full Name */}
-          <div>
-            <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider mb-1.5">
-              Client Name *
-            </label>
-            <div className="relative">
-              <User className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
-              <input
-                type="text"
-                required
-                placeholder="Enter client name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
-              />
-            </div>
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider mb-1.5">
-              Client Email Address *
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
-              <input
-                type="email"
-                required
-                placeholder="Enter client email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
-              />
-            </div>
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider mb-1.5">
-              Phone Number
-            </label>
-            <div className="relative">
-              <Phone className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
-              <input
-                type="tel"
-                placeholder="Enter phone number (optional)"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
-              />
+            <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
+              <button
+                onClick={handleCopyCredentials}
+                className="w-full sm:flex-1 py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
+              >
+                {copied ? <CheckCircle className="w-4 h-4 text-[#13A52D]" /> : <Copy className="w-4 h-4" />}
+                <span>{copied ? 'Credentials Copied!' : 'Copy Credentials'}</span>
+              </button>
+              <button
+                onClick={handleShareWhatsApp}
+                className="w-full sm:w-auto px-5 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>WhatsApp</span>
+              </button>
+              <button
+                onClick={handleClose}
+                className="w-full sm:w-auto px-6 py-3 bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer"
+              >
+                Done
+              </button>
             </div>
           </div>
+        ) : (
+          /* ──── FORM SCREEN ──── */
+          <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
+            {errorMsg && (
+              <div className="p-3 bg-[#FEF2F2] border border-[#FCA5A5] rounded-xl text-xs text-[#DC2626] flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
 
-          {/* Password */}
-          <div>
-            <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider mb-1.5">
-              Portal Password *
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
-              <input
-                type="password"
-                required
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
-              />
+            {/* Full Name */}
+            <div>
+              <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider mb-1.5">
+                Client Name *
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter client name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading || !email || !fullName || !password}
-            className="w-full py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
-          >
-            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            <span>Provision Client Account</span>
-          </button>
-        </form>
+            {/* Email */}
+            <div>
+              <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider mb-1.5">
+                Client Email Address *
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
+                <input
+                  type="email"
+                  required
+                  placeholder="Enter client email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+                />
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider mb-1.5">
+                Phone Number
+              </label>
+              <div className="relative">
+                <Phone className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
+                <input
+                  type="tel"
+                  placeholder="Enter phone number (optional)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
+                  Portal Password *
+                </label>
+                <button
+                  type="button"
+                  onClick={generatePassword}
+                  className="text-[11px] text-[#FF4D94] hover:underline font-semibold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Generate</span>
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-[#9CA0A6] absolute left-3.5 top-3" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="Enter password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] font-mono placeholder-[#9CA0A6] focus:outline-none focus:border-[#141414]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-3 text-[#9CA0A6] hover:text-[#111111] focus:outline-none cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading || !email || !fullName || !password}
+              className="w-full py-3 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>Provision Client Account</span>
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
