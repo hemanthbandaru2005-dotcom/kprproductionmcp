@@ -56,14 +56,15 @@ export default function ColorLabSection() {
 
       try {
         const albums = await fetchAlbums();
-        if (albums && Array.isArray(albums) && albums.length > 0) {
+        if (albums && Array.isArray(albums)) {
           const published = albums.filter(a => a.status === 'published');
-          if (published.length > 0) {
-            setAlbumsList(published);
-          }
+          setAlbumsList(published);
+        } else {
+          setAlbumsList([]);
         }
       } catch (e) {
         console.warn('Error loading albums:', e);
+        setAlbumsList([]);
       }
     }
 
@@ -71,13 +72,15 @@ export default function ColorLabSection() {
 
     const handleAlbumsUpdate = () => {
       fetchAlbums().then(albums => {
-        if (albums && Array.isArray(albums) && albums.length > 0) {
+        if (albums && Array.isArray(albums)) {
           const published = albums.filter(a => a.status === 'published');
-          if (published.length > 0) {
-            setAlbumsList(published);
-          }
+          setAlbumsList(published);
+        } else {
+          setAlbumsList([]);
         }
-      }).catch(() => {});
+      }).catch(() => {
+        setAlbumsList([]);
+      });
     };
 
     window.addEventListener('kpr_albums_updated', handleAlbumsUpdate);

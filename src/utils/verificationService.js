@@ -1,55 +1,6 @@
 import { supabase } from './supabaseClient';
 
-export const AVAILABLE_ALBUMS = [
-  {
-    id: 'album-royal-velvet',
-    title: 'Royal Velvet Wedding Album',
-    subtitle: 'Flush Mount 30-Sheet Layflat',
-    coverImage: '/images/packages/user_pkg_trad_photo.png',
-    desc: 'Handcrafted Italian leather album with metallic foil embossing and thick layflat archival sheets.',
-    pages: [
-      '/images/services/wedding_album_printing.png',
-      '/images/services/large_format_printing.png',
-      '/images/services/card_sticker_printing.png',
-      '/images/services/acrylic_mdf_frames.png',
-      '/images/services/photo_frames.png',
-      '/images/services/flex_printing.png',
-    ],
-    size: null
-  },
-  {
-    id: 'album-editorial-fineart',
-    title: 'Editorial Fine Art Book',
-    subtitle: 'Silk Linen Hardcover',
-    coverImage: '/images/packages/user_pkg_candid_photo.png',
-    desc: 'Museum-grade matte cotton paper with custom typography layout for unforgettable wedding stories.',
-    pages: [
-      '/images/services/large_format_printing.png',
-      '/images/services/photo_frames.png',
-      '/images/services/acrylic_mdf_frames.png',
-      '/images/services/wedding_album_printing.png',
-      '/images/services/laser_printing.png',
-      '/images/services/card_sticker_printing.png',
-    ],
-    size: null
-  },
-  {
-    id: 'album-cinematic-sunset',
-    title: 'Cinematic Sunset Storybook',
-    subtitle: 'Acrylic Glass Cover',
-    coverImage: '/images/packages/user_pkg_cinematic_video.png',
-    desc: 'High-definition acrylic front plate with metallic sheen pages capturing golden hour romance.',
-    pages: [
-      '/images/services/flex_printing.png',
-      '/images/services/acrylic_mdf_frames.png',
-      '/images/services/wedding_album_printing.png',
-      '/images/services/large_format_printing.png',
-      '/images/services/photo_frames.png',
-      '/images/services/laser_printing.png',
-    ],
-    size: null
-  }
-];
+export const AVAILABLE_ALBUMS = [];
 
 const LOCAL_STORAGE_KEY = 'kpr_verifications_db';
 const DELETED_STORAGE_KEY = 'kpr_deleted_verifications_v1';

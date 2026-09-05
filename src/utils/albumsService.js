@@ -11,11 +11,32 @@ export const ALBUM_SIZES = [
 
 export const INITIAL_ALBUMS = [];
 
-const LOCAL_STORAGE_KEY = 'kpr_albums_db_v3';
+const LOCAL_STORAGE_KEY = 'kpr_albums_db_v4';
 let memoryAlbums = null;
 
+const LEGACY_DUMMY_IDS = [
+  'album-royal-velvet',
+  'album-editorial-fineart',
+  'album-cinematic-sunset'
+];
+
+const LEGACY_DUMMY_TITLES = [
+  'royal velvet wedding album',
+  'editorial fine art book',
+  'cinematic sunset storybook'
+];
+
+function isLegacyDummy(album) {
+  if (!album) return true;
+  const t = (album.title || '').toLowerCase().trim();
+  const id = (album.id || '').toLowerCase().trim();
+  if (LEGACY_DUMMY_IDS.includes(id)) return true;
+  if (LEGACY_DUMMY_TITLES.includes(t)) return true;
+  return false;
+}
+
 function normalizeAlbum(album) {
-  if (!album) return null;
+  if (!album || isLegacyDummy(album)) return null;
   const pages = Array.isArray(album.pages)
     ? album.pages
     : typeof album.pages === 'string'
@@ -42,6 +63,9 @@ function normalizeAlbum(album) {
 function getLocalAlbums() {
   try {
     if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('kpr_albums_db');
+      localStorage.removeItem('kpr_albums_db_v2');
+      localStorage.removeItem('kpr_albums_db_v3');
       const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
@@ -52,9 +76,9 @@ function getLocalAlbums() {
     }
   } catch (e) {}
   if (memoryAlbums && Array.isArray(memoryAlbums) && memoryAlbums.length > 0) {
-    return memoryAlbums.map(normalizeAlbum);
+    return memoryAlbums.map(normalizeAlbum).filter(Boolean);
   }
-  return INITIAL_ALBUMS.map(normalizeAlbum);
+  return [];
 }
 
 function saveLocalAlbums(albums) {
