@@ -327,7 +327,7 @@ export default function ColorLabSection() {
               <div className="animate-fadeIn space-y-10">
                 
                 {/* Header */}
-                <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
+                <div className="text-center max-w-3xl mx-auto mb-8 space-y-3">
                   <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block">
                     PRINTING & CUTTING LAB
                   </span>
@@ -338,6 +338,47 @@ export default function ColorLabSection() {
                   <p className="text-xs sm:text-sm text-[#666666] font-light leading-relaxed">
                     Custom Telugu wedding album printing, industrial ColourJet flex printing, Canon 60" 7-colour photo printing, and precision CNC laser cutting tailored for grand Indian celebrations.
                   </p>
+                </div>
+
+                {/* Interactive 3D Photobook Generator Showcase Banner */}
+                <div
+                  onClick={handleOpenUploadModal}
+                  className="bg-gradient-to-br from-[#1C1712] via-[#251F19] to-[#120F0D] border-2 border-[#C5A880]/50 hover:border-[#C5A880] rounded-2xl p-6 sm:p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer relative overflow-hidden group mb-8"
+                >
+                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#C5A880_1px,transparent_1px)] [background-size:12px_12px] pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-[#C5A880]/10 rounded-full blur-3xl pointer-events-none" />
+
+                  <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#C5A880]/20 border border-[#C5A880]/40 flex items-center justify-center text-[#C5A880] shrink-0 group-hover:scale-105 transition-transform shadow-inner">
+                        <FolderUp className="w-8 h-8 sm:w-10 sm:h-10 text-[#E8D4B8]" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="inline-flex items-center gap-2 bg-[#C5A880]/20 border border-[#C5A880]/40 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest text-[#E8D4B8]">
+                          <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                          <span>Interactive 3D Album Generator</span>
+                        </div>
+                        <h4 className="font-serif text-2xl sm:text-3xl text-[#F5EFE6] font-medium">
+                          Upload Your Photos & Select Size
+                        </h4>
+                        <p className="text-xs sm:text-sm text-[#D5C6B0]/80 font-light max-w-2xl leading-relaxed">
+                          Choose from <strong>12x36 · 13x39 · 14x40 · 16x24 · 18x24 · 12x24</strong> layflat sizes, upload your wedding photos or PDF spreads, and preview your realistic 3D photobook instantly before printing.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenUploadModal();
+                      }}
+                      className="w-full sm:w-auto px-6 py-3.5 bg-[#C5A880] hover:bg-[#D4BC9A] text-black text-xs uppercase font-bold tracking-widest rounded-xl transition-all shadow-lg hover:shadow-xl shrink-0 flex items-center justify-center gap-2 cursor-pointer group-hover:scale-105"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span>Select Size & Upload Photos</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* 6 Services Grid */}
@@ -536,54 +577,6 @@ export default function ColorLabSection() {
                       </div>
                     );
                   })}
-
-                  {/* 2. Upload Your Images & Select Size Card */}
-                  <div
-                    onClick={handleOpenUploadModal}
-                    className="bg-white border-2 border-dashed border-[#C5A880]/70 hover:border-[#C5A880] rounded-lg overflow-hidden shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer bg-gradient-to-b from-[#FAF8F5] to-white relative"
-                  >
-                    {/* Folder Banner Area */}
-                    <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#1E1914] to-[#12100E] relative flex flex-col items-center justify-center p-6 text-center group-hover:from-[#2A231C] group-hover:to-[#1A1612] transition-colors">
-                      <div className="w-16 h-16 rounded-2xl bg-[#C5A880]/20 border border-[#C5A880]/40 flex items-center justify-center text-[#C5A880] group-hover:scale-110 transition-transform mb-2 shadow-inner">
-                        <FolderUp className="w-8 h-8 text-[#E8D4B8]" />
-                      </div>
-
-                      <div className="absolute top-3 left-3 bg-[#C5A880] text-black px-2.5 py-0.5 text-[9.5px] tracking-widest uppercase rounded font-bold shadow-sm">
-                        Size Selector & 3D Flipbook
-                      </div>
-
-                      <h5 className="font-serif text-lg text-white font-medium">Upload Photos & Choose Size</h5>
-                      <p className="text-[11px] text-[#C5A880] mt-0.5 font-light">12x36 · 13x39 · 14x40 · 16x24 · 18x24 · 12x24</p>
-                    </div>
-
-                    {/* Card Content Body */}
-                    <div className="p-4 sm:p-6 space-y-3 flex-1 flex flex-col justify-between">
-                      <div>
-                        <h4 className="font-serif text-xl text-[#1A1A1A] group-hover:text-[#C5A880] transition-colors">
-                          Upload Your Photos
-                        </h4>
-                        <p className="text-xs text-[#666666] font-light leading-relaxed mt-1">
-                          Select your physical album size and upload personal wedding photos or PDF spreads to generate a realistic 3D book preview with zero photo cropping.
-                        </p>
-                      </div>
-
-                      {/* Action Button */}
-                      <div className="pt-3 border-t border-[#E8E1D5] flex items-center justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenUploadModal();
-                          }}
-                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#C5A880] hover:bg-[#b89560] text-black text-[10px] tracking-widest uppercase font-bold transition-all rounded shadow-sm cursor-pointer"
-                        >
-                          <Upload className="w-3.5 h-3.5" />
-                          <span>Select Size & Upload Photos</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
                 </div>
 
               </div>
