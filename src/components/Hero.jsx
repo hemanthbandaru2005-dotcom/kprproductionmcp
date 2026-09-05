@@ -98,26 +98,23 @@ export default function Hero({ onOpenPage }) {
       />
 
       {/* ── 2. Middle Section: Small "Check Your Album" Button (Yellow Mark Area) ── */}
-      <div className="w-full flex-1 flex items-center justify-center z-10 pointer-events-none py-2">
-        <motion.button
+      <div className="w-full flex-1 flex items-center justify-center z-20 py-2 sm:py-3 pointer-events-auto">
+        <button
           type="button"
-          initial={{ opacity: 0, scale: 0.9, y: 8 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.15, ease: 'easeOut' }}
           onClick={handleCheckAlbumClick}
-          className="pointer-events-auto group inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#1A1A1A]/85 hover:bg-[#1A1A1A] text-white border border-[#C5A880]/50 hover:border-[#C5A880] shadow-[0_6px_20px_rgba(0,0,0,0.18)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.28)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-md"
+          className="group inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white border-2 border-[#C5A880] shadow-[0_8px_25px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_32px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
           title="Check Your Album"
         >
-          <div className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-[#C5A880]/25 flex items-center justify-center text-[#C5A880] group-hover:scale-110 transition-transform">
-            <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#C5A880]" />
+          <div className="w-5 h-5 rounded-full bg-[#C5A880]/30 flex items-center justify-center text-[#C5A880] group-hover:scale-110 transition-transform">
+            <BookOpen className="w-3 h-3 text-[#E8D4B8]" />
           </div>
-          <span className="text-[10px] sm:text-xs font-bold tracking-wider uppercase font-sans text-[#FAF7F2]">
+          <span className="text-[11px] sm:text-xs font-black tracking-widest uppercase font-sans text-[#FAF7F2]">
             Check Your Album
           </span>
-          <span className="text-[#C5A880] text-xs font-bold transition-transform duration-300 group-hover:translate-x-0.5 leading-none">
+          <span className="text-[#C5A880] text-sm font-bold transition-transform duration-300 group-hover:translate-x-0.5 leading-none">
             ›
           </span>
-        </motion.button>
+        </button>
       </div>
 
       {/* ── 3. Responsive 3-Column Services Showcase Cards (Harmonious Light Glassmorphism Matching Flatlay) ── */}
