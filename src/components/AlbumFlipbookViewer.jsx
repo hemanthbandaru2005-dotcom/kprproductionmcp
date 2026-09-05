@@ -247,6 +247,7 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
   const [autoplay, setAutoplay] = useState(false);
 
   const { w: vw, h: vh } = useWindowSize();
+  const isMobile = vw < 768;
   const safeImages = Array.isArray(images)
     ? images.filter(img => typeof img === 'string' && img.trim().length > 0)
     : [];
