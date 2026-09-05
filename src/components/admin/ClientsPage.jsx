@@ -125,8 +125,9 @@ export default function ClientsPage() {
           phone: 'N/A',
           role: 'client',
           status: 'active',
-          temp_password: null,
-          first_login_at: '2026-01-01T00:00:00Z',
+          temp_password: '123456',
+          is_temp_password: true,
+          first_login_at: null,
           created_at: new Date().toISOString()
         });
       }

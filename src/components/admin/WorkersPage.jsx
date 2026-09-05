@@ -115,6 +115,27 @@ export default function WorkersPage() {
       }
     } catch (e) {}
 
+    // 4. Fallback default Nihal only if NOT deleted by admin
+    if (!deletedEmails.includes('nihal@kpr.com')) {
+      if (!workerMap.has('nihal@kpr.com')) {
+        workerMap.set('nihal@kpr.com', {
+          id: 'worker-nihal',
+          client_id: 'nihal',
+          full_name: 'Nihal',
+          email: 'nihal@kpr.com',
+          phone: '+91 98765 43210',
+          real_email: 'nihal@gmail.com',
+          role: 'worker',
+          status: 'active',
+          temp_password: '123456',
+          is_temp_password: true,
+          first_login_at: null,
+          skill: 'Photographer / Editor',
+          created_at: new Date().toISOString()
+        });
+      }
+    }
+
     setWorkers(Array.from(workerMap.values()));
     setLoading(false);
   };

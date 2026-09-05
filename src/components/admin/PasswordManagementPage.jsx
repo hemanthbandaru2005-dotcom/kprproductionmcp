@@ -946,6 +946,13 @@ function UserRoleSection({ title, icon: Icon, users, currentUserId, getRoleConfi
                   {statusActive ? 'Active' : 'Disabled'}
                 </span>
 
+                {/* Temp Password Indicator if not yet logged in */}
+                {u.temp_password && !u.first_login_at && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-[#FEF3C7] text-[#D97706] border border-[#FDE68A]">
+                    Temp PW: {u.temp_password}
+                  </span>
+                )}
+
                 {/* Change Email Button */}
                 <button
                   onClick={() => onChangeEmail && onChangeEmail(u)}
