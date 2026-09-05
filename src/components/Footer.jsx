@@ -14,7 +14,9 @@ export default function Footer({
   youtubeUrl = SOCIAL_LINKS.youtube,
   youtubeHandle = '@kprdancezone2022',
   contactEmail = 'kprfotography@gmail.com',
-  contactPhone = '+91 98494 43648'
+  contactPhone = '+91 98494 43648',
+  addressLine1 = 'Grand Gayathri, 8-5-34',
+  addressLine2 = 'TKS Commercial Complex, Station Road, Warangal 506002'
 }) {
   const instagramGrid = [
     '/images/21/photo_1.jpg',
@@ -102,8 +104,8 @@ export default function Footer({
                 >
                   <MapPin className="w-4 h-4 text-[#C5A880] shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                   <div>
-                    <span className="font-semibold text-white block">Grand Gayathri, 8-5-34</span>
-                    <span>TKS Commercial Complex, Station Road, Warangal 506002</span>
+                    <span className="font-semibold text-white block">{addressLine1}</span>
+                    <span>{addressLine2}</span>
                   </div>
                 </a>
               )}

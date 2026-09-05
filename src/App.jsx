@@ -348,9 +348,19 @@ function AppContent() {
             showInstagram={true}
             showFacebook={activePage !== 'events'}
             showAddress={activePage === 'events' || activePage === 'colorlab' || activePage === 'contact'}
+            addressLine1={
+              activePage === 'events'
+                ? 'KPR Dance Zone'
+                : 'Grand Gayathri, 8-5-34'
+            }
+            addressLine2={
+              activePage === 'events'
+                ? '8GHV+HH5, Sriramana Colony, Hastinapuram, Hyderabad, Telangana – 500079, India'
+                : 'TKS Commercial Complex, Station Road, Warangal 506002'
+            }
             mapUrl={
               activePage === 'events'
-                ? 'https://maps.app.goo.gl/SJqEJrKuFQ3Z2xys8?g_st=ic'
+                ? 'https://www.google.com/maps/search/?api=1&query=KPR+Dance+Zone+8GHV%2BHH5+Sriramana+Colony+Hastinapuram+Hyderabad+Telangana+500079'
                 : 'https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac'
             }
             instagramUrl={
