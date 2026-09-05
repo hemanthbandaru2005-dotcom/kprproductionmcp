@@ -132,7 +132,7 @@ export default function PackagesSection({
 
                   {/* Price & Duration / Scope Details */}
                   <div className="pt-3 sm:pt-4 border-t border-[#E8E1D5] space-y-2.5">
-                    {service.price ? (
+                    {service.price && packageType !== 'colorlab' && service.type !== 'colorlab' ? (
                       <div className="flex items-center justify-between bg-[#FAF7F2] p-2.5 rounded-lg border border-[#E8E1D5]">
                         <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold">Pricing</span>
                         <span className="text-sm sm:text-base font-bold text-[#1A1A1A] font-serif">
@@ -143,7 +143,9 @@ export default function PackagesSection({
                     ) : null}
 
                     <div className="flex items-center justify-between bg-[#FAF7F2] p-2.5 rounded-lg border border-[#E8E1D5]">
-                      <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold">Duration / Scope</span>
+                      <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold">
+                        {packageType === 'colorlab' || service.type === 'colorlab' ? 'Specifications / Scope' : 'Duration / Scope'}
+                      </span>
                       <span className="text-xs font-bold text-[#1A1A1A]">
                         {displayDuration}
                       </span>

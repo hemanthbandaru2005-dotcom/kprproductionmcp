@@ -386,18 +386,30 @@ export default function PackagesManager() {
                     {/* PRICE & DURATION / SCOPE Box (Prominently displaying official rates) */}
                     <div className="pt-4 border-t border-[#E8E1D5] space-y-2.5">
                       {/* Price Badge */}
-                      <div className="flex items-center justify-between bg-[#1A1A1A] text-white px-3 py-2.5 rounded-lg border border-[#C5A880]/40 shadow-xs">
-                        <span className="text-[10px] uppercase tracking-wider text-[#C5A880] font-bold shrink-0 flex items-center gap-1.5">
-                          <Tag className="w-3.5 h-3.5 text-[#C5A880]" />
-                          <span>Package Rate</span>
-                        </span>
-                        <span className="text-sm sm:text-base font-bold text-[#E8D4B8] tracking-wide">
-                          ₹{Number(pkg.price || 0).toLocaleString('en-IN')}/-
-                          {pkg.unit === 'sheet' || pkg.name?.toLowerCase().includes('sheet') ? (
-                            <span className="text-[10px] font-normal text-white/70 ml-1">/sheet</span>
-                          ) : null}
-                        </span>
-                      </div>
+                      {pkg.price ? (
+                        <div className="flex items-center justify-between bg-[#1A1A1A] text-white px-3 py-2.5 rounded-lg border border-[#C5A880]/40 shadow-xs">
+                          <span className="text-[10px] uppercase tracking-wider text-[#C5A880] font-bold shrink-0 flex items-center gap-1.5">
+                            <Tag className="w-3.5 h-3.5 text-[#C5A880]" />
+                            <span>Package Rate</span>
+                          </span>
+                          <span className="text-sm sm:text-base font-bold text-[#E8D4B8] tracking-wide">
+                            ₹{Number(pkg.price || 0).toLocaleString('en-IN')}/-
+                            {pkg.unit === 'sheet' || pkg.name?.toLowerCase().includes('sheet') ? (
+                              <span className="text-[10px] font-normal text-white/70 ml-1">/sheet</span>
+                            ) : null}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between bg-[#FAF7F2] text-[#888888] px-3 py-2.5 rounded-lg border border-[#E8E1D5]">
+                          <span className="text-[10px] uppercase tracking-wider text-[#888888] font-semibold shrink-0 flex items-center gap-1.5">
+                            <Tag className="w-3.5 h-3.5 text-[#C5A880]" />
+                            <span>Package Rate</span>
+                          </span>
+                          <span className="text-xs font-semibold text-[#666666]">
+                            Custom Quote / Inquire
+                          </span>
+                        </div>
+                      )}
 
                       {/* Duration / Scope */}
                       <div className="flex items-center justify-between bg-[#FAF7F2] px-3 py-2 rounded-lg border border-[#E8E1D5] gap-2">

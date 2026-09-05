@@ -359,7 +359,7 @@ export default function ColorLabSection() {
                   showEyebrow={false}
                   showQuoteWidget={false}
                   categoryTitle="PRINTING PACKAGES"
-                  categorySubtitle="Transparent pricing for our fine art wedding album printing, framing, card printing, flex, and custom design services. Click Book Now to order via WhatsApp."
+                  categorySubtitle="Fine art wedding album printing, framing, card printing, flex, and custom design services. Click Inquire & Book Now to order via WhatsApp."
                 />
               </div>
             )}

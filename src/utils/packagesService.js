@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { PRINTING_DESIGN_SERVICES as INITIAL_COLORLAB_SERVICES } from '../data/servicesData';
 
-const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v18';
+const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v19';
 
 export const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
   {
@@ -282,7 +282,7 @@ export const OFFICIAL_COLORLAB_SERVICES = [
     id: 'cl-1',
     type: 'colorlab',
     name: 'Wedding Album Printing',
-    price: 4500,
+    price: null,
     duration: 'Luxury Handcrafted Flush-Mount Layflat Albums',
     category: 'Album Artistry',
     image: '/images/services/wedding_album_printing.png',
@@ -301,7 +301,7 @@ export const OFFICIAL_COLORLAB_SERVICES = [
     id: 'cl-2',
     type: 'colorlab',
     name: 'Colour Jet SONIQ Printer Large Format Flex Printer',
-    price: 1200,
+    price: null,
     duration: 'High-Speed Industrial Flex & Vinyl Printing',
     category: 'Large Format Flex',
     image: '/images/services/colorjet_soniq_printer.jpg',
@@ -320,7 +320,7 @@ export const OFFICIAL_COLORLAB_SERVICES = [
     id: 'cl-3',
     type: 'colorlab',
     name: 'Laser Printing & Precision Cutting',
-    price: 1800,
+    price: null,
     duration: 'Wooden, Stone & Acrylic Laser Engraving & CNC Cutting',
     category: 'Laser & Cutting',
     image: '/images/services/laser_printing.png',
@@ -339,7 +339,7 @@ export const OFFICIAL_COLORLAB_SERVICES = [
     id: 'cl-4',
     type: 'colorlab',
     name: 'Canon imagePROGRAF GP-566S 60 in Large Format Photo Printer 7 Colours',
-    price: 3500,
+    price: null,
     duration: 'Ultra-Wide 7-Colour Archival Wedding Portraits & Canvas Prints',
     category: '60" Fine Art Photo',
     image: '/images/services/canon_imageprograf_printer.png',
@@ -358,7 +358,7 @@ export const OFFICIAL_COLORLAB_SERVICES = [
     id: 'cl-5',
     type: 'colorlab',
     name: 'Acrylic & MDF Frames',
-    price: 2200,
+    price: null,
     duration: '3D Glossy Acrylic & Carved Wooden Wall Displays',
     category: 'Modern Wall Frames',
     image: '/images/services/acrylic_mdf_frames.png',
@@ -377,7 +377,7 @@ export const OFFICIAL_COLORLAB_SERVICES = [
     id: 'cl-6',
     type: 'colorlab',
     name: 'Photo Frames',
-    price: 950,
+    price: null,
     duration: 'ReFrames, Antique Brass & Glass Table Frames',
     category: 'Classic Framing',
     image: '/images/services/photo_frames.png',
