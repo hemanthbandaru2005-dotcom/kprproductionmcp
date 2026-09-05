@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { BookOpen } from 'lucide-react';
 import heroDesktop from '../assets/hero_flatlay_desktop.jpg';
 import heroMobile from '../assets/hero_flatlay_mobile.jpg';
 import showcasePhotoLogoExact from '../assets/showcase_photo_logo_exact.png';
@@ -61,10 +62,18 @@ export default function Hero({ onOpenPage }) {
     }
   };
 
+  const handleCheckAlbumClick = () => {
+    if (typeof onOpenPage === 'function') {
+      onOpenPage('login', { tab: 'client' });
+    } else if (typeof window !== 'undefined') {
+      window.location.hash = '#login';
+    }
+  };
+
   return (
     <section
       id="hero"
-      className="relative w-full h-[100svh] min-h-[100svh] max-h-[100svh] overflow-hidden flex flex-col justify-end bg-[#07090D] text-white pb-3 sm:pb-5 lg:pb-6 px-3 sm:px-8 lg:px-12 select-none"
+      className="relative w-full h-[100svh] min-h-[100svh] max-h-[100svh] overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-16 sm:pt-20 pb-3 sm:pb-5 lg:pb-6 px-3 sm:px-8 lg:px-12 select-none"
     >
       {/* ── 1. Desktop Background Image (For Laptops & Desktops Only) ── */}
       <img
@@ -88,7 +97,30 @@ export default function Hero({ onOpenPage }) {
         draggable="false"
       />
 
-      {/* ── 2. Responsive 3-Column Services Showcase Cards (Harmonious Light Glassmorphism Matching Flatlay) ── */}
+      {/* ── 2. Middle Section: Small "Check Your Album" Button (Yellow Mark Area) ── */}
+      <div className="w-full flex-1 flex items-center justify-center z-10 pointer-events-none py-2">
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, scale: 0.9, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.15, ease: 'easeOut' }}
+          onClick={handleCheckAlbumClick}
+          className="pointer-events-auto group inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#1A1A1A]/85 hover:bg-[#1A1A1A] text-white border border-[#C5A880]/50 hover:border-[#C5A880] shadow-[0_6px_20px_rgba(0,0,0,0.18)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.28)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-md"
+          title="Check Your Album"
+        >
+          <div className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-[#C5A880]/25 flex items-center justify-center text-[#C5A880] group-hover:scale-110 transition-transform">
+            <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#C5A880]" />
+          </div>
+          <span className="text-[10px] sm:text-xs font-bold tracking-wider uppercase font-sans text-[#FAF7F2]">
+            Check Your Album
+          </span>
+          <span className="text-[#C5A880] text-xs font-bold transition-transform duration-300 group-hover:translate-x-0.5 leading-none">
+            ›
+          </span>
+        </motion.button>
+      </div>
+
+      {/* ── 3. Responsive 3-Column Services Showcase Cards (Harmonious Light Glassmorphism Matching Flatlay) ── */}
       <div className="w-full max-w-5xl lg:max-w-6xl mx-auto flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory gap-3 sm:gap-5 lg:gap-6 z-10 mb-1 sm:mb-2 py-1 px-1 scrollbar-none">
         {SERVICES.map((service, index) => {
           return (
