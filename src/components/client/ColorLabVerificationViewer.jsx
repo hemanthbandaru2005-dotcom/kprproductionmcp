@@ -14,14 +14,17 @@ import { updateVerificationStatus } from '../../utils/verificationService';
    ───────────────────────────────────────────────────── */
 const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnly }, ref) => {
   return (
-    <div ref={ref} className="page-wrapper select-none" data-density="soft">
-      <div className="w-full h-full bg-white p-2 sm:p-3 overflow-hidden relative shadow-md">
-        <img
-          src={src}
-          alt={`Album page ${pageIndex + 1}`}
-          className="w-full h-full object-cover rounded-sm"
-          draggable={false}
-        />
+    <div ref={ref} className="page-wrapper select-none bg-[#FCFBF9] shadow-lg relative overflow-hidden" data-density="soft">
+      <div className="w-full h-full p-2 sm:p-3.5 flex flex-col items-center justify-center relative bg-gradient-to-r from-[#ECE4D8]/80 via-[#FAF7F2] to-[#FAF7F2] border border-[#DCD2C3]">
+        {/* Full Image Container — object-contain ensures no photo is cropped or cut */}
+        <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xs bg-black/5">
+          <img
+            src={src}
+            alt={`Album page ${pageIndex + 1}`}
+            className="max-w-full max-h-full w-auto h-auto object-contain rounded-xs shadow-xs select-none"
+            draggable={false}
+          />
+        </div>
 
         {/* Top-Right Page Flagging Overlay Button */}
         {!readOnly && (
@@ -31,10 +34,10 @@ const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnl
               e.stopPropagation();
               onToggleFlag(pageIndex + 1);
             }}
-            className={`absolute top-4 right-5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 transition-all shadow-md cursor-pointer ${
+            className={`absolute top-3.5 right-4 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 transition-all shadow-md cursor-pointer ${
               isFlagged
                 ? 'bg-[#DC2626] text-white shadow-rose-500/40 ring-2 ring-white'
-                : 'bg-[#141414]/80 hover:bg-[#141414] text-white backdrop-blur-xs'
+                : 'bg-[#141414]/85 hover:bg-[#141414] text-white backdrop-blur-xs'
             }`}
           >
             <Flag className={`w-3 h-3 ${isFlagged ? 'fill-current' : ''}`} />
@@ -43,14 +46,14 @@ const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnl
         )}
 
         {readOnly && isFlagged && (
-          <div className="absolute top-4 right-5 px-3 py-1 rounded-full text-[10px] font-bold bg-[#DC2626] text-white flex items-center gap-1.5 shadow-md">
+          <div className="absolute top-3.5 right-4 px-3 py-1 rounded-full text-[10px] font-bold bg-[#DC2626] text-white flex items-center gap-1.5 shadow-md">
             <Flag className="w-3 h-3 fill-current" />
             <span>Flagged</span>
           </div>
         )}
 
         {/* Page Number Watermark */}
-        <span className="absolute bottom-4 right-5 text-[10px] text-[#111111] font-mono select-none drop-shadow-xs bg-white/90 px-2.5 py-0.5 rounded-full shadow-xs border border-[#E7E8EB]">
+        <span className="absolute bottom-2.5 right-3.5 text-[9.5px] text-[#4A3B2C]/80 font-mono select-none bg-white/90 backdrop-blur-xs px-2.5 py-0.5 rounded-full shadow-xs border border-[#D5C9B8]">
           Page {pageIndex + 1}
         </span>
       </div>
@@ -259,9 +262,16 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
               {hasAlbum ? <BookOpen className="w-5 h-5" /> : <ImageIcon className="w-5 h-5" />}
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-[#111111] tracking-tight truncate max-w-xs sm:max-w-md">
-                {verification?.album_title || verification?.event_title || 'Color Lab Proofing'}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-bold text-[#111111] tracking-tight truncate max-w-xs sm:max-w-md">
+                  {verification?.album_title || verification?.event_title || 'Color Lab Proofing'}
+                </h3>
+                {verification?.album_size && (
+                  <span className="px-2 py-0.5 bg-[#C5A880]/20 text-[#8B6B38] border border-[#C5A880]/40 rounded text-[10px] font-mono font-bold uppercase tracking-wider">
+                    {verification.album_size}
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] text-[#6B7280]">{verification?.event_title}</p>
             </div>
           </div>
@@ -332,21 +342,35 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
 
           {/* ──── TAB A: ALBUM FLIPBOOK ──── */}
           {activeTab === 'album' && hasAlbum && (
-            <div className="w-full h-full flex flex-col items-center justify-center relative">
+            <div className="w-full h-full flex flex-col items-center justify-center relative overflow-hidden">
               
               {/* Flip navigation arrow left */}
-              {!isMobile && (
-                <button
-                  onClick={() => flipBookRef.current?.pageFlip()?.flipPrev()}
-                  className="absolute left-6 z-10 w-12 h-12 rounded-full bg-white hover:bg-[#F1F2F4] text-[#111111] border border-[#E7E8EB] flex items-center justify-center transition-transform hover:scale-105 shadow-md cursor-pointer"
-                  aria-label="Previous Page"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
+              <button
+                onClick={() => flipBookRef.current?.pageFlip()?.flipPrev()}
+                className="absolute left-2 sm:left-6 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#111111] border border-[#E7E8EB] flex items-center justify-center transition-transform hover:scale-105 shadow-md cursor-pointer backdrop-blur-xs"
+                aria-label="Previous Page"
+              >
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+
+              {/* Mobile Touch Half-Screen Tap Zones for 1-Tap Page Turning */}
+              {isMobile && (
+                <>
+                  <div
+                    onClick={() => flipBookRef.current?.pageFlip()?.flipPrev()}
+                    className="absolute left-0 top-0 bottom-0 w-1/4 z-20 cursor-pointer"
+                    title="Tap for previous page"
+                  />
+                  <div
+                    onClick={() => flipBookRef.current?.pageFlip()?.flipNext()}
+                    className="absolute right-0 top-0 bottom-0 w-1/4 z-20 cursor-pointer"
+                    title="Tap for next page"
+                  />
+                </>
               )}
 
               {/* Flipbook Container */}
-              <div className="flex items-center justify-center drop-shadow-xl">
+              <div className="flex items-center justify-center drop-shadow-2xl">
                 <HTMLFlipBook
                   ref={flipBookRef}
                   width={bookWidth}
@@ -356,9 +380,13 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
                   maxWidth={800}
                   minHeight={260}
                   maxHeight={800}
-                  maxShadowOpacity={0.4}
+                  maxShadowOpacity={0.5}
                   showCover={true}
-                  mobileScrollSupport={true}
+                  mobileScrollSupport={false}
+                  usePortrait={isMobile}
+                  startPage={0}
+                  swipeDistance={15}
+                  flippingTime={650}
                   onFlip={(e) => setCurrentPage(e.data)}
                   className="shadow-2xl rounded-sm overflow-hidden"
                 >
@@ -376,21 +404,24 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
               </div>
 
               {/* Flip navigation arrow right */}
-              {!isMobile && (
-                <button
-                  onClick={() => flipBookRef.current?.pageFlip()?.flipNext()}
-                  className="absolute right-6 z-10 w-12 h-12 rounded-full bg-white hover:bg-[#F1F2F4] text-[#111111] border border-[#E7E8EB] flex items-center justify-center transition-transform hover:scale-105 shadow-md cursor-pointer"
-                  aria-label="Next Page"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              )}
+              <button
+                onClick={() => flipBookRef.current?.pageFlip()?.flipNext()}
+                className="absolute right-2 sm:right-6 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#111111] border border-[#E7E8EB] flex items-center justify-center transition-transform hover:scale-105 shadow-md cursor-pointer backdrop-blur-xs"
+                aria-label="Next Page"
+              >
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
 
               {/* Page Counter & Controls */}
-              <div className="mt-4 flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-xs border border-[#E7E8EB] text-xs">
+              <div className="mt-4 flex items-center gap-3 bg-white px-4 py-1.5 sm:py-2 rounded-full shadow-xs border border-[#E7E8EB] text-xs z-30">
                 <span className="font-mono text-[#6B7280]">
-                  Spread <strong className="text-[#111111]">{currentPage + 1}</strong> of <strong className="text-[#111111]">{totalPages}</strong>
+                  {isMobile ? 'Page' : 'Spread'} <strong className="text-[#111111]">{currentPage + 1}</strong> of <strong className="text-[#111111]">{totalPages}</strong>
                 </span>
+                {verification?.album_size && (
+                  <span className="text-[#C5A880] font-bold font-mono">
+                    ({verification.album_size})
+                  </span>
+                )}
               </div>
             </div>
           )}

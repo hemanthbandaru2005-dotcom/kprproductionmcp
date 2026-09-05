@@ -17,6 +17,7 @@ import {
 } from '../../utils/clientUploadsService';
 import { SUPPORTED_EXTENSIONS, isFileTypeSupported } from '../../utils/googleDriveSyncService';
 import { getActiveUploadSessions } from '../../utils/driveIndexedDBService';
+import { ALBUM_SIZES } from '../../utils/albumsService';
 
 const DEFAULT_PROJECT_OPTIONS = [
   'Grand Royal Wedding — Hyderabad',
@@ -33,6 +34,7 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedProject, setSelectedProject] = useState(DEFAULT_PROJECT_OPTIONS[0]);
   const [customProject, setCustomProject] = useState('');
+  const [selectedAlbumSize, setSelectedAlbumSize] = useState('');
   const [uploadQueue, setUploadQueue] = useState([]); // { file, progress, bytesUploaded, size, status, stage, id }
   const [toast, setToast] = useState(null); // { type: 'error' | 'success', message: '' }
   const [previewModalFile, setPreviewModalFile] = useState(null);
@@ -171,9 +173,13 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
 
   // Upload execution handler
   const executeFileUpload = async (file, queueId) => {
-    const effectiveProject = selectedProject === 'Other / Custom Project'
+    const baseProject = selectedProject === 'Other / Custom Project'
       ? (customProject.trim() || 'Custom Project Uploads')
       : selectedProject;
+
+    const effectiveProject = selectedAlbumSize
+      ? `${baseProject} [Size: ${selectedAlbumSize}]`
+      : baseProject;
 
     try {
       const result = await uploadClientFile({
@@ -182,6 +188,7 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
         clientName,
         clientEmail,
         projectTitle: effectiveProject,
+        albumSize: selectedAlbumSize || null,
         existingSessionId: queueId,
         onProgress: ({ progress, percent, bytesUploaded, totalBytes, speed, eta, stage }) => {
           setUploadQueue((prev) =>
@@ -452,8 +459,8 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
           </div>
         </div>
 
-        {/* ═══════ PROJECT SELECTOR ═══════ */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#E7E8EB]">
+        {/* ═══════ PROJECT & ALBUM SIZE SELECTOR ═══════ */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2 border-t border-[#E7E8EB]">
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
               Target Project or Order Name
@@ -474,8 +481,39 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
             </div>
           </div>
 
+          {/* Optional Album Size Selector */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
+                Album / Print Size (Optional)
+              </label>
+              {selectedAlbumSize && (
+                <span className="text-[9.5px] font-bold text-[#C5A880] font-mono">
+                  {selectedAlbumSize}
+                </span>
+              )}
+            </div>
+            <div className="relative">
+              <select
+                value={selectedAlbumSize}
+                onChange={(e) => setSelectedAlbumSize(e.target.value)}
+                className="w-full appearance-none px-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs font-semibold text-[#111111] focus:outline-none focus:border-[#141414] transition-colors cursor-pointer pr-10"
+              >
+                <option value="" className="bg-white text-[#777777]">
+                  No Specific Size (General Files / Mixed)
+                </option>
+                {ALBUM_SIZES.map((size) => (
+                  <option key={size} value={size} className="bg-white text-[#111111]">
+                    {size} Album Print
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-[#9CA0A6] absolute right-4 top-3 pointer-events-none" />
+            </div>
+          </div>
+
           {selectedProject === 'Other / Custom Project' && (
-            <div className="space-y-1.5 animate-fadeIn">
+            <div className="space-y-1.5 sm:col-span-2 lg:col-span-1 animate-fadeIn">
               <label className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280]">
                 Custom Project / Order Name
               </label>

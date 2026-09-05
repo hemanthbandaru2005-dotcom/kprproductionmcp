@@ -6,22 +6,41 @@ import AlbumPreviewPage from './AlbumPreviewPage';
 import {
   Palette, Package, BookOpen, ChevronDown, Check, Sparkles,
   Eye, Loader2, Image as ImageIcon, Mail, Phone, Upload, X,
-  FolderUp, ImagePlus, CloudUpload
+  FolderUp, ImagePlus, CloudUpload, ArrowRight, Layers, Trash2
 } from 'lucide-react';
 import { PRINTING_DESIGN_SERVICES } from '../data/servicesData';
 import { loadPdfPages } from '../utils/pdfLoader';
 import { fetchCustomSitePhotos } from '../utils/sitePhotosService';
+import { ALBUM_SIZES } from '../utils/albumsService';
 import kprColorLabLogo from '../assets/kpr_colorlab_logo.png';
 import colorLabHeaderLeft from '../assets/colorlab_header_left.jpg';
+
+const ALBUM_SIZE_OPTIONS = [
+  { id: '12x36', label: '12x36', desc: 'Panoramic Spread (36" × 12")', popular: true },
+  { id: '13x39', label: '13x39', desc: 'Grand Master Heirloom (39" × 13")', popular: false },
+  { id: '14x40', label: '14x40', desc: 'Ultra Regal Panoramic (40" × 14")', popular: false },
+  { id: '16x24', label: '16x24', desc: 'Royal Portrait Master (24" × 16")', popular: false },
+  { id: '18x24', label: '18x24', desc: 'Imperial Fine Art (24" × 18")', popular: false },
+  { id: '12x24', label: '12x24', desc: 'Classic Traditional (24" × 12")', popular: false },
+];
 
 export default function ColorLabSection() {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState('designs'); // 'designs' | 'packages' | 'albums'
   const [flipbookImages, setFlipbookImages] = useState(null); // when set, opens the album flipbook viewer
+  const [flipbookSize, setFlipbookSize] = useState('12x36');
+  const [flipbookTitle, setFlipbookTitle] = useState('Custom Wedding Album');
   const [pdfLoading, setPdfLoading] = useState(false);
-  const [showAlbumPreview, setShowAlbumPreview] = useState(false);
   const [customColorLabPhotos, setCustomColorLabPhotos] = useState([]);
+  
+  // Custom Upload & Size Modal State
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedAlbumSize, setSelectedAlbumSize] = useState('12x36');
+  const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState([]);
+  const [dragActive, setDragActive] = useState(false);
+
   const folderInputRef = useRef(null);
+  const modalFileInputRef = useRef(null);
 
   useEffect(() => {
     async function loadCustom() {
@@ -40,8 +59,10 @@ export default function ColorLabSection() {
 
   const demoAlbumPages = Array.from({ length: 39 }, (_, i) => `/albums/demo/page_${i + 1}.jpg`);
 
-  /* Handler to open an album — supports both image arrays and manifest/PDF files */
+  /* Handler to open an album — supports image arrays and manifest/PDF files */
   const handleViewAlbum = async (album) => {
+    setFlipbookSize(album.size || '12x36');
+    setFlipbookTitle(album.title || 'Luxury Wedding Album');
     if (album.manifestSrc) {
       setPdfLoading(true);
       try {
@@ -56,23 +77,19 @@ export default function ColorLabSection() {
       }
     } else if (album.previewImages) {
       setFlipbookImages(album.previewImages);
+    } else {
+      setFlipbookImages(demoAlbumPages);
     }
   };
 
-  /* Direct file picker trigger for custom album folder */
-  const handleDirectFolderClick = () => {
-    if (folderInputRef.current) {
-      folderInputRef.current.value = '';
-      folderInputRef.current.click();
-    }
+  /* Open custom album upload modal */
+  const handleOpenUploadModal = () => {
+    setUploadModalOpen(true);
   };
 
-  /* Handle selected files from folder upload */
-  const handleFolderFilesSelected = async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    const validFiles = files.filter(f =>
+  /* Process selected files (images or PDF) */
+  const processUploadedFiles = async (files) => {
+    const validFiles = Array.from(files).filter(f =>
       f.type.startsWith('image/') ||
       f.name.match(/\.(jpg|jpeg|png|webp|heic)$/i) ||
       f.type === 'application/pdf' ||
@@ -84,14 +101,14 @@ export default function ColorLabSection() {
       return;
     }
 
-    const urls = [];
+    const newUrls = [];
     const pdfFile = validFiles.find(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
     if (pdfFile) {
       setPdfLoading(true);
       try {
         const blobUrl = URL.createObjectURL(pdfFile);
         const pages = await loadPdfPages(blobUrl, 2);
-        if (pages && pages.length > 0) urls.push(...pages);
+        if (pages && pages.length > 0) newUrls.push(...pages);
       } catch (err) {
         console.warn('PDF preview extraction note:', err);
       } finally {
@@ -101,12 +118,34 @@ export default function ColorLabSection() {
 
     const imageFiles = validFiles.filter(f => !f.type.includes('pdf') && !f.name.endsWith('.pdf'));
     imageFiles.forEach(f => {
-      urls.push(URL.createObjectURL(f));
+      newUrls.push(URL.createObjectURL(f));
     });
 
-    if (urls.length > 0) {
-      setFlipbookImages(urls);
+    if (newUrls.length > 0) {
+      setUploadedPhotoUrls(prev => [...prev, ...newUrls]);
     }
+  };
+
+  /* Handle file input change from modal */
+  const handleModalFilesSelected = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processUploadedFiles(e.target.files);
+    }
+  };
+
+  /* Remove an uploaded photo */
+  const handleRemoveUploadedPhoto = (index, e) => {
+    e.stopPropagation();
+    setUploadedPhotoUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  /* Launch flipbook from modal */
+  const handleLaunchCustomFlipbook = () => {
+    const pagesToView = uploadedPhotoUrls.length > 0 ? uploadedPhotoUrls : demoAlbumPages;
+    setFlipbookSize(selectedAlbumSize);
+    setFlipbookTitle(`Custom ${selectedAlbumSize} Album`);
+    setFlipbookImages(pagesToView);
+    setUploadModalOpen(false);
   };
 
   const albumSheets = [];
@@ -417,9 +456,9 @@ export default function ColorLabSection() {
                     </div>
                   ))}
 
-                  {/* 2. Upload Your Images Folder Card (Beside the Demo) */}
+                  {/* 2. Upload Your Images & Select Size Card */}
                   <div
-                    onClick={handleDirectFolderClick}
+                    onClick={handleOpenUploadModal}
                     className="bg-white border-2 border-dashed border-[#C5A880]/70 hover:border-[#C5A880] rounded-lg overflow-hidden shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer bg-gradient-to-b from-[#FAF8F5] to-white relative"
                   >
                     {/* Folder Banner Area */}
@@ -429,36 +468,36 @@ export default function ColorLabSection() {
                       </div>
 
                       <div className="absolute top-3 left-3 bg-[#C5A880] text-black px-2.5 py-0.5 text-[9.5px] tracking-widest uppercase rounded font-bold shadow-sm">
-                        Custom Album
+                        Size Selector & 3D Flipbook
                       </div>
 
-                      <h5 className="font-serif text-lg text-white font-medium">Upload Photos Folder</h5>
-                      <p className="text-[11px] text-[#C5A880] mt-0.5 font-light">Click to select photos or album PDF</p>
+                      <h5 className="font-serif text-lg text-white font-medium">Upload Photos & Choose Size</h5>
+                      <p className="text-[11px] text-[#C5A880] mt-0.5 font-light">12x36 · 13x39 · 14x40 · 16x24 · 18x24 · 12x24</p>
                     </div>
 
                     {/* Card Content Body */}
                     <div className="p-4 sm:p-6 space-y-3 flex-1 flex flex-col justify-between">
                       <div>
                         <h4 className="font-serif text-xl text-[#1A1A1A] group-hover:text-[#C5A880] transition-colors">
-                          Upload Your Images
+                          Upload Your Photos
                         </h4>
                         <p className="text-xs text-[#666666] font-light leading-relaxed mt-1">
-                          Directly upload your personal wedding photos or design files to generate an instant 3D page-turning preview.
+                          Select your physical album size and upload personal wedding photos or PDF spreads to generate a realistic 3D book preview with zero photo cropping.
                         </p>
                       </div>
 
-                      {/* Direct Upload Action Button */}
+                      {/* Action Button */}
                       <div className="pt-3 border-t border-[#E8E1D5] flex items-center justify-between gap-2">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDirectFolderClick();
+                            handleOpenUploadModal();
                           }}
                           className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#C5A880] hover:bg-[#b89560] text-black text-[10px] tracking-widest uppercase font-bold transition-all rounded shadow-sm cursor-pointer"
                         >
                           <Upload className="w-3.5 h-3.5" />
-                          <span>Upload Photos Directly</span>
+                          <span>Select Size & Upload Photos</span>
                         </button>
                       </div>
                     </div>
@@ -469,10 +508,184 @@ export default function ColorLabSection() {
               </div>
             )}
 
+            {/* Custom Album Size & Photo Upload Modal */}
+            {uploadModalOpen && (
+              <div className="fixed inset-0 z-[9990] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fadeIn">
+                <div className="bg-white border border-[#E2D9CC] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-5 sm:p-8 space-y-6 relative">
+                  
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setUploadModalOpen(false)}
+                    className="absolute top-4 right-4 p-2 rounded-full bg-[#F7F3EE] hover:bg-[#EAE4DC] text-[#666666] hover:text-[#1A1A1A] transition-colors cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+
+                  {/* Header */}
+                  <div className="space-y-1">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C5A880]/15 text-[#9E784F] text-[10px] font-bold uppercase tracking-wider">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Custom Album Flipbook Preview</span>
+                    </div>
+                    <h3 className="font-serif text-2xl text-[#1A1A1A] font-bold">
+                      Upload Photos & Select Album Size
+                    </h3>
+                    <p className="text-xs text-[#666666]">
+                      Choose your print size and upload photos or PDF spreads. Our 3D flipbook renderer will format them with realistic book spine physics and no image cropping.
+                    </p>
+                  </div>
+
+                  {/* Step 1: Select Physical Size */}
+                  <div className="space-y-3 pt-2 border-t border-[#E8E1D5]">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#1A1A1A] flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-[#C5A880]" />
+                        <span>Step 1: Choose Physical Album Size</span>
+                      </label>
+                      <span className="text-[10px] font-mono font-bold text-[#C5A880] bg-[#1A1A1A] px-2 py-0.5 rounded">
+                        Selected: {selectedAlbumSize}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {ALBUM_SIZE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setSelectedAlbumSize(opt.id)}
+                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between ${
+                            selectedAlbumSize === opt.id
+                              ? 'border-[#C5A880] bg-[#FAF8F5] ring-2 ring-[#C5A880]/40 shadow-sm'
+                              : 'border-[#E2D9CC] hover:border-[#C5A880]/60 bg-white'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono font-bold text-sm text-[#1A1A1A]">
+                              {opt.label}
+                            </span>
+                            {selectedAlbumSize === opt.id && (
+                              <Check className="w-4 h-4 text-[#C5A880]" />
+                            )}
+                          </div>
+                          <span className="text-[10px] text-[#777777] mt-1 leading-tight">
+                            {opt.desc}
+                          </span>
+                          {opt.popular && (
+                            <span className="mt-1.5 self-start bg-[#C5A880] text-black text-[8.5px] font-bold px-1.5 py-0.5 rounded uppercase">
+                              Most Popular
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Step 2: Upload Files */}
+                  <div className="space-y-3 pt-2 border-t border-[#E8E1D5]">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#1A1A1A] flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+                      <span>Step 2: Add Photos or Album PDF</span>
+                    </label>
+
+                    <input
+                      ref={modalFileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/heic,application/pdf"
+                      multiple
+                      onChange={handleModalFilesSelected}
+                      className="hidden"
+                    />
+
+                    {/* Dropzone / Upload Box */}
+                    <div
+                      onClick={() => modalFileInputRef.current?.click()}
+                      className="border-2 border-dashed border-[#C5A880]/60 hover:border-[#C5A880] bg-[#FAF8F5] hover:bg-[#F3EFE9] rounded-xl p-6 text-center transition-colors cursor-pointer space-y-2"
+                    >
+                      <div className="w-12 h-12 mx-auto rounded-full bg-[#C5A880]/20 flex items-center justify-center text-[#C5A880]">
+                        <CloudUpload className="w-6 h-6" />
+                      </div>
+                      <p className="text-xs font-semibold text-[#1A1A1A]">
+                        Click or drag & drop photos here
+                      </p>
+                      <p className="text-[10px] text-[#777777]">
+                        Supports JPG, PNG, WEBP, HEIC or Album PDF Spreads
+                      </p>
+                    </div>
+
+                    {/* Uploaded Photos Thumbnails Preview */}
+                    {uploadedPhotoUrls.length > 0 && (
+                      <div className="space-y-2 pt-2">
+                        <div className="flex items-center justify-between text-xs text-[#555555]">
+                          <span className="font-semibold text-[#1A1A1A]">
+                            {uploadedPhotoUrls.length} Photo{uploadedPhotoUrls.length !== 1 ? 's' : ''} Ready
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setUploadedPhotoUrls([])}
+                            className="text-[10px] text-red-600 hover:underline font-semibold"
+                          >
+                            Clear all
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-40 overflow-y-auto p-1 bg-[#F7F3EE] rounded-lg border border-[#E2D9CC]">
+                          {uploadedPhotoUrls.map((url, idx) => (
+                            <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-black group border border-[#E2D9CC]">
+                              <img src={url} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={(e) => handleRemoveUploadedPhoto(idx, e)}
+                                className="absolute top-1 right-1 p-1 bg-black/70 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Remove photo"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="pt-4 border-t border-[#E8E1D5] flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={handleLaunchCustomFlipbook}
+                      className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-md cursor-pointer"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>
+                        {uploadedPhotoUrls.length > 0
+                          ? `Open 3D Flipbook (${uploadedPhotoUrls.length} pages in ${selectedAlbumSize})`
+                          : `Preview 3D Book in ${selectedAlbumSize}`}
+                      </span>
+                    </button>
+
+                    <a
+                      href={`https://wa.me/919849443648?text=${encodeURIComponent(
+                        `Hello KPR Colour Lab! I would like to order a custom wedding album in size ${selectedAlbumSize}${
+                          uploadedPhotoUrls.length > 0 ? ` with ${uploadedPhotoUrls.length} photos` : ''
+                        }. Please share pricing and printing timeline.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-sm"
+                    >
+                      <Phone className="w-4 h-4" />
+                      <span>Order on WhatsApp</span>
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
             {/* Album Flipbook Viewer Modal */}
             {flipbookImages && (
               <AlbumFlipbookViewer
                 images={flipbookImages}
+                size={flipbookSize}
+                title={flipbookTitle}
                 onClose={() => setFlipbookImages(null)}
               />
             )}
