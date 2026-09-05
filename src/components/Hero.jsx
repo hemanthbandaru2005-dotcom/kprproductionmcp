@@ -96,17 +96,17 @@ export default function Hero({ onOpenPage }) {
       />
 
       {/* ── 2. Middle Section: Small "Upload Your Album" Button (Yellow Mark Area) ── */}
-      <div className="w-full flex-1 flex items-center justify-center z-20 py-2 sm:py-3 pointer-events-auto">
+      <div className="w-full flex-1 flex items-end justify-center z-20 pb-3 sm:pb-5 pointer-events-auto">
         <button
           type="button"
           onClick={() => setUploadModalOpen(true)}
-          className="group inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white border-2 border-[#C5A880] shadow-[0_8px_25px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_32px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+          className="group inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#FAF7F2]/95 hover:bg-[#FFFFFF] text-[#1A1A1A] border-2 border-[#D8CFC4] hover:border-[#C5A880] backdrop-blur-md shadow-[0_6px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_28px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
           title="Upload Your Album"
         >
-          <div className="w-5 h-5 rounded-full bg-[#C5A880]/30 flex items-center justify-center text-[#C5A880] group-hover:scale-110 transition-transform">
-            <Upload className="w-3 h-3 text-[#E8D4B8]" />
+          <div className="w-5 h-5 rounded-full bg-[#C5A880]/20 flex items-center justify-center text-[#9E784F] group-hover:scale-110 transition-transform">
+            <Upload className="w-3 h-3 text-[#9E784F]" />
           </div>
-          <span className="text-[11px] sm:text-xs font-black tracking-widest uppercase font-sans text-[#FAF7F2]">
+          <span className="text-[11px] sm:text-xs font-black tracking-widest uppercase font-sans text-[#1A1A1A]">
             Upload Your Album
           </span>
           <span className="text-[#C5A880] text-sm font-bold transition-transform duration-300 group-hover:translate-x-0.5 leading-none">
