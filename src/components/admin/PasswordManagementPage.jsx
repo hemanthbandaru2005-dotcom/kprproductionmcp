@@ -896,6 +896,20 @@ export default function PasswordManagementPage() {
 
 // ─── User Role Section Component ─────────────────────────────────
 function UserRoleSection({ title, icon: Icon, users, currentUserId, isMasterAdmin, getRoleConfig, onReset, onChangeEmail, isAdmin: isAdminSection }) {
+  const [revealedPasswords, setRevealedPasswords] = useState({});
+  const [copiedId, setCopiedId] = useState(null);
+
+  const togglePw = (id) => {
+    setRevealedPasswords(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const copyPw = (id, pw) => {
+    if (!pw) return;
+    navigator.clipboard.writeText(pw);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   return (
     <div className="bg-white rounded-[20px] border border-[#E7E8EB] shadow-xs overflow-hidden">
       <div className="px-6 py-4 border-b border-[#E7E8EB] flex items-center justify-between bg-[#F7F8FA]">
@@ -918,6 +932,9 @@ function UserRoleSection({ title, icon: Icon, users, currentUserId, isMasterAdmi
           const isClient = u.role === 'client';
           const isAdminUser = u.role === 'admin' || u.role === 'superadmin';
           const canReset = isCurrentUser || isMasterAdmin || (!isClient && !isAdminUser);
+          const canViewPw = isMasterAdmin || u.role === 'worker' || isCurrentUser;
+          const assignedPw = u.temp_password || u.password || '123456';
+          const isRevealed = !!revealedPasswords[u.id];
 
           return (
             <div key={u.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#F7F8FA] transition-colors">
@@ -949,10 +966,32 @@ function UserRoleSection({ title, icon: Icon, users, currentUserId, isMasterAdmi
                   {statusActive ? 'Active' : 'Disabled'}
                 </span>
 
-                {/* Temp Password Indicator if not yet logged in */}
-                {u.temp_password && !u.first_login_at && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-[#FEF3C7] text-[#D97706] border border-[#FDE68A]">
-                    {isMasterAdmin || u.role === 'worker' ? `Temp PW: ${u.temp_password}` : 'Temp PW: Set by Admin'}
+                {/* Allocated Password Indicator */}
+                {canViewPw ? (
+                  <div className="inline-flex items-center gap-1.5 bg-[#F1F2F4] px-2.5 py-1 rounded-lg border border-[#E7E8EB]">
+                    <span className="font-mono text-xs font-semibold text-[#111111]">
+                      {isRevealed ? assignedPw : '••••••••'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => togglePw(u.id)}
+                      className="text-[#9CA0A6] hover:text-[#111111] transition-colors cursor-pointer"
+                      title={isRevealed ? "Hide Password" : "Show Allocated Password"}
+                    >
+                      {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => copyPw(u.id, assignedPw)}
+                      className="text-[#9CA0A6] hover:text-[#1E74FF] transition-colors cursor-pointer"
+                      title="Copy Password"
+                    >
+                      {copiedId === u.id ? <CheckCircle className="w-3.5 h-3.5 text-[#13A52D]" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F1F2F4] text-[#6B7280] border border-[#E7E8EB]">
+                    Master Admin Only
                   </span>
                 )}
 

@@ -375,7 +375,7 @@ export default function ClientsPage() {
                   <tr className="border-b border-[#E7E8EB] text-[10px] text-[#6B7280] uppercase tracking-wider bg-[#F7F8FA]">
                     <th className="px-6 py-3.5">Client Name</th>
                     <th className="px-6 py-3.5">Contact</th>
-                    <th className="px-6 py-3.5">Temp Password</th>
+                    <th className="px-6 py-3.5">Allocated Password</th>
                     <th className="px-6 py-3.5">Date Added</th>
                     <th className="px-6 py-3.5">Status</th>
                     <th className="px-6 py-3.5 text-right">Actions</th>
@@ -384,9 +384,8 @@ export default function ClientsPage() {
                 <tbody className="divide-y divide-[#E7E8EB]">
                   {filteredClients.map((client) => {
                     const isActive = client.status !== 'disabled';
-                    const hasNeverLoggedIn = !client.first_login_at;
-                    const hasTempPw = hasNeverLoggedIn && client.temp_password;
                     const isRevealed = revealedPasswords[client.id];
+                    const assignedPw = client.temp_password || '123456';
 
                     return (
                       <tr key={client.id} className="hover:bg-[#F7F8FA] transition-colors">
@@ -415,34 +414,30 @@ export default function ClientsPage() {
                           )}
                         </td>
 
-                        {/* Temp Password Column */}
+                        {/* Allocated Password Column */}
                         <td className="px-6 py-4">
                           {isMasterAdmin ? (
-                            hasTempPw ? (
-                              <div className="inline-flex items-center gap-2 bg-[#F1F2F4] px-2.5 py-1 rounded-lg border border-[#E7E8EB]">
-                                <span className="font-mono text-xs font-semibold text-[#111111]">
-                                  {isRevealed ? client.temp_password : '••••••••'}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => togglePasswordVisibility(client.id)}
-                                  className="text-[#9CA0A6] hover:text-[#111111] transition-colors cursor-pointer"
-                                  title={isRevealed ? "Hide Password" : "Show Password"}
-                                >
-                                  {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleCopyPassword(client.id, client.temp_password)}
-                                  className="text-[#9CA0A6] hover:text-[#FF4D94] transition-colors cursor-pointer"
-                                  title="Copy Password"
-                                >
-                                  {copiedId === client.id ? <CheckCircle className="w-3.5 h-3.5 text-[#13A52D]" /> : <Copy className="w-3.5 h-3.5" />}
-                                </button>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-[#9CA0A6] italic">Set by user</span>
-                            )
+                            <div className="inline-flex items-center gap-2 bg-[#F1F2F4] px-2.5 py-1 rounded-lg border border-[#E7E8EB]">
+                              <span className="font-mono text-xs font-semibold text-[#111111]">
+                                {isRevealed ? assignedPw : '••••••••'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => togglePasswordVisibility(client.id)}
+                                className="text-[#9CA0A6] hover:text-[#111111] transition-colors cursor-pointer"
+                                title={isRevealed ? "Hide Password" : "Show Password"}
+                              >
+                                {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyPassword(client.id, assignedPw)}
+                                className="text-[#9CA0A6] hover:text-[#FF4D94] transition-colors cursor-pointer"
+                                title="Copy Password"
+                              >
+                                {copiedId === client.id ? <CheckCircle className="w-3.5 h-3.5 text-[#13A52D]" /> : <Copy className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
                           ) : (
                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold bg-[#F1F2F4] text-[#6B7280] border border-[#E7E8EB]" title="Client passwords are confidential to Master Admin">
                               Master Admin Only
@@ -526,9 +521,8 @@ export default function ClientsPage() {
             <div className="md:hidden divide-y divide-[#E7E8EB]">
               {filteredClients.map((client) => {
                 const isActive = client.status !== 'disabled';
-                const hasNeverLoggedIn = !client.first_login_at;
-                const hasTempPw = hasNeverLoggedIn && client.temp_password;
                 const isRevealed = revealedPasswords[client.id];
+                const assignedPw = client.temp_password || '123456';
 
                 return (
                   <div key={client.id} className="p-4 space-y-3">
@@ -555,23 +549,30 @@ export default function ClientsPage() {
                     </div>
 
                     {isMasterAdmin ? (
-                      hasTempPw && (
-                        <div className="flex items-center justify-between bg-[#F1F2F4] p-2 rounded-lg text-xs">
-                          <span className="text-[#6B7280] font-medium">Temp Password:</span>
-                          <div className="flex items-center gap-2">
-                            <code className="font-mono text-xs font-bold text-[#111111]">
-                              {isRevealed ? client.temp_password : '••••••••'}
-                            </code>
-                            <button
-                              type="button"
-                              onClick={() => togglePasswordVisibility(client.id)}
-                              className="text-[#9CA0A6] hover:text-[#111111]"
-                            >
-                              {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                            </button>
-                          </div>
+                      <div className="flex items-center justify-between bg-[#F1F2F4] p-2 rounded-lg text-xs">
+                        <span className="text-[#6B7280] font-medium">Password:</span>
+                        <div className="flex items-center gap-2">
+                          <code className="font-mono text-xs font-bold text-[#111111]">
+                            {isRevealed ? assignedPw : '••••••••'}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => togglePasswordVisibility(client.id)}
+                            className="text-[#9CA0A6] hover:text-[#111111] cursor-pointer"
+                            title={isRevealed ? "Hide Password" : "Show Password"}
+                          >
+                            {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyPassword(client.id, assignedPw)}
+                            className="text-[#9CA0A6] hover:text-[#FF4D94] cursor-pointer"
+                            title="Copy Password"
+                          >
+                            {copiedId === client.id ? <CheckCircle className="w-3.5 h-3.5 text-[#13A52D]" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
                         </div>
-                      )
+                      </div>
                     ) : (
                       <div className="flex items-center justify-between bg-[#F1F2F4] p-2 rounded-lg text-xs">
                         <span className="text-[#6B7280] font-medium">Password Access:</span>

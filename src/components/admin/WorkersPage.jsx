@@ -377,7 +377,7 @@ export default function WorkersPage() {
                     <th className="px-6 py-3.5">Employee Name</th>
                     <th className="px-6 py-3.5">Login ID</th>
                     <th className="px-6 py-3.5">Contact Email</th>
-                    <th className="px-6 py-3.5">Temp Password</th>
+                    <th className="px-6 py-3.5">Allocated Password</th>
                     <th className="px-6 py-3.5">Status</th>
                     <th className="px-6 py-3.5 text-right">Actions</th>
                   </tr>
@@ -385,9 +385,8 @@ export default function WorkersPage() {
                 <tbody className="divide-y divide-[#E7E8EB]">
                   {filteredWorkers.map((worker) => {
                     const isActive = worker.status !== 'disabled';
-                    const hasNeverLoggedIn = !worker.first_login_at;
-                    const hasTempPw = hasNeverLoggedIn && worker.temp_password;
                     const isRevealed = revealedPasswords[worker.id];
+                    const assignedPw = worker.temp_password || worker.password || '123456';
 
                     return (
                       <tr key={worker.id} className="hover:bg-[#F7F8FA] transition-colors">
@@ -426,33 +425,29 @@ export default function WorkersPage() {
                           )}
                         </td>
 
-                        {/* Temp Password */}
+                        {/* Allocated Password */}
                         <td className="px-6 py-4">
-                          {hasTempPw ? (
-                            <div className="inline-flex items-center gap-2 bg-[#F1F2F4] px-2.5 py-1 rounded-lg border border-[#E7E8EB]">
-                              <span className="font-mono text-xs font-semibold text-[#111111]">
-                                {isRevealed ? worker.temp_password : '••••••••'}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => togglePasswordVisibility(worker.id)}
-                                className="text-[#9CA0A6] hover:text-[#111111] transition-colors cursor-pointer"
-                                title={isRevealed ? "Hide Password" : "Show Password"}
-                              >
-                                {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleCopyPassword(worker.id, worker.temp_password)}
-                                className="text-[#9CA0A6] hover:text-[#1E74FF] transition-colors cursor-pointer"
-                                title="Copy Password"
-                              >
-                                {copiedId === worker.id ? <CheckCircle className="w-3.5 h-3.5 text-[#13A52D]" /> : <Copy className="w-3.5 h-3.5" />}
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-[#9CA0A6] italic">Set by user</span>
-                          )}
+                          <div className="inline-flex items-center gap-2 bg-[#F1F2F4] px-2.5 py-1 rounded-lg border border-[#E7E8EB]">
+                            <span className="font-mono text-xs font-semibold text-[#111111]">
+                              {isRevealed ? assignedPw : '••••••••'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => togglePasswordVisibility(worker.id)}
+                              className="text-[#9CA0A6] hover:text-[#111111] transition-colors cursor-pointer"
+                              title={isRevealed ? "Hide Password" : "Show Password"}
+                            >
+                              {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyPassword(worker.id, assignedPw)}
+                              className="text-[#9CA0A6] hover:text-[#1E74FF] transition-colors cursor-pointer"
+                              title="Copy Password"
+                            >
+                              {copiedId === worker.id ? <CheckCircle className="w-3.5 h-3.5 text-[#13A52D]" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
                         </td>
 
                         <td className="px-6 py-4">
@@ -514,9 +509,8 @@ export default function WorkersPage() {
             <div className="md:hidden divide-y divide-[#E7E8EB]">
               {filteredWorkers.map((worker) => {
                 const isActive = worker.status !== 'disabled';
-                const hasNeverLoggedIn = !worker.first_login_at;
-                const hasTempPw = hasNeverLoggedIn && worker.temp_password;
                 const isRevealed = revealedPasswords[worker.id];
+                const assignedPw = worker.temp_password || worker.password || '123456';
 
                 return (
                   <div key={worker.id} className="p-4 space-y-3">
@@ -542,23 +536,30 @@ export default function WorkersPage() {
                       )}
                     </div>
 
-                    {hasTempPw && (
-                      <div className="flex items-center justify-between bg-[#F1F2F4] p-2 rounded-lg text-xs">
-                        <span className="text-[#6B7280] font-medium">Temp Password:</span>
-                        <div className="flex items-center gap-2">
-                          <code className="font-mono text-xs font-bold text-[#111111]">
-                            {isRevealed ? worker.temp_password : '••••••••'}
-                          </code>
-                          <button
-                            type="button"
-                            onClick={() => togglePasswordVisibility(worker.id)}
-                            className="text-[#9CA0A6] hover:text-[#111111]"
-                          >
-                            {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
+                    <div className="flex items-center justify-between bg-[#F1F2F4] p-2 rounded-lg text-xs">
+                      <span className="text-[#6B7280] font-medium">Password:</span>
+                      <div className="flex items-center gap-2">
+                        <code className="font-mono text-xs font-bold text-[#111111]">
+                          {isRevealed ? assignedPw : '••••••••'}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility(worker.id)}
+                          className="text-[#9CA0A6] hover:text-[#111111] cursor-pointer"
+                          title={isRevealed ? "Hide Password" : "Show Password"}
+                        >
+                          {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyPassword(worker.id, assignedPw)}
+                          className="text-[#9CA0A6] hover:text-[#1E74FF] cursor-pointer"
+                          title="Copy Password"
+                        >
+                          {copiedId === worker.id ? <CheckCircle className="w-3.5 h-3.5 text-[#13A52D]" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
                       </div>
-                    )}
+                    </div>
 
                     {worker.real_email && (
                       <div className="text-xs text-[#6B7280] flex items-center gap-1.5">

@@ -331,7 +331,7 @@ export default function ManageAdminsPage() {
                 <th className="py-3.5 px-4 sm:px-6">Role</th>
                 <th className="py-3.5 px-4 sm:px-6">Status</th>
                 <th className="py-3.5 px-4 sm:px-6">Created On</th>
-                <th className="py-3.5 px-4 sm:px-6">Temp Password</th>
+                <th className="py-3.5 px-4 sm:px-6">Allocated Password</th>
                 <th className="py-3.5 px-4 sm:px-6 text-right">Actions</th>
               </tr>
             </thead>
@@ -354,7 +354,7 @@ export default function ManageAdminsPage() {
                   const isSuper = admin.role === 'superadmin' || admin.username === 'master';
                   const adminKey = admin.username || admin.id;
                   const isPwRevealed = !!revealedPasswords[adminKey];
-                  const hasNeverLoggedIn = !admin.first_login_at && !!admin.temp_password;
+                  const assignedPw = admin.temp_password || '123456';
 
                   return (
                     <tr key={adminKey} className="hover:bg-[#F9FAFB] transition-colors">
@@ -414,27 +414,29 @@ export default function ManageAdminsPage() {
                         {admin.created_at ? new Date(admin.created_at).toLocaleDateString() : 'N/A'}
                       </td>
 
-                      {/* 6. Temp Password Visibility */}
+                      {/* 6. Allocated Password Visibility */}
                       <td className="py-3.5 px-4 sm:px-6">
-                        {hasNeverLoggedIn ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-xs font-semibold text-[#111111] bg-[#F9FAFB] border border-[#E7E8EB] px-2 py-0.5 rounded">
-                              {isPwRevealed ? admin.temp_password : '••••••••'}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => togglePasswordVisibility(adminKey)}
-                              className="p-1 text-[#6B7280] hover:text-[#111111] transition-colors cursor-pointer"
-                              title={isPwRevealed ? 'Hide temp password' : 'View temp password'}
-                            >
-                              {isPwRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-[#9CA3AF] font-medium italic">
-                            Set by user (hidden)
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs font-semibold text-[#111111] bg-[#F9FAFB] border border-[#E7E8EB] px-2 py-0.5 rounded">
+                            {isPwRevealed ? assignedPw : '••••••••'}
                           </span>
-                        )}
+                          <button
+                            type="button"
+                            onClick={() => togglePasswordVisibility(adminKey)}
+                            className="p-1 text-[#6B7280] hover:text-[#111111] transition-colors cursor-pointer"
+                            title={isPwRevealed ? 'Hide allocated password' : 'View allocated password'}
+                          >
+                            {isPwRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(assignedPw)}
+                            className="p-1 text-[#6B7280] hover:text-[#7E22CE] transition-colors cursor-pointer"
+                            title="Copy Password"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
 
                       {/* 7. Actions */}

@@ -9,7 +9,8 @@ export const ADMIN_MEMBERS = [
     full_name: 'KPR Master Admin',
     role: 'superadmin',
     designation: 'Master Studio Administrator',
-    status: 'active'
+    status: 'active',
+    temp_password: '123456'
   },
   {
     id: 'admin_kpr_fotography',
@@ -18,7 +19,8 @@ export const ADMIN_MEMBERS = [
     full_name: 'KPR Fotography Admin',
     role: 'admin',
     designation: 'Studio Admin',
-    status: 'active'
+    status: 'active',
+    temp_password: '123456'
   },
   {
     id: 'admin_kpr_events',
@@ -27,7 +29,8 @@ export const ADMIN_MEMBERS = [
     full_name: 'KPR Events Admin',
     role: 'admin',
     designation: 'Events Admin',
-    status: 'active'
+    status: 'active',
+    temp_password: '123456'
   },
   {
     id: 'admin_kpr_colorlab',
@@ -36,7 +39,8 @@ export const ADMIN_MEMBERS = [
     full_name: 'KPR Colour Lab Admin',
     role: 'admin',
     designation: 'Colour Lab Admin',
-    status: 'active'
+    status: 'active',
+    temp_password: '123456'
   }
 ];
 
@@ -47,7 +51,8 @@ export const WORKER_MEMBERS = [
     full_name: 'Nihal',
     role: 'worker',
     status: 'active',
-    skill: 'Cinematographer & Photographer'
+    skill: 'Cinematographer & Photographer',
+    temp_password: '123456'
   },
   {
     id: 'worker-nihal-alt',
@@ -55,7 +60,8 @@ export const WORKER_MEMBERS = [
     full_name: 'Nihal',
     role: 'worker',
     status: 'active',
-    skill: 'Cinematographer & Photographer'
+    skill: 'Cinematographer & Photographer',
+    temp_password: '123456'
   }
 ];
 
@@ -65,21 +71,24 @@ export const CLIENT_MEMBERS = [
     email: 'nani@gmail.com',
     full_name: 'Nani',
     role: 'client',
-    status: 'active'
+    status: 'active',
+    temp_password: '123456'
   },
   {
     id: 'client-general',
     email: 'client@gmail.com',
     full_name: 'Studio Client',
     role: 'client',
-    status: 'active'
+    status: 'active',
+    temp_password: '123456'
   },
   {
     id: 'client-wedding',
     email: 'client@kpr.com',
     full_name: 'Valued Wedding Client',
     role: 'client',
-    status: 'active'
+    status: 'active',
+    temp_password: '123456'
   }
 ];
 
@@ -180,18 +189,13 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Clear temp password permanently on first login
+  // Record first login timestamp while preserving allocated password for admin reference
   const clearTempPasswordOnLogin = async (userId, username) => {
     const cleanUsername = (username || '').toLowerCase().trim();
     try {
-      await supabase.rpc('clear_temp_password_on_login', { p_user_id: userId });
-    } catch (e) {}
-
-    try {
       await supabase.from('profiles').update({
-        temp_password: null,
-        is_temp_password: false,
-        first_login_at: new Date().toISOString()
+        first_login_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }).or(`id.eq.${userId},username.ilike.${cleanUsername}`);
     } catch (e) {}
 
@@ -204,22 +208,8 @@ export function AuthProvider({ children }) {
         .single();
 
       if (data && Array.isArray(data.photo_items) && data.photo_items[0]) {
-        const meta = { ...data.photo_items[0], temp_password: null, is_temp_password: false, first_login_at: new Date().toISOString() };
+        const meta = { ...data.photo_items[0], first_login_at: new Date().toISOString() };
         await supabase.from('verifications').update({ photo_items: [meta] }).eq('id', data.id);
-      }
-    } catch (e) {}
-
-    try {
-      const raw = localStorage.getItem('kpr_registered_admins_v1');
-      if (raw) {
-        const list = JSON.parse(raw);
-        const updated = list.map(a => {
-          if ((a.username || '').toLowerCase() === cleanUsername || a.id === userId) {
-            return { ...a, temp_password: null, is_temp_password: false, first_login_at: new Date().toISOString() };
-          }
-          return a;
-        });
-        localStorage.setItem('kpr_registered_admins_v1', JSON.stringify(updated));
       }
     } catch (e) {}
   };
@@ -805,7 +795,7 @@ export function AuthProvider({ children }) {
         designation: a.designation,
         status: a.status || 'active',
         created_at: '2026-01-01T00:00:00.000Z',
-        temp_password: null,
+        temp_password: a.temp_password || '123456',
         first_login_at: '2026-01-01T00:00:00.000Z'
       });
     });
