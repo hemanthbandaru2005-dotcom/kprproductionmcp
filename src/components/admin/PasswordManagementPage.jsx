@@ -393,7 +393,7 @@ function ResetPasswordModal({ isOpen, onClose, targetUser, onSuccess }) {
 
   if (!isOpen || !targetUser) return null;
 
-  const isAdmin = targetUser.id === user?.id || targetUser.role === 'admin';
+  const isAdmin = targetUser.id === user?.id || targetUser.role === 'admin' || targetUser.role === 'superadmin';
   const strength = getPasswordStrength(newPassword);
 
   const generatePassword = () => {
@@ -646,8 +646,8 @@ export default function PasswordManagementPage() {
   const [showSecuritySetup, setShowSecuritySetup] = useState(false);
   const [hasSecurityQuestions, setHasSecurityQuestions] = useState(true);
 
-  // Guard: Only admin can access
-  if (!profile || profile.role !== 'admin') {
+  // Guard: Only admin & superadmin can access
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'superadmin')) {
     return (
       <div className="bg-white rounded-[24px] sm:rounded-[32px] p-16 text-center text-[#111111] space-y-4 border border-[#FCA5A5] max-w-xl mx-auto my-12 animate-fadeIn shadow-xs">
         <div className="w-16 h-16 rounded-full bg-[#FEF2F2] text-[#DC2626] mx-auto flex items-center justify-center">
@@ -655,7 +655,7 @@ export default function PasswordManagementPage() {
         </div>
         <h3 className="text-xl font-bold text-[#111111]">Access Denied</h3>
         <p className="text-xs text-[#6B7280] leading-relaxed max-w-md mx-auto">
-          Password management is restricted to Admin accounts only. Staff and Worker accounts cannot access this page.
+          Password management is restricted to Admin and Master Admin accounts only. Staff and Worker accounts cannot access this page.
         </p>
       </div>
     );
@@ -746,10 +746,12 @@ export default function PasswordManagementPage() {
 
   const getRoleConfig = (role) => {
     switch (role) {
+      case 'superadmin':
+        return { icon: ShieldCheck, label: 'Master Admin', bg: 'bg-[#FFE1EC]', text: 'text-[#8B3A6B]', badgeBg: 'bg-[#FFE1EC]', badgeText: 'text-[#8B3A6B]' };
       case 'admin':
         return { icon: ShieldCheck, label: 'Administrator', bg: 'bg-[#DCE9FF]', text: 'text-[#1E74FF]', badgeBg: 'bg-[#DCE9FF]', badgeText: 'text-[#1E74FF]' };
       case 'worker':
-        return { icon: UserCheck, label: 'Staff / Worker', bg: 'bg-[#DFF5E3]', text: 'text-[#13A52D]', badgeBg: 'bg-[#DFF5E3]', badgeText: 'text-[#13A52D]' };
+        return { icon: UserCheck, label: 'Employee', bg: 'bg-[#DFF5E3]', text: 'text-[#13A52D]', badgeBg: 'bg-[#DFF5E3]', badgeText: 'text-[#13A52D]' };
       case 'client':
         return { icon: Users, label: 'Client', bg: 'bg-[#FFE1EC]', text: 'text-[#FF4D94]', badgeBg: 'bg-[#FFE1EC]', badgeText: 'text-[#FF4D94]' };
       default:
@@ -759,14 +761,14 @@ export default function PasswordManagementPage() {
 
   // Group users by role & guarantee 3 Admin member logins are visible and manageable
   const localOverrides = JSON.parse(localStorage.getItem('kpr_custom_user_emails') || '{}');
-  const existingAdminEmails = allUsers.filter(u => u.role === 'admin').map(u => u.email?.toLowerCase());
+  const existingAdminEmails = allUsers.filter(u => u.role === 'admin' || u.role === 'superadmin').map(u => u.email?.toLowerCase());
   const fallbackAdmins = ADMIN_MEMBERS.filter(a => !a.id.endsWith('_alias') && !existingAdminEmails.includes(a.email.toLowerCase())).map(a => {
     if (localOverrides[a.id]) return { ...a, email: localOverrides[a.id] };
     return a;
   });
 
   const adminUsers = [
-    ...allUsers.filter(u => u.role === 'admin' && u.id !== 'admin_kpr_studio' && u.full_name !== 'KPR Studio Admin' && u.designation !== 'Master Admin' && u.email !== 'admin@kpr.com'),
+    ...allUsers.filter(u => (u.role === 'admin' || u.role === 'superadmin') && u.id !== 'admin_kpr_studio' && u.full_name !== 'KPR Studio Admin' && u.email !== 'admin@kpr.com'),
     ...fallbackAdmins.filter(a => a.id !== 'admin_kpr_studio' && a.full_name !== 'KPR Studio Admin')
   ];
   const workerUsers = allUsers.filter(u => u.role === 'worker');
