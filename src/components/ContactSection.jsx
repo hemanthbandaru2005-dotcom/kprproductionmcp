@@ -14,9 +14,8 @@ export default function ContactSection() {
 
   const [submitted, setSubmitted] = useState(false);
 
-  const mapsUrl = "https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac";
-  const addressText = "Grand Gayathri, 8-5-34, TKS Commercial Complex Near Post Office Station Road, Hotel Lane, Warangal, Telangana 506002";
-  const mapEmbedUrl = "https://maps.google.com/maps?q=Grand+Gayathri,+8-5-34,+TKS+Commercial+Complex+Near+Post+Office+Station+Road,+Hotel+Lane,+Warangal,+Telangana+506002&t=&z=16&ie=UTF8&iwloc=&output=embed";
+  const colorLabMapUrl = "https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac";
+  const eventsMapUrl = "https://www.google.com/maps/search/?api=1&query=KPR+Dance+Zone+8GHV%2BHH5+Sriramana+Colony+Hastinapuram+Hyderabad+Telangana+500079";
 
   const handleChange = (e) => {
     setFormState({ ...formState, [e.target.name]: e.target.value });
@@ -61,48 +60,99 @@ export default function ContactSection() {
             Contact KPR Productions
           </h2>
           <p className="text-xs text-white/60 font-light leading-relaxed">
-            Have a question or planning your special celebration? Reach out to our Warangal studio directly or drop us a message below.
+            Have a question or planning your special celebration? Reach out to our Warangal & Hyderabad studios directly or drop us a message below.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10 items-start">
           
-          {/* Left Column: Contact Cards & Info */}
-          <div className="lg:col-span-5 space-y-4 sm:space-y-6">
+          {/* Left Column: Address Cards & Contact Info */}
+          <div className="lg:col-span-6 space-y-4 sm:space-y-6">
             
-            {/* Address Card */}
-            <div className="bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-4 sm:p-8 space-y-4 shadow-xl relative overflow-hidden group hover:border-[#C5A880]/60 transition-all">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-[#C5A880]/5 rounded-bl-full pointer-events-none" />
+            {/* Two Address Cards: Color Lab Address & Events Address Side-by-Side */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/40 flex items-center justify-center text-[#C5A880] shrink-0">
-                  <MapPin className="w-5 h-5" />
+              {/* 1. Color Lab Address Card */}
+              <div className="bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden group hover:border-[#C5A880]/60 transition-all flex flex-col justify-between">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-[#C5A880]/5 rounded-bl-full pointer-events-none" />
+                
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/40 flex items-center justify-center text-[#C5A880] shrink-0 group-hover:scale-105 transition-transform">
+                      <MapPin className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-base sm:text-lg text-white font-medium">Color Lab Address</h3>
+                      <p className="text-[10px] tracking-widest text-[#C5A880] uppercase font-semibold">Warangal Headquarters</p>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-white/80 font-light leading-relaxed pt-2 border-t border-white/10 space-y-1">
+                    <p className="font-semibold text-white">Grand Gayathri</p>
+                    <p>8-5-34, TKS Commercial Complex</p>
+                    <p>Near Post Office Station Road, Hotel Lane</p>
+                    <p className="text-[#C5A880] font-medium">Warangal, Telangana 506002</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-serif text-lg text-white font-medium">Studio Address</h3>
-                  <p className="text-[10px] tracking-widest text-[#C5A880] uppercase">Warangal Headquarters</p>
-                </div>
+
+                <a
+                  href={colorLabMapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#C5A880] hover:text-white pt-2 border-t border-white/5 transition-colors"
+                >
+                  <span>View on Google Maps</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
 
-              <div className="text-xs text-white/80 font-light leading-relaxed pt-2 border-t border-white/10 space-y-1">
-                <p className="font-semibold text-white">Grand Gayathri</p>
-                <p>8-5-34, TKS Commercial Complex</p>
-                <p>Near Post Office Station Road, Hotel Lane</p>
-                <p className="text-[#C5A880]">Warangal, Telangana 506002</p>
+              {/* 2. Events Address Card */}
+              <div className="bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden group hover:border-[#C5A880]/60 transition-all flex flex-col justify-between">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-[#C5A880]/5 rounded-bl-full pointer-events-none" />
+                
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/40 flex items-center justify-center text-[#C5A880] shrink-0 group-hover:scale-105 transition-transform">
+                      <MapPin className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-base sm:text-lg text-white font-medium">Events Address</h3>
+                      <p className="text-[10px] tracking-widest text-[#C5A880] uppercase font-semibold">Hyderabad Studio</p>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-white/80 font-light leading-relaxed pt-2 border-t border-white/10 space-y-1">
+                    <p className="font-semibold text-white">KPR Dance Zone</p>
+                    <p>8GHV+HH5, Sriramana Colony,</p>
+                    <p>Hastinapuram, Hyderabad,</p>
+                    <p className="text-[#C5A880] font-medium">Telangana – 500079, India.</p>
+                  </div>
+                </div>
+
+                <a
+                  href={eventsMapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-[#C5A880] hover:text-white pt-2 border-t border-white/5 transition-colors"
+                >
+                  <span>View on Google Maps</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
+
             </div>
 
             {/* Quick Contact Info */}
-            <div className="bg-[#1A1816] border border-white/10 rounded-2xl p-6 space-y-4">
+            <div className="bg-[#1A1816] border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4">
               <h4 className="text-xs font-bold text-[#C5A880] uppercase tracking-widest">Direct Contact & Hours</h4>
               
-              <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {/* Phone */}
                 <a
                   href="tel:+919849443648"
-                  className="flex items-center gap-3 p-2.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors group"
+                  className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors group"
                 >
-                  <Phone className="w-4 h-4 text-[#C5A880] group-hover:scale-110 transition-transform" />
+                  <Phone className="w-4 h-4 text-[#C5A880] group-hover:scale-110 transition-transform shrink-0" />
                   <div>
                     <span className="text-[10px] text-white/40 block">Phone & WhatsApp</span>
                     <span className="text-white font-medium">+91 98494 43648</span>
@@ -112,21 +162,21 @@ export default function ContactSection() {
                 {/* Email */}
                 <a
                   href="mailto:kprfotography@gmail.com"
-                  className="flex items-center gap-3 p-2.5 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors group"
+                  className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors group"
                 >
-                  <Mail className="w-4 h-4 text-[#C5A880] group-hover:scale-110 transition-transform" />
+                  <Mail className="w-4 h-4 text-[#C5A880] group-hover:scale-110 transition-transform shrink-0" />
                   <div>
                     <span className="text-[10px] text-white/40 block">Official Email</span>
-                    <span className="text-white font-medium">kprfotography@gmail.com</span>
+                    <span className="text-white font-medium truncate block">kprfotography@gmail.com</span>
                   </div>
                 </a>
 
                 {/* Hours */}
-                <div className="flex items-center gap-3 p-2.5 bg-white/5 rounded-xl border border-white/5">
-                  <Clock className="w-4 h-4 text-[#C5A880]" />
+                <div className="sm:col-span-2 flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
+                  <Clock className="w-4 h-4 text-[#C5A880] shrink-0" />
                   <div>
-                    <span className="text-[10px] text-white/40 block">Studio Hours</span>
-                    <span className="text-white/80">Mon – Sat: 9:30 AM – 8:30 PM</span>
+                    <span className="text-[10px] text-white/40 block">Studio & Lab Hours</span>
+                    <span className="text-white/80">Mon – Sat: 9:30 AM – 8:30 PM • Sunday by Appointment</span>
                   </div>
                 </div>
               </div>
@@ -135,7 +185,7 @@ export default function ContactSection() {
           </div>
 
           {/* Right Column: Contact Form */}
-          <div className="lg:col-span-7 bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-6 sm:p-10 shadow-2xl relative">
+          <div className="lg:col-span-6 bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-6 sm:p-10 shadow-2xl relative">
             <div className="space-y-2 mb-6">
               <span className="text-[10px] tracking-widest text-[#C5A880] uppercase font-bold flex items-center gap-2">
                 <MessageSquare className="w-3.5 h-3.5" />
@@ -215,7 +265,9 @@ export default function ContactSection() {
                     >
                       <option value="Wedding Fotography">Luxury Wedding Fotography</option>
                       <option value="Pre-Wedding Shoot">Pre-Wedding Fotography Shoot</option>
-                      <option value="Album Printing (Color Lab)">Album Printing / Color Lab</option>
+                      <option value="Event Productions">Curated Event Productions (Hyderabad)</option>
+                      <option value="KPR Dance Zone">KPR Dance Zone (Hastinapuram)</option>
+                      <option value="Album Printing (Color Lab)">Album Printing / Color Lab (Warangal)</option>
                       <option value="Frames & Acrylic">Custom Frames & Acrylic</option>
                       <option value="Commercial & Flex">Commercial & Flex Printing</option>
                     </select>
