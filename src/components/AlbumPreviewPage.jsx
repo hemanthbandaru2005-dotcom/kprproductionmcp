@@ -75,9 +75,24 @@ const CoverPage = forwardRef(({ totalPhotos, size, ...props }, ref) => (
 CoverPage.displayName = 'CoverPage';
 
 /* ─── Photo Page (USES object-contain SO NO CROPPING) ─── */
-const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, ...props }, ref) => (
+const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...props }, ref) => (
   <div ref={ref} {...props} style={{ ...props.style }} className={`page-wrapper select-none bg-[#FCFBF9] shadow-lg ${props.className || ''}`} data-density="soft">
-    <div className="w-full h-full p-2.5 sm:p-4 flex flex-col items-center justify-center relative bg-gradient-to-r from-[#ECE4D8]/80 via-[#FAF7F2] to-[#FAF7F2] border border-[#DCD2C3]">
+    <div
+      className={`w-full h-full p-1.5 sm:p-3.5 flex flex-col items-center justify-center relative border border-[#DCD2C3] ${
+        isLeftPage
+          ? 'bg-gradient-to-r from-[#FAF8F5] via-[#FAF8F5] to-[#E5DACB]/80 border-r-2 border-r-[#BFB19E]'
+          : 'bg-gradient-to-r from-[#E5DACB]/80 via-[#FAF8F5] to-[#FAF8F5] border-l-2 border-l-[#BFB19E]'
+      }`}
+    >
+      {/* Center Spine Crease / Binding Shadow */}
+      <div
+        className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
+          isLeftPage
+            ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/20 via-black/5 to-transparent'
+            : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/20 via-black/5 to-transparent'
+        }`}
+      />
+
       {/* Photo display area — object-contain keeps the complete image intact without cutting */}
       <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xs bg-black/5">
         <img
@@ -89,7 +104,11 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, ...props }, ref) =>
       </div>
 
       {/* Page Number Badge */}
-      <span className="absolute bottom-2.5 right-3.5 text-[9.5px] text-[#4A3B2C]/80 font-mono select-none bg-white/90 backdrop-blur-xs px-2.5 py-0.5 rounded-full border border-[#D5C9B8] shadow-2xs">
+      <span
+        className={`absolute bottom-1.5 sm:bottom-2.5 text-[8px] sm:text-[9.5px] text-[#4A3B2C]/80 font-mono select-none bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-full border border-[#D5C9B8] shadow-2xs z-20 ${
+          isLeftPage ? 'left-2 sm:left-3' : 'right-2 sm:right-3'
+        }`}
+      >
         {pageIndex + 1} / {totalPhotos}
       </span>
     </div>
@@ -97,23 +116,42 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, ...props }, ref) =>
 ));
 PhotoPage.displayName = 'PhotoPage';
 
+/* ─── Balancer Endsheet ─── */
+const EndsheetPage = forwardRef((props, ref) => (
+  <div ref={ref} {...props} style={{ ...props.style }} className={`page-wrapper select-none ${props.className || ''}`} data-density="soft">
+    <div className="w-full h-full p-4 sm:p-8 flex flex-col items-center justify-center relative bg-gradient-to-r from-[#E5DACB]/80 via-[#FAF8F5] to-[#FAF8F5] border-l-2 border-l-[#BFB19E] border border-[#DCD2C3]">
+      <div className="absolute top-0 bottom-0 left-0 w-3 sm:w-6 bg-gradient-to-r from-black/20 via-black/5 to-transparent pointer-events-none z-10" />
+      <div className="text-center space-y-2 z-10">
+        <Sparkles className="w-5 h-5 text-[#C5A880] mx-auto" />
+        <h4 className="font-serif text-sm sm:text-base text-[#4A3B2C] tracking-wide">
+          Heirloom Memories
+        </h4>
+        <p className="text-[8px] sm:text-[10px] text-[#7A6B5C] font-mono uppercase tracking-widest">
+          Preserved for Generations
+        </p>
+      </div>
+    </div>
+  </div>
+));
+EndsheetPage.displayName = 'EndsheetPage';
+
 /* ─── Back Page ─── */
 const BackPage = forwardRef((props, ref) => (
   <div ref={ref} {...props} style={{ ...props.style }} className={`page-wrapper select-none ${props.className || ''}`} data-density="hard">
-    <div className="w-full h-full bg-gradient-to-br from-[#1A1510] via-[#221D15] to-[#0D0B08] flex flex-col items-center justify-center p-6 sm:p-10 relative overflow-hidden shadow-2xl border-l border-[#C5A880]/30">
-      <div className="absolute inset-3 sm:inset-5 border border-[#C5A880]/30 rounded pointer-events-none" />
-      <div className="text-center z-10 space-y-4">
-        <div className="w-12 h-0.5 bg-[#C5A880]/60 mx-auto" />
-        <p className="text-[#DED0B4]/70 text-xs sm:text-sm tracking-[0.25em] uppercase font-light">
+    <div className="w-full h-full bg-gradient-to-br from-[#1A1510] via-[#221D15] to-[#0D0B08] flex flex-col items-center justify-center p-4 sm:p-10 relative overflow-hidden shadow-2xl border-l-2 border-l-[#C5A880]/40">
+      <div className="absolute inset-2 sm:inset-5 border border-[#C5A880]/30 rounded pointer-events-none" />
+      <div className="text-center z-10 space-y-2 sm:space-y-4">
+        <div className="w-8 sm:w-12 h-0.5 bg-[#C5A880]/60 mx-auto" />
+        <p className="text-[#DED0B4]/70 text-[10px] sm:text-sm tracking-[0.25em] uppercase font-light">
           Handcrafted with Love
         </p>
-        <p className="text-[#C5A880] text-sm font-serif italic">
+        <p className="text-[#C5A880] text-xs sm:text-sm font-serif italic">
           KPR Productions Color Lab
         </p>
-        <div className="w-12 h-0.5 bg-[#C5A880]/60 mx-auto" />
+        <div className="w-8 sm:w-12 h-0.5 bg-[#C5A880]/60 mx-auto" />
       </div>
-      <div className="absolute bottom-5 sm:bottom-7 text-center">
-        <p className="text-[#C5A880]/30 text-[8px] sm:text-[9px] tracking-[0.4em] uppercase font-bold select-none">
+      <div className="absolute bottom-3 sm:bottom-7 text-center">
+        <p className="text-[#C5A880]/30 text-[7px] sm:text-[9px] tracking-[0.4em] uppercase font-bold select-none">
           www.kprproductions.com
         </p>
       </div>
@@ -539,39 +577,34 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
     return 0.85;
   };
 
-  /* Dimensions calculation */
+  /* Dimensions calculation for 2-page open book spread */
   const topPad = 52;
-  const bottomPad = showThumbnails ? 140 : 54;
-  const sidePad = isMobile ? 8 : 48;
+  const bottomPad = showThumbnails ? (isMobile ? 120 : 140) : 54;
+  const sidePad = isMobile ? 8 : 40;
 
-  const availH = Math.max(vh - topPad - bottomPad, 200);
   const availW = Math.max(vw - sidePad * 2, 200);
+  const availH = Math.max(vh - topPad - bottomPad, 180);
 
   const pageRatio = getPageAspectRatio(size);
 
-  let bookWidth, bookHeight;
-  if (isMobile) {
-    bookWidth = Math.min(availW, 420);
-    bookHeight = Math.round(bookWidth / pageRatio);
-    if (bookHeight > availH) {
-      bookHeight = availH;
-      bookWidth = Math.round(bookHeight * pageRatio);
-    }
-  } else {
-    bookHeight = Math.min(availH, 740);
-    bookWidth = Math.round(bookHeight * pageRatio);
-    if (bookWidth * 2 > availW) {
-      bookWidth = Math.floor(availW / 2);
-      bookHeight = Math.round(bookWidth / pageRatio);
+  let singlePageW = Math.floor(availW / 2);
+  let singlePageH = Math.round(singlePageW / pageRatio);
+
+  if (singlePageH > availH) {
+    singlePageH = availH;
+    singlePageW = Math.round(singlePageH * pageRatio);
+    if (singlePageW * 2 > availW) {
+      singlePageW = Math.floor(availW / 2);
+      singlePageH = Math.round(singlePageW / pageRatio);
     }
   }
 
-  bookWidth = Math.max(bookWidth, 160);
-  bookHeight = Math.max(bookHeight, 220);
+  singlePageW = Math.max(singlePageW, 130);
+  singlePageH = Math.max(singlePageH, 140);
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] overflow-hidden"
+      className="fixed inset-0 z-[9999] overflow-hidden bg-black/95 select-none"
       style={{ width: '100vw', height: '100vh', minWidth: 0 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -580,7 +613,7 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="absolute inset-0 bg-black/95 backdrop-blur-xs" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-xs" onClick={onClose} />
 
       <motion.div
         className="absolute inset-0 flex flex-col items-center justify-between"
@@ -590,7 +623,7 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
         transition={{ duration: reducedMotion ? 0 : 0.25, ease: 'easeOut' }}
       >
         {/* ── Top Toolbar ── */}
-        <div className="w-full flex items-center justify-between px-3 sm:px-6 py-2.5 shrink-0 z-30 bg-black/40 backdrop-blur-md border-b border-white/10" style={{ height: `${topPad}px` }}>
+        <div className="w-full flex items-center justify-between px-3 sm:px-6 py-2.5 shrink-0 z-30 bg-black/60 backdrop-blur-md border-b border-white/10" style={{ height: `${topPad}px` }}>
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-[#C5A880]" />
             <span className="text-white text-xs sm:text-sm font-bold uppercase tracking-wider">
@@ -642,7 +675,7 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
 
             <button
               onClick={onClose}
-              className="p-2 rounded-full bg-white/10 hover:bg-red-500/90 text-white/80 hover:text-white transition-colors cursor-pointer ml-1.5"
+              className="p-2 rounded-full bg-white/10 hover:bg-red-500/90 text-white/80 hover:text-white transition-colors cursor-pointer ml-1 sm:ml-1.5"
               title="Close"
             >
               <X className="w-5 h-5" />
@@ -651,10 +684,10 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
         </div>
 
         {/* ── Book Area ── */}
-        <div className="flex-1 flex items-center justify-center w-full relative overflow-hidden" style={{ minHeight: 0 }}>
+        <div className="flex-1 flex items-center justify-center w-full relative overflow-hidden px-1 sm:px-2" style={{ minHeight: 0 }}>
           <button
             onClick={handleFlipPrev}
-            className="absolute left-1.5 sm:left-6 z-30 p-2.5 sm:p-4 rounded-full bg-white/10 hover:bg-white/25 text-white/70 hover:text-white transition-all cursor-pointer backdrop-blur-sm shadow-md"
+            className="absolute left-1 sm:left-6 z-30 p-2 sm:p-4 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 transition-all cursor-pointer backdrop-blur-sm shadow-xl"
             title="Previous page"
             aria-label="Previous Page"
           >
@@ -666,12 +699,12 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
             <>
               <div
                 onClick={handleFlipPrev}
-                className="absolute left-0 top-0 bottom-0 w-1/4 z-20 cursor-pointer"
+                className="absolute left-0 top-0 bottom-0 w-1/5 z-20 cursor-pointer"
                 title="Tap for previous page"
               />
               <div
                 onClick={handleFlipNext}
-                className="absolute right-0 top-0 bottom-0 w-1/4 z-20 cursor-pointer"
+                className="absolute right-0 top-0 bottom-0 w-1/5 z-20 cursor-pointer"
                 title="Tap for next page"
               />
             </>
@@ -680,23 +713,27 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
           <motion.div
             animate={{ scale: zoomed ? 1.35 : 1 }}
             transition={{ duration: reducedMotion ? 0 : 0.35, ease: 'easeInOut' }}
-            className="origin-center drop-shadow-2xl"
+            className="origin-center relative flex items-center justify-center p-1 sm:p-2 bg-[#171410] rounded-xs sm:rounded-md border border-[#C5A880]/30 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)]"
             style={{ willChange: 'transform' }}
           >
+            {/* Stacked Pages Thickness Edge shadow at bottom */}
+            <div className="absolute -bottom-1 sm:-bottom-1.5 left-2 right-2 h-1 sm:h-1.5 bg-gradient-to-r from-[#D8CEBF] via-[#FAF7F2] to-[#D8CEBF] rounded-b-xs opacity-75 pointer-events-none" />
+
             <HTMLFlipBook
+              key={`preview-flip-${images.length}-${isMobile}-${size}-${singlePageW}`}
               ref={flipBook}
-              width={bookWidth}
-              height={bookHeight}
+              width={singlePageW}
+              height={singlePageH}
               size="fixed"
-              minWidth={190}
-              maxWidth={1200}
-              minHeight={270}
+              minWidth={130}
+              maxWidth={1400}
+              minHeight={140}
               maxHeight={1400}
-              maxShadowOpacity={0.5}
+              maxShadowOpacity={0.6}
               showCover={true}
               mobileScrollSupport={false}
-              flippingTime={reducedMotion ? 0 : 650}
-              usePortrait={isMobile}
+              flippingTime={reducedMotion ? 0 : 500}
+              usePortrait={false}
               startPage={0}
               drawShadow={!reducedMotion}
               autoSize={false}
@@ -706,15 +743,24 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
               showPageCorners={!reducedMotion}
               disableFlipByClick={false}
               onFlip={handlePageFlip}
-              className="album-flipbook-shadow rounded-sm"
+              className="album-flipbook-shadow"
             >
               {/* Cover */}
               <CoverPage totalPhotos={images.length} size={size} />
 
               {/* Photo pages */}
               {images.map((src, i) => (
-                <PhotoPage key={i} src={src} pageIndex={i} totalPhotos={images.length} />
+                <PhotoPage
+                  key={i}
+                  src={src}
+                  pageIndex={i}
+                  totalPhotos={images.length}
+                  isLeftPage={i % 2 === 0}
+                />
               ))}
+
+              {/* Endsheet balancer if odd */}
+              {images.length % 2 !== 0 && <EndsheetPage />}
 
               {/* Back cover */}
               <BackPage />
@@ -723,7 +769,7 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
 
           <button
             onClick={handleFlipNext}
-            className="absolute right-1.5 sm:right-6 z-30 p-2.5 sm:p-4 rounded-full bg-white/10 hover:bg-white/25 text-white/70 hover:text-white transition-all cursor-pointer backdrop-blur-sm shadow-md"
+            className="absolute right-1 sm:right-6 z-30 p-2 sm:p-4 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 transition-all cursor-pointer backdrop-blur-sm shadow-xl"
             title="Next page"
             aria-label="Next Page"
           >

@@ -12,10 +12,25 @@ import { updateVerificationStatus } from '../../utils/verificationService';
 /* ─────────────────────────────────────────────────────
    Individual Page Component for Flipbook Proofing
    ───────────────────────────────────────────────────── */
-const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnly, ...props }, ref) => {
+const ProofPage = forwardRef(({ src, pageIndex, isFlagged, isLeftPage, onToggleFlag, readOnly, ...props }, ref) => {
   return (
     <div ref={ref} {...props} style={{ ...props.style }} className={`page-wrapper select-none bg-[#FCFBF9] shadow-lg relative overflow-hidden ${props.className || ''}`} data-density="soft">
-      <div className="w-full h-full p-2 sm:p-3.5 flex flex-col items-center justify-center relative bg-gradient-to-r from-[#ECE4D8]/80 via-[#FAF7F2] to-[#FAF7F2] border border-[#DCD2C3]">
+      <div
+        className={`w-full h-full p-1.5 sm:p-3 flex flex-col items-center justify-center relative border border-[#DCD2C3] ${
+          isLeftPage
+            ? 'bg-gradient-to-r from-[#FAF8F5] via-[#FAF8F5] to-[#E5DACB]/80 border-r-2 border-r-[#BFB19E]'
+            : 'bg-gradient-to-r from-[#E5DACB]/80 via-[#FAF8F5] to-[#FAF8F5] border-l-2 border-l-[#BFB19E]'
+        }`}
+      >
+        {/* Center Spine Crease / Binding Shadow */}
+        <div
+          className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
+            isLeftPage
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/20 via-black/5 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/20 via-black/5 to-transparent'
+          }`}
+        />
+
         {/* Full Image Container — object-contain ensures no photo is cropped or cut */}
         <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xs bg-black/5">
           <img
@@ -26,7 +41,7 @@ const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnl
           />
         </div>
 
-        {/* Top-Right Page Flagging Overlay Button */}
+        {/* Top Page Flagging Overlay Button */}
         {!readOnly && (
           <button
             type="button"
@@ -34,26 +49,30 @@ const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnl
               e.stopPropagation();
               onToggleFlag(pageIndex + 1);
             }}
-            className={`absolute top-3.5 right-4 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 transition-all shadow-md cursor-pointer ${
+            className={`absolute top-2.5 ${isLeftPage ? 'left-3' : 'right-3'} px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 transition-all shadow-md cursor-pointer ${
               isFlagged
                 ? 'bg-[#DC2626] text-white shadow-rose-500/40 ring-2 ring-white'
                 : 'bg-[#141414]/85 hover:bg-[#141414] text-white backdrop-blur-xs'
             }`}
           >
             <Flag className={`w-3 h-3 ${isFlagged ? 'fill-current' : ''}`} />
-            <span>{isFlagged ? 'Flagged' : 'Flag Page'}</span>
+            <span>{isFlagged ? 'Flagged' : 'Flag'}</span>
           </button>
         )}
 
         {readOnly && isFlagged && (
-          <div className="absolute top-3.5 right-4 px-3 py-1 rounded-full text-[10px] font-bold bg-[#DC2626] text-white flex items-center gap-1.5 shadow-md">
+          <div className={`absolute top-2.5 ${isLeftPage ? 'left-3' : 'right-3'} px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-[#DC2626] text-white flex items-center gap-1 shadow-md`}>
             <Flag className="w-3 h-3 fill-current" />
             <span>Flagged</span>
           </div>
         )}
 
         {/* Page Number Watermark */}
-        <span className="absolute bottom-2.5 right-3.5 text-[9.5px] text-[#4A3B2C]/80 font-mono select-none bg-white/90 backdrop-blur-xs px-2.5 py-0.5 rounded-full shadow-xs border border-[#D5C9B8]">
+        <span
+          className={`absolute bottom-1.5 sm:bottom-2.5 text-[8px] sm:text-[9.5px] text-[#4A3B2C]/80 font-mono select-none bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded-full shadow-xs border border-[#D5C9B8] z-20 ${
+            isLeftPage ? 'left-2 sm:left-3' : 'right-2 sm:right-3'
+          }`}
+        >
           Page {pageIndex + 1}
         </span>
       </div>
@@ -218,37 +237,42 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
     }
   };
 
-  // Dimensions for Flipbook
+  // Dimensions for 2-Page Open Spread Flipbook
   const pages = verification?.album_pages || [];
   const totalPages = pages.length;
 
   const topPad = 64;
   const bottomPad = 80;
-  const availH = vh - topPad - bottomPad;
-  const availW = vw - (isMobile ? 32 : 120);
+  const sidePad = isMobile ? 8 : 40;
+  const availH = Math.max(vh - topPad - bottomPad, 180);
+  const availW = Math.max(vw - sidePad * 2, 200);
 
-  let bookWidth, bookHeight;
-  if (isMobile) {
-    bookWidth = availW;
-    bookHeight = Math.min(Math.round(bookWidth * 1.35), availH);
-  } else {
-    bookHeight = Math.min(availH, 620);
-    bookWidth = Math.round(bookHeight * 0.72);
-    if (bookWidth * 2 > availW) {
-      bookWidth = Math.floor(availW / 2);
-      bookHeight = Math.round(bookWidth / 0.72);
+  // Single page aspect ratio (16x24 / portrait default = 0.75, 12x36 = 1.5)
+  const sizeStr = verification?.album_size || '';
+  const cleanSize = String(sizeStr).toLowerCase().replace(/\s+/g, '');
+  const pageRatio = cleanSize === '12x36' || cleanSize === '13x39' || cleanSize === '14x40' ? 1.5 : (cleanSize === '12x24' ? 1.0 : 0.75);
+
+  let singlePageW = Math.floor(availW / 2);
+  let singlePageH = Math.round(singlePageW / pageRatio);
+
+  if (singlePageH > availH) {
+    singlePageH = availH;
+    singlePageW = Math.round(singlePageH * pageRatio);
+    if (singlePageW * 2 > availW) {
+      singlePageW = Math.floor(availW / 2);
+      singlePageH = Math.round(singlePageW / pageRatio);
     }
   }
 
-  bookWidth = Math.max(bookWidth, 180);
-  bookHeight = Math.max(bookHeight, 260);
+  singlePageW = Math.max(singlePageW, 130);
+  singlePageH = Math.max(singlePageH, 140);
 
   const totalFlaggedCount = flaggedPages.length + flaggedPhotoIds.length;
 
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-[9999] flex flex-col bg-black/70 backdrop-blur-xs text-[#111111]"
+        className="fixed inset-0 z-[9999] flex flex-col bg-black/80 backdrop-blur-xs text-[#111111] select-none"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -326,7 +350,7 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
         </div>
 
         {/* ═══════ 2. MAIN REVIEW CONTENT ═══════ */}
-        <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 relative bg-[#F3F4F6]">
+        <div className="flex-1 overflow-y-auto flex items-center justify-center p-2 sm:p-4 relative bg-[#1E1E1E]">
 
           {/* SUCCESS TOAST */}
           {successToast && (
@@ -347,7 +371,7 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
               {/* Flip navigation arrow left */}
               <button
                 onClick={() => flipBookRef.current?.pageFlip()?.flipPrev()}
-                className="absolute left-2 sm:left-6 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#111111] border border-[#E7E8EB] flex items-center justify-center transition-transform hover:scale-105 shadow-md cursor-pointer backdrop-blur-xs"
+                className="absolute left-1 sm:left-6 z-30 p-2 sm:p-4 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 transition-all cursor-pointer backdrop-blur-sm shadow-xl"
                 aria-label="Previous Page"
               >
                 <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -358,44 +382,48 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
                 <>
                   <div
                     onClick={() => flipBookRef.current?.pageFlip()?.flipPrev()}
-                    className="absolute left-0 top-0 bottom-0 w-1/4 z-20 cursor-pointer"
+                    className="absolute left-0 top-0 bottom-0 w-1/5 z-20 cursor-pointer"
                     title="Tap for previous page"
                   />
                   <div
                     onClick={() => flipBookRef.current?.pageFlip()?.flipNext()}
-                    className="absolute right-0 top-0 bottom-0 w-1/4 z-20 cursor-pointer"
+                    className="absolute right-0 top-0 bottom-0 w-1/5 z-20 cursor-pointer"
                     title="Tap for next page"
                   />
                 </>
               )}
 
               {/* Flipbook Container */}
-              <div className="flex items-center justify-center drop-shadow-2xl">
+              <div className="relative flex items-center justify-center p-1 sm:p-2 bg-[#171410] rounded-xs sm:rounded-md border border-[#C5A880]/30 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)]">
+                {/* Stacked Pages Thickness Edge shadow at bottom */}
+                <div className="absolute -bottom-1 sm:-bottom-1.5 left-2 right-2 h-1 sm:h-1.5 bg-gradient-to-r from-[#D8CEBF] via-[#FAF7F2] to-[#D8CEBF] rounded-b-xs opacity-75 pointer-events-none" />
+
                 <HTMLFlipBook
-                  key={`verify-flip-${albumPages.length}-${isMobile}`}
+                  key={`verify-flip-${albumPages.length}-${isMobile}-${singlePageW}`}
                   ref={flipBookRef}
-                  width={bookWidth}
-                  height={bookHeight}
+                  width={singlePageW}
+                  height={singlePageH}
                   size="fixed"
-                  minWidth={140}
-                  maxWidth={800}
-                  minHeight={180}
-                  maxHeight={800}
-                  maxShadowOpacity={0.5}
-                  showCover={!isMobile}
+                  minWidth={130}
+                  maxWidth={1400}
+                  minHeight={140}
+                  maxHeight={1400}
+                  maxShadowOpacity={0.6}
+                  showCover={false}
                   mobileScrollSupport={false}
-                  usePortrait={isMobile}
+                  usePortrait={false}
                   startPage={0}
                   swipeDistance={15}
-                  flippingTime={450}
+                  flippingTime={500}
                   onFlip={(e) => setCurrentPage(e.data)}
-                  className="shadow-2xl rounded-sm overflow-hidden"
+                  className="album-flipbook-shadow"
                 >
                   {pages.map((p, idx) => (
                     <ProofPage
                       key={p.id || idx}
                       src={p.url || p.file_path || p}
                       pageIndex={idx}
+                      isLeftPage={idx % 2 === 0}
                       isFlagged={flaggedPages.includes(idx + 1)}
                       onToggleFlag={togglePageFlag}
                       readOnly={isApproved}
@@ -407,7 +435,7 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
               {/* Flip navigation arrow right */}
               <button
                 onClick={() => flipBookRef.current?.pageFlip()?.flipNext()}
-                className="absolute right-2 sm:right-6 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-[#111111] border border-[#E7E8EB] flex items-center justify-center transition-transform hover:scale-105 shadow-md cursor-pointer backdrop-blur-xs"
+                className="absolute right-1 sm:right-6 z-30 p-2 sm:p-4 rounded-full bg-black/60 hover:bg-black/90 text-white/90 hover:text-white border border-white/20 transition-all cursor-pointer backdrop-blur-sm shadow-xl"
                 aria-label="Next Page"
               >
                 <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
