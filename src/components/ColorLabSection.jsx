@@ -45,7 +45,7 @@ export default function ColorLabSection() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [selectedAlbumSize, setSelectedAlbumSize] = useState('12x36');
   const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState([]);
-  const [uploadErrors, setUploadErrors] = useState([]);
+  const [uploadError, setUploadError] = useState(null);
   const [validatingFiles, setValidatingFiles] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
@@ -125,12 +125,12 @@ export default function ColorLabSection() {
 
   /* Open custom album upload modal */
   const handleOpenUploadModal = () => {
-    setUploadErrors([]);
+    setUploadError(null);
     setUploadModalOpen(true);
   };
 
-  /* Process selected files (images or PDF) with strict physical album size validation */
-  const processUploadedFiles = async (files, targetSize = selectedAlbumSize) => {
+  /* Process selected files (images or PDF) */
+  const processUploadedFiles = async (files) => {
     const rawFiles = Array.from(files);
     const validFiles = rawFiles.filter(f =>
       f.type.startsWith('image/') ||
@@ -140,15 +140,15 @@ export default function ColorLabSection() {
     );
 
     if (validFiles.length === 0) {
-      setUploadErrors(['Please select valid photos (JPG, PNG, WEBP, HEIC) or an Album PDF spread file.']);
+      setUploadError('Please select valid photos (JPG, PNG, WEBP, HEIC) or an Album PDF.');
       return;
     }
 
     setValidatingFiles(true);
-    setUploadErrors([]);
+    setUploadError(null);
 
     const newUrls = [];
-    const sizeErrors = [];
+    let failedCount = 0;
 
     // 1. PDF Spread processing
     const pdfFiles = validFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
@@ -161,22 +161,22 @@ export default function ColorLabSection() {
           if (pages && pages.length > 0) {
             newUrls.push(...pages);
           } else {
-            sizeErrors.push(`PDF "${pdfFile.name}" contained no readable pages.`);
+            failedCount++;
           }
         } catch (err) {
           console.warn('PDF preview extraction note:', err);
-          sizeErrors.push(`Failed to extract pages from PDF "${pdfFile.name}".`);
+          failedCount++;
         }
       }
       setPdfLoading(false);
     }
 
-    // 2. Individual image validation against selected physical album size
+    // 2. Individual image validation (checks if valid, non-corrupt image)
     const imageFiles = validFiles.filter(f => !f.type.includes('pdf') && !f.name.endsWith('.pdf'));
     for (const imageFile of imageFiles) {
-      const valRes = await validateImageSizeForAlbum(imageFile, targetSize);
+      const valRes = await validateImageSizeForAlbum(imageFile, selectedAlbumSize);
       if (!valRes.valid) {
-        sizeErrors.push(valRes.error);
+        failedCount++;
       } else {
         newUrls.push(URL.createObjectURL(imageFile));
       }
@@ -184,8 +184,12 @@ export default function ColorLabSection() {
 
     setValidatingFiles(false);
 
-    if (sizeErrors.length > 0) {
-      setUploadErrors(sizeErrors);
+    if (failedCount > 0) {
+      setUploadError(
+        failedCount === 1
+          ? '1 photo could not be read or is corrupted.'
+          : `${failedCount} photos could not be read or are corrupted.`
+      );
     }
 
     if (newUrls.length > 0) {
@@ -206,25 +210,14 @@ export default function ColorLabSection() {
     setUploadedPhotoUrls(prev => prev.filter((_, i) => i !== index));
   };
 
-  /* Launch flipbook from modal — strictly blocked if size errors exist */
+  /* Launch flipbook from modal */
   const handleLaunchCustomFlipbook = () => {
-    // If size validation failed and no valid photos exist, block page load
-    if (uploadErrors.length > 0 && uploadedPhotoUrls.length === 0) {
-      return;
-    }
-
-    if (uploadedPhotoUrls.length === 0) {
-      setUploadErrors([
-        `Please upload valid photos matching the ${selectedAlbumSize} format before opening the 3D flipbook.`
-      ]);
-      return;
-    }
-
+    const photosToOpen = uploadedPhotoUrls.length > 0 ? uploadedPhotoUrls : demoAlbumPages;
     setFlipbookSize(selectedAlbumSize);
     setFlipbookTitle(`Custom ${selectedAlbumSize} Album`);
-    setFlipbookImages(uploadedPhotoUrls);
+    setFlipbookImages(photosToOpen);
     setUploadModalOpen(false);
-    setUploadErrors([]);
+    setUploadError(null);
   };
 
   return (
@@ -707,34 +700,21 @@ export default function ColorLabSection() {
                       </p>
                     </div>
 
-                    {/* Size Validation Error Banner */}
-                    {uploadErrors.length > 0 && (
-                      <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 space-y-2 animate-fadeIn">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-red-900">
-                            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
-                            <span>Photo Size Mismatch Error</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setUploadErrors([])}
-                            className="text-red-500 hover:text-red-800 p-1 text-xs cursor-pointer"
-                            title="Dismiss error"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                    {/* Small compact error notice */}
+                    {uploadError && (
+                      <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs animate-fadeIn">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                          <span className="truncate font-medium">{uploadError}</span>
                         </div>
-                        <p className="text-[11px] text-red-700 font-medium">
-                          The following photos do not match the required dimensions for <strong>{selectedAlbumSize}</strong>. Flipbook preview will not load until valid files are provided:
-                        </p>
-                        <ul className="text-[10px] space-y-1 pl-4 list-disc text-red-800 font-mono">
-                          {uploadErrors.map((err, i) => (
-                            <li key={i} className="leading-snug">{err}</li>
-                          ))}
-                        </ul>
-                        <div className="pt-1 text-[10px] text-red-600 font-sans italic">
-                          Tip: For {selectedAlbumSize}, please upload files formatted as {ALBUM_SIZE_SPECS[selectedAlbumSize]?.description || 'matching proportions'}.
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setUploadError(null)}
+                          className="text-red-400 hover:text-red-700 p-0.5 shrink-0 cursor-pointer"
+                          title="Dismiss"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     )}
 
@@ -749,7 +729,7 @@ export default function ColorLabSection() {
                             type="button"
                             onClick={() => {
                               setUploadedPhotoUrls([]);
-                              setUploadErrors([]);
+                              setUploadError(null);
                             }}
                             className="text-[10px] text-red-600 hover:underline font-semibold"
                           >

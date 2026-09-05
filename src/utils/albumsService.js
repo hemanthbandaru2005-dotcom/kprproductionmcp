@@ -304,25 +304,18 @@ export const ALBUM_SIZE_SPECS = {
 };
 
 /**
- * Validates an image file, blob, or URL against a selected physical album size.
- * Returns { valid: boolean, error?: string, width?: number, height?: number, ratio?: string }
+ * Validates that an uploaded file or URL is a readable, non-corrupt image or PDF.
+ * Supports all standard camera, phone, WhatsApp, and edited photos without false rejections.
  */
-export async function validateImageSizeForAlbum(fileOrUrl, selectedSize) {
+export async function validateImageSizeForAlbum(fileOrUrl, selectedSize = '') {
   if (!fileOrUrl) {
-    return { valid: false, error: 'No image file provided for validation.' };
+    return { valid: false, error: 'No image file provided.' };
   }
 
-  const cleanSize = String(selectedSize || '').toLowerCase().replace(/\s+/g, '');
-  const spec = ALBUM_SIZE_SPECS[cleanSize];
-  const fileName = typeof fileOrUrl === 'object' && fileOrUrl.name ? fileOrUrl.name : 'Image';
-
-  // If no specific size restriction or not in standard specs, allow valid image
-  if (!spec) {
-    return { valid: true, fileName };
-  }
+  const fileName = typeof fileOrUrl === 'object' && fileOrUrl.name ? fileOrUrl.name : 'Photo';
 
   return new Promise((resolve) => {
-    // If PDF file, allow (PDF renderer parses vector/bitmap spreads)
+    // If PDF file, allow
     if (typeof fileOrUrl === 'object' && (fileOrUrl.type === 'application/pdf' || fileOrUrl.name?.endsWith('.pdf'))) {
       resolve({ valid: true, fileName, isPdf: true });
       return;
@@ -340,36 +333,17 @@ export async function validateImageSizeForAlbum(fileOrUrl, selectedSize) {
         resolve({
           valid: false,
           fileName,
-          error: `Photo "${fileName}" cannot be read or has invalid 0×0 resolution.`
+          error: `Photo "${fileName}" is unreadable or empty.`
         });
         return;
       }
 
-      const ratio = width / height;
-
-      // Check if ratio matches any of the valid ratios within 22% tolerance (accommodates sensor vs print trim margin)
-      const matches = spec.validRatios.some(expected => {
-        return Math.abs(ratio - expected) / expected <= 0.22;
+      resolve({
+        valid: true,
+        fileName,
+        width,
+        height
       });
-
-      if (!matches) {
-        resolve({
-          valid: false,
-          fileName,
-          width,
-          height,
-          ratio: ratio.toFixed(2),
-          error: `Photo "${fileName}" (${width}×${height}px, aspect ratio ${ratio.toFixed(2)}:1) does not match the required ${spec.name} dimensions (${spec.description}). Please upload photos formatted for ${selectedSize}.`
-        });
-      } else {
-        resolve({
-          valid: true,
-          fileName,
-          width,
-          height,
-          ratio: ratio.toFixed(2)
-        });
-      }
     };
 
     img.onerror = () => {
@@ -377,11 +351,12 @@ export async function validateImageSizeForAlbum(fileOrUrl, selectedSize) {
       resolve({
         valid: false,
         fileName,
-        error: `Photo "${fileName}" failed to load or is a corrupted image file.`
+        error: `Photo "${fileName}" failed to load or is corrupted.`
       });
     };
 
     img.src = url;
   });
 }
+
 
