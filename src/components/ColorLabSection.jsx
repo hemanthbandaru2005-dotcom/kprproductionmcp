@@ -3,6 +3,7 @@ import RetouchSlider from './RetouchSlider';
 import PackagesSection from './PackagesSection';
 import AlbumFlipbookViewer from './AlbumFlipbookViewer';
 import AlbumPreviewPage from './AlbumPreviewPage';
+import CustomAlbumUploadModal from './CustomAlbumUploadModal';
 import {
   Palette, Package, BookOpen, ChevronDown, Check, Sparkles,
   Eye, Loader2, Image as ImageIcon, Mail, Phone, Upload, X,
@@ -480,209 +481,15 @@ export default function ColorLabSection() {
             )}
 
             {/* Custom Album Size & Photo Upload Modal */}
-            {uploadModalOpen && (
-              <div className="fixed inset-0 z-[9990] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fadeIn">
-                <div className="bg-white border border-[#E2D9CC] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-5 sm:p-8 space-y-6 relative">
-                  
-                  {/* Close Button */}
-                  <button
-                    onClick={() => setUploadModalOpen(false)}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-[#F7F3EE] hover:bg-[#EAE4DC] text-[#666666] hover:text-[#1A1A1A] transition-colors cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-
-                  {/* Header */}
-                  <div className="space-y-1">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C5A880]/15 text-[#9E784F] text-[10px] font-bold uppercase tracking-wider">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Custom Album Flipbook Preview</span>
-                    </div>
-                    <h3 className="font-serif text-2xl text-[#1A1A1A] font-bold">
-                      Upload Photos & Select Album Size
-                    </h3>
-                    <p className="text-xs text-[#666666]">
-                      Choose your print size and upload photos or PDF spreads. Our 3D flipbook renderer will format them with realistic book spine physics and no image cropping.
-                    </p>
-                  </div>
-
-                  {/* Step 1: Select Physical Size */}
-                  <div className="space-y-3 pt-2 border-t border-[#E8E1D5]">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#1A1A1A] flex items-center gap-1.5">
-                        <Layers className="w-3.5 h-3.5 text-[#C5A880]" />
-                        <span>Step 1: Choose Physical Album Size</span>
-                      </label>
-                      <span className="text-[10px] font-mono font-bold text-[#C5A880] bg-[#1A1A1A] px-2 py-0.5 rounded">
-                        Selected: {selectedAlbumSize}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                      {ALBUM_SIZE_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedAlbumSize(opt.id);
-                            setUploadErrors([]);
-                          }}
-                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between ${
-                            selectedAlbumSize === opt.id
-                              ? 'border-[#C5A880] bg-[#FAF8F5] ring-2 ring-[#C5A880]/40 shadow-sm'
-                              : 'border-[#E2D9CC] hover:border-[#C5A880]/60 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono font-bold text-sm text-[#1A1A1A]">
-                              {opt.label}
-                            </span>
-                            {selectedAlbumSize === opt.id && (
-                              <Check className="w-4 h-4 text-[#C5A880]" />
-                            )}
-                          </div>
-                          <span className="text-[10px] text-[#777777] mt-1 leading-tight">
-                            {opt.desc}
-                          </span>
-                          {opt.popular && (
-                            <span className="mt-1.5 self-start bg-[#C5A880] text-black text-[8.5px] font-bold px-1.5 py-0.5 rounded uppercase">
-                              Most Popular
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Step 2: Upload Files */}
-                  <div className="space-y-3 pt-2 border-t border-[#E8E1D5]">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#1A1A1A] flex items-center gap-1.5">
-                      <ImageIcon className="w-3.5 h-3.5 text-[#C5A880]" />
-                      <span>Step 2: Add Photos or Album PDF</span>
-                    </label>
-
-                    <input
-                      ref={modalFileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/heic,application/pdf"
-                      multiple
-                      onChange={handleModalFilesSelected}
-                      className="hidden"
-                    />
-
-                    {/* Dropzone / Upload Box */}
-                    <div
-                      onClick={() => modalFileInputRef.current?.click()}
-                      className="border-2 border-dashed border-[#C5A880]/60 hover:border-[#C5A880] bg-[#FAF8F5] hover:bg-[#F3EFE9] rounded-xl p-6 text-center transition-colors cursor-pointer space-y-2"
-                    >
-                      <div className="w-12 h-12 mx-auto rounded-full bg-[#C5A880]/20 flex items-center justify-center text-[#C5A880]">
-                        {validatingFiles ? (
-                          <Loader2 className="w-6 h-6 animate-spin text-[#C5A880]" />
-                        ) : (
-                          <CloudUpload className="w-6 h-6" />
-                        )}
-                      </div>
-                      <p className="text-xs font-semibold text-[#1A1A1A]">
-                        {validatingFiles ? 'Validating photo dimensions…' : 'Click or drag & drop photos here'}
-                      </p>
-                      <p className="text-[10px] text-[#777777]">
-                        Supports JPG, PNG, WEBP, HEIC or Album PDF Spreads ({selectedAlbumSize} format)
-                      </p>
-                    </div>
-
-                    {/* Small compact error notice */}
-                    {uploadError && (
-                      <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs animate-fadeIn">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
-                          <span className="truncate font-medium">{uploadError}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setUploadError(null)}
-                          className="text-red-400 hover:text-red-700 p-0.5 shrink-0 cursor-pointer"
-                          title="Dismiss"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Uploaded Photos Thumbnails Preview */}
-                    {uploadedPhotoUrls.length > 0 && (
-                      <div className="space-y-2 pt-2">
-                        <div className="flex items-center justify-between text-xs text-[#555555]">
-                          <span className="font-semibold text-[#1A1A1A]">
-                            {uploadedPhotoUrls.length} Photo{uploadedPhotoUrls.length !== 1 ? 's' : ''} Ready ({selectedAlbumSize})
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setUploadedPhotoUrls([]);
-                              setUploadError(null);
-                            }}
-                            className="text-[10px] text-red-600 hover:underline font-semibold"
-                          >
-                            Clear all
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-40 overflow-y-auto p-1 bg-[#F7F3EE] rounded-lg border border-[#E2D9CC]">
-                          {uploadedPhotoUrls.map((url, idx) => (
-                            <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-black group border border-[#E2D9CC]">
-                              <img src={url} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
-                              <button
-                                type="button"
-                                onClick={(e) => handleRemoveUploadedPhoto(idx, e)}
-                                className="absolute top-1 right-1 p-1 bg-black/70 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Remove photo"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Actions Footer */}
-                  <div className="pt-4 border-t border-[#E8E1D5] flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={handleLaunchCustomFlipbook}
-                      disabled={uploadedPhotoUrls.length === 0}
-                      className={`w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-md cursor-pointer ${
-                        uploadedPhotoUrls.length > 0
-                          ? 'bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black'
-                          : 'bg-[#CCCCCC] text-[#666666] cursor-not-allowed shadow-none'
-                      }`}
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      <span>
-                        {uploadedPhotoUrls.length > 0
-                          ? `Open 3D Flipbook (${uploadedPhotoUrls.length} pages in ${selectedAlbumSize})`
-                          : `Upload photos to Preview in ${selectedAlbumSize}`}
-                      </span>
-                    </button>
-
-                    <a
-                      href={`https://wa.me/919849443648?text=${encodeURIComponent(
-                        `Hello KPR Colour Lab! I would like to order a custom wedding album in size ${selectedAlbumSize}${
-                          uploadedPhotoUrls.length > 0 ? ` with ${uploadedPhotoUrls.length} photos` : ''
-                        }. Please share pricing and printing timeline.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-sm"
-                    >
-                      <Phone className="w-4 h-4" />
-                      <span>Order on WhatsApp</span>
-                    </a>
-                  </div>
-
-                </div>
-              </div>
-            )}
+            <CustomAlbumUploadModal
+              isOpen={uploadModalOpen}
+              onClose={() => setUploadModalOpen(false)}
+              onLaunchFlipbook={(photos, size) => {
+                setFlipbookSize(size);
+                setFlipbookTitle(`Custom ${size} Album`);
+                setFlipbookImages(photos);
+              }}
+            />
 
             {/* Album Flipbook Viewer Modal */}
             {flipbookImages && (

@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen } from 'lucide-react';
+import { Upload, BookOpen } from 'lucide-react';
+import CustomAlbumUploadModal from './CustomAlbumUploadModal';
+import AlbumFlipbookViewer from './AlbumFlipbookViewer';
 import heroDesktop from '../assets/hero_flatlay_desktop.jpg';
 import heroMobile from '../assets/hero_flatlay_mobile.jpg';
 import showcasePhotoLogoExact from '../assets/showcase_photo_logo_exact.png';
@@ -50,6 +52,10 @@ const SERVICES = [
 ];
 
 export default function Hero({ onOpenPage }) {
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [flipbookImages, setFlipbookImages] = useState(null);
+  const [flipbookSize, setFlipbookSize] = useState('12x36');
+
   const handleCardClick = (route) => {
     if (typeof onOpenPage === 'function') {
       onOpenPage(route);
@@ -59,14 +65,6 @@ export default function Hero({ onOpenPage }) {
       if (elem) {
         elem.scrollIntoView({ behavior: 'smooth' });
       }
-    }
-  };
-
-  const handleCheckAlbumClick = () => {
-    if (typeof onOpenPage === 'function') {
-      onOpenPage('login', { tab: 'client' });
-    } else if (typeof window !== 'undefined') {
-      window.location.hash = '#login';
     }
   };
 
@@ -97,19 +95,19 @@ export default function Hero({ onOpenPage }) {
         draggable="false"
       />
 
-      {/* ── 2. Middle Section: Small "Check Your Album" Button (Yellow Mark Area) ── */}
+      {/* ── 2. Middle Section: Small "Upload Your Album" Button (Yellow Mark Area) ── */}
       <div className="w-full flex-1 flex items-center justify-center z-20 py-2 sm:py-3 pointer-events-auto">
         <button
           type="button"
-          onClick={handleCheckAlbumClick}
+          onClick={() => setUploadModalOpen(true)}
           className="group inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white border-2 border-[#C5A880] shadow-[0_8px_25px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_32px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
-          title="Check Your Album"
+          title="Upload Your Album"
         >
           <div className="w-5 h-5 rounded-full bg-[#C5A880]/30 flex items-center justify-center text-[#C5A880] group-hover:scale-110 transition-transform">
-            <BookOpen className="w-3 h-3 text-[#E8D4B8]" />
+            <Upload className="w-3 h-3 text-[#E8D4B8]" />
           </div>
           <span className="text-[11px] sm:text-xs font-black tracking-widest uppercase font-sans text-[#FAF7F2]">
-            Check Your Album
+            Upload Your Album
           </span>
           <span className="text-[#C5A880] text-sm font-bold transition-transform duration-300 group-hover:translate-x-0.5 leading-none">
             ›
@@ -185,6 +183,27 @@ export default function Hero({ onOpenPage }) {
           );
         })}
       </div>
+
+      {/* Upload Photos & Size Selection Modal */}
+      <CustomAlbumUploadModal
+        isOpen={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        onLaunchFlipbook={(photos, size) => {
+          setFlipbookImages(photos);
+          setFlipbookSize(size);
+        }}
+      />
+
+      {/* 3D Realistic Album Flipbook Viewer */}
+      {flipbookImages && (
+        <AlbumFlipbookViewer
+          images={flipbookImages}
+          size={flipbookSize}
+          title="Custom Wedding Album"
+          onClose={() => setFlipbookImages(null)}
+        />
+      )}
     </section>
   );
 }
+
