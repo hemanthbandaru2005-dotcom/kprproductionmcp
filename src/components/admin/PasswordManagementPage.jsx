@@ -382,7 +382,7 @@ function ChangeEmailModal({ isOpen, onClose, targetUser, onSuccess }) {
 
 // ─── Reset / Change Password Modal ──────────────────────────────
 function ResetPasswordModal({ isOpen, onClose, targetUser, onSuccess }) {
-  const { user } = useAuth();
+  const { user, resetAccountTempPassword } = useAuth();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -435,15 +435,10 @@ function ResetPasswordModal({ isOpen, onClose, targetUser, onSuccess }) {
         });
         if (updateErr) throw updateErr;
       } else {
-        // Resetting a worker or client password
-        try {
-          const { error: rpcErr } = await supabase.rpc('admin_reset_user_password', {
-            target_user_id: targetUser.id,
-            new_password: newPassword,
-          });
-          if (rpcErr) throw rpcErr;
-        } catch (rpcErr) {
-          console.warn('RPC reset password notice:', rpcErr);
+        // Resetting target account via resetAccountTempPassword
+        const res = await resetAccountTempPassword(targetUser, newPassword);
+        if (!res.success) {
+          throw new Error(res.error || 'Failed to reset password');
         }
       }
 
@@ -774,6 +769,8 @@ export default function PasswordManagementPage() {
   const workerUsers = allUsers.filter(u => u.role === 'worker');
   const clientUsers = allUsers.filter(u => u.role === 'client');
 
+  const isMasterAdmin = profile?.role === 'superadmin' || profile?.username === 'master';
+
   return (
     <div className="space-y-6 animate-fadeIn text-[#111111]">
 
@@ -824,6 +821,7 @@ export default function PasswordManagementPage() {
               icon={ShieldCheck}
               users={adminUsers}
               currentUserId={user?.id}
+              isMasterAdmin={isMasterAdmin}
               getRoleConfig={getRoleConfig}
               onReset={(u) => setResetTarget(u)}
               onChangeEmail={(u) => setEmailTarget(u)}
@@ -838,6 +836,7 @@ export default function PasswordManagementPage() {
               icon={UserCheck}
               users={workerUsers}
               currentUserId={user?.id}
+              isMasterAdmin={isMasterAdmin}
               getRoleConfig={getRoleConfig}
               onReset={(u) => setResetTarget(u)}
               onChangeEmail={(u) => setEmailTarget(u)}
@@ -851,6 +850,7 @@ export default function PasswordManagementPage() {
               icon={Users}
               users={clientUsers}
               currentUserId={user?.id}
+              isMasterAdmin={isMasterAdmin}
               getRoleConfig={getRoleConfig}
               onReset={(u) => setResetTarget(u)}
               onChangeEmail={(u) => setEmailTarget(u)}
@@ -895,7 +895,7 @@ export default function PasswordManagementPage() {
 }
 
 // ─── User Role Section Component ─────────────────────────────────
-function UserRoleSection({ title, icon: Icon, users, currentUserId, getRoleConfig, onReset, onChangeEmail, isAdmin: isAdminSection }) {
+function UserRoleSection({ title, icon: Icon, users, currentUserId, isMasterAdmin, getRoleConfig, onReset, onChangeEmail, isAdmin: isAdminSection }) {
   return (
     <div className="bg-white rounded-[20px] border border-[#E7E8EB] shadow-xs overflow-hidden">
       <div className="px-6 py-4 border-b border-[#E7E8EB] flex items-center justify-between bg-[#F7F8FA]">
@@ -915,6 +915,9 @@ function UserRoleSection({ title, icon: Icon, users, currentUserId, getRoleConfi
           const cfg = getRoleConfig(u.role);
           const isCurrentUser = u.id === currentUserId;
           const statusActive = u.status !== 'disabled';
+          const isClient = u.role === 'client';
+          const isAdminUser = u.role === 'admin' || u.role === 'superadmin';
+          const canReset = isCurrentUser || isMasterAdmin || (!isClient && !isAdminUser);
 
           return (
             <div key={u.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#F7F8FA] transition-colors">
@@ -949,7 +952,7 @@ function UserRoleSection({ title, icon: Icon, users, currentUserId, getRoleConfi
                 {/* Temp Password Indicator if not yet logged in */}
                 {u.temp_password && !u.first_login_at && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-[#FEF3C7] text-[#D97706] border border-[#FDE68A]">
-                    Temp PW: {u.temp_password}
+                    {isMasterAdmin || u.role === 'worker' ? `Temp PW: ${u.temp_password}` : 'Temp PW: Set by Admin'}
                   </span>
                 )}
 
@@ -964,17 +967,28 @@ function UserRoleSection({ title, icon: Icon, users, currentUserId, getRoleConfi
                 </button>
 
                 {/* Reset/Change Password Button */}
-                <button
-                  onClick={() => onReset(u)}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs ${
-                    isCurrentUser
-                      ? 'bg-[#141414] text-white hover:bg-[#333333]'
-                      : 'bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] border border-[#E7E8EB]'
-                  }`}
-                >
-                  <Lock className="w-3 h-3" />
-                  <span>{isCurrentUser ? 'Change Password' : 'Reset Password'}</span>
-                </button>
+                {canReset ? (
+                  <button
+                    onClick={() => onReset(u)}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs ${
+                      isCurrentUser
+                        ? 'bg-[#141414] text-white hover:bg-[#333333]'
+                        : 'bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] border border-[#E7E8EB]'
+                    }`}
+                  >
+                    <Lock className="w-3 h-3" />
+                    <span>{isCurrentUser ? 'Change Password' : 'Reset Password'}</span>
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#F1F2F4] text-[#9CA3AF] border border-[#E7E8EB] opacity-60 cursor-not-allowed"
+                    title={isClient ? "Client password resets are restricted to Master Admin" : "Admin password resets are restricted to Master Admin"}
+                  >
+                    <Lock className="w-3 h-3" />
+                    <span>Master Admin Only</span>
+                  </button>
+                )}
               </div>
             </div>
           );

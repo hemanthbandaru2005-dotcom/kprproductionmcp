@@ -3,11 +3,11 @@ import { useAuth } from '../../context/AuthContext';
 import {
   ShieldCheck, UserPlus, RefreshCw, Eye, EyeOff, Copy, Check,
   Search, Lock, User, AlertCircle, CheckCircle, Trash2, X,
-  ShieldAlert, Sparkles, Phone, Power, CheckCircle2
+  ShieldAlert, Sparkles, Phone, Power, CheckCircle2, Key, Loader2, MessageSquare
 } from 'lucide-react';
 
 export default function ManageAdminsPage() {
-  const { profile, fetchAdminAccounts, createAdminAccount, toggleAdminStatus } = useAuth();
+  const { profile, fetchAdminAccounts, createAdminAccount, toggleAdminStatus, resetAccountTempPassword } = useAuth();
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -29,6 +29,14 @@ export default function ManageAdminsPage() {
   const [statusConfirmAdmin, setStatusConfirmAdmin] = useState(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
 
+  // Reset Password State
+  const [resetModalAdmin, setResetModalAdmin] = useState(null);
+  const [resetAdminTempPw, setResetAdminTempPw] = useState('');
+  const [resetAdminLoading, setResetAdminLoading] = useState(false);
+  const [resetAdminError, setResetAdminError] = useState('');
+  const [resetAdminSuccessCreds, setResetAdminSuccessCreds] = useState(null);
+  const [resetAdminCopied, setResetAdminCopied] = useState(false);
+
   const isMasterAdmin = profile?.role === 'superadmin' || profile?.username === 'master';
 
   const loadAdmins = async () => {
@@ -40,6 +48,65 @@ export default function ManageAdminsPage() {
       console.warn('Failed loading admins:', e);
     }
     setLoading(false);
+  };
+
+  const handleOpenResetModal = (admin) => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$';
+    let pass = '';
+    for (let i = 0; i < 10; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setResetModalAdmin(admin);
+    setResetAdminTempPw(pass);
+    setResetAdminError('');
+    setResetAdminSuccessCreds(null);
+    setResetAdminCopied(false);
+  };
+
+  const handleExecuteAdminPasswordReset = async (e) => {
+    if (e) e.preventDefault();
+    if (!resetModalAdmin) return;
+    const cleanPw = resetAdminTempPw.trim();
+    if (!cleanPw || cleanPw.length < 6) {
+      setResetAdminError('Password must be at least 6 characters.');
+      return;
+    }
+
+    setResetAdminLoading(true);
+    setResetAdminError('');
+
+    try {
+      const res = await resetAccountTempPassword(resetModalAdmin, cleanPw);
+      if (!res.success) {
+        setResetAdminError(res.error || 'Failed to reset admin password.');
+        setResetAdminLoading(false);
+        return;
+      }
+
+      // Update in table
+      setAdmins(prev => prev.map(a => {
+        if ((a.username && a.username.toLowerCase() === resetModalAdmin.username?.toLowerCase()) || a.id === resetModalAdmin.id) {
+          return {
+            ...a,
+            temp_password: cleanPw,
+            is_temp_password: true,
+            first_login_at: null
+          };
+        }
+        return a;
+      }));
+
+      setResetAdminSuccessCreds({
+        fullName: resetModalAdmin.full_name || resetModalAdmin.username,
+        username: resetModalAdmin.username,
+        password: cleanPw
+      });
+      showToast(`Password for "${resetModalAdmin.username}" reset successfully!`);
+    } catch (err) {
+      setResetAdminError(err.message || 'Failed to reset admin password.');
+    } finally {
+      setResetAdminLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -375,6 +442,16 @@ export default function ManageAdminsPage() {
                         {!isSuper ? (
                           <div className="flex items-center justify-end gap-1.5">
                             <button
+                              type="button"
+                              onClick={() => handleOpenResetModal(admin)}
+                              className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FAF5FF] hover:bg-[#F3E8FF] text-[#7E22CE] border border-[#E9D5FF] transition-colors cursor-pointer flex items-center gap-1"
+                              title="Reset Password (Anytime)"
+                            >
+                              <Key className="w-3 h-3" />
+                              <span>Reset</span>
+                            </button>
+
+                            <button
                               onClick={() => setStatusConfirmAdmin(admin)}
                               className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1 ${
                                 admin.status === 'active'
@@ -654,6 +731,185 @@ export default function ManageAdminsPage() {
                 {statusUpdating ? 'Updating...' : statusConfirmAdmin.status === 'active' ? 'Yes, Deactivate' : 'Yes, Activate'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════════════════════════════════════════════════════════════════
+          RESET ADMIN PASSWORD MODAL (MASTER ADMIN ONLY)
+          ════════════════════════════════════════════════════════════════════════════ */}
+      {resetModalAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fadeIn text-[#111111]">
+          <div className="bg-white rounded-3xl border border-[#E7E8EB] shadow-2xl w-full max-w-lg overflow-hidden relative">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-[#E7E8EB] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#FAF5FF] text-[#7E22CE] border border-[#E9D5FF] flex items-center justify-center">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#111111]">Reset Studio Admin Password</h3>
+                  <p className="text-xs text-[#6B7280]">Generates a new temporary login password</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setResetModalAdmin(null)}
+                className="p-2 rounded-full bg-[#F1F2F4] text-[#111111] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            {resetAdminSuccessCreds ? (
+              <div className="p-6 space-y-5">
+                <div className="p-4 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] text-center space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-[#059669] text-white flex items-center justify-center mx-auto">
+                    <Check className="w-5 h-5 stroke-[3]" />
+                  </div>
+                  <h4 className="text-sm font-bold text-[#065F46]">Admin Password Reset Successfully!</h4>
+                  <p className="text-xs text-[#047857]">
+                    Share these new login credentials with the studio admin.
+                  </p>
+                </div>
+
+                {/* Plain-text Credentials Card */}
+                <div className="p-4 rounded-2xl bg-[#F8F9FA] border border-[#E7E8EB] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#6B7280] font-medium">Full Name:</span>
+                    <span className="text-xs font-bold text-[#111111]">{resetAdminSuccessCreds.fullName}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#6B7280] font-medium">Username:</span>
+                    <span className="text-xs font-mono font-bold text-[#111111] bg-white px-2 py-0.5 rounded border border-[#E7E8EB]">
+                      {resetAdminSuccessCreds.username}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#6B7280] font-medium">New Temp Password:</span>
+                    <span className="text-xs font-mono font-bold text-[#7E22CE] bg-[#FAF5FF] px-2 py-0.5 rounded border border-[#E9D5FF]">
+                      {resetAdminSuccessCreds.password}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions: Copy Password & WhatsApp Share */}
+                <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const text = `KPR Productions Admin Login:\nUsername: ${resetAdminSuccessCreds.username}\nNew Password: ${resetAdminSuccessCreds.password}\nLogin Portal: ${window.location.origin}/#login`;
+                      navigator.clipboard.writeText(text);
+                      setResetAdminCopied(true);
+                      setTimeout(() => setResetAdminCopied(false), 2500);
+                    }}
+                    className="w-full flex-1 py-3 px-4 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                  >
+                    {resetAdminCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                    <span>{resetAdminCopied ? 'Copied to Clipboard!' : 'Copy Credentials'}</span>
+                  </button>
+
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(
+                      `Hello! Here are your updated KPR Studio Admin credentials:\n\n👤 Username: ${resetAdminSuccessCreds.username}\n🔑 New Password: ${resetAdminSuccessCreds.password}\n\nLogin here: ${window.location.origin}/#login`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto py-3 px-4 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Share on WhatsApp</span>
+                  </a>
+                </div>
+
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setResetModalAdmin(null)}
+                    className="text-xs text-[#6B7280] hover:text-[#111111] font-semibold underline cursor-pointer"
+                  >
+                    Done & Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleExecuteAdminPasswordReset} className="p-6 space-y-4">
+                {resetAdminError && (
+                  <div className="p-3 bg-[#FEF2F2] border border-[#FCA5A5] rounded-2xl text-[#DC2626] text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{resetAdminError}</span>
+                  </div>
+                )}
+
+                <div className="bg-[#F8F9FA] border border-[#E7E8EB] rounded-2xl p-4 space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-[#6B7280]">Admin Name:</span>
+                    <strong className="text-[#111111]">{resetModalAdmin.full_name || resetModalAdmin.username}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#6B7280]">Username:</span>
+                    <span className="font-mono text-[#7E22CE] font-bold">{resetModalAdmin.username}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] text-[#6B7280] uppercase tracking-wider font-semibold">
+                      New Temporary Password *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$';
+                        let pass = '';
+                        for (let i = 0; i < 10; i++) {
+                          pass += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
+                        setResetAdminTempPw(pass);
+                      }}
+                      className="text-[11px] font-bold text-[#7E22CE] hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>Generate New</span>
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-[#9CA3AF] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      required
+                      value={resetAdminTempPw}
+                      onChange={(e) => setResetAdminTempPw(e.target.value)}
+                      placeholder="Enter or auto-generate temp password"
+                      className="w-full pl-9 pr-4 py-2.5 font-mono bg-[#F9FAFB] border border-[#E7E8EB] rounded-xl text-xs text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#141414]/20 focus:border-[#141414]"
+                    />
+                  </div>
+                  <p className="text-[10px] text-[#9CA3AF] mt-1">
+                    This password will remain visible in the table until the admin logs in again.
+                  </p>
+                </div>
+
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-[#E7E8EB]">
+                  <button
+                    type="button"
+                    onClick={() => setResetModalAdmin(null)}
+                    className="px-4 py-2.5 rounded-full border border-[#E7E8EB] text-xs font-semibold text-[#6B7280] hover:bg-[#F1F2F4] transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetAdminLoading || !resetAdminTempPw.trim()}
+                    className="px-6 py-2.5 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                  >
+                    {resetAdminLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
+                    <span>{resetAdminLoading ? 'Resetting...' : 'Confirm Reset Password'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
           </div>
         </div>
       )}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
+import { useAuth } from '../../context/AuthContext';
 import AddWorkerModal from './AddWorkerModal';
-import { UserCheck, Plus, RefreshCw, Phone, Mail, ShieldAlert, ShieldCheck, Search, Key, Trash2, AlertTriangle, X, Eye, EyeOff, Copy, CheckCircle } from 'lucide-react';
+import { UserCheck, Plus, RefreshCw, Phone, Mail, ShieldAlert, ShieldCheck, Search, Key, Trash2, AlertTriangle, X, Eye, EyeOff, Copy, CheckCircle, Sparkles, MessageSquare, Loader2, Check } from 'lucide-react';
 
 const DELETED_WORKERS_KEY = 'kpr_deleted_workers_v1';
 
@@ -15,6 +16,7 @@ function getDeletedWorkerEmails() {
 }
 
 export default function WorkersPage() {
+  const { profile, resetAccountTempPassword } = useAuth();
   const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -23,6 +25,77 @@ export default function WorkersPage() {
   const [deleting, setDeleting] = useState(false);
   const [revealedPasswords, setRevealedPasswords] = useState({});
   const [copiedId, setCopiedId] = useState(null);
+
+  // Reset Password State
+  const [resetModalWorker, setResetModalWorker] = useState(null);
+  const [resetTempPw, setResetTempPw] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
+  const [resetSuccessCreds, setResetSuccessCreds] = useState(null);
+  const [resetCopied, setResetCopied] = useState(false);
+
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$';
+    let pass = '';
+    for (let i = 0; i < 10; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pass;
+  };
+
+  const handleOpenResetModal = (worker) => {
+    setResetModalWorker(worker);
+    setResetTempPw(generateRandomPassword());
+    setResetError('');
+    setResetSuccessCreds(null);
+    setResetCopied(false);
+  };
+
+  const handleExecutePasswordReset = async (e) => {
+    if (e) e.preventDefault();
+    if (!resetModalWorker) return;
+    const cleanPw = resetTempPw.trim();
+    if (!cleanPw || cleanPw.length < 6) {
+      setResetError('Password must be at least 6 characters.');
+      return;
+    }
+
+    setResetLoading(true);
+    setResetError('');
+
+    try {
+      const res = await resetAccountTempPassword(resetModalWorker, cleanPw);
+      if (!res.success) {
+        setResetError(res.error || 'Failed to reset password.');
+        setResetLoading(false);
+        return;
+      }
+
+      // Update local state in table
+      setWorkers(prev => prev.map(w => {
+        if (w.id === resetModalWorker.id || (w.email && w.email.toLowerCase() === resetModalWorker.email?.toLowerCase())) {
+          return {
+            ...w,
+            temp_password: cleanPw,
+            is_temp_password: true,
+            first_login_at: null
+          };
+        }
+        return w;
+      }));
+
+      setResetSuccessCreds({
+        name: resetModalWorker.full_name || resetModalWorker.email,
+        email: resetModalWorker.email,
+        password: cleanPw,
+        phone: resetModalWorker.phone
+      });
+    } catch (err) {
+      setResetError(err.message || 'An error occurred while resetting password.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   const togglePasswordVisibility = (id) => {
     setRevealedPasswords(prev => ({
@@ -397,7 +470,16 @@ export default function WorkersPage() {
                         </td>
 
                         <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-3">
+                          <div className="flex items-center justify-end gap-2.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenResetModal(worker)}
+                              className="p-1.5 text-[#9CA0A6] hover:text-[#1E74FF] hover:bg-[#DCE9FF]/50 rounded-full transition-colors cursor-pointer"
+                              title="Reset Password (Anytime)"
+                            >
+                              <Key className="w-4 h-4" />
+                            </button>
+
                             <button
                               onClick={() => toggleWorkerStatus(worker.id, worker.status)}
                               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer focus:outline-none ${
@@ -490,7 +572,16 @@ export default function WorkersPage() {
                         {worker.created_at ? new Date(worker.created_at).toLocaleDateString() : ''}
                       </span>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenResetModal(worker)}
+                          className="px-2.5 py-1 bg-[#F1F2F4] hover:bg-[#DCE9FF] text-[#1E74FF] text-[10px] font-bold uppercase rounded-full flex items-center gap-1 cursor-pointer"
+                        >
+                          <Key className="w-3 h-3" />
+                          <span>Reset</span>
+                        </button>
+
                         <button
                           onClick={() => toggleWorkerStatus(worker.id, worker.status)}
                           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
@@ -526,6 +617,167 @@ export default function WorkersPage() {
         onClose={() => setIsModalOpen(false)}
         onWorkerAdded={fetchWorkers}
       />
+
+      {/* Reset Password Modal */}
+      {resetModalWorker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn text-[#111111]">
+          <div className="bg-white border border-[#E7E8EB] rounded-[28px] max-w-md w-full p-6 space-y-4 shadow-2xl animate-scaleUp">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-3 border-b border-[#E7E8EB] pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#DCE9FF] flex items-center justify-center text-[#1E74FF] shrink-0">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#111111]">Reset Employee Password</h3>
+                  <p className="text-xs text-[#6B7280]">Generates a new temporary login password</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setResetModalWorker(null)}
+                className="p-1.5 rounded-full text-[#9CA0A6] hover:text-[#111111] hover:bg-[#F1F2F4] transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {resetSuccessCreds ? (
+              /* Success Creds Screen */
+              <div className="space-y-4 pt-1">
+                <div className="p-3.5 bg-[#DFF5E3] border border-[#BBF7D0] rounded-2xl flex items-center gap-2.5">
+                  <Check className="w-5 h-5 text-[#13A52D] shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-[#13A52D]">Password Reset Successfully!</p>
+                    <p className="text-[11px] text-[#6B7280]">This temporary password is ready to share.</p>
+                  </div>
+                </div>
+
+                <div className="bg-[#F7F8FA] border border-[#E7E8EB] rounded-2xl p-4 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#6B7280]">Employee:</span>
+                    <strong className="text-[#111111]">{resetSuccessCreds.name}</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[#6B7280]">Login ID:</span>
+                    <span className="font-mono font-bold text-[#1E74FF]">{resetSuccessCreds.email}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-[#E7E8EB]">
+                    <span className="text-[#6B7280] font-semibold">New Temp Password:</span>
+                    <span className="font-mono font-bold text-[#13A52D] bg-white px-2.5 py-0.5 rounded border border-[#E7E8EB]">
+                      {resetSuccessCreds.password}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const text = `KPR Productions Employee Login\nName: ${resetSuccessCreds.name}\nLogin ID: ${resetSuccessCreds.email}\nNew Password: ${resetSuccessCreds.password}\nPortal URL: ${window.location.origin}`;
+                      navigator.clipboard.writeText(text);
+                      setResetCopied(true);
+                      setTimeout(() => setResetCopied(false), 2000);
+                    }}
+                    className="w-full sm:flex-1 py-2.5 bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    {resetCopied ? <CheckCircle className="w-4 h-4 text-[#13A52D]" /> : <Copy className="w-4 h-4" />}
+                    <span>{resetCopied ? 'Copied to Clipboard!' : 'Copy Credentials'}</span>
+                  </button>
+
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(
+                      `*KPR Productions - Employee Password Reset*\n\nHello ${resetSuccessCreds.name},\nYour employee portal login password has been reset:\n\n*Login ID:* ${resetSuccessCreds.email}\n*New Temporary Password:* ${resetSuccessCreds.password}\n*Portal:* ${window.location.origin}\n\nPlease use these credentials to sign in.`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setResetModalWorker(null)}
+                    className="text-xs text-[#6B7280] hover:text-[#111111] font-semibold underline cursor-pointer"
+                  >
+                    Done & Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Reset Form Screen */
+              <form onSubmit={handleExecutePasswordReset} className="space-y-4 pt-1">
+                {resetError && (
+                  <div className="p-3 bg-[#FEF2F2] border border-[#FCA5A5] rounded-xl text-xs text-[#DC2626] flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>{resetError}</span>
+                  </div>
+                )}
+
+                <div className="bg-[#F7F8FA] border border-[#E7E8EB] rounded-2xl p-3.5 space-y-1.5 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-[#6B7280]">Employee:</span>
+                    <strong className="text-[#111111]">{resetModalWorker.full_name || resetModalWorker.email}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#6B7280]">Login ID:</span>
+                    <span className="font-mono text-[#1E74FF] font-semibold">{resetModalWorker.email}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider">
+                      New Temporary Password *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setResetTempPw(generateRandomPassword())}
+                      className="text-[11px] text-[#1E74FF] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>Regenerate</span>
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={resetTempPw}
+                    onChange={(e) => setResetTempPw(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-[#F7F8FA] border border-[#E7E8EB] rounded-full text-xs sm:text-sm text-[#111111] font-mono focus:outline-none focus:border-[#141414]"
+                  />
+                  <p className="text-[10px] text-[#9CA0A6] mt-1">
+                    This password will remain visible in the table until the employee logs in again.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#E7E8EB]">
+                  <button
+                    type="button"
+                    onClick={() => setResetModalWorker(null)}
+                    className="px-4 py-2.5 rounded-full bg-[#F1F2F4] hover:bg-[#E5E7EB] text-[#111111] text-xs font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetLoading || !resetTempPw.trim()}
+                    className="px-5 py-2.5 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-xs"
+                  >
+                    {resetLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
+                    <span>{resetLoading ? 'Resetting…' : 'Confirm Reset Password'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmWorker && (

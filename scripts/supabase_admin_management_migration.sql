@@ -335,3 +335,75 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'status', p_status);
 END;
 $$;
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 8. RPC: ADMIN RESET ACCOUNT TEMP PASSWORD (ANYTIME)
+-- Role-based visibility and reset scope:
+-- Superadmin: can reset Admin, Employee, and Client accounts.
+-- Admin: can ONLY reset Employee (worker/staff) accounts.
+-- Sets temp_password, is_temp_password = true, first_login_at = null
+-- Updates auth.users password server-side.
+-- ═══════════════════════════════════════════════════════════════════
+CREATE OR REPLACE FUNCTION public.admin_reset_account_temp_password(
+  p_target_id UUID,
+  p_new_temp_password TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, extensions, auth
+AS $$
+DECLARE
+  v_caller_id UUID;
+  v_caller_role TEXT;
+  v_target_role TEXT;
+  v_target_email TEXT;
+  v_encrypted TEXT;
+BEGIN
+  v_caller_id := auth.uid();
+  IF v_caller_id IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Not authenticated');
+  END IF;
+
+  SELECT role INTO v_caller_role FROM public.profiles WHERE id = v_caller_id;
+  IF v_caller_role IS NULL OR v_caller_role NOT IN ('superadmin', 'admin') THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Unauthorized: Only Admins can reset passwords');
+  END IF;
+
+  SELECT role, email INTO v_target_role, v_target_email FROM public.profiles WHERE id = p_target_id;
+  IF v_target_role IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Target account not found');
+  END IF;
+
+  -- Enforce scope: Standard Admin can ONLY manage worker/staff accounts
+  IF v_caller_role = 'admin' AND v_target_role NOT IN ('worker', 'staff') THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Unauthorized: Admin can only reset Employee passwords. Client and Admin resets require Master Admin.');
+  END IF;
+
+  IF p_new_temp_password IS NULL OR length(trim(p_new_temp_password)) < 6 THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Temporary password must be at least 6 characters');
+  END IF;
+
+  -- 1. Update Auth user password
+  v_encrypted := crypt(trim(p_new_temp_password), gen_salt('bf'));
+  UPDATE auth.users
+  SET encrypted_password = v_encrypted,
+      updated_at = now()
+  WHERE id = p_target_id;
+
+  -- 2. Update Profile with new temporary password & reset first_login_at
+  UPDATE public.profiles
+  SET temp_password = trim(p_new_temp_password),
+      is_temp_password = TRUE,
+      first_login_at = NULL,
+      updated_at = now()
+  WHERE id = p_target_id;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'user_id', p_target_id::text,
+    'temp_password', trim(p_new_temp_password),
+    'role', v_target_role
+  );
+END;
+$$;

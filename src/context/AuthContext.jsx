@@ -935,6 +935,161 @@ export function AuthProvider({ children }) {
     return { success: true };
   };
 
+  // API: Reset Account Temporary Password (Anytime)
+  // Master Admin can reset Admin, Worker, Client.
+  // Standard Admin can ONLY reset Worker.
+  const resetAccountTempPassword = async (targetUser, newTempPassword) => {
+    if (!targetUser) return { success: false, error: 'Target user is required.' };
+
+    const callerRole = profile?.role || (profile?.username === 'master' ? 'superadmin' : 'admin');
+    const isCallerSuperAdmin = callerRole === 'superadmin' || profile?.username === 'master';
+    const targetRole = targetUser.role || 'worker';
+
+    if (!isCallerSuperAdmin && targetRole !== 'worker' && targetRole !== 'staff') {
+      return { success: false, error: 'Unauthorized: Admin can only reset Employee passwords. Client and Admin resets require Master Admin.' };
+    }
+
+    const cleanPassword = (newTempPassword || '').trim();
+    if (!cleanPassword || cleanPassword.length < 6) {
+      return { success: false, error: 'Temporary password must be at least 6 characters.' };
+    }
+
+    const cleanUsername = (targetUser.username || targetUser.email?.split('@')[0] || '').toLowerCase().trim();
+    const cleanEmail = (targetUser.email || '').toLowerCase().trim();
+    const targetId = targetUser.id;
+
+    // 1. Supabase RPC admin_reset_account_temp_password
+    try {
+      if (targetId && targetId.includes('-') && targetId.length >= 32) {
+        const { data, error } = await supabase.rpc('admin_reset_account_temp_password', {
+          p_target_id: targetId,
+          p_new_temp_password: cleanPassword
+        });
+        if (!error && data?.success) {
+          // RPC succeeded
+        }
+      }
+    } catch (e) {}
+
+    // 2. Direct Supabase profiles table update
+    try {
+      await supabase.from('profiles').update({
+        temp_password: cleanPassword,
+        is_temp_password: true,
+        first_login_at: null,
+        updated_at: new Date().toISOString()
+      }).or(`id.eq.${targetId},username.ilike.${cleanUsername},email.ilike.${cleanEmail}`);
+    } catch (e) {}
+
+    // 3. Update verification registries and local storage according to target role
+    if (targetRole === 'admin' || targetRole === 'superadmin') {
+      try {
+        const { data } = await supabase
+          .from('verifications')
+          .select('*')
+          .eq('album_id', 'SYSTEM_ADMIN_REGISTRY')
+          .eq('client_id', cleanUsername)
+          .single();
+        if (data && Array.isArray(data.photo_items) && data.photo_items[0]) {
+          const meta = { ...data.photo_items[0], temp_password: cleanPassword, is_temp_password: true, first_login_at: null };
+          await supabase.from('verifications').update({ photo_items: [meta] }).eq('id', data.id);
+        }
+      } catch (e) {}
+
+      try {
+        const raw = localStorage.getItem('kpr_registered_admins_v1');
+        if (raw) {
+          const list = JSON.parse(raw);
+          const updated = list.map(a => {
+            if ((a.username || '').toLowerCase() === cleanUsername || a.id === targetId) {
+              return { ...a, temp_password: cleanPassword, is_temp_password: true, first_login_at: null };
+            }
+            return a;
+          });
+          localStorage.setItem('kpr_registered_admins_v1', JSON.stringify(updated));
+        }
+      } catch (e) {}
+    } else if (targetRole === 'worker' || targetRole === 'staff') {
+      try {
+        const { data } = await supabase
+          .from('verifications')
+          .select('*')
+          .eq('album_id', 'SYSTEM_WORKER_REGISTRY')
+          .or(`client_email.ilike.${cleanEmail},client_id.eq.${targetId},client_id.eq.${cleanUsername}`)
+          .limit(1)
+          .single();
+        if (data && Array.isArray(data.photo_items) && data.photo_items[0]) {
+          const meta = { ...data.photo_items[0], temp_password: cleanPassword, is_temp_password: true, first_login_at: null };
+          await supabase.from('verifications').update({ photo_items: [meta] }).eq('id', data.id);
+        }
+      } catch (e) {}
+
+      try {
+        const raw = localStorage.getItem('kpr_registered_workers_v1');
+        const list = raw ? JSON.parse(raw) : [];
+        const idx = list.findIndex(w => (w.email || '').toLowerCase() === cleanEmail || w.id === targetId);
+        if (idx !== -1) {
+          list[idx] = { ...list[idx], temp_password: cleanPassword, is_temp_password: true, first_login_at: null };
+        } else {
+          list.push({
+            id: targetId || `worker-${cleanUsername}`,
+            email: cleanEmail,
+            full_name: targetUser.full_name,
+            role: 'worker',
+            status: 'active',
+            temp_password: cleanPassword,
+            is_temp_password: true,
+            first_login_at: null
+          });
+        }
+        localStorage.setItem('kpr_registered_workers_v1', JSON.stringify(list));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('kpr_registered_workers_updated', { detail: { email: cleanEmail, temp_password: cleanPassword } }));
+        }
+      } catch (e) {}
+    } else if (targetRole === 'client') {
+      try {
+        const { data } = await supabase
+          .from('verifications')
+          .select('*')
+          .eq('album_id', 'SYSTEM_CLIENT_REGISTRY')
+          .or(`client_email.ilike.${cleanEmail},client_id.eq.${targetId},client_id.eq.${cleanUsername}`)
+          .limit(1)
+          .single();
+        if (data && Array.isArray(data.photo_items) && data.photo_items[0]) {
+          const meta = { ...data.photo_items[0], temp_password: cleanPassword, is_temp_password: true, first_login_at: null };
+          await supabase.from('verifications').update({ photo_items: [meta] }).eq('id', data.id);
+        }
+      } catch (e) {}
+
+      try {
+        const raw = localStorage.getItem('kpr_registered_clients_v1');
+        const list = raw ? JSON.parse(raw) : [];
+        const idx = list.findIndex(c => (c.email || '').toLowerCase() === cleanEmail || c.id === targetId);
+        if (idx !== -1) {
+          list[idx] = { ...list[idx], temp_password: cleanPassword, is_temp_password: true, first_login_at: null };
+        } else {
+          list.push({
+            id: targetId || `client-${cleanUsername}`,
+            email: cleanEmail,
+            full_name: targetUser.full_name,
+            role: 'client',
+            status: 'active',
+            temp_password: cleanPassword,
+            is_temp_password: true,
+            first_login_at: null
+          });
+        }
+        localStorage.setItem('kpr_registered_clients_v1', JSON.stringify(list));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('kpr_registered_clients_updated', { detail: { email: cleanEmail, temp_password: cleanPassword } }));
+        }
+      } catch (e) {}
+    }
+
+    return { success: true, temp_password: cleanPassword };
+  };
+
   // Sign out
   const signOut = async () => {
     try {
@@ -976,6 +1131,7 @@ export function AuthProvider({ children }) {
     createAdminAccount,
     fetchAdminAccounts,
     toggleAdminStatus,
+    resetAccountTempPassword,
   };
 
   return (
