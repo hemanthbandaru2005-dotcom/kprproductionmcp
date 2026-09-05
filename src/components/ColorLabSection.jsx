@@ -40,7 +40,6 @@ export default function ColorLabSection() {
   const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState([]);
   const [dragActive, setDragActive] = useState(false);
 
-  const folderInputRef = useRef(null);
   const modalFileInputRef = useRef(null);
 
   useEffect(() => {
@@ -422,16 +421,6 @@ export default function ColorLabSection() {
                     Designed sheet-by-sheet in our color lab, printed on museum archival paper that will be cherished for generations.
                   </p>
                 </div>
-
-                {/* Hidden File Input for Folder Card Trigger */}
-                <input
-                  ref={folderInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/heic,application/pdf"
-                  multiple
-                  onChange={handleFolderFilesSelected}
-                  className="hidden"
-                />
 
                 {/* Album Cards Grid: Published Albums + Upload Your Photos Card */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
