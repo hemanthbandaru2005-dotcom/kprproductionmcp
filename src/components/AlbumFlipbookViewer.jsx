@@ -247,8 +247,10 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
   const [autoplay, setAutoplay] = useState(false);
 
   const { w: vw, h: vh } = useWindowSize();
-  const isMobile = vw < 768;
-  const totalPhotos = images.length;
+  const safeImages = Array.isArray(images)
+    ? images.filter(img => typeof img === 'string' && img.trim().length > 0)
+    : [];
+  const totalPhotos = safeImages.length;
 
   /* ── Lock body scroll when viewer is open ── */
   useEffect(() => {
@@ -266,15 +268,19 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
   useEffect(() => {
     if (autoplay) {
       autoplayTimer.current = setInterval(() => {
-        const pageFlip = flipBook.current?.pageFlip();
-        if (pageFlip) {
-          const current = pageFlip.getCurrentPageIndex();
-          const total = pageFlip.getPageCount();
-          if (current >= total - 2) {
-            pageFlip.flip(0);
-          } else {
-            pageFlip.flipNext();
+        try {
+          const pageFlip = flipBook.current?.pageFlip?.();
+          if (pageFlip) {
+            const current = pageFlip.getCurrentPageIndex();
+            const total = pageFlip.getPageCount();
+            if (current >= total - 2) {
+              pageFlip.flip(0);
+            } else {
+              pageFlip.flipNext();
+            }
           }
+        } catch (e) {
+          console.warn('PageFlip autoplay tick note:', e);
         }
       }, 3400);
     }
@@ -294,21 +300,35 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
   /* ── Page flip handlers ── */
   const handleFlipPrev = () => {
     pauseAutoplay();
-    flipBook.current?.pageFlip()?.flipPrev();
+    try {
+      flipBook.current?.pageFlip?.()?.flipPrev();
+    } catch (e) {
+      console.warn('flipPrev note:', e);
+    }
   };
 
   const handleFlipNext = () => {
     pauseAutoplay();
-    flipBook.current?.pageFlip()?.flipNext();
+    try {
+      flipBook.current?.pageFlip?.()?.flipNext();
+    } catch (e) {
+      console.warn('flipNext note:', e);
+    }
   };
 
   const handlePageFlip = (e) => {
-    setCurrentPage(e.data);
+    if (e && typeof e.data === 'number') {
+      setCurrentPage(e.data);
+    }
   };
 
   const goToPage = (pageNum) => {
     pauseAutoplay();
-    flipBook.current?.pageFlip()?.flip(pageNum);
+    try {
+      flipBook.current?.pageFlip?.()?.flip(pageNum);
+    } catch (e) {
+      console.warn('goToPage note:', e);
+    }
     setShowThumbnails(false);
   };
 
@@ -367,7 +387,7 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
     return () => window.removeEventListener('keydown', handleKey);
   }, [autoplay]);
 
-  if (!images || images.length === 0) return null;
+  if (!safeImages || safeImages.length === 0) return null;
 
   /* ── Responsive Dimensions Calculation for 2-Page Open Book Spread ── */
   const topPad = 52;
@@ -380,7 +400,6 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
   const pageRatio = getPageAspectRatio(size);
 
   // In 2-page spread: total spread width = 2 * singlePageWidth
-  // singlePageWidth / singlePageHeight = pageRatio
   let singlePageW = Math.floor(availW / 2);
   let singlePageH = Math.round(singlePageW / pageRatio);
 
@@ -393,8 +412,29 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
     }
   }
 
-  singlePageW = Math.max(singlePageW, 130);
-  singlePageH = Math.max(singlePageH, 140);
+  singlePageW = Math.max(isNaN(singlePageW) ? 300 : singlePageW, 130);
+  singlePageH = Math.max(isNaN(singlePageH) ? 200 : singlePageH, 140);
+
+  /* Build guaranteed valid non-falsy children for HTMLFlipBook */
+  const flipbookPages = [
+    <CoverPage
+      key="flip-cover"
+      title={title}
+      size={size}
+      totalPhotos={totalPhotos}
+    />,
+    ...safeImages.map((src, i) => (
+      <PhotoPage
+        key={`flip-photo-${i}`}
+        src={src}
+        pageIndex={i}
+        totalPhotos={totalPhotos}
+        isLeftPage={i % 2 === 0}
+      />
+    )),
+    ...(totalPhotos % 2 !== 0 ? [<EndsheetPage key="flip-endsheet" />] : []),
+    <BackCoverPage key="flip-backcover" />
+  ];
 
   return (
     <AnimatePresence>
@@ -530,7 +570,7 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
               <div className="absolute -bottom-1 sm:-bottom-1.5 left-2 right-2 h-1 sm:h-1.5 bg-gradient-to-r from-[#D8CEBF] via-[#FAF7F2] to-[#D8CEBF] rounded-b-xs opacity-75 pointer-events-none" />
 
               <HTMLFlipBook
-                key={`flipbook-${images.length}-${isMobile}-${size}-${singlePageW}`}
+                key={`flipbook-${safeImages.length}-${isMobile}-${size}-${singlePageW}`}
                 ref={flipBook}
                 width={singlePageW}
                 height={singlePageH}
@@ -555,29 +595,7 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
                 onFlip={handlePageFlip}
                 className="album-flipbook-shadow"
               >
-                {/* 1. Luxury Front Cover */}
-                <CoverPage
-                  title={title}
-                  size={size}
-                  totalPhotos={totalPhotos}
-                />
-
-                {/* 2. Photo Pages (2-Page Open Spreads) */}
-                {images.map((src, i) => (
-                  <PhotoPage
-                    key={i}
-                    src={src}
-                    pageIndex={i}
-                    totalPhotos={totalPhotos}
-                    isLeftPage={i % 2 === 0}
-                  />
-                ))}
-
-                {/* 3. Balancer Endsheet if odd photo count */}
-                {totalPhotos % 2 !== 0 && <EndsheetPage />}
-
-                {/* 4. Luxury Back Cover */}
-                <BackCoverPage />
+                {flipbookPages}
               </HTMLFlipBook>
             </motion.div>
 
@@ -633,12 +651,12 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
                   </button>
 
                   {/* Photo thumbnails */}
-                  {images.map((src, i) => (
+                  {safeImages.map((src, i) => (
                     <button
                       key={i}
                       onClick={() => goToPage(i + 1)}
                       className={`shrink-0 w-14 h-18 sm:w-20 sm:h-26 rounded-md overflow-hidden border-2 transition-all cursor-pointer hover:scale-105 bg-[#141414] ${
-                        currentPage === i + 1 || (currentPage > 0 && (currentPage % 2 === 1 ? currentPage === i + 1 || currentPage + 1 === i + 1 : currentPage === i + 1 || currentPage - 1 === i + 1))
+                        currentPage === i + 1 || (currentPage > 0 && Math.floor((currentPage - 1) / 2) === Math.floor(i / 2))
                           ? 'border-[#C5A880] shadow-lg shadow-[#C5A880]/30 ring-2 ring-[#C5A880]/50'
                           : 'border-white/20 hover:border-white/40'
                       }`}

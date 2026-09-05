@@ -497,6 +497,11 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
     };
   }, [autoplay, isMobile]);
 
+  const safeImages = Array.isArray(images)
+    ? images.filter(img => typeof img === 'string' && img.trim().length > 0)
+    : [];
+  const totalPhotos = safeImages.length;
+
   const pauseAutoplay = useCallback(() => {
     if (autoplay) {
       setAutoplay(false);
@@ -504,13 +509,37 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
     }
   }, [autoplay]);
 
-  const handleFlipPrev = () => { pauseAutoplay(); flipBook.current?.pageFlip()?.flipPrev(); };
-  const handleFlipNext = () => { pauseAutoplay(); flipBook.current?.pageFlip()?.flipNext(); };
-  const handlePageFlip = (e) => setCurrentPage(e.data);
+  const handleFlipPrev = () => {
+    pauseAutoplay();
+    try {
+      flipBook.current?.pageFlip?.()?.flipPrev();
+    } catch (e) {
+      console.warn('Flip prev error:', e);
+    }
+  };
+
+  const handleFlipNext = () => {
+    pauseAutoplay();
+    try {
+      flipBook.current?.pageFlip?.()?.flipNext();
+    } catch (e) {
+      console.warn('Flip next error:', e);
+    }
+  };
+
+  const handlePageFlip = (e) => {
+    if (e && typeof e.data === 'number') {
+      setCurrentPage(e.data);
+    }
+  };
 
   const goToPage = (pageNum) => {
     pauseAutoplay();
-    flipBook.current?.pageFlip()?.flip(pageNum);
+    try {
+      flipBook.current?.pageFlip?.()?.flip(pageNum);
+    } catch (e) {
+      console.warn('Go to page error:', e);
+    }
     setShowThumbnails(false);
   };
 
@@ -518,11 +547,11 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
   const getPageLabel = () => {
     if (currentPage === 0) return 'Front Cover';
     if (currentPage >= totalPages - 1) return 'Back Cover';
-    if (isMobile) return `Page ${currentPage} of ${images.length}`;
+    if (isMobile) return `Page ${currentPage} of ${safeImages.length}`;
     const left = currentPage;
-    const right = Math.min(currentPage + 1, images.length);
-    if (currentPage + 1 >= totalPages - 1) return `Page ${left} of ${images.length}`;
-    return left === right ? `Page ${left} of ${images.length}` : `Pages ${left} - ${right} of ${images.length}`;
+    const right = Math.min(currentPage + 1, safeImages.length);
+    if (currentPage + 1 >= totalPages - 1) return `Page ${left} of ${safeImages.length}`;
+    return left === right ? `Page ${left} of ${safeImages.length}` : `Pages ${left} - ${right} of ${safeImages.length}`;
   };
 
   /* Keyboard nav */
@@ -599,8 +628,23 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
     }
   }
 
-  singlePageW = Math.max(singlePageW, 130);
-  singlePageH = Math.max(singlePageH, 140);
+  singlePageW = Math.max(isNaN(singlePageW) ? 300 : singlePageW, 130);
+  singlePageH = Math.max(isNaN(singlePageH) ? 200 : singlePageH, 140);
+
+  const flipbookPages = [
+    <CoverPage key="preview-cover" totalPhotos={totalPhotos} size={size} />,
+    ...safeImages.map((src, i) => (
+      <PhotoPage
+        key={`preview-photo-${i}`}
+        src={src}
+        pageIndex={i}
+        totalPhotos={totalPhotos}
+        isLeftPage={i % 2 === 0}
+      />
+    )),
+    ...(totalPhotos % 2 !== 0 ? [<EndsheetPage key="preview-endsheet" />] : []),
+    <BackPage key="preview-back" />
+  ];
 
   return (
     <motion.div
@@ -720,7 +764,7 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
             <div className="absolute -bottom-1 sm:-bottom-1.5 left-2 right-2 h-1 sm:h-1.5 bg-gradient-to-r from-[#D8CEBF] via-[#FAF7F2] to-[#D8CEBF] rounded-b-xs opacity-75 pointer-events-none" />
 
             <HTMLFlipBook
-              key={`preview-flip-${images.length}-${isMobile}-${size}-${singlePageW}`}
+              key={`preview-flip-${safeImages.length}-${isMobile}-${size}-${singlePageW}`}
               ref={flipBook}
               width={singlePageW}
               height={singlePageH}
@@ -745,25 +789,7 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
               onFlip={handlePageFlip}
               className="album-flipbook-shadow"
             >
-              {/* Cover */}
-              <CoverPage totalPhotos={images.length} size={size} />
-
-              {/* Photo pages */}
-              {images.map((src, i) => (
-                <PhotoPage
-                  key={i}
-                  src={src}
-                  pageIndex={i}
-                  totalPhotos={images.length}
-                  isLeftPage={i % 2 === 0}
-                />
-              ))}
-
-              {/* Endsheet balancer if odd */}
-              {images.length % 2 !== 0 && <EndsheetPage />}
-
-              {/* Back cover */}
-              <BackPage />
+              {flipbookPages}
             </HTMLFlipBook>
           </motion.div>
 
@@ -803,7 +829,7 @@ function FlipbookViewer({ images = [], size = '12x36', onClose }) {
               transition={{ duration: reducedMotion ? 0 : 0.2, ease: 'easeOut' }}
             >
               <div className="flex gap-2.5 px-4 py-3 overflow-x-auto no-scrollbar">
-                {images.map((src, i) => (
+                {safeImages.map((src, i) => (
                   <button
                     key={i}
                     onClick={() => goToPage(i + 1)}
