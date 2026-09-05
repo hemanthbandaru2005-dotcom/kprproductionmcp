@@ -14,7 +14,8 @@ export const AVAILABLE_ALBUMS = [
       '/images/services/acrylic_mdf_frames.png',
       '/images/services/photo_frames.png',
       '/images/services/flex_printing.png',
-    ]
+    ],
+    size: null
   },
   {
     id: 'album-editorial-fineart',
@@ -29,7 +30,8 @@ export const AVAILABLE_ALBUMS = [
       '/images/services/wedding_album_printing.png',
       '/images/services/laser_printing.png',
       '/images/services/card_sticker_printing.png',
-    ]
+    ],
+    size: null
   },
   {
     id: 'album-cinematic-sunset',
@@ -44,7 +46,8 @@ export const AVAILABLE_ALBUMS = [
       '/images/services/large_format_printing.png',
       '/images/services/photo_frames.png',
       '/images/services/laser_printing.png',
-    ]
+    ],
+    size: null
   }
 ];
 
@@ -161,6 +164,7 @@ function unpackVerification(record) {
   return {
     ...record,
     id: record.id || `verif-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+    album_size: record.album_size || record.size || null,
     drive_link,
     verification_link,
     link_title,
@@ -334,6 +338,7 @@ export async function createVerification(payload) {
     album_id: payload.album_id || null,
     album_title: payload.album_title || 'Album Proof',
     album_pages: payload.album_pages || [],
+    album_size: payload.album_size || payload.size || null,
     photo_ids: (payload.photo_items || []).map(p => p.id),
     photo_items: chosenPhotoItems,
     drive_link: linkToAttach || null,

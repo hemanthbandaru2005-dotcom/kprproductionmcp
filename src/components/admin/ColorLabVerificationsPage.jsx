@@ -298,14 +298,24 @@ export default function ColorLabVerificationsPage() {
                         {/* Content Type */}
                         <td className="px-6 py-4">
                           {hasAlbum && hasPhotos ? (
-                            <div className="flex items-center gap-1.5 text-[#111111]">
+                            <div className="flex items-center flex-wrap gap-1.5 text-[#111111]">
                               <Layers className="w-4 h-4 text-[#1E74FF]" />
                               <span>Album ({item.album_pages?.length || 0} pgs) + {item.photo_ids?.length || 0} proofs</span>
+                              {item.album_size && (
+                                <span className="px-1.5 py-0.5 bg-[#C5A880]/15 text-[#8B6B38] border border-[#C5A880]/30 rounded text-[9.5px] font-mono font-semibold">
+                                  {item.album_size}
+                                </span>
+                              )}
                             </div>
                           ) : hasAlbum ? (
-                            <div className="flex items-center gap-1.5 text-[#111111]">
+                            <div className="flex items-center flex-wrap gap-1.5 text-[#111111]">
                               <BookOpen className="w-4 h-4 text-[#1E74FF]" />
                               <span>{item.album_title || 'Wedding Album'} ({item.album_pages?.length || 0} pgs)</span>
+                              {item.album_size && (
+                                <span className="px-1.5 py-0.5 bg-[#C5A880]/15 text-[#8B6B38] border border-[#C5A880]/30 rounded text-[9.5px] font-mono font-semibold">
+                                  {item.album_size}
+                                </span>
+                              )}
                             </div>
                           ) : (
                             <div className="flex items-center gap-1.5 text-[#111111]">

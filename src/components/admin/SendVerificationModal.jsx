@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../utils/supabaseClient';
 import { AVAILABLE_ALBUMS, createVerification, saveEventDriveLink } from '../../utils/verificationService';
+import { fetchAlbums } from '../../utils/albumsService';
 import { CLIENT_MEMBERS } from '../../context/AuthContext';
 
 const SAMPLE_PROOF_PHOTOS = [
@@ -20,6 +21,7 @@ const SAMPLE_PROOF_PHOTOS = [
 export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
   const [clients, setClients] = useState([]);
   const [clientJobs, setClientJobs] = useState([]);
+  const [availableAlbums, setAvailableAlbums] = useState(AVAILABLE_ALBUMS);
   const [selectedClientId, setSelectedClientId] = useState('');
   const [customClientName, setCustomClientName] = useState('');
   const [customClientEmail, setCustomClientEmail] = useState('');
@@ -90,6 +92,14 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
         if (mergedClients.length > 0) {
           setSelectedClientId(mergedClients[0].id);
         }
+
+        // Fetch live albums with size data
+        try {
+          const liveAlbums = await fetchAlbums();
+          if (Array.isArray(liveAlbums) && liveAlbums.length > 0) {
+            setAvailableAlbums(liveAlbums);
+          }
+        } catch (e) {}
       } catch (err) {
         console.error('Failed to fetch clients:', err);
       } finally {
@@ -171,7 +181,7 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
     const selJob = clientJobs.find(j => j.id === selectedJobId);
     const eventTitle = customEventTitle.trim() || selJob?.title || `${targetClientName}'s Event Proof`;
 
-    const albumObj = AVAILABLE_ALBUMS.find(a => a.id === selectedAlbumId);
+    const albumObj = availableAlbums.find(a => a.id === selectedAlbumId) || AVAILABLE_ALBUMS.find(a => a.id === selectedAlbumId);
     const albumPages = (contentType === 'album' || contentType === 'both') ? (albumObj?.pages || []) : [];
     const photoItems = (contentType === 'photos' || contentType === 'both')
       ? SAMPLE_PROOF_PHOTOS.filter(p => selectedPhotoIds.includes(p.id))
@@ -189,8 +199,10 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
       client_name: targetClientName,
       client_email: targetClientEmail,
       event_title: eventTitle,
+      album_id: albumObj ? albumObj.id : null,
       album_title: albumObj ? albumObj.title : `${eventTitle} Album Proof`,
       album_pages: albumPages,
+      album_size: albumObj?.size || null,
       photo_items: photoItems,
       verification_link: driveLinkInput.trim() || null,
       drive_link: driveLinkInput.trim() || null,
@@ -395,7 +407,7 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
                 Select Layout Album
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {AVAILABLE_ALBUMS.map(album => (
+                {availableAlbums.map(album => (
                   <div
                     key={album.id}
                     onClick={() => setSelectedAlbumId(album.id)}
@@ -405,8 +417,17 @@ export default function SendVerificationModal({ isOpen, onClose, onCreated }) {
                         : 'border-[#E7E8EB] bg-[#F7F8FA] hover:bg-white'
                     }`}
                   >
-                    <p className="text-xs font-bold text-[#111111]">{album.title}</p>
-                    <p className="text-[10px] text-[#6B7280] mt-0.5">{album.pages.length} design pages</p>
+                    <p className="text-xs font-bold text-[#111111] line-clamp-1">{album.title}</p>
+                    <div className="flex items-center flex-wrap gap-1.5 mt-1">
+                      <p className="text-[10px] text-[#6B7280]">
+                        {album.pages?.length || 0} Pages • Flipbook
+                      </p>
+                      {album.size && (
+                        <span className="px-1.5 py-0.5 bg-[#C5A880]/15 text-[#8B6B38] border border-[#C5A880]/30 rounded text-[9.5px] font-mono font-semibold">
+                          {album.size}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
