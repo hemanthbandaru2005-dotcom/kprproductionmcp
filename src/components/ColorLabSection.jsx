@@ -109,28 +109,7 @@ export default function ColorLabSection() {
     }
   };
 
-  const albumSheets = [
-    {
-      id: 'album-kpr-signature',
-      title: 'KPR Signature Telugu Wedding Heirloom Album',
-      subtitle: 'Flush Mount HD Archival Layflat Album',
-      image: '/albums/kpr_album/page_01.jpg',
-      pdfUrl: '/albums/alubm.pdf',
-      desc: 'Exclusive luxury Telugu wedding album designed and printed in KPR Color Lab on premium archival layflat paper.',
-      previewImages: [
-        '/albums/kpr_album/page_01.jpg',
-        '/albums/kpr_album/page_02.jpg',
-        '/albums/kpr_album/page_03.jpg',
-        '/albums/kpr_album/page_04.jpg',
-        '/albums/kpr_album/page_05.jpg',
-        '/albums/kpr_album/page_06.jpg',
-        '/albums/kpr_album/page_07.jpg',
-        '/albums/kpr_album/page_08.jpg',
-        '/albums/kpr_album/page_09.jpg',
-        '/albums/kpr_album/page_10.jpg',
-      ]
-    }
-  ];
+  const albumSheets = [];
 
   return (
     <div id="colorlab" className="w-full bg-[#F7F3EE] transition-all duration-300">
