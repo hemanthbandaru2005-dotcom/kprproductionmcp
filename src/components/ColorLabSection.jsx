@@ -13,7 +13,6 @@ import { loadPdfPages } from '../utils/pdfLoader';
 import { fetchCustomSitePhotos } from '../utils/sitePhotosService';
 import kprColorLabLogo from '../assets/kpr_colorlab_logo.png';
 import colorLabHeaderLeft from '../assets/colorlab_header_left.jpg';
-import colorLabHeaderRight from '../assets/colorlab_header_right.jpg';
 
 export default function ColorLabSection() {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -161,12 +160,12 @@ export default function ColorLabSection() {
             />
           </div>
 
-          {/* Right Corner Spread Photo (100% Clear & Crisp) */}
+          {/* Right Corner Spread Photo (Wedding Album Printing) */}
           <div className="absolute right-0 top-0 bottom-0 h-full w-28 sm:w-44 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
             <img
-              src={colorLabHeaderRight}
-              alt="KPR Color Lab - Signature Telugu Wedding Album Spread"
-              className="w-full h-full object-cover object-right transition-transform duration-700 group-hover:scale-105 select-none"
+              src="/images/services/wedding_album_printing.png"
+              alt="KPR Color Lab - Wedding Album Printing"
+              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105 select-none"
             />
           </div>
 
