@@ -6,12 +6,19 @@ import AlbumPreviewPage from './AlbumPreviewPage';
 import {
   Palette, Package, BookOpen, ChevronDown, Check, Sparkles,
   Eye, Loader2, Image as ImageIcon, Mail, Phone, Upload, X,
-  FolderUp, ImagePlus, CloudUpload, ArrowRight, Layers, Trash2
+  FolderUp, ImagePlus, CloudUpload, ArrowRight, Layers, Trash2,
+  AlertTriangle, AlertCircle
 } from 'lucide-react';
 import { PRINTING_DESIGN_SERVICES } from '../data/servicesData';
 import { loadPdfPages } from '../utils/pdfLoader';
 import { fetchCustomSitePhotos } from '../utils/sitePhotosService';
-import { ALBUM_SIZES, fetchAlbums, INITIAL_ALBUMS } from '../utils/albumsService';
+import {
+  ALBUM_SIZES,
+  ALBUM_SIZE_SPECS,
+  validateImageSizeForAlbum,
+  fetchAlbums,
+  INITIAL_ALBUMS
+} from '../utils/albumsService';
 import kprColorLabLogo from '../assets/kpr_colorlab_logo.png';
 import colorLabHeaderLeft from '../assets/colorlab_header_left.jpg';
 
@@ -38,6 +45,8 @@ export default function ColorLabSection() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [selectedAlbumSize, setSelectedAlbumSize] = useState('12x36');
   const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState([]);
+  const [uploadErrors, setUploadErrors] = useState([]);
+  const [validatingFiles, setValidatingFiles] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
   const modalFileInputRef = useRef(null);
@@ -116,12 +125,14 @@ export default function ColorLabSection() {
 
   /* Open custom album upload modal */
   const handleOpenUploadModal = () => {
+    setUploadErrors([]);
     setUploadModalOpen(true);
   };
 
-  /* Process selected files (images or PDF) */
-  const processUploadedFiles = async (files) => {
-    const validFiles = Array.from(files).filter(f =>
+  /* Process selected files (images or PDF) with strict physical album size validation */
+  const processUploadedFiles = async (files, targetSize = selectedAlbumSize) => {
+    const rawFiles = Array.from(files);
+    const validFiles = rawFiles.filter(f =>
       f.type.startsWith('image/') ||
       f.name.match(/\.(jpg|jpeg|png|webp|heic)$/i) ||
       f.type === 'application/pdf' ||
@@ -129,29 +140,53 @@ export default function ColorLabSection() {
     );
 
     if (validFiles.length === 0) {
-      alert('Please select valid photos (JPG, PNG, WEBP) or an Album PDF.');
+      setUploadErrors(['Please select valid photos (JPG, PNG, WEBP, HEIC) or an Album PDF spread file.']);
       return;
     }
 
+    setValidatingFiles(true);
+    setUploadErrors([]);
+
     const newUrls = [];
-    const pdfFile = validFiles.find(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
-    if (pdfFile) {
+    const sizeErrors = [];
+
+    // 1. PDF Spread processing
+    const pdfFiles = validFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+    if (pdfFiles.length > 0) {
       setPdfLoading(true);
-      try {
-        const blobUrl = URL.createObjectURL(pdfFile);
-        const pages = await loadPdfPages(blobUrl, 2);
-        if (pages && pages.length > 0) newUrls.push(...pages);
-      } catch (err) {
-        console.warn('PDF preview extraction note:', err);
-      } finally {
-        setPdfLoading(false);
+      for (const pdfFile of pdfFiles) {
+        try {
+          const blobUrl = URL.createObjectURL(pdfFile);
+          const pages = await loadPdfPages(blobUrl, 2);
+          if (pages && pages.length > 0) {
+            newUrls.push(...pages);
+          } else {
+            sizeErrors.push(`PDF "${pdfFile.name}" contained no readable pages.`);
+          }
+        } catch (err) {
+          console.warn('PDF preview extraction note:', err);
+          sizeErrors.push(`Failed to extract pages from PDF "${pdfFile.name}".`);
+        }
+      }
+      setPdfLoading(false);
+    }
+
+    // 2. Individual image validation against selected physical album size
+    const imageFiles = validFiles.filter(f => !f.type.includes('pdf') && !f.name.endsWith('.pdf'));
+    for (const imageFile of imageFiles) {
+      const valRes = await validateImageSizeForAlbum(imageFile, targetSize);
+      if (!valRes.valid) {
+        sizeErrors.push(valRes.error);
+      } else {
+        newUrls.push(URL.createObjectURL(imageFile));
       }
     }
 
-    const imageFiles = validFiles.filter(f => !f.type.includes('pdf') && !f.name.endsWith('.pdf'));
-    imageFiles.forEach(f => {
-      newUrls.push(URL.createObjectURL(f));
-    });
+    setValidatingFiles(false);
+
+    if (sizeErrors.length > 0) {
+      setUploadErrors(sizeErrors);
+    }
 
     if (newUrls.length > 0) {
       setUploadedPhotoUrls(prev => [...prev, ...newUrls]);
@@ -171,13 +206,25 @@ export default function ColorLabSection() {
     setUploadedPhotoUrls(prev => prev.filter((_, i) => i !== index));
   };
 
-  /* Launch flipbook from modal */
+  /* Launch flipbook from modal — strictly blocked if size errors exist */
   const handleLaunchCustomFlipbook = () => {
-    const pagesToView = uploadedPhotoUrls.length > 0 ? uploadedPhotoUrls : demoAlbumPages;
+    // If size validation failed and no valid photos exist, block page load
+    if (uploadErrors.length > 0 && uploadedPhotoUrls.length === 0) {
+      return;
+    }
+
+    if (uploadedPhotoUrls.length === 0) {
+      setUploadErrors([
+        `Please upload valid photos matching the ${selectedAlbumSize} format before opening the 3D flipbook.`
+      ]);
+      return;
+    }
+
     setFlipbookSize(selectedAlbumSize);
     setFlipbookTitle(`Custom ${selectedAlbumSize} Album`);
-    setFlipbookImages(pagesToView);
+    setFlipbookImages(uploadedPhotoUrls);
     setUploadModalOpen(false);
+    setUploadErrors([]);
   };
 
   return (
@@ -593,7 +640,10 @@ export default function ColorLabSection() {
                         <button
                           key={opt.id}
                           type="button"
-                          onClick={() => setSelectedAlbumSize(opt.id)}
+                          onClick={() => {
+                            setSelectedAlbumSize(opt.id);
+                            setUploadErrors([]);
+                          }}
                           className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative flex flex-col justify-between ${
                             selectedAlbumSize === opt.id
                               ? 'border-[#C5A880] bg-[#FAF8F5] ring-2 ring-[#C5A880]/40 shadow-sm'
@@ -643,26 +693,64 @@ export default function ColorLabSection() {
                       className="border-2 border-dashed border-[#C5A880]/60 hover:border-[#C5A880] bg-[#FAF8F5] hover:bg-[#F3EFE9] rounded-xl p-6 text-center transition-colors cursor-pointer space-y-2"
                     >
                       <div className="w-12 h-12 mx-auto rounded-full bg-[#C5A880]/20 flex items-center justify-center text-[#C5A880]">
-                        <CloudUpload className="w-6 h-6" />
+                        {validatingFiles ? (
+                          <Loader2 className="w-6 h-6 animate-spin text-[#C5A880]" />
+                        ) : (
+                          <CloudUpload className="w-6 h-6" />
+                        )}
                       </div>
                       <p className="text-xs font-semibold text-[#1A1A1A]">
-                        Click or drag & drop photos here
+                        {validatingFiles ? 'Validating photo dimensions…' : 'Click or drag & drop photos here'}
                       </p>
                       <p className="text-[10px] text-[#777777]">
-                        Supports JPG, PNG, WEBP, HEIC or Album PDF Spreads
+                        Supports JPG, PNG, WEBP, HEIC or Album PDF Spreads ({selectedAlbumSize} format)
                       </p>
                     </div>
+
+                    {/* Size Validation Error Banner */}
+                    {uploadErrors.length > 0 && (
+                      <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 space-y-2 animate-fadeIn">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wider text-red-900">
+                            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+                            <span>Photo Size Mismatch Error</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setUploadErrors([])}
+                            className="text-red-500 hover:text-red-800 p-1 text-xs cursor-pointer"
+                            title="Dismiss error"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-red-700 font-medium">
+                          The following photos do not match the required dimensions for <strong>{selectedAlbumSize}</strong>. Flipbook preview will not load until valid files are provided:
+                        </p>
+                        <ul className="text-[10px] space-y-1 pl-4 list-disc text-red-800 font-mono">
+                          {uploadErrors.map((err, i) => (
+                            <li key={i} className="leading-snug">{err}</li>
+                          ))}
+                        </ul>
+                        <div className="pt-1 text-[10px] text-red-600 font-sans italic">
+                          Tip: For {selectedAlbumSize}, please upload files formatted as {ALBUM_SIZE_SPECS[selectedAlbumSize]?.description || 'matching proportions'}.
+                        </div>
+                      </div>
+                    )}
 
                     {/* Uploaded Photos Thumbnails Preview */}
                     {uploadedPhotoUrls.length > 0 && (
                       <div className="space-y-2 pt-2">
                         <div className="flex items-center justify-between text-xs text-[#555555]">
                           <span className="font-semibold text-[#1A1A1A]">
-                            {uploadedPhotoUrls.length} Photo{uploadedPhotoUrls.length !== 1 ? 's' : ''} Ready
+                            {uploadedPhotoUrls.length} Photo{uploadedPhotoUrls.length !== 1 ? 's' : ''} Ready ({selectedAlbumSize})
                           </span>
                           <button
                             type="button"
-                            onClick={() => setUploadedPhotoUrls([])}
+                            onClick={() => {
+                              setUploadedPhotoUrls([]);
+                              setUploadErrors([]);
+                            }}
                             className="text-[10px] text-red-600 hover:underline font-semibold"
                           >
                             Clear all
@@ -692,13 +780,18 @@ export default function ColorLabSection() {
                     <button
                       type="button"
                       onClick={handleLaunchCustomFlipbook}
-                      className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-md cursor-pointer"
+                      disabled={uploadedPhotoUrls.length === 0}
+                      className={`w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-md cursor-pointer ${
+                        uploadedPhotoUrls.length > 0
+                          ? 'bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black'
+                          : 'bg-[#CCCCCC] text-[#666666] cursor-not-allowed shadow-none'
+                      }`}
                     >
                       <BookOpen className="w-4 h-4" />
                       <span>
                         {uploadedPhotoUrls.length > 0
                           ? `Open 3D Flipbook (${uploadedPhotoUrls.length} pages in ${selectedAlbumSize})`
-                          : `Preview 3D Book in ${selectedAlbumSize}`}
+                          : `Upload photos to Preview in ${selectedAlbumSize}`}
                       </span>
                     </button>
 

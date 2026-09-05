@@ -17,7 +17,7 @@ import {
 } from '../../utils/clientUploadsService';
 import { SUPPORTED_EXTENSIONS, isFileTypeSupported } from '../../utils/googleDriveSyncService';
 import { getActiveUploadSessions } from '../../utils/driveIndexedDBService';
-import { ALBUM_SIZES } from '../../utils/albumsService';
+import { ALBUM_SIZES, ALBUM_SIZE_SPECS, validateImageSizeForAlbum } from '../../utils/albumsService';
 
 const DEFAULT_PROJECT_OPTIONS = [
   'Grand Royal Wedding — Hyderabad',
@@ -332,8 +332,27 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
 
     if (validFiles.length === 0) return;
 
+    // If client specified an album size, check image files against size
+    const sizeFilteredFiles = [];
+    if (selectedAlbumSize) {
+      for (const file of validFiles) {
+        if (file.type.startsWith('image/')) {
+          const valRes = await validateImageSizeForAlbum(file, selectedAlbumSize);
+          if (!valRes.valid) {
+            showToast(valRes.error, 'error');
+            continue; // Do not upload mismatched size file
+          }
+        }
+        sizeFilteredFiles.push(file);
+      }
+    } else {
+      sizeFilteredFiles.push(...validFiles);
+    }
+
+    if (sizeFilteredFiles.length === 0) return;
+
     // Queue valid files with controlled concurrency
-    validFiles.forEach((file) => {
+    sizeFilteredFiles.forEach((file) => {
       startFileUpload(file);
     });
   };

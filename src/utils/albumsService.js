@@ -254,3 +254,134 @@ export async function deleteAlbum(id) {
 
   return { success: true };
 }
+
+/**
+ * Physical album size specifications and aspect ratio rules
+ */
+export const ALBUM_SIZE_SPECS = {
+  '12x36': {
+    name: '12x36 Layflat Spread',
+    spreadRatio: 3.0,     // 36" width / 12" height
+    pageRatio: 1.5,       // 18" width / 12" height
+    validRatios: [1.5, 3.0],
+    description: '12x36 spread (3:1) or 12x18 page (1.5:1)'
+  },
+  '13x39': {
+    name: '13x39 Royal Grand Spread',
+    spreadRatio: 3.0,     // 39" width / 13" height
+    pageRatio: 1.5,       // 19.5" width / 13" height
+    validRatios: [1.5, 3.0],
+    description: '13x39 spread (3:1) or 13x19.5 page (1.5:1)'
+  },
+  '14x40': {
+    name: '14x40 Imperial Panorama',
+    spreadRatio: 2.857,   // 40" width / 14" height (~2.86)
+    pageRatio: 1.428,     // 20" width / 14" height (~1.43)
+    validRatios: [1.43, 2.86],
+    description: '14x40 spread (2.86:1) or 14x20 page (1.43:1)'
+  },
+  '16x24': {
+    name: '16x24 Portrait Heirloom',
+    spreadRatio: 1.5,     // 24" width / 16" height
+    pageRatio: 0.75,      // 12" width / 16" height
+    validRatios: [0.75, 1.5],
+    description: '16x24 spread (1.5:1) or 12x16 portrait page (0.75:1)'
+  },
+  '18x24': {
+    name: '18x24 Masterpiece Fine Art',
+    spreadRatio: 1.333,   // 24" width / 18" height (4:3)
+    pageRatio: 0.667,     // 12" width / 18" height (2:3 portrait)
+    validRatios: [0.67, 1.33],
+    description: '18x24 spread (1.33:1) or 12x18 portrait page (0.67:1)'
+  },
+  '12x24': {
+    name: '12x24 Studio Square Spread',
+    spreadRatio: 2.0,     // 24" width / 12" height
+    pageRatio: 1.0,       // 12" width / 12" height (1:1 square)
+    validRatios: [1.0, 2.0],
+    description: '12x24 spread (2:1) or 12x12 square page (1:1)'
+  }
+};
+
+/**
+ * Validates an image file, blob, or URL against a selected physical album size.
+ * Returns { valid: boolean, error?: string, width?: number, height?: number, ratio?: string }
+ */
+export async function validateImageSizeForAlbum(fileOrUrl, selectedSize) {
+  if (!fileOrUrl) {
+    return { valid: false, error: 'No image file provided for validation.' };
+  }
+
+  const cleanSize = String(selectedSize || '').toLowerCase().replace(/\s+/g, '');
+  const spec = ALBUM_SIZE_SPECS[cleanSize];
+  const fileName = typeof fileOrUrl === 'object' && fileOrUrl.name ? fileOrUrl.name : 'Image';
+
+  // If no specific size restriction or not in standard specs, allow valid image
+  if (!spec) {
+    return { valid: true, fileName };
+  }
+
+  return new Promise((resolve) => {
+    // If PDF file, allow (PDF renderer parses vector/bitmap spreads)
+    if (typeof fileOrUrl === 'object' && (fileOrUrl.type === 'application/pdf' || fileOrUrl.name?.endsWith('.pdf'))) {
+      resolve({ valid: true, fileName, isPdf: true });
+      return;
+    }
+
+    const img = new Image();
+    const url = typeof fileOrUrl === 'string' ? fileOrUrl : URL.createObjectURL(fileOrUrl);
+
+    img.onload = () => {
+      const width = img.naturalWidth || img.width;
+      const height = img.naturalHeight || img.height;
+      if (typeof fileOrUrl !== 'string') URL.revokeObjectURL(url);
+
+      if (!width || !height || width <= 0 || height <= 0) {
+        resolve({
+          valid: false,
+          fileName,
+          error: `Photo "${fileName}" cannot be read or has invalid 0×0 resolution.`
+        });
+        return;
+      }
+
+      const ratio = width / height;
+
+      // Check if ratio matches any of the valid ratios within 22% tolerance (accommodates sensor vs print trim margin)
+      const matches = spec.validRatios.some(expected => {
+        return Math.abs(ratio - expected) / expected <= 0.22;
+      });
+
+      if (!matches) {
+        resolve({
+          valid: false,
+          fileName,
+          width,
+          height,
+          ratio: ratio.toFixed(2),
+          error: `Photo "${fileName}" (${width}×${height}px, aspect ratio ${ratio.toFixed(2)}:1) does not match the required ${spec.name} dimensions (${spec.description}). Please upload photos formatted for ${selectedSize}.`
+        });
+      } else {
+        resolve({
+          valid: true,
+          fileName,
+          width,
+          height,
+          ratio: ratio.toFixed(2)
+        });
+      }
+    };
+
+    img.onerror = () => {
+      if (typeof fileOrUrl !== 'string') URL.revokeObjectURL(url);
+      resolve({
+        valid: false,
+        fileName,
+        error: `Photo "${fileName}" failed to load or is a corrupted image file.`
+      });
+    };
+
+    img.src = url;
+  });
+}
+

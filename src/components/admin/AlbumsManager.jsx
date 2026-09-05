@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import {
   ALBUM_SIZES,
+  ALBUM_SIZE_SPECS,
+  validateImageSizeForAlbum,
   fetchAlbums,
   createAlbum,
   updateAlbum,
@@ -108,6 +110,20 @@ export default function AlbumsManager() {
       .split('\n')
       .map(line => line.trim())
       .filter(line => line.length > 0);
+
+    // Validate size if specified
+    if (formSize && pages.length > 0) {
+      for (const pageUrl of pages) {
+        if (!pageUrl.startsWith('data:') && !pageUrl.startsWith('blob:') && (pageUrl.startsWith('http') || pageUrl.startsWith('/'))) {
+          const valRes = await validateImageSizeForAlbum(pageUrl, formSize);
+          if (!valRes.valid) {
+            setErrorMsg(`Size Mismatch Error: ${valRes.error}`);
+            setSaving(false);
+            return;
+          }
+        }
+      }
+    }
 
     const payload = {
       title: formTitle.trim(),
