@@ -302,19 +302,6 @@ export default function ColorLabSection() {
                 <span>Packages</span>
               </button>
 
-              {/* ALBUMS TAB */}
-              <button
-                onClick={() => setActiveSubTab('albums')}
-                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
-                  activeSubTab === 'albums'
-                    ? 'bg-[#1A1A1A] text-white shadow-md'
-                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
-                }`}
-              >
-                <BookOpen className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'albums' ? 'text-[#C5A880]' : ''}`} />
-                <span>Albums</span>
-              </button>
-
             </div>
           </div>
 
@@ -489,96 +476,6 @@ export default function ColorLabSection() {
                   categoryTitle="PRINTING PACKAGES"
                   categorySubtitle="Fine art wedding album printing, framing, card printing, flex, and custom design services. Click Inquire & Book Now to order via WhatsApp."
                 />
-              </div>
-            )}
-
-            {/* ALBUMS SUBSECTION */}
-            {activeSubTab === 'albums' && (
-              <div className="animate-fadeIn space-y-12">
-                {/* Top Section Header */}
-                <div className="text-center max-w-2xl mx-auto mb-10">
-                  <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block mb-1">
-                    PHYSICAL HEIRLOOMS
-                  </span>
-                  <h3 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">Luxury Flush-Mount Wedding Albums</h3>
-                  <p className="text-xs text-[#666666] font-light mt-2 leading-relaxed">
-                    Designed sheet-by-sheet in our color lab, printed on museum archival paper that will be cherished for generations.
-                  </p>
-                </div>
-
-                {/* Album Cards Grid: Published Albums + Upload Your Photos Card */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  
-                  {/* 1. Published Albums Cards */}
-                  {albumsList.map((album, i) => {
-                    const coverSrc = album.coverImage || album.cover_image || (album.pages && album.pages[0]) || '/images/services/wedding_album_printing.png';
-                    const albumTitle = album.title || 'Luxury Wedding Album';
-                    const albumSub = album.subtitle || 'Flush Mount Layflat';
-                    const albumDesc = album.description || album.desc || 'Museum-grade archival sheets designed in our color lab.';
-                    const albumSize = album.size;
-
-                    return (
-                      <div key={album.id || i} className="bg-white border border-[#E2D9CC] rounded-xl overflow-hidden shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
-                        <div className="aspect-[4/3] overflow-hidden bg-black relative">
-                          <img
-                            src={coverSrc}
-                            alt={albumTitle}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          {albumSub && (
-                            <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 text-[10px] tracking-widest text-[#C5A880] uppercase rounded font-semibold border border-[#C5A880]/30">
-                              {albumSub}
-                            </div>
-                          )}
-                          {albumSize && (
-                            <div className="absolute top-3 right-3 bg-[#C5A880] text-black px-2.5 py-0.5 text-[9.5px] font-mono font-bold uppercase rounded shadow-md">
-                              {albumSize}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="p-4 sm:p-6 space-y-3 flex-1 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-center justify-between gap-2">
-                              <h4 className="font-serif text-xl text-[#1A1A1A] group-hover:text-[#C5A880] transition-colors">
-                                {albumTitle}
-                              </h4>
-                            </div>
-                            <p className="text-xs text-[#666666] font-light leading-relaxed mt-1">
-                              {albumDesc}
-                            </p>
-                          </div>
-                          
-                          <div className="pt-3 border-t border-[#E8E1D5] flex items-center justify-between gap-2">
-                            <button
-                              onClick={() => handleViewAlbum(album)}
-                              disabled={pdfLoading}
-                              className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#F7F3EE] hover:bg-[#C5A880]/20 text-[#1A1A1A] text-[10px] tracking-widest uppercase font-bold transition-colors rounded-lg border border-[#E2D9CC] cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-                            >
-                              {pdfLoading ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Eye className="w-3.5 h-3.5 text-[#C5A880]" />
-                              )}
-                              <span>View 3D Album</span>
-                            </button>
-                            <a
-                              href={`https://wa.me/919849443648?text=${encodeURIComponent(
-                                `Hi KPR Colour Lab, I would like to order the ${albumTitle}${albumSize ? ` (Size: ${albumSize})` : ''}. Please share pricing and options!`
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-4 py-2.5 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-[10px] tracking-widest uppercase font-bold transition-colors rounded-lg shadow-sm"
-                            >
-                              Order
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
               </div>
             )}
 
