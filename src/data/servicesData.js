@@ -8,6 +8,22 @@ export const PRINTING_DESIGN_SERVICES = [
     description: 'Premium Italian leather, velvet & acrylic wedding albums with gold foil embossing, layflat archival sheets, custom color grading, and long-lasting heirloom finish for Telangana traditional weddings.'
   },
   {
+    id: 5,
+    title: 'Acrylic & MDF Frames',
+    tagline: '3D Glossy Acrylic & Carved Wooden Wall Displays',
+    image: '/images/services/acrylic_mdf_frames.png',
+    category: 'Modern Wall Frames',
+    description: 'Ultra-modern 3D acrylic wall mounts and precision MDF carved frames with warm LED backlighting, making wedding portraits stand out like museum artwork.'
+  },
+  {
+    id: 4,
+    title: 'Canon imagePROGRAF GP-566S 60 in Large Format Photo Printer 7 Colours',
+    tagline: 'Ultra-Wide 7-Colour Archival Wedding Portraits & Canvas Prints',
+    image: '/images/services/canon_imageprograf_printer.png',
+    category: '60" Fine Art Photo',
+    description: 'Flagship Canon imagePROGRAF GP-566S 60-inch large format 7-colour photo printer featuring fluorescent pink ink and LUCIA PRO II pigment inks for stunning wide-gamut wedding portraits, canvas gallery wraps, and archival prints.'
+  },
+  {
     id: 2,
     title: 'Colour Jet SONIQ Printer Large Format Flex Printer',
     tagline: 'High-Speed Industrial Flex & Vinyl Printing',
@@ -22,22 +38,6 @@ export const PRINTING_DESIGN_SERVICES = [
     image: '/images/services/laser_printing.png',
     category: 'Laser & Cutting',
     description: 'Precision CNC laser engraving, cutting and etching on natural wood, polished stone, and crystal-clear acrylic sheets. Perfect for mandap decor, custom nameplates, portraits, and luxury event displays.'
-  },
-  {
-    id: 4,
-    title: 'Canon imagePROGRAF GP-566S 60 in Large Format Photo Printer 7 Colours',
-    tagline: 'Ultra-Wide 7-Colour Archival Wedding Portraits & Canvas Prints',
-    image: '/images/services/canon_imageprograf_printer.png',
-    category: '60" Fine Art Photo',
-    description: 'Flagship Canon imagePROGRAF GP-566S 60-inch large format 7-colour photo printer featuring fluorescent pink ink and LUCIA PRO II pigment inks for stunning wide-gamut wedding portraits, canvas gallery wraps, and archival prints.'
-  },
-  {
-    id: 5,
-    title: 'Acrylic & MDF Frames',
-    tagline: '3D Glossy Acrylic & Carved Wooden Wall Displays',
-    image: '/images/services/acrylic_mdf_frames.png',
-    category: 'Modern Wall Frames',
-    description: 'Ultra-modern 3D acrylic wall mounts and precision MDF carved frames with warm LED backlighting, making wedding portraits stand out like museum artwork.'
   },
   {
     id: 6,

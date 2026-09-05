@@ -346,7 +346,8 @@ function AppContent() {
           <Footer
             onOpenInquire={() => handleSelectPage('contact')}
             showInstagram={true}
-            showFacebook={activePage !== 'events'}
+            showFacebook={activePage !== 'events' && activePage !== 'colorlab'}
+            showYoutube={activePage !== 'colorlab'}
             showAddress={activePage === 'events' || activePage === 'colorlab' || activePage === 'contact'}
             addressLine1={
               activePage === 'events'

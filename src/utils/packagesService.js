@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { PRINTING_DESIGN_SERVICES as INITIAL_COLORLAB_SERVICES } from '../data/servicesData';
 
-const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v19';
+const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v20';
 
 export const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
   {
@@ -298,41 +298,22 @@ export const OFFICIAL_COLORLAB_SERVICES = [
     status: 'active'
   },
   {
-    id: 'cl-2',
+    id: 'cl-5',
     type: 'colorlab',
-    name: 'Colour Jet SONIQ Printer Large Format Flex Printer',
+    name: 'Acrylic & MDF Frames',
     price: null,
-    duration: 'High-Speed Industrial Flex & Vinyl Printing',
-    category: 'Large Format Flex',
-    image: '/images/services/colorjet_soniq_printer.jpg',
+    duration: '3D Glossy Acrylic & Carved Wooden Wall Displays',
+    category: 'Modern Wall Frames',
+    image: '/images/services/acrylic_mdf_frames.png',
     popular: false,
-    description: 'Industrial-grade ColourJet SONIQ i large format flex & vinyl printer delivering vibrant, photorealistic prints with high-speed multi-head precision for event backdrops, hoardings, and stage banners.',
+    description: 'Ultra-modern 3D acrylic wall mounts and precision MDF carved frames with warm LED backlighting, making wedding portraits stand out like museum artwork.',
     features: [
-      'High-speed industrial flex & vinyl printing',
-      'Weatherproof & UV resistant media',
-      'Photorealistic multi-head color precision',
-      'Event backdrops, hoardings & stage banners'
+      '3D high-gloss crystal acrylic wall mounts',
+      'Precision carved MDF wooden frames',
+      'Optional warm LED backlighting',
+      'Museum quality portrait display'
     ],
     display_order: 2,
-    status: 'active'
-  },
-  {
-    id: 'cl-3',
-    type: 'colorlab',
-    name: 'Laser Printing & Precision Cutting',
-    price: null,
-    duration: 'Wooden, Stone & Acrylic Laser Engraving & CNC Cutting',
-    category: 'Laser & Cutting',
-    image: '/images/services/laser_printing.png',
-    popular: false,
-    description: 'Precision CNC laser engraving, cutting and etching on natural wood, stone, and crystal-clear acrylic sheets. Perfect for mandap decor, custom nameplates, portraits, and luxury event displays.',
-    features: [
-      'Precision CNC laser engraving & cutting',
-      'Natural wood, polished stone & acrylic etching',
-      '3D layered mandap decor & nameplates',
-      'Custom wedding monogram engraving'
-    ],
-    display_order: 3,
     status: 'active'
   },
   {
@@ -351,24 +332,43 @@ export const OFFICIAL_COLORLAB_SERVICES = [
       '60-inch large format wedding portraits & canvas wraps',
       '100+ year anti-fade archival guarantee'
     ],
+    display_order: 3,
+    status: 'active'
+  },
+  {
+    id: 'cl-2',
+    type: 'colorlab',
+    name: 'Colour Jet SONIQ Printer Large Format Flex Printer',
+    price: null,
+    duration: 'High-Speed Industrial Flex & Vinyl Printing',
+    category: 'Large Format Flex',
+    image: '/images/services/colorjet_soniq_printer.jpg',
+    popular: false,
+    description: 'Industrial-grade ColourJet SONIQ i large format flex & vinyl printer delivering vibrant, photorealistic prints with high-speed multi-head precision for event backdrops, hoardings, and stage banners.',
+    features: [
+      'High-speed industrial flex & vinyl printing',
+      'Weatherproof & UV resistant media',
+      'Photorealistic multi-head color precision',
+      'Event backdrops, hoardings & stage banners'
+    ],
     display_order: 4,
     status: 'active'
   },
   {
-    id: 'cl-5',
+    id: 'cl-3',
     type: 'colorlab',
-    name: 'Acrylic & MDF Frames',
+    name: 'Laser Printing & Precision Cutting',
     price: null,
-    duration: '3D Glossy Acrylic & Carved Wooden Wall Displays',
-    category: 'Modern Wall Frames',
-    image: '/images/services/acrylic_mdf_frames.png',
+    duration: 'Wooden, Stone & Acrylic Laser Engraving & CNC Cutting',
+    category: 'Laser & Cutting',
+    image: '/images/services/laser_printing.png',
     popular: false,
-    description: 'Ultra-modern 3D acrylic wall mounts and precision MDF carved frames with warm LED backlighting, making wedding portraits stand out like museum artwork.',
+    description: 'Precision CNC laser engraving, cutting and etching on natural wood, stone, and crystal-clear acrylic sheets. Perfect for mandap decor, custom nameplates, portraits, and luxury event displays.',
     features: [
-      '3D high-gloss crystal acrylic wall mounts',
-      'Precision carved MDF wooden frames',
-      'Optional warm LED backlighting',
-      'Museum quality portrait display'
+      'Precision CNC laser engraving & cutting',
+      'Natural wood, polished stone & acrylic etching',
+      '3D layered mandap decor & nameplates',
+      'Custom wedding monogram engraving'
     ],
     display_order: 5,
     status: 'active'

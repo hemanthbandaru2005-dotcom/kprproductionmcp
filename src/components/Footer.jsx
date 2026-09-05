@@ -7,6 +7,7 @@ export default function Footer({
   onOpenInquire,
   showInstagram = true,
   showFacebook = true,
+  showYoutube = true,
   showAddress = true,
   mapUrl = 'https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac',
   instagramUrl = SOCIAL_LINKS.instagram,
@@ -166,20 +167,22 @@ export default function Footer({
               )}
 
               {/* YouTube Link */}
-              <a
-                href={youtubeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 px-3 py-2 bg-white/5 hover:bg-[#C5A880]/15 border border-white/10 hover:border-[#C5A880]/40 rounded text-xs text-white/80 hover:text-white transition-all duration-300 group"
-              >
-                <div className="p-1.5 bg-[#C5A880]/20 rounded text-[#C5A880] group-hover:scale-110 transition-transform">
-                  <YoutubeIcon className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="block font-medium text-white group-hover:text-[#C5A880]">YouTube</span>
-                  <span className="text-[10px] text-white/40">{youtubeHandle}</span>
-                </div>
-              </a>
+              {showYoutube && (
+                <a
+                  href={youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-3 py-2 bg-white/5 hover:bg-[#C5A880]/15 border border-white/10 hover:border-[#C5A880]/40 rounded text-xs text-white/80 hover:text-white transition-all duration-300 group"
+                >
+                  <div className="p-1.5 bg-[#C5A880]/20 rounded text-[#C5A880] group-hover:scale-110 transition-transform">
+                    <YoutubeIcon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="block font-medium text-white group-hover:text-[#C5A880]">YouTube</span>
+                    <span className="text-[10px] text-white/40">{youtubeHandle}</span>
+                  </div>
+                </a>
+              )}
 
             </div>
           </div>
