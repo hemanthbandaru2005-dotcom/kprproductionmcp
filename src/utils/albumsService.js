@@ -9,70 +9,9 @@ export const ALBUM_SIZES = [
   '12x24'
 ];
 
-export const INITIAL_ALBUMS = [
-  {
-    id: 'album-royal-velvet',
-    title: 'Royal Velvet Wedding Album',
-    subtitle: 'Flush Mount 30-Sheet Layflat',
-    coverImage: '/images/packages/user_pkg_trad_photo.png',
-    cover_image: '/images/packages/user_pkg_trad_photo.png',
-    desc: 'Handcrafted Italian leather album with metallic foil embossing and thick layflat archival sheets.',
-    description: 'Handcrafted Italian leather album with metallic foil embossing and thick layflat archival sheets.',
-    pages: [
-      '/images/services/wedding_album_printing.png',
-      '/images/services/large_format_printing.png',
-      '/images/services/card_sticker_printing.png',
-      '/images/services/acrylic_mdf_frames.png',
-      '/images/services/photo_frames.png',
-      '/images/services/flex_printing.png',
-    ],
-    size: null,
-    status: 'published',
-    display_order: 1
-  },
-  {
-    id: 'album-editorial-fineart',
-    title: 'Editorial Fine Art Book',
-    subtitle: 'Silk Linen Hardcover',
-    coverImage: '/images/packages/user_pkg_candid_photo.png',
-    cover_image: '/images/packages/user_pkg_candid_photo.png',
-    desc: 'Museum-grade matte cotton paper with custom typography layout for unforgettable wedding stories.',
-    description: 'Museum-grade matte cotton paper with custom typography layout for unforgettable wedding stories.',
-    pages: [
-      '/images/services/large_format_printing.png',
-      '/images/services/photo_frames.png',
-      '/images/services/acrylic_mdf_frames.png',
-      '/images/services/wedding_album_printing.png',
-      '/images/services/laser_printing.png',
-      '/images/services/card_sticker_printing.png',
-    ],
-    size: null,
-    status: 'published',
-    display_order: 2
-  },
-  {
-    id: 'album-cinematic-sunset',
-    title: 'Cinematic Sunset Storybook',
-    subtitle: 'Acrylic Glass Cover',
-    coverImage: '/images/packages/user_pkg_cinematic_video.png',
-    cover_image: '/images/packages/user_pkg_cinematic_video.png',
-    desc: 'High-definition acrylic front plate with metallic sheen pages capturing golden hour romance.',
-    description: 'High-definition acrylic front plate with metallic sheen pages capturing golden hour romance.',
-    pages: [
-      '/images/services/flex_printing.png',
-      '/images/services/acrylic_mdf_frames.png',
-      '/images/services/wedding_album_printing.png',
-      '/images/services/large_format_printing.png',
-      '/images/services/photo_frames.png',
-      '/images/services/laser_printing.png',
-    ],
-    size: null,
-    status: 'published',
-    display_order: 3
-  }
-];
+export const INITIAL_ALBUMS = [];
 
-const LOCAL_STORAGE_KEY = 'kpr_albums_db_v2';
+const LOCAL_STORAGE_KEY = 'kpr_albums_db_v3';
 let memoryAlbums = null;
 
 function normalizeAlbum(album) {
