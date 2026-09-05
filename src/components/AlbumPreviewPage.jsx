@@ -29,8 +29,8 @@ const Page = forwardRef(({ children, className = '' }, ref) => (
 Page.displayName = 'Page';
 
 /* ─── Cover Page ─── */
-const CoverPage = forwardRef(({ totalPhotos, size }, ref) => (
-  <div ref={ref} className="page-wrapper select-none" data-density="hard">
+const CoverPage = forwardRef(({ totalPhotos, size, ...props }, ref) => (
+  <div ref={ref} {...props} style={{ ...props.style }} className={`page-wrapper select-none ${props.className || ''}`} data-density="hard">
     <div className="w-full h-full bg-gradient-to-br from-[#1A1510] via-[#221D15] to-[#0D0B08] flex flex-col items-center justify-center p-6 sm:p-10 relative overflow-hidden shadow-2xl border-r border-[#C5A880]/30">
       {/* Decorative border */}
       <div className="absolute inset-3 sm:inset-5 border border-[#C5A880]/30 rounded pointer-events-none" />
@@ -75,8 +75,8 @@ const CoverPage = forwardRef(({ totalPhotos, size }, ref) => (
 CoverPage.displayName = 'CoverPage';
 
 /* ─── Photo Page (USES object-contain SO NO CROPPING) ─── */
-const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos }, ref) => (
-  <div ref={ref} className="page-wrapper select-none bg-[#FCFBF9] shadow-lg" data-density="soft">
+const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, ...props }, ref) => (
+  <div ref={ref} {...props} style={{ ...props.style }} className={`page-wrapper select-none bg-[#FCFBF9] shadow-lg ${props.className || ''}`} data-density="soft">
     <div className="w-full h-full p-2.5 sm:p-4 flex flex-col items-center justify-center relative bg-gradient-to-r from-[#ECE4D8]/80 via-[#FAF7F2] to-[#FAF7F2] border border-[#DCD2C3]">
       {/* Photo display area — object-contain keeps the complete image intact without cutting */}
       <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xs bg-black/5">
@@ -98,8 +98,8 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos }, ref) => (
 PhotoPage.displayName = 'PhotoPage';
 
 /* ─── Back Page ─── */
-const BackPage = forwardRef((_, ref) => (
-  <div ref={ref} className="page-wrapper select-none" data-density="hard">
+const BackPage = forwardRef((props, ref) => (
+  <div ref={ref} {...props} style={{ ...props.style }} className={`page-wrapper select-none ${props.className || ''}`} data-density="hard">
     <div className="w-full h-full bg-gradient-to-br from-[#1A1510] via-[#221D15] to-[#0D0B08] flex flex-col items-center justify-center p-6 sm:p-10 relative overflow-hidden shadow-2xl border-l border-[#C5A880]/30">
       <div className="absolute inset-3 sm:inset-5 border border-[#C5A880]/30 rounded pointer-events-none" />
       <div className="text-center z-10 space-y-4">

@@ -12,9 +12,9 @@ import { updateVerificationStatus } from '../../utils/verificationService';
 /* ─────────────────────────────────────────────────────
    Individual Page Component for Flipbook Proofing
    ───────────────────────────────────────────────────── */
-const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnly }, ref) => {
+const ProofPage = forwardRef(({ src, pageIndex, isFlagged, onToggleFlag, readOnly, ...props }, ref) => {
   return (
-    <div ref={ref} className="page-wrapper select-none bg-[#FCFBF9] shadow-lg relative overflow-hidden" data-density="soft">
+    <div ref={ref} {...props} style={{ ...props.style }} className={`page-wrapper select-none bg-[#FCFBF9] shadow-lg relative overflow-hidden ${props.className || ''}`} data-density="soft">
       <div className="w-full h-full p-2 sm:p-3.5 flex flex-col items-center justify-center relative bg-gradient-to-r from-[#ECE4D8]/80 via-[#FAF7F2] to-[#FAF7F2] border border-[#DCD2C3]">
         {/* Full Image Container — object-contain ensures no photo is cropped or cut */}
         <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xs bg-black/5">
@@ -372,21 +372,22 @@ export default function ColorLabVerificationViewer({ verification, onClose, onSt
               {/* Flipbook Container */}
               <div className="flex items-center justify-center drop-shadow-2xl">
                 <HTMLFlipBook
+                  key={`verify-flip-${albumPages.length}-${isMobile}`}
                   ref={flipBookRef}
                   width={bookWidth}
                   height={bookHeight}
                   size="fixed"
-                  minWidth={180}
+                  minWidth={140}
                   maxWidth={800}
-                  minHeight={260}
+                  minHeight={180}
                   maxHeight={800}
                   maxShadowOpacity={0.5}
-                  showCover={true}
+                  showCover={!isMobile}
                   mobileScrollSupport={false}
                   usePortrait={isMobile}
                   startPage={0}
                   swipeDistance={15}
-                  flippingTime={650}
+                  flippingTime={450}
                   onFlip={(e) => setCurrentPage(e.data)}
                   className="shadow-2xl rounded-sm overflow-hidden"
                 >

@@ -11,7 +11,7 @@ import {
 import { PRINTING_DESIGN_SERVICES } from '../data/servicesData';
 import { loadPdfPages } from '../utils/pdfLoader';
 import { fetchCustomSitePhotos } from '../utils/sitePhotosService';
-import { ALBUM_SIZES } from '../utils/albumsService';
+import { ALBUM_SIZES, fetchAlbums, INITIAL_ALBUMS } from '../utils/albumsService';
 import kprColorLabLogo from '../assets/kpr_colorlab_logo.png';
 import colorLabHeaderLeft from '../assets/colorlab_header_left.jpg';
 
@@ -27,6 +27,7 @@ const ALBUM_SIZE_OPTIONS = [
 export default function ColorLabSection() {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState('designs'); // 'designs' | 'packages' | 'albums'
+  const [albumsList, setAlbumsList] = useState(INITIAL_ALBUMS);
   const [flipbookImages, setFlipbookImages] = useState(null); // when set, opens the album flipbook viewer
   const [flipbookSize, setFlipbookSize] = useState('12x36');
   const [flipbookTitle, setFlipbookTitle] = useState('Custom Wedding Album');
@@ -43,7 +44,7 @@ export default function ColorLabSection() {
   const modalFileInputRef = useRef(null);
 
   useEffect(() => {
-    async function loadCustom() {
+    async function loadData() {
       try {
         const photos = await fetchCustomSitePhotos('colorlab');
         if (photos && Array.isArray(photos)) {
@@ -53,8 +54,35 @@ export default function ColorLabSection() {
       } catch (e) {
         console.warn('Error loading custom colorlab photos:', e);
       }
+
+      try {
+        const albums = await fetchAlbums();
+        if (albums && Array.isArray(albums) && albums.length > 0) {
+          const published = albums.filter(a => a.status === 'published');
+          if (published.length > 0) {
+            setAlbumsList(published);
+          }
+        }
+      } catch (e) {
+        console.warn('Error loading albums:', e);
+      }
     }
-    loadCustom();
+
+    loadData();
+
+    const handleAlbumsUpdate = () => {
+      fetchAlbums().then(albums => {
+        if (albums && Array.isArray(albums) && albums.length > 0) {
+          const published = albums.filter(a => a.status === 'published');
+          if (published.length > 0) {
+            setAlbumsList(published);
+          }
+        }
+      }).catch(() => {});
+    };
+
+    window.addEventListener('kpr_albums_updated', handleAlbumsUpdate);
+    return () => window.removeEventListener('kpr_albums_updated', handleAlbumsUpdate);
   }, []);
 
   const demoAlbumPages = Array.from({ length: 39 }, (_, i) => `/albums/demo/page_${i + 1}.jpg`);
@@ -75,7 +103,9 @@ export default function ColorLabSection() {
       } finally {
         setPdfLoading(false);
       }
-    } else if (album.previewImages) {
+    } else if (album.pages && album.pages.length > 0) {
+      setFlipbookImages(album.pages);
+    } else if (album.previewImages && album.previewImages.length > 0) {
       setFlipbookImages(album.previewImages);
     } else {
       setFlipbookImages(demoAlbumPages);
@@ -147,8 +177,6 @@ export default function ColorLabSection() {
     setFlipbookImages(pagesToView);
     setUploadModalOpen(false);
   };
-
-  const albumSheets = [];
 
   return (
     <div id="colorlab" className="w-full bg-[#F7F3EE] transition-all duration-300">
@@ -405,56 +433,77 @@ export default function ColorLabSection() {
                   className="hidden"
                 />
 
-                {/* Album Cards Grid: Demo Card + Upload Your Images Folder Card */}
+                {/* Album Cards Grid: Published Albums + Upload Your Photos Card */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   
-                  {/* 1. Demo Album Card */}
-                  {albumSheets.map((album, i) => (
-                    <div key={i} className="bg-white border border-[#E2D9CC] rounded-lg overflow-hidden shadow-sm group hover:shadow-xl transition-all duration-300">
-                      <div className="aspect-[4/3] overflow-hidden bg-black relative">
-                        <img
-                          src={album.image}
-                          alt={album.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 text-[10px] tracking-widest text-[#C5A880] uppercase rounded font-semibold border border-[#C5A880]/30">
-                          {album.subtitle}
-                        </div>
-                      </div>
+                  {/* 1. Published Albums Cards */}
+                  {albumsList.map((album, i) => {
+                    const coverSrc = album.coverImage || album.cover_image || (album.pages && album.pages[0]) || '/images/services/wedding_album_printing.png';
+                    const albumTitle = album.title || 'Luxury Wedding Album';
+                    const albumSub = album.subtitle || 'Flush Mount Layflat';
+                    const albumDesc = album.description || album.desc || 'Museum-grade archival sheets designed in our color lab.';
+                    const albumSize = album.size;
 
-                      <div className="p-4 sm:p-6 space-y-3">
-                        <h4 className="font-serif text-xl text-[#1A1A1A] group-hover:text-[#C5A880] transition-colors">
-                          {album.title}
-                        </h4>
-                        <p className="text-xs text-[#666666] font-light leading-relaxed">
-                          {album.desc}
-                        </p>
-                        
-                        <div className="pt-3 border-t border-[#E8E1D5] flex items-center justify-between gap-2">
-                          <button
-                            onClick={() => handleViewAlbum(album)}
-                            disabled={pdfLoading}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F7F3EE] hover:bg-[#C5A880]/20 text-[#1A1A1A] text-[10px] tracking-widest uppercase font-semibold transition-colors rounded border border-[#E2D9CC] cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-                          >
-                            {pdfLoading && album.pdfSrc ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Eye className="w-3.5 h-3.5" />
-                            )}
-                            {pdfLoading && album.pdfSrc ? 'Loading…' : 'View Demo'}
-                          </button>
-                          <a
-                            href="https://wa.me/919849443648?text=Hi%20KPR%20Colour%20Lab,%20I'm%20interested%20in%20your%20luxury%20wedding%20albums!"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-2 bg-[#1A1A1A] hover:bg-[#C5A880] text-white text-[10px] tracking-widest uppercase font-semibold transition-colors rounded"
-                          >
-                            Order Album
-                          </a>
+                    return (
+                      <div key={album.id || i} className="bg-white border border-[#E2D9CC] rounded-xl overflow-hidden shadow-sm group hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+                        <div className="aspect-[4/3] overflow-hidden bg-black relative">
+                          <img
+                            src={coverSrc}
+                            alt={albumTitle}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          {albumSub && (
+                            <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 text-[10px] tracking-widest text-[#C5A880] uppercase rounded font-semibold border border-[#C5A880]/30">
+                              {albumSub}
+                            </div>
+                          )}
+                          {albumSize && (
+                            <div className="absolute top-3 right-3 bg-[#C5A880] text-black px-2.5 py-0.5 text-[9.5px] font-mono font-bold uppercase rounded shadow-md">
+                              {albumSize}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="p-4 sm:p-6 space-y-3 flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center justify-between gap-2">
+                              <h4 className="font-serif text-xl text-[#1A1A1A] group-hover:text-[#C5A880] transition-colors">
+                                {albumTitle}
+                              </h4>
+                            </div>
+                            <p className="text-xs text-[#666666] font-light leading-relaxed mt-1">
+                              {albumDesc}
+                            </p>
+                          </div>
+                          
+                          <div className="pt-3 border-t border-[#E8E1D5] flex items-center justify-between gap-2">
+                            <button
+                              onClick={() => handleViewAlbum(album)}
+                              disabled={pdfLoading}
+                              className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#F7F3EE] hover:bg-[#C5A880]/20 text-[#1A1A1A] text-[10px] tracking-widest uppercase font-bold transition-colors rounded-lg border border-[#E2D9CC] cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+                            >
+                              {pdfLoading ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Eye className="w-3.5 h-3.5 text-[#C5A880]" />
+                              )}
+                              <span>View 3D Album</span>
+                            </button>
+                            <a
+                              href={`https://wa.me/919849443648?text=${encodeURIComponent(
+                                `Hi KPR Colour Lab, I would like to order the ${albumTitle}${albumSize ? ` (Size: ${albumSize})` : ''}. Please share pricing and options!`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-2.5 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-[10px] tracking-widest uppercase font-bold transition-colors rounded-lg shadow-sm"
+                            >
+                              Order
+                            </a>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
 
                   {/* 2. Upload Your Images & Select Size Card */}
                   <div

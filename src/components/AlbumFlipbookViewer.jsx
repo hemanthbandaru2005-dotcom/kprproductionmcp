@@ -9,7 +9,7 @@ import {
 /* ─────────────────────────────────────────────────────
    Individual Page Component (forwardRef required by react-pageflip)
    ───────────────────────────────────────────────────── */
-const Page = forwardRef(({ src, pageIndex, totalPages, isMobile }, ref) => {
+const Page = forwardRef(({ src, pageIndex, totalPages, isMobile, ...props }, ref) => {
   const isLeftPage = pageIndex % 2 === 1; // In 2-page spread: odd index is left, even is right
   const isCover = pageIndex === 0;
   const isBackCover = pageIndex === totalPages - 1;
@@ -17,7 +17,9 @@ const Page = forwardRef(({ src, pageIndex, totalPages, isMobile }, ref) => {
   return (
     <div
       ref={ref}
-      className="page-wrapper select-none relative overflow-hidden bg-[#FBF9F5] shadow-2xl"
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FBF9F5] shadow-2xl ${props.className || ''}`}
       data-density={isCover || isBackCover ? 'hard' : 'soft'}
     >
       {/* Realistic luxury archival page border & book spine depth */}
@@ -390,18 +392,19 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
               style={{ willChange: 'transform' }}
             >
               <HTMLFlipBook
+                key={`flipbook-${images.length}-${isMobile}-${size}`}
                 ref={flipBook}
                 width={bookWidth}
                 height={bookHeight}
                 size="fixed"
-                minWidth={160}
+                minWidth={140}
                 maxWidth={1400}
-                minHeight={220}
+                minHeight={180}
                 maxHeight={1400}
                 maxShadowOpacity={0.6}
-                showCover={true}
+                showCover={!isMobile}
                 mobileScrollSupport={false}
-                flippingTime={600}
+                flippingTime={450}
                 usePortrait={isMobile}
                 startPage={0}
                 drawShadow={true}
