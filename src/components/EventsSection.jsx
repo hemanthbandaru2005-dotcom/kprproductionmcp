@@ -181,35 +181,82 @@ export default function EventsSection({ onOpenPage }) {
           isExpanded ? 'max-h-[8000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}>
           
-          {/* 2. Subsections Navigation Tabs */}
-          <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-center">
-            <div className="inline-flex justify-center items-center gap-1 sm:gap-2 p-1 bg-white border border-[#E2D9CC] rounded-full shadow-sm max-w-full overflow-x-auto">
+          {/* 2. Subsections Navigation & Big Title Bar (3-Column Layout: Left Button | Big Center Title | Right Button) */}
+          <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-4 sm:px-8 md:px-12 py-3.5 sm:py-5">
+            <div className="max-w-[1920px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-6">
               
-              {/* STAGE & LIGHTING TAB (1ST) */}
-              <button
-                onClick={() => setActiveSubTab('stage')}
-                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
-                  activeSubTab === 'stage'
-                    ? 'bg-[#1A1A1A] text-white shadow-md'
-                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
-                }`}
-              >
-                <Sparkles className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'stage' ? 'text-[#C5A880]' : ''}`} />
-                <span>Stage & Lighting</span>
-              </button>
+              {/* 1. LEFT BOX: STAGE & LIGHTING BUTTON (Desktop) */}
+              <div className="hidden md:flex justify-start">
+                <button
+                  onClick={() => setActiveSubTab('stage')}
+                  className={`inline-flex justify-center items-center gap-2 px-6 lg:px-8 py-2.5 lg:py-3 text-xs lg:text-sm font-bold tracking-wider lg:tracking-widest uppercase rounded-xl transition-all duration-300 cursor-pointer shadow-sm ${
+                    activeSubTab === 'stage'
+                      ? 'bg-[#1A1A1A] text-white ring-2 ring-[#C5A880] shadow-md scale-105'
+                      : 'bg-white text-[#444444] border border-[#E2D9CC] hover:bg-[#FAF8F5] hover:text-[#1A1A1A] hover:border-[#C5A880]'
+                  }`}
+                  aria-label="View Stage and Lighting Production"
+                >
+                  <Sparkles className={`w-4 h-4 ${activeSubTab === 'stage' ? 'text-[#C5A880]' : 'text-[#8C6D3F]'}`} />
+                  <span>Stage & Lighting</span>
+                </button>
+              </div>
 
-              {/* CHOREOGRAPHY TAB (2ND) */}
-              <button
-                onClick={() => setActiveSubTab('choreography')}
-                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-7 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
-                  activeSubTab === 'choreography'
-                    ? 'bg-[#1A1A1A] text-white shadow-md'
-                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
-                }`}
-              >
-                <Music className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'choreography' ? 'text-[#C5A880]' : ''}`} />
-                <span>Choreography</span>
-              </button>
+              {/* 2. MIDDLE BOX: BIG EVENTS TITLE IN TEXT */}
+              <div className="text-center space-y-0.5 sm:space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white text-[#8C6D3F] border border-[#E2D9CC] text-[9px] sm:text-[10px] font-bold uppercase tracking-widest shadow-xs">
+                  <Sparkles className="w-2.5 h-2.5 text-[#C5A880]" />
+                  <span>Signature Event Experiences</span>
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-[#1A1A1A] font-black tracking-tight uppercase">
+                  KPR Events
+                </h2>
+                <p className="text-[11px] sm:text-xs md:text-sm text-[#666666] font-medium">
+                  Grand Stage LED Walls, Truss Rigging & Live Choreography
+                </p>
+              </div>
+
+              {/* 3. RIGHT BOX: CHOREOGRAPHY BUTTON (Desktop) */}
+              <div className="hidden md:flex justify-end">
+                <button
+                  onClick={() => setActiveSubTab('choreography')}
+                  className={`inline-flex justify-center items-center gap-2 px-6 lg:px-8 py-2.5 lg:py-3 text-xs lg:text-sm font-bold tracking-wider lg:tracking-widest uppercase rounded-xl transition-all duration-300 cursor-pointer shadow-sm ${
+                    activeSubTab === 'choreography'
+                      ? 'bg-[#1A1A1A] text-white ring-2 ring-[#C5A880] shadow-md scale-105'
+                      : 'bg-white text-[#444444] border border-[#E2D9CC] hover:bg-[#FAF8F5] hover:text-[#1A1A1A] hover:border-[#C5A880]'
+                  }`}
+                  aria-label="View Choreography"
+                >
+                  <Music className={`w-4 h-4 ${activeSubTab === 'choreography' ? 'text-[#C5A880]' : 'text-[#8C6D3F]'}`} />
+                  <span>Choreography</span>
+                </button>
+              </div>
+
+              {/* 📱 MOBILE BUTTONS ROW (Visible only on mobile/tablet < md) */}
+              <div className="flex md:hidden w-full items-center justify-center gap-2 pt-1">
+                <button
+                  onClick={() => setActiveSubTab('stage')}
+                  className={`flex-1 inline-flex justify-center items-center gap-1.5 px-3 py-2.5 text-[11px] font-bold tracking-wider uppercase rounded-xl transition-all duration-300 cursor-pointer shadow-sm ${
+                    activeSubTab === 'stage'
+                      ? 'bg-[#1A1A1A] text-white ring-2 ring-[#C5A880] shadow-md'
+                      : 'bg-white text-[#444444] border border-[#E2D9CC] hover:bg-[#FAF8F5]'
+                  }`}
+                >
+                  <Sparkles className={`w-3.5 h-3.5 ${activeSubTab === 'stage' ? 'text-[#C5A880]' : 'text-[#8C6D3F]'}`} />
+                  <span>Stage & Lighting</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveSubTab('choreography')}
+                  className={`flex-1 inline-flex justify-center items-center gap-1.5 px-3 py-2.5 text-[11px] font-bold tracking-wider uppercase rounded-xl transition-all duration-300 cursor-pointer shadow-sm ${
+                    activeSubTab === 'choreography'
+                      ? 'bg-[#1A1A1A] text-white ring-2 ring-[#C5A880] shadow-md'
+                      : 'bg-white text-[#444444] border border-[#E2D9CC] hover:bg-[#FAF8F5]'
+                  }`}
+                >
+                  <Music className={`w-3.5 h-3.5 ${activeSubTab === 'choreography' ? 'text-[#C5A880]' : 'text-[#8C6D3F]'}`} />
+                  <span>Choreography</span>
+                </button>
+              </div>
 
             </div>
           </div>
