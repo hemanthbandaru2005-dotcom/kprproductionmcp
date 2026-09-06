@@ -99,6 +99,7 @@ export function getMimeType(filename, fileType = '') {
  * Standard Chunk Size: 8 MB (exact multiple of 256 KiB for Google Drive API)
  */
 export const DRIVE_CHUNK_SIZE = 8 * 1024 * 1024;
+export const MAX_DRIVE_PARALLEL_UPLOADS = 4;
 
 /**
  * Performs a complete chunked resumable upload DIRECTLY to Google Drive:

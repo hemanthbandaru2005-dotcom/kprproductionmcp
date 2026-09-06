@@ -14,6 +14,7 @@ import {
 } from './driveIndexedDBService.js';
 
 const CLIENT_UPLOADS_STORAGE_KEY = 'kpr_client_uploads_db_v1';
+export const MAX_PARALLEL_DRIVE_UPLOADS = 4;
 const MAX_CHUNK_RETRIES = 5;
 const BASE_BACKOFF_MS = 1000;
 const MAX_BACKOFF_MS = 16000;
@@ -1565,6 +1566,84 @@ export function subscribeToClientUploadsRealtime(onUpdate) {
     }
     if (typeof window !== 'undefined') {
       window.removeEventListener('kpr_client_uploads_updated', handleCustomEvent);
+    }
+  };
+}
+
+/**
+ * Creates a managed parallel upload pool for multi-file direct Google Drive transfers.
+ * Concurrency is strictly capped at maxConcurrency (default 4).
+ * Each file runs independently with per-file progress, pause/resume, and failure isolation.
+ */
+export function createParallelUploadPool({
+  maxConcurrency = MAX_PARALLEL_DRIVE_UPLOADS,
+  onQueueUpdate,
+  onItemProgress,
+  onItemComplete,
+  onItemError,
+  onAllFinished
+} = {}) {
+  const pendingQueue = [];
+  const activeTasks = new Map(); // queueId -> task
+
+  const processNext = async () => {
+    while (activeTasks.size < maxConcurrency && pendingQueue.length > 0) {
+      const task = pendingQueue.shift();
+      if (!task) break;
+
+      const { queueId, file, options } = task;
+      activeTasks.set(queueId, task);
+
+      if (onQueueUpdate) onQueueUpdate();
+
+      uploadClientFile({
+        ...options,
+        file,
+        existingSessionId: queueId,
+        onProgress: (p) => {
+          if (onItemProgress) onItemProgress(queueId, p);
+        },
+        onStatusChange: (stage) => {
+          if (onItemProgress) onItemProgress(queueId, { stage });
+        }
+      })
+        .then((result) => {
+          if (result && result.success) {
+            if (onItemComplete) onItemComplete(queueId, result);
+          } else {
+            if (onItemError) onItemError(queueId, result?.error || 'Upload could not complete', result);
+          }
+        })
+        .catch((err) => {
+          if (onItemError) onItemError(queueId, err.message || 'Upload error', { error: err.message });
+        })
+        .finally(() => {
+          activeTasks.delete(queueId);
+          if (onQueueUpdate) onQueueUpdate();
+          if (pendingQueue.length > 0) {
+            processNext();
+          } else if (activeTasks.size === 0 && onAllFinished) {
+            onAllFinished();
+          }
+        });
+    }
+  };
+
+  return {
+    addFile(file, options = {}, customQueueId = null) {
+      const queueId = customQueueId || `pool_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      pendingQueue.push({ queueId, file, options });
+      processNext();
+      return queueId;
+    },
+    getActiveCount() {
+      return activeTasks.size;
+    },
+    getPendingCount() {
+      return pendingQueue.length;
+    },
+    clear() {
+      pendingQueue.length = 0;
     }
   };
 }

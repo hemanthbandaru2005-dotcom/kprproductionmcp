@@ -13,7 +13,8 @@ import {
   deleteClientUpload,
   subscribeToClientUploadsRealtime,
   formatFileSize,
-  getFileCategory
+  getFileCategory,
+  MAX_PARALLEL_DRIVE_UPLOADS
 } from '../../utils/clientUploadsService';
 import { SUPPORTED_EXTENSIONS, isFileTypeSupported } from '../../utils/googleDriveSyncService';
 import { getActiveUploadSessions } from '../../utils/driveIndexedDBService';
@@ -152,8 +153,8 @@ export default function ClientUploadSection({ clientUser, clientProfile }) {
     }, 4500);
   };
 
-  // Active concurrency limit
-  const MAX_CONCURRENT_UPLOADS = 2;
+  // Active concurrency limit (Strictly up to 4 concurrent uploads)
+  const MAX_CONCURRENT_UPLOADS = MAX_PARALLEL_DRIVE_UPLOADS || 4;
   const activeUploadsCountRef = useRef(0);
   const pendingQueueRef = useRef([]);
 

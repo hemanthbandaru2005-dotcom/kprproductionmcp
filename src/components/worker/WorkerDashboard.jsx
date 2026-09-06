@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../utils/supabaseClient';
 import WorkerChatPanel from './WorkerChatPanel';
@@ -8,8 +8,11 @@ import {
 } from '../../utils/chatService';
 import {
   uploadClientFile,
+  cancelClientUpload,
+  pauseClientUpload,
   formatFileSize,
-  addUploadActivityMessage
+  addUploadActivityMessage,
+  MAX_PARALLEL_DRIVE_UPLOADS
 } from '../../utils/clientUploadsService';
 import {
   fetchJobs,
@@ -23,7 +26,7 @@ import {
   LogOut, Bell, Calendar, RefreshCw, AlertCircle,
   File, Image as ImageIcon, Video, ChevronRight, Loader2, Sparkles, UserCheck,
   MessageSquare, User, ArrowUpRight, HardDrive, Link as LinkIcon, ExternalLink,
-  Plus, Copy
+  Plus, Copy, X, RotateCcw
 } from 'lucide-react';
 
 const STATUS_CONFIG = {
@@ -50,8 +53,10 @@ export default function WorkerDashboard({ onLogout }) {
   const [selectedJob, setSelectedJob] = useState(null);
   const [loading, setLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgressText, setUploadProgressText] = useState('');
+  const [workerUploadQueue, setWorkerUploadQueue] = useState([]);
+  const MAX_WORKER_CONCURRENT_UPLOADS = MAX_PARALLEL_DRIVE_UPLOADS || 4;
+  const activeWorkerUploadsRef = useRef(0);
+  const pendingWorkerQueueRef = useRef([]);
   const [jobFiles, setJobFiles] = useState([]);
   const [statusMsg, setStatusMsg] = useState('');
   const [activeTab, setActiveTab] = useState('jobs'); // 'jobs' | 'chat'
@@ -379,71 +384,178 @@ export default function WorkerDashboard({ onLogout }) {
     } catch (e) {}
   };
 
-  // Direct Google Drive Upload (Streams directly to Google Drive — ZERO Supabase project storage used!)
-  const handleFileUpload = async (e) => {
+  // Controlled Parallel Google Drive Upload Queue (Up to 4 Concurrent direct streams)
+  const processNextWorkerUpload = () => {
+    while (activeWorkerUploadsRef.current < MAX_WORKER_CONCURRENT_UPLOADS && pendingWorkerQueueRef.current.length > 0) {
+      const nextTask = pendingWorkerQueueRef.current.shift();
+      if (nextTask) {
+        activeWorkerUploadsRef.current += 1;
+        executeWorkerFileUpload(nextTask.file, nextTask.queueId, nextTask.job).finally(() => {
+          activeWorkerUploadsRef.current = Math.max(0, activeWorkerUploadsRef.current - 1);
+          processNextWorkerUpload();
+        });
+      }
+    }
+  };
+
+  const executeWorkerFileUpload = async (file, queueId, targetJob) => {
+    try {
+      const workerDisplayName = profile?.full_name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : 'Staff Worker');
+      const uploadResult = await uploadClientFile({
+        file,
+        clientId: targetJob.client_name || 'studio',
+        clientName: targetJob.client_name || targetJob.title,
+        clientEmail: user?.email || 'worker@kpr.com',
+        projectId: targetJob.id,
+        projectTitle: targetJob.title,
+        uploaderRole: 'worker',
+        uploaderName: workerDisplayName,
+        uploaderEmail: user?.email || 'worker@kpr.com',
+        existingSessionId: queueId,
+        onProgress: ({ progress, percent, bytesUploaded, totalBytes, speed, eta, stage }) => {
+          setWorkerUploadQueue(prev => prev.map(item => item.id === queueId ? {
+            ...item,
+            progress: progress || percent || 0,
+            bytesUploaded: bytesUploaded || 0,
+            size: totalBytes || file.size,
+            speed: speed || '',
+            eta: eta || '',
+            stage: stage || `Uploading (${formatFileSize(bytesUploaded || 0)} / ${formatFileSize(totalBytes || file.size)})`
+          } : item));
+        },
+        onStatusChange: (stage) => {
+          setWorkerUploadQueue(prev => prev.map(item => item.id === queueId ? { ...item, stage } : item));
+        }
+      });
+
+      if (uploadResult?.success) {
+        const driveLink = uploadResult.record?.drive_file_url || uploadResult.record?.file_url || `https://drive.google.com/file/d/${uploadResult.record?.drive_file_id || 'view'}`;
+
+        const newDriveRecord = {
+          id: `drive-upload-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+          job_id: targetJob.id,
+          file_name: file.name,
+          file_path: driveLink,
+          file_type: 'drive',
+          is_drive: true,
+          uploaded_by: user?.id || 'worker',
+          created_at: new Date().toISOString()
+        };
+
+        // Save link record
+        try {
+          await supabase.from('job_files').insert([newDriveRecord]);
+        } catch (e) {}
+
+        try {
+          const raw = localStorage.getItem(`kpr_job_files_${targetJob.id}`);
+          const list = raw ? JSON.parse(raw) : [];
+          localStorage.setItem(`kpr_job_files_${targetJob.id}`, JSON.stringify([newDriveRecord, ...list]));
+        } catch (e) {}
+
+        if (selectedJob?.id === targetJob.id) {
+          setJobFiles(prev => [newDriveRecord, ...prev]);
+        }
+
+        setWorkerUploadQueue(prev => prev.map(item => item.id === queueId ? {
+          ...item,
+          progress: 100,
+          speed: 'Complete',
+          eta: '',
+          stage: 'Synced & Secured in Google Drive',
+          status: 'completed'
+        } : item));
+
+        setStatusMsg(`"${file.name}" streamed directly to Google Drive!`);
+        setTimeout(() => setStatusMsg(''), 4000);
+
+        setTimeout(() => {
+          setWorkerUploadQueue(prev => prev.filter(item => item.id !== queueId));
+        }, 4000);
+      } else {
+        const errMsg = uploadResult?.error || 'Upload could not complete.';
+        setWorkerUploadQueue(prev => prev.map(item => item.id === queueId ? {
+          ...item,
+          stage: errMsg,
+          status: uploadResult?.isPaused ? 'paused' : 'error',
+          file,
+          job: targetJob
+        } : item));
+      }
+    } catch (err) {
+      console.error('Worker Google Drive upload error:', err);
+      const errMsg = err.message || 'Upload error occurred.';
+      setWorkerUploadQueue(prev => prev.map(item => item.id === queueId ? {
+        ...item,
+        stage: errMsg,
+        status: 'error',
+        file,
+        job: targetJob
+      } : item));
+    }
+  };
+
+  const handleFileUpload = (e) => {
     const files = e.target.files;
     if (!files || files.length === 0 || !selectedJob) return;
 
-    setUploading(true);
-    setStatusMsg('');
+    const filesArray = Array.from(files);
+    const newItems = filesArray.map(file => {
+      const queueId = `${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+      return {
+        id: queueId,
+        name: file.name,
+        size: file.size,
+        bytesUploaded: 0,
+        progress: 0,
+        speed: '',
+        eta: 'Starting…',
+        stage: 'Connecting directly to Google Drive…',
+        status: 'uploading',
+        file,
+        job: selectedJob
+      };
+    });
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      setUploadProgressText(`Uploading "${file.name}" directly to Google Drive (0%)…`);
+    setWorkerUploadQueue(prev => [...newItems, ...prev]);
 
-      try {
-        const workerDisplayName = profile?.full_name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : 'Staff Worker');
-        const uploadResult = await uploadClientFile({
-          file,
-          clientId: selectedJob.client_name || 'studio',
-          clientName: selectedJob.client_name || selectedJob.title,
-          clientEmail: user?.email || 'worker@kpr.com',
-          projectId: selectedJob.id,
-          projectTitle: selectedJob.title,
-          uploaderRole: 'worker',
-          uploaderName: workerDisplayName,
-          uploaderEmail: user?.email || 'worker@kpr.com',
-          onProgress: (p) => {
-            setUploadProgressText(`Syncing "${file.name}" to Google Drive: ${p.percent || 0}% (${p.stage || 'Uploading'})`);
-          }
-        });
+    newItems.forEach(item => {
+      pendingWorkerQueueRef.current.push({ file: item.file, queueId: item.id, job: item.job });
+    });
 
-        if (uploadResult?.success) {
-          const driveLink = uploadResult.record?.drive_file_url || uploadResult.record?.file_url || `https://drive.google.com/file/d/${uploadResult.record?.drive_file_id || 'view'}`;
+    // Fire initial concurrent worker pool (up to 4)
+    processNextWorkerUpload();
 
-          const newDriveRecord = {
-            id: `drive-upload-${Date.now()}-${i}`,
-            job_id: selectedJob.id,
-            file_name: file.name,
-            file_path: driveLink,
-            file_type: 'drive',
-            is_drive: true,
-            uploaded_by: user?.id || 'worker',
-            created_at: new Date().toISOString()
-          };
+    // Reset input value
+    e.target.value = '';
+  };
 
-          // Save link record
-          try {
-            await supabase.from('job_files').insert([newDriveRecord]);
-          } catch (e) {}
+  const retryWorkerUpload = (queueId) => {
+    setWorkerUploadQueue(prev => {
+      const target = prev.find(item => item.id === queueId);
+      if (!target || !target.file) return prev;
 
-          try {
-            const raw = localStorage.getItem(`kpr_job_files_${selectedJob.id}`);
-            const list = raw ? JSON.parse(raw) : [];
-            localStorage.setItem(`kpr_job_files_${selectedJob.id}`, JSON.stringify([newDriveRecord, ...list]));
-          } catch (e) {}
+      pendingWorkerQueueRef.current.push({
+        file: target.file,
+        queueId: target.id,
+        job: target.job || selectedJob
+      });
 
-          setJobFiles(prev => [newDriveRecord, ...prev]);
-        }
-      } catch (err) {
-        console.error('Google Drive direct upload error:', err);
-      }
-    }
+      setTimeout(() => processNextWorkerUpload(), 50);
 
-    setUploading(false);
-    setUploadProgressText('');
-    setStatusMsg('Files streamed directly to Google Drive!');
-    setTimeout(() => setStatusMsg(''), 3500);
+      return prev.map(item => item.id === queueId ? {
+        ...item,
+        status: 'uploading',
+        stage: 'Retrying direct upload…',
+        progress: 0
+      } : item);
+    });
+  };
+
+  const cancelWorkerUploadItem = (queueId) => {
+    cancelClientUpload(queueId);
+    pendingWorkerQueueRef.current = pendingWorkerQueueRef.current.filter(task => task.queueId !== queueId);
+    setWorkerUploadQueue(prev => prev.filter(item => item.id !== queueId));
   };
 
   const handleCopyLink = (file) => {
@@ -891,26 +1003,118 @@ export default function WorkerDashboard({ onLogout }) {
                         </div>
                       )}
 
-                      {/* 2. DIRECT GOOGLE DRIVE FILE UPLOADER (Streams directly to Google Drive) */}
+                      {/* 2. DIRECT GOOGLE DRIVE FILE UPLOADER (Streams directly to Google Drive in parallel up to 4 concurrent files) */}
                       {deliverableMode === 'upload' && (
                         <div className="space-y-3">
                           <label className="border-2 border-dashed border-[#E7E8EB] hover:border-[#13A52D] bg-[#F7F8FA] rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors text-center">
                             <UploadCloud className="w-8 h-8 text-[#13A52D] mb-2" />
                             <span className="text-xs font-bold text-[#111111]">Upload Raw Files & Photos Directly to Google Drive</span>
-                            <span className="text-[10px] text-[#9CA0A6] mt-0.5">Files stream directly to Google Drive without consuming database storage</span>
+                            <span className="text-[10px] text-[#9CA0A6] mt-0.5">Streams up to 4 files simultaneously directly to Google Drive</span>
                             <input
                               type="file"
                               multiple
                               onChange={handleFileUpload}
-                              disabled={uploading}
                               className="hidden"
                             />
                           </label>
 
-                          {uploading && (
-                            <div className="p-3 bg-[#DCE9FF] border border-[#BFDBFE] rounded-2xl flex items-center gap-2.5 text-xs text-[#1E74FF]">
-                              <Loader2 className="w-4 h-4 animate-spin shrink-0" />
-                              <span className="font-medium truncate">{uploadProgressText || 'Streaming directly to Google Drive…'}</span>
+                          {/* Parallel Per-File Upload Queue */}
+                          {workerUploadQueue.length > 0 && (
+                            <div className="space-y-2 pt-1">
+                              <div className="flex items-center justify-between text-[11px] font-semibold text-[#6B7280] px-1">
+                                <span>Active Google Drive Transfers ({workerUploadQueue.length})</span>
+                                <span>Max 4 Parallel Streams</span>
+                              </div>
+                              <div className="space-y-2 max-h-64 overflow-y-auto pr-0.5">
+                                {workerUploadQueue.map((item) => {
+                                  const isError = item.status === 'error';
+                                  const isCompleted = item.status === 'completed';
+                                  const isUploading = item.status === 'uploading';
+
+                                  return (
+                                    <div
+                                      key={item.id}
+                                      className={`p-3 rounded-2xl border transition-all ${
+                                        isError
+                                          ? 'bg-[#FEF2F2] border-[#FECACA]'
+                                          : isCompleted
+                                          ? 'bg-[#F0FDF4] border-[#BBF7D0]'
+                                          : 'bg-white border-[#E7E8EB] shadow-2xs'
+                                      }`}
+                                    >
+                                      <div className="flex items-center justify-between gap-2 mb-2">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                          <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                                            isError ? 'bg-[#FEE2E2] text-[#DC2626]' : isCompleted ? 'bg-[#DCFCE7] text-[#13A52D]' : 'bg-[#DCE9FF] text-[#1E74FF]'
+                                          }`}>
+                                            {isCompleted ? <CheckCircle className="w-4 h-4" /> : isError ? <AlertCircle className="w-4 h-4" /> : <UploadCloud className="w-4 h-4 animate-pulse" />}
+                                          </div>
+                                          <div className="min-w-0">
+                                            <p className="text-xs font-bold text-[#111111] truncate">{item.name}</p>
+                                            <p className="text-[10px] text-[#9CA0A6]">
+                                              {formatFileSize(item.bytesUploaded || 0)} / {formatFileSize(item.size || 0)}
+                                              {item.speed && ` • ${item.speed}`}
+                                              {item.eta && ` • ETA: ${item.eta}`}
+                                            </p>
+                                          </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                          <span className={`text-[11px] font-mono font-bold ${
+                                            isError ? 'text-[#DC2626]' : isCompleted ? 'text-[#13A52D]' : 'text-[#1E74FF]'
+                                          }`}>
+                                            {item.progress || 0}%
+                                          </span>
+                                          {isError && (
+                                            <button
+                                              onClick={() => retryWorkerUpload(item.id)}
+                                              className="p-1 rounded-full bg-[#141414] hover:bg-[#333333] text-white text-[10px] flex items-center gap-0.5 px-2 transition-colors cursor-pointer"
+                                              title="Retry file upload"
+                                            >
+                                              <RotateCcw className="w-3 h-3" />
+                                              <span>Retry</span>
+                                            </button>
+                                          )}
+                                          <button
+                                            onClick={() => cancelWorkerUploadItem(item.id)}
+                                            className="p-1 rounded-full hover:bg-[#FEF2F2] text-[#9CA0A6] hover:text-[#DC2626] transition-colors cursor-pointer"
+                                            title="Cancel transfer"
+                                          >
+                                            <X className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      {/* Per-File Progress Bar */}
+                                      <div className="w-full bg-[#EEF0F2] rounded-full h-1.5 overflow-hidden">
+                                        <div
+                                          className={`h-full transition-all duration-200 ${
+                                            isError
+                                              ? 'bg-[#DC2626]'
+                                              : isCompleted
+                                              ? 'bg-[#13A52D]'
+                                              : 'bg-[#1E74FF]'
+                                          }`}
+                                          style={{ width: `${item.progress || 0}%` }}
+                                        />
+                                      </div>
+
+                                      {/* Status text */}
+                                      <div className="flex items-center justify-between text-[10px] text-[#6B7280] mt-1.5">
+                                        <span className={`truncate ${isError ? 'text-[#DC2626] font-medium' : ''}`}>
+                                          {item.stage || (isUploading ? 'Streaming to Google Drive…' : '')}
+                                        </span>
+                                        {isCompleted && (
+                                          <span className="text-[#13A52D] font-bold flex items-center gap-1 shrink-0">
+                                            <CheckCircle className="w-3 h-3" />
+                                            <span>Secured in Drive</span>
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
                           )}
                         </div>
