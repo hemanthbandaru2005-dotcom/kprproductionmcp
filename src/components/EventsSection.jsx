@@ -202,13 +202,9 @@ export default function EventsSection({ onOpenPage }) {
               </div>
 
               {/* 2. MIDDLE BOX: BIG EVENTS TITLE IN TEXT */}
-              <div className="text-center space-y-0.5 sm:space-y-1">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white text-[#8C6D3F] border border-[#E2D9CC] text-[9px] sm:text-[10px] font-bold uppercase tracking-widest shadow-xs">
-                  <Sparkles className="w-2.5 h-2.5 text-[#C5A880]" />
-                  <span>Signature Event Experiences</span>
-                </div>
-                <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-[#1A1A1A] font-black tracking-tight uppercase">
-                  KPR Events
+              <div className="text-center">
+                <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-[#1A1A1A] font-black tracking-wider uppercase">
+                  EVENTS
                 </h2>
                 <p className="text-[11px] sm:text-xs md:text-sm text-[#666666] font-medium">
                   Grand Stage LED Walls, Truss Rigging & Live Choreography
