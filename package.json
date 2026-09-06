@@ -24,6 +24,8 @@
     "dotenv": "^17.4.2",
     "framer-motion": "^13.1.0",
     "googleapis": "^176.0.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.29.0",
     "pdfjs-dist": "^6.2.108",
     "react": "^19.2.8",

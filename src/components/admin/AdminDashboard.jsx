@@ -26,19 +26,21 @@ import {
 } from '../../utils/jobsService';
 import PasswordManagementPage from './PasswordManagementPage';
 import ManageAdminsPage from './ManageAdminsPage';
+import InvoicesPage from './InvoicesPage';
 import {
   LayoutDashboard, Users, UserCheck, ShieldCheck,
   Edit3, LogOut, Menu, X, ChevronRight,
   Plus, UserPlus, Activity, Palette,
   MessageSquare, Bell, CheckCircle, HardDrive, KeyRound,
   Settings, Sparkles, HelpCircle, Briefcase, Camera, ArrowUpRight,
-  CheckCircle2
+  CheckCircle2, Receipt, FileText
 } from 'lucide-react';
 
 const BASE_NAV_PILLS = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'jobs', label: 'Jobs', icon: Briefcase },
   { key: 'uploads', label: 'Uploads', icon: HardDrive },
+  { key: 'invoices', label: 'Invoices', icon: Receipt },
   { key: 'colorlab', label: 'Color Lab', icon: CheckCircle },
   { key: 'messages', label: 'Messages', icon: MessageSquare },
   { key: 'workers', label: 'Employees', icon: UserCheck },
@@ -500,6 +502,7 @@ export default function AdminDashboard({ onLogout }) {
 
           {activeSection === 'jobs' && <JobStatusTable />}
           {activeSection === 'uploads' && <ClientUploadsManager />}
+          {activeSection === 'invoices' && <InvoicesPage />}
           {activeSection === 'colorlab' && <ColorLabVerificationsPage />}
           {activeSection === 'messages' && <AdminChatPanel />}
           {activeSection === 'workers' && <WorkersPage />}
