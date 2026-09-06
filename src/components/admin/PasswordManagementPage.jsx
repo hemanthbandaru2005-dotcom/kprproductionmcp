@@ -932,7 +932,7 @@ function UserRoleSection({ title, icon: Icon, users, currentUserId, isMasterAdmi
           const isClient = u.role === 'client';
           const isAdminUser = u.role === 'admin' || u.role === 'superadmin';
           const canReset = isCurrentUser || isMasterAdmin || (!isClient && !isAdminUser);
-          const canViewPw = isMasterAdmin || u.role === 'worker' || isCurrentUser;
+          const canViewPw = isMasterAdmin || isCurrentUser;
           const assignedPw = u.temp_password || u.password || '123456';
           const isRevealed = !!revealedPasswords[u.id];
 
