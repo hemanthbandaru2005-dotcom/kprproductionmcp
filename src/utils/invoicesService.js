@@ -1,16 +1,18 @@
-import jsPDF from 'jspdf';
+import * as jspdfModule from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { supabase } from './supabaseClient';
-import { INVOICE_UPI_QR_BASE64, INVOICE_HEADER_LOGO_BASE64 } from './invoiceAssetsBase64';
+import { supabase } from './supabaseClient.js';
+import { INVOICE_UPI_QR_BASE64, INVOICE_HEADER_LOGO_BASE64 } from './invoiceAssetsBase64.js';
+
+const jsPDF = jspdfModule.jsPDF || jspdfModule.default || jspdfModule;
 
 const INVOICES_STORAGE_KEY = 'kpr_invoices_history_v1';
 
 /**
- * Format currency in Indian format
+ * Format currency in Indian format with clean Rs. prefix (guaranteed 100% compatible with PDF fonts)
  */
 export function formatINR(val) {
   const num = Number(val) || 0;
-  return '₹' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return 'Rs. ' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /**
@@ -231,7 +233,7 @@ export function generateInvoicePdf(invoiceData, autoDownload = true) {
   // ══════════════════ 2. FROM & BILL TO BLOCKS ══════════════════
   const addressTop = 44;
 
-  // FROM Block (Left)
+  // FROM Block (Left) - Uses KPR Fotography brand & kprfotography@gmail.com
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(100, 100, 100);
@@ -240,16 +242,16 @@ export function generateInvoicePdf(invoiceData, autoDownload = true) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(20, 20, 20);
-  doc.text('KPR Productions', 14, addressTop + 4.5);
+  doc.text('KPR Fotography', 14, addressTop + 4.5);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
-  doc.text('Photography & Videography Services', 14, addressTop + 8.5);
-  doc.text('KPR Productions Studio', 14, addressTop + 12.5);
+  doc.text('Fotogarphy & Videography Services', 14, addressTop + 8.5);
+  doc.text('KPR Fotography Studio', 14, addressTop + 12.5);
   doc.text('Telangana, India', 14, addressTop + 16.5);
   doc.text('Phone: +91 98494 43648', 14, addressTop + 20.5);
-  doc.text('Email: info@kprproductions.com', 14, addressTop + 24.5);
+  doc.text('Email: kprfotography@gmail.com', 14, addressTop + 24.5);
 
   // BILL TO Block (Right)
   const billToLeft = 105;
@@ -273,16 +275,23 @@ export function generateInvoicePdf(invoiceData, autoDownload = true) {
 
   // ══════════════════ 3. ITEMIZED PACKAGES TABLE ══════════════════
   const tableRows = lineItems.map(item => [
-    item.name || 'Photography Service',
+    item.name || 'Fotogarphy Service',
     item.duration || item.scope || '6 hours / Custom scope',
     String(item.quantity || 1),
-    `₹${Number(item.total || item.unit_price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+    `Rs. ${Number(item.total || item.unit_price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   ]);
 
   autoTable(doc, {
     startY: 75,
     margin: { left: 14, right: 14 },
-    head: [['Package Name', 'Duration / Scope', 'Qty', 'Amount']],
+    head: [
+      [
+        { content: 'Package Name', styles: { halign: 'left' } },
+        { content: 'Duration / Scope', styles: { halign: 'left' } },
+        { content: 'Qty', styles: { halign: 'center' } },
+        { content: 'Amount', styles: { halign: 'right' } }
+      ]
+    ],
     body: tableRows,
     theme: 'plain',
     headStyles: {
@@ -298,13 +307,12 @@ export function generateInvoicePdf(invoiceData, autoDownload = true) {
       cellPadding: 3.2
     },
     columnStyles: {
-      0: { cellWidth: 70, fontStyle: 'normal' },
-      1: { cellWidth: 62 },
+      0: { cellWidth: 70, fontStyle: 'normal', halign: 'left' },
+      1: { cellWidth: 62, halign: 'left' },
       2: { cellWidth: 16, halign: 'center' },
       3: { cellWidth: 34, halign: 'right', fontStyle: 'bold' }
     },
     didDrawCell: (data) => {
-      // Bottom border for each body row
       if (data.section === 'body') {
         doc.setDrawColor(235, 237, 240);
         doc.setLineWidth(0.2);
@@ -326,17 +334,22 @@ export function generateInvoicePdf(invoiceData, autoDownload = true) {
   // Subtotal
   doc.setFont('helvetica', 'normal');
   doc.text('Subtotal', summaryLeftLabel, curY);
-  doc.text(`₹${subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, summaryRightVal, curY, { align: 'right' });
+  doc.text(`Rs. ${subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, summaryRightVal, curY, { align: 'right' });
 
   // Discount
   curY += 5;
   doc.text('Discount', summaryLeftLabel, curY);
-  doc.text(`₹${discount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, summaryRightVal, curY, { align: 'right' });
+  doc.text(`Rs. ${discount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, summaryRightVal, curY, { align: 'right' });
 
   // Tax / GST
   curY += 5;
   doc.text('Tax / GST', summaryLeftLabel, curY);
-  doc.text(taxAmount > 0 ? `₹${taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : taxLabel, summaryRightVal, curY, { align: 'right' });
+  doc.text(
+    taxAmount > 0 ? `Rs. ${taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : taxLabel,
+    summaryRightVal,
+    curY,
+    { align: 'right' }
+  );
 
   // Total Payable Highlight Box
   curY += 4;
@@ -347,7 +360,7 @@ export function generateInvoicePdf(invoiceData, autoDownload = true) {
   doc.setFontSize(9);
   doc.setTextColor(17, 17, 17);
   doc.text('Total Payable', 118, curY + 6);
-  doc.text(`₹${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, summaryRightVal - 2, curY + 6, { align: 'right' });
+  doc.text(`Rs. ${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, summaryRightVal - 2, curY + 6, { align: 'right' });
 
   // ══════════════════ 5. PACKAGE INCLUDES NOTE ══════════════════
   curY += 16;
@@ -367,9 +380,9 @@ export function generateInvoicePdf(invoiceData, autoDownload = true) {
   );
 
   // ══════════════════ 6. PAYMENT TERMS & UPI QR + SIGNATURE ══════════════════
-  curY += 10;
+  curY += 9;
 
-  // Left: Payment Terms & UPI QR
+  // Left: Payment Terms & Authentic Google Pay UPI QR
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(30, 30, 30);
@@ -380,19 +393,19 @@ export function generateInvoicePdf(invoiceData, autoDownload = true) {
   doc.setTextColor(100, 100, 100);
   doc.text(invoiceData.payment_terms || 'UPI / Bank Transfer / Online Payment', 14, curY + 4);
 
-  // Embed Authentic UPI QR Code (with BHIM/GPay/PhonePe bar)
+  // Embed High-Res Google Pay QR Code
   try {
     if (INVOICE_UPI_QR_BASE64) {
-      doc.addImage(INVOICE_UPI_QR_BASE64, 'PNG', 14, curY + 7, 24, 33, '', 'FAST');
+      doc.addImage(INVOICE_UPI_QR_BASE64, 'PNG', 14, curY + 6.5, 28, 39, '', 'FAST');
     }
   } catch (e) {}
 
-  // Right: Signature Block
+  // Right: Signature Block - "For KPR Fotography"
   const sigRight = 196;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(60, 60, 60);
-  doc.text('For KPR Productions', sigRight - 20, curY + 36, { align: 'center' });
+  doc.text('For KPR Fotography', sigRight - 20, curY + 36, { align: 'center' });
 
   doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.3);
