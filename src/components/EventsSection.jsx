@@ -48,7 +48,64 @@ const EVENT_GALLERY = [
 ];
 
 
-const CHOREOGRAPHY_SHOWCASES = [];
+const CHOREOGRAPHY_SHOWCASES = [
+  {
+    id: 'grand-entry-pyro-spin',
+    title: 'Grand Couple Entry, Cold Spark Pyro & Cryo Smoke Spin',
+    subtitle: 'Signature romantic first dance featuring synchronized cold spark pyro fountains, high-pressure CO2 cryo jets, low fog, and custom LED heart visuals',
+    category: 'Grand Entry & Cold Pyro',
+    image: '/images/events/kpr_choreo_grand_entry_pyro.jpg',
+    location: 'Telangana, India',
+    features: [
+      'Synchronized Cold Spark Fountains & CO2 Smoke Jets',
+      'Royal Couple Spin & Grand First Dance Choreography',
+      'High-Definition Heart & Diamond LED Backdrop',
+      'Overhead Truss Light Beams & Multi-Color Stage Wash'
+    ]
+  },
+  {
+    id: 'romantic-confetti-ballad',
+    title: 'Romantic Couple Ballad & Stage Confetti Blast',
+    subtitle: 'Expressive slow-waltz and Bollywood romantic sequence with slow-fall colorful confetti blasts on chevron stage floor',
+    category: 'Romantic Couple Ballad',
+    image: '/images/events/kpr_choreo_romantic_confetti.jpg',
+    location: 'Telangana, India',
+    features: [
+      'Slow-Waltz & Expressive Bollywood Ballad Routine',
+      'Air-Cannon Color Paper Confetti Celebration Blast',
+      'Modern Geometric Arch Visuals & Stage Lighting',
+      'Personalized Couple Posture & Chemistry Coaching'
+    ]
+  },
+  {
+    id: 'energetic-sangeet-duet',
+    title: 'High-Energy Sangeet Duet & Synchronized Grooves',
+    subtitle: 'Joyful, upbeat Telugu & Bollywood dance medley choreographed with vibrant festive hand gestures and dynamic stage footwork',
+    category: 'High-Energy Sangeet',
+    image: '/images/events/kpr_choreo_festive_sangeet.jpg',
+    location: 'Telangana, India',
+    features: [
+      'Fast-Tempo Festive Medley with Telugu & Bollywood Beats',
+      'Beginner-Friendly Step Counts & Hand Gesture Coaching',
+      'Dynamic Pixel-Matrix Color Block LED Wall Visuals',
+      'Floral Accents & White Silk Stage Backdrop Styling'
+    ]
+  },
+  {
+    id: 'sparkle-hearts-pose',
+    title: 'Signature Double-Heart LED Theme & Synchronized Pose Routine',
+    subtitle: 'Fun, synchronized back-to-back choreography sequence with celestial sparkle-heart LED animations and floral stage decor',
+    category: 'Couple Theme Performance',
+    image: '/images/events/kpr_choreo_sparkle_hearts.jpg',
+    location: 'Telangana, India',
+    features: [
+      'Synchronized Back-to-Back Couple Dance Steps',
+      'Shimmering Sparkle Heart LED Visual Sync',
+      'Fresh Flower Stage Framing & Front Floral Runners',
+      'Custom Audio Edit with Romantic Dialogue Integration'
+    ]
+  }
+];
 
 const EVENTS_WHATSAPP_NUMBER = '919948972531';
 
