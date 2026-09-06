@@ -48,63 +48,7 @@ const EVENT_GALLERY = [
 ];
 
 
-const CHOREOGRAPHY_SHOWCASES = [
-  {
-    id: 'sangeet-live-performance',
-    title: 'Grand Sangeet Live Stage Dance Production',
-    subtitle: 'Bride & Groom leading a royal synchronized sangeet performance with full lighting & stage effects',
-    category: 'Live Sangeet Performance',
-    image: '/images/events/kpr_choreography_live_sangeet.jpg',
-    location: 'Convention Center Stage, Telangana',
-    features: [
-      'Synchronized Bride & Groom lead choreography',
-      'Dynamic beam light & stage background cues',
-      'Group choreography for family & bridal entourage',
-      'Custom music track medley & sound editing'
-    ]
-  },
-  {
-    id: 'studio-rehearsal-workshop',
-    title: 'KPR Events Dance Studio Training & Workshops',
-    subtitle: 'Professional dance master leading intensive step rehearsals with custom tempo adjustments for non-dancers',
-    category: 'Studio Rehearsals',
-    image: '/images/events/kpr_choreography_rehearsal.jpg',
-    location: 'KPR Events Studio, Warangal',
-    features: [
-      'Dedicated private studio rehearsal floor',
-      'Step-by-step guidance tailored for beginners',
-      'Custom mashup creation & music track editing',
-      'Slow-motion video guides for home practice'
-    ]
-  }
-];
-
-const CHOREOGRAPHY_CARDS = [
-  {
-    id: 'couple-entry',
-    title: 'Couple Grand Entry & First Dance',
-    tag: 'Signature Romantic',
-    desc: 'Cinematic first dance, slow-waltz, royal groom & bride grand entry with cold-pyro and dry ice low fog synchronization.',
-    image: '/images/events/kpr_choreography_live_sangeet.jpg',
-    features: ['Couple romantic routine', 'Stage cold-fire coordination', 'Custom romantic song mashup']
-  },
-  {
-    id: 'sangeet-medleys',
-    title: 'Sangeet Family Medleys & Group Acts',
-    tag: 'High Energy',
-    desc: 'High-voltage energetic group routines for cousins, friends, and parents with easy-to-learn steps and high-impact beats.',
-    image: '/images/events/kpr_choreography_rehearsal.jpg',
-    features: ['Group synchronized steps', 'Fun themes & family segments', 'Fast rehearsal turnaround']
-  },
-  {
-    id: 'solo-performance',
-    title: 'Bride & Groom Spotlight Solo Acts',
-    tag: 'Spotlight Feature',
-    desc: 'Graceful classical, semi-classical, and Bollywood spotlight solo routines crafted to highlight expressions and elegance.',
-    image: '/images/events/kpr_live_event_stage.jpg',
-    features: ['Spotlight solo choreography', 'Expression & posture coaching', 'Stage blocking mastery']
-  }
-];
+const CHOREOGRAPHY_SHOWCASES = [];
 
 const EVENTS_WHATSAPP_NUMBER = '919948972531';
 
@@ -396,152 +340,78 @@ export default function EventsSection({ onOpenPage }) {
                   </a>
                 </div>
 
-                {/* 2. DUAL FEATURED HEROES: LIVE SANGEET STAGE + STUDIO REHEARSAL WORKSHOP */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-                  
-                  {/* Hero 1: Live Sangeet Stage Performance */}
-                  <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between group">
-                    <div 
-                      className="relative aspect-[16/10] overflow-hidden bg-black cursor-pointer"
-                      onClick={() => setSelectedEventPhoto(CHOREOGRAPHY_SHOWCASES[0])}
-                    >
-                      <img
-                        src="/images/events/kpr_choreography_live_sangeet.jpg"
-                        alt="Grand Sangeet Live Stage Dance Production"
-                        className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-                      
-                      <div className="absolute top-4 left-4">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md text-[#E8D4B8] border border-[#C5A880]/50 text-[10px] sm:text-xs font-bold uppercase tracking-widest shadow-lg">
-                          <Flame className="w-3.5 h-3.5 text-[#C5A880]" />
-                          <span>Live Stage Production</span>
-                        </span>
-                      </div>
-
-                      <div className="absolute bottom-4 right-4 bg-black/70 hover:bg-[#C5A880] text-white hover:text-black p-2.5 rounded-full backdrop-blur-md border border-white/20 transition-colors shadow-lg">
-                        <Maximize2 className="w-4 h-4" />
-                      </div>
-                    </div>
-
-                    <div className="p-6 sm:p-7 space-y-4 flex-1 flex flex-col justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#8C6D3F]">
-                          <MapPin className="w-3.5 h-3.5" />
-                          <span>Convention Stage Performance</span>
-                        </div>
-                        <h4 className="font-serif text-xl sm:text-2xl text-[#1A1A1A] font-bold leading-snug group-hover:text-[#C5A880] transition-colors">
-                          Grand Sangeet & Couple Stage Choreography
-                        </h4>
-                        <p className="text-xs sm:text-sm text-[#666666] leading-relaxed">
-                          Synchronized couple and group performances featuring the bride, groom, and entourage with automated beam light cues, LED wall visuals, and stage pyro effects.
-                        </p>
-                      </div>
-
-                      <div className="pt-4 border-t border-[#E2D9CC] space-y-2">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#999999]">Performance Highlights:</p>
-                        <ul className="space-y-1.5 text-xs text-[#444444]">
-                          <li className="flex items-start gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A880] shrink-0 mt-0.5" />
-                            <span>Bride & Groom lead synchronized dance sequence</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A880] shrink-0 mt-0.5" />
-                            <span>Stage pyro, dry-ice low fog & beam lighting coordination</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A880] shrink-0 mt-0.5" />
-                            <span>Multi-track custom music mashup with cinematic voiceovers</span>
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div className="pt-4">
-                        <a
-                          href={getChoreographyWhatsAppUrl('Grand Sangeet Stage Performance')}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full py-3 rounded-xl bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-xs font-bold uppercase tracking-widest transition-all duration-300 text-center shadow-md cursor-pointer flex items-center justify-center gap-2"
+                {/* 2. CHOREOGRAPHY SHOWCASES (Dynamically populated when photos are added) */}
+                {CHOREOGRAPHY_SHOWCASES.length > 0 && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+                    {CHOREOGRAPHY_SHOWCASES.map((item) => (
+                      <div key={item.id} className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between group">
+                        <div 
+                          className="relative aspect-[16/10] overflow-hidden bg-black cursor-pointer"
+                          onClick={() => setSelectedEventPhoto(item)}
                         >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>Book Sangeet Choreography</span>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+                          
+                          <div className="absolute top-4 left-4">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md text-[#E8D4B8] border border-[#C5A880]/50 text-[10px] sm:text-xs font-bold uppercase tracking-widest shadow-lg">
+                              <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                              <span>{item.category}</span>
+                            </span>
+                          </div>
 
-                  {/* Hero 2: Studio Dance Rehearsals & Training */}
-                  <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden shadow-lg flex flex-col justify-between group">
-                    <div 
-                      className="relative aspect-[16/10] overflow-hidden bg-black cursor-pointer"
-                      onClick={() => setSelectedEventPhoto(CHOREOGRAPHY_SHOWCASES[1])}
-                    >
-                      <img
-                        src="/images/events/kpr_choreography_rehearsal.jpg"
-                        alt="KPR Events Dance Studio Training & Workshops"
-                        className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-                      
-                      <div className="absolute top-4 left-4">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md text-[#E8D4B8] border border-[#C5A880]/50 text-[10px] sm:text-xs font-bold uppercase tracking-widest shadow-lg">
-                          <Users className="w-3.5 h-3.5 text-[#C5A880]" />
-                          <span>KPR Studio Rehearsals</span>
-                        </span>
-                      </div>
-
-                      <div className="absolute bottom-4 right-4 bg-black/70 hover:bg-[#C5A880] text-white hover:text-black p-2.5 rounded-full backdrop-blur-md border border-white/20 transition-colors shadow-lg">
-                        <Maximize2 className="w-4 h-4" />
-                      </div>
-                    </div>
-
-                    <div className="p-6 sm:p-7 space-y-4 flex-1 flex flex-col justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#8C6D3F]">
-                          <MapPin className="w-3.5 h-3.5" />
-                          <span>KPR Dance Studio Floor</span>
+                          <div className="absolute bottom-4 right-4 bg-black/70 hover:bg-[#C5A880] text-white hover:text-black p-2.5 rounded-full backdrop-blur-md border border-white/20 transition-colors shadow-lg">
+                            <Maximize2 className="w-4 h-4" />
+                          </div>
                         </div>
-                        <h4 className="font-serif text-xl sm:text-2xl text-[#1A1A1A] font-bold leading-snug group-hover:text-[#C5A880] transition-colors">
-                          Studio Rehearsals & Personalized Training
-                        </h4>
-                        <p className="text-xs sm:text-sm text-[#666666] leading-relaxed">
-                          Professional choreographers break down steps into easy, comfortable routines. Ideal for beginners, parents, and busy friends with flexible studio timings.
-                        </p>
-                      </div>
 
-                      <div className="pt-4 border-t border-[#E2D9CC] space-y-2">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#999999]">Training Highlights:</p>
-                        <ul className="space-y-1.5 text-xs text-[#444444]">
-                          <li className="flex items-start gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A880] shrink-0 mt-0.5" />
-                            <span>Private air-conditioned dance rehearsal studio floor</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A880] shrink-0 mt-0.5" />
-                            <span>Beginner-friendly step counts with slow-speed practice</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A880] shrink-0 mt-0.5" />
-                            <span>Recorded video tutorials sent via WhatsApp for home revision</span>
-                          </li>
-                        </ul>
-                      </div>
+                        <div className="p-6 sm:p-7 space-y-4 flex-1 flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#8C6D3F]">
+                              <MapPin className="w-3.5 h-3.5" />
+                              <span>{item.location}</span>
+                            </div>
+                            <h4 className="font-serif text-xl sm:text-2xl text-[#1A1A1A] font-bold leading-snug group-hover:text-[#C5A880] transition-colors">
+                              {item.title}
+                            </h4>
+                            <p className="text-xs sm:text-sm text-[#666666] leading-relaxed">
+                              {item.subtitle}
+                            </p>
+                          </div>
 
-                      <div className="pt-4">
-                        <a
-                          href={getChoreographyWhatsAppUrl('Studio Rehearsals & Training')}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full py-3 rounded-xl bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-xs font-bold uppercase tracking-widest transition-all duration-300 text-center shadow-md cursor-pointer flex items-center justify-center gap-2"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>Book Studio Rehearsal Slot</span>
-                        </a>
+                          {item.features && item.features.length > 0 && (
+                            <div className="pt-4 border-t border-[#E2D9CC] space-y-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-[#999999]">Performance Highlights:</p>
+                              <ul className="space-y-1.5 text-xs text-[#444444]">
+                                {item.features.map((feat, idx) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A880] shrink-0 mt-0.5" />
+                                    <span>{feat}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          <div className="pt-4">
+                            <a
+                              href={getChoreographyWhatsAppUrl(item.title)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full py-3 rounded-xl bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-xs font-bold uppercase tracking-widest transition-all duration-300 text-center shadow-md cursor-pointer flex items-center justify-center gap-2"
+                            >
+                              <Phone className="w-3.5 h-3.5" />
+                              <span>Book {item.category}</span>
+                            </a>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-
-                </div>
+                )}
 
               </div>
             )}
