@@ -276,12 +276,12 @@ export default function EventsSection({ onOpenPage }) {
           className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] px-2 py-2 sm:px-6 sm:py-4 md:px-8 md:py-5 flex items-center justify-between relative transition-all duration-300 group cursor-pointer focus:outline-none border-b border-[#E2D9CC] min-h-[105px] sm:min-h-[150px] md:min-h-[185px] overflow-hidden"
           aria-label="Toggle KPR Events section"
         >
-          {/* Left Corner Spread Photo (100% Clear & Crisp) */}
+          {/* Left Corner Spread Photo (Sofa & Floral Stage Decor) */}
           <div className="absolute left-0 top-0 bottom-0 h-full w-28 sm:w-44 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
             <img
               src={eventsHeaderLeft}
-              alt="KPR Events - Floral Mandap Decor & Stage Production"
-              className="w-full h-full object-cover object-left transition-transform duration-700 group-hover:scale-105 select-none"
+              alt="KPR Events - Luxury Stage Sofa & Floral Decor"
+              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105 select-none"
             />
           </div>
 
@@ -294,12 +294,12 @@ export default function EventsSection({ onOpenPage }) {
             />
           </div>
 
-          {/* Right Corner Spread Photo (100% Clear & Crisp) */}
+          {/* Right Corner Spread Photo (Stage Dance Performance) */}
           <div className="absolute right-0 top-0 bottom-0 h-full w-28 sm:w-44 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
             <img
               src={eventsHeaderRight}
-              alt="KPR Events - Joyful Wedding Celebration"
-              className="w-full h-full object-cover object-right transition-transform duration-700 group-hover:scale-105 select-none"
+              alt="KPR Events - Live Stage Dance Performance & Choreography"
+              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105 select-none"
             />
           </div>
 
