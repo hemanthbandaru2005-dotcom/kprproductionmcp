@@ -14,6 +14,36 @@ const EVENT_GALLERY = [
     location: 'Telangana, India',
     features: ['High-Definition Center LED Wall', 'Multi-Layer Truss Lighting Rig', 'Illuminated Chevron Floor Panels', 'Crystal Chandeliers & Stage Uplighting'],
     isFeatured: true
+  },
+  {
+    id: 'stage-truss-dancefloor',
+    title: 'Grand Open-Air Truss Rig & Interactive LED Dance Floor',
+    subtitle: 'Heavy-duty aluminum trussing, multi-hue beam wash, and synchronized illuminated dance floor for grand celebrations',
+    category: 'Truss & LED Dance Floor',
+    image: '/images/events/kpr_stage_truss_dancefloor.jpg',
+    location: 'Telangana, India',
+    features: [
+      'Heavy-Duty Aluminum Box Truss Matrix',
+      'Synchronized Foreground LED Dance Floor',
+      'Multi-Hue DMX Moving Head Beam Lights',
+      'Stage CO2 Cryo Jets & Subwoofer Array'
+    ],
+    isFeatured: false
+  },
+  {
+    id: 'stage-fireworks-pyro',
+    title: 'Grand Celebration Fireworks & Royal Monogram Stage',
+    subtitle: 'Synchronized sky fireworks, gold-rimmed monogram arch backdrop, and atmospheric night stage illumination',
+    category: 'Sky Fireworks & Royal Backdrop',
+    image: '/images/events/kpr_stage_fireworks_pyro.jpg',
+    location: 'Telangana, India',
+    features: [
+      'Spectacular Night Sky Fireworks & Pyrotechnics',
+      'Royal Custom Couple Monogram Arch Backdrop',
+      'Chevron Pattern Stage Floor & Side Truss Towers',
+      'Warm Golden Ambient & Theatrical Spotlights'
+    ],
+    isFeatured: false
   }
 ];
 
