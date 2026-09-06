@@ -14,46 +14,6 @@ const EVENT_GALLERY = [
     location: 'Telangana, India',
     features: ['High-Definition Center LED Wall', 'Multi-Layer Truss Lighting Rig', 'Illuminated Chevron Floor Panels', 'Crystal Chandeliers & Stage Uplighting'],
     isFeatured: true
-  },
-  {
-    id: 'stage-led-wall',
-    title: 'Grand Widescreen LED Wall & Ambient Stage',
-    subtitle: 'Multi-screen synchronous visual broadcasting for gala celebrations',
-    category: 'LED Video Walls',
-    image: '/images/events/event_stage_led_wall.jpg',
-    location: 'Hyderabad, India',
-    features: ['Ultra-HD Seamless Visual Screens', 'Ambient Multi-Hue Backdrop', 'Synchronous Audio-Visual Feed'],
-    isFeatured: false
-  },
-  {
-    id: 'truss-lighting-show',
-    title: 'High-Energy Concert & Sangeet Light Show',
-    subtitle: 'Moving beam heads, atmospheric haze, and dynamic lighting cues',
-    category: 'Concert Lighting',
-    image: '/images/events/event_truss_lighting.jpg',
-    location: 'Telangana, India',
-    features: ['Heavy Duty Aluminum Box Truss', 'Sharp Moving Head Beam Lights', 'DMX Programmed Dynamic Cues'],
-    isFeatured: false
-  },
-  {
-    id: 'royal-mandap-illumination',
-    title: 'Royal Mandap & Architectural Floral Lighting',
-    subtitle: 'Opulent warm golden illumination for traditional ceremonies',
-    category: 'Architectural Lighting',
-    image: '/images/events/event_grand_mandap.jpg',
-    location: 'Heritage Venue, India',
-    features: ['Warm Golden Architectural Uplights', 'Floral Pillar Spotlighting', 'Aisle Candlelit Illumination'],
-    isFeatured: false
-  },
-  {
-    id: 'stage-fog-reception',
-    title: 'Atmospheric Low Fog & Grand Reception Production',
-    subtitle: 'Dry ice low fog smoke, intelligent moving heads, and stage elegance',
-    category: 'Special Effects & SFX',
-    image: '/images/events/event_stage_fog.jpg',
-    location: 'Convention Center, India',
-    features: ['Low Lying Dry Ice Fog Effects', 'Multi-Angle 4K Stage Cameras', 'Ceiling Crystal Chandelier Array'],
-    isFeatured: false
   }
 ];
 
@@ -311,65 +271,67 @@ export default function EventsSection({ onOpenPage }) {
                   </div>
                 </div>
 
-                {/* 📸 EVENT SHOWCASE GRID */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-serif text-xl sm:text-2xl text-[#1A1A1A] font-bold">
-                        Event Stage & Lighting Gallery
-                      </h4>
-                      <p className="text-xs sm:text-sm text-[#777777]">
-                        Concert trussing, LED walls, dry-ice fog, and ceremony lighting setups.
-                      </p>
+                {/* 📸 EVENT SHOWCASE GRID (Shown when real images are present) */}
+                {gridEvents.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-serif text-xl sm:text-2xl text-[#1A1A1A] font-bold">
+                          Event Stage & Lighting Gallery
+                        </h4>
+                        <p className="text-xs sm:text-sm text-[#777777]">
+                          Concert trussing, LED walls, dry-ice fog, and ceremony lighting setups.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+                      {gridEvents.map((item) => (
+                        <div
+                          key={item.id}
+                          className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col cursor-pointer"
+                          onClick={() => setSelectedEventPhoto(item)}
+                        >
+                          <div className="relative aspect-[16/9] overflow-hidden bg-black">
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                            />
+                            <div className="absolute top-3 left-3">
+                              <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-[#C5A880] border border-[#C5A880]/30 text-[10px] font-bold uppercase tracking-wider">
+                                {item.category}
+                              </span>
+                            </div>
+                            <div className="absolute bottom-3 right-3 bg-black/60 hover:bg-[#C5A880] text-white hover:text-black p-2 rounded-full backdrop-blur-md transition-colors opacity-0 group-hover:opacity-100">
+                              <Maximize2 className="w-3.5 h-3.5" />
+                            </div>
+                          </div>
+
+                          <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                            <div className="space-y-1.5">
+                              <div className="flex items-center gap-1.5 text-[10px] text-[#8C6D3F] font-bold uppercase tracking-wider">
+                                <MapPin className="w-3.5 h-3.5" />
+                                <span>{item.location}</span>
+                              </div>
+                              <h5 className="font-serif text-base sm:text-lg text-[#1A1A1A] font-bold group-hover:text-[#8C6D3F] transition-colors">
+                                {item.title}
+                              </h5>
+                              <p className="text-xs text-[#666666] line-clamp-2">
+                                {item.subtitle}
+                              </p>
+                            </div>
+
+                            <div className="pt-2 border-t border-[#F0EBE1] flex items-center justify-between text-xs text-[#8C6D3F] font-semibold">
+                              <span>View Details & Photo</span>
+                              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-                    {gridEvents.map((item) => (
-                      <div
-                        key={item.id}
-                        className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col cursor-pointer"
-                        onClick={() => setSelectedEventPhoto(item)}
-                      >
-                        <div className="relative aspect-[16/9] overflow-hidden bg-black">
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                          />
-                          <div className="absolute top-3 left-3">
-                            <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-[#C5A880] border border-[#C5A880]/30 text-[10px] font-bold uppercase tracking-wider">
-                              {item.category}
-                            </span>
-                          </div>
-                          <div className="absolute bottom-3 right-3 bg-black/60 hover:bg-[#C5A880] text-white hover:text-black p-2 rounded-full backdrop-blur-md transition-colors opacity-0 group-hover:opacity-100">
-                            <Maximize2 className="w-3.5 h-3.5" />
-                          </div>
-                        </div>
-
-                        <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                          <div className="space-y-1.5">
-                            <div className="flex items-center gap-1.5 text-[10px] text-[#8C6D3F] font-bold uppercase tracking-wider">
-                              <MapPin className="w-3.5 h-3.5" />
-                              <span>{item.location}</span>
-                            </div>
-                            <h5 className="font-serif text-base sm:text-lg text-[#1A1A1A] font-bold group-hover:text-[#8C6D3F] transition-colors">
-                              {item.title}
-                            </h5>
-                            <p className="text-xs text-[#666666] line-clamp-2">
-                              {item.subtitle}
-                            </p>
-                          </div>
-
-                          <div className="pt-2 border-t border-[#F0EBE1] flex items-center justify-between text-xs text-[#8C6D3F] font-semibold">
-                            <span>View Details & Photo</span>
-                            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                )}
 
               </div>
             )}
