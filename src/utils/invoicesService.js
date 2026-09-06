@@ -393,10 +393,10 @@ export function generateInvoicePdf(invoiceData, autoDownload = true) {
   doc.setTextColor(100, 100, 100);
   doc.text(invoiceData.payment_terms || 'UPI / Bank Transfer / Online Payment', 14, curY + 4);
 
-  // Embed High-Res Google Pay QR Code
+  // Embed High-Res Google Pay QR Code (Large & razor-sharp for instant scanning)
   try {
     if (INVOICE_UPI_QR_BASE64) {
-      doc.addImage(INVOICE_UPI_QR_BASE64, 'PNG', 14, curY + 6.5, 28, 39, '', 'FAST');
+      doc.addImage(INVOICE_UPI_QR_BASE64, 'PNG', 14, curY + 6.5, 33, 49.5, '', 'FAST');
     }
   } catch (e) {}
 
