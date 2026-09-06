@@ -149,7 +149,7 @@ export default function PhotoGalleryManager() {
             }`}
           >
             <Camera className="w-3.5 h-3.5" />
-            <span>Photography</span>
+            <span>Fotogarphy</span>
           </button>
 
           <button

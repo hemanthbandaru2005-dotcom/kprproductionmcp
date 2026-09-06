@@ -7,7 +7,7 @@ export default function ContactSection() {
     name: '',
     email: '',
     phone: '',
-    eventType: 'Wedding Photography',
+    eventType: 'Wedding Fotography',
     eventDate: '',
     message: ''
   });

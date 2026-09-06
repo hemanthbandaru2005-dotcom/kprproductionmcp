@@ -156,7 +156,7 @@ export default function InstantQuoteWidget({
       .map((p, idx) => `${idx + 1}. *${p.name}* (${p.category || 'Photo'}) — ₹${Number(p.price || 0).toLocaleString('en-IN')} [${p.duration || 'Standard Scope'}]`)
       .join('\n');
 
-    let message = `Hi KPR Productions, I would like an Instant Quote for the following *${selectedPackages.length} Photography Package(s)*:\n\n${packageList}\n\n`;
+    let message = `Hi KPR Productions, I would like an Instant Quote for the following *${selectedPackages.length} Fotogarphy Package(s)*:\n\n${packageList}\n\n`;
 
     if (formattedEffectivePrice) {
       message += `• *Estimated Total Budget:* ${formattedEffectivePrice}\n`;
@@ -182,13 +182,13 @@ export default function InstantQuoteWidget({
         <div className="relative z-10 text-center max-w-2xl mx-auto mb-7 sm:mb-9">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/40 text-[#E8D4B8] text-[10px] sm:text-[11px] font-semibold tracking-[0.25em] uppercase mb-3 shadow-sm">
             <Calculator className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>Photography Packages Estimator</span>
+            <span>Fotogarphy Packages Estimator</span>
           </div>
           <h3 className="font-serif text-2xl sm:text-4xl text-white font-light tracking-wide mb-2">
             Multi-Package Event Quote Builder
           </h3>
           <p className="text-xs sm:text-sm text-white/60 font-light leading-relaxed">
-            Select <strong className="text-[#E8D4B8] font-normal">as many photography or videography packages as you need</strong> below to customize your bundle, view instant combined pricing, and book directly via WhatsApp.
+            Select <strong className="text-[#E8D4B8] font-normal">as many fotogarphy or videography packages as you need</strong> below to customize your bundle, view instant combined pricing, and book directly via WhatsApp.
           </p>
         </div>
 

@@ -40,7 +40,7 @@ export default function HomeFlowchart({ onNavigateToMedia }) {
                 KPR PRODUCTION HOME
               </h3>
               <p className="text-xs text-gray-400 font-light mt-1">
-                Luxury Wedding & Cinematic Photography Services
+                Luxury Wedding & Cinematic Fotogarphy Services
               </p>
             </div>
 

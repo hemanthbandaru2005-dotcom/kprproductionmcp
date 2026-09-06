@@ -10,7 +10,7 @@ export default function PackagesSection({
   whatsappNumber = '919849443648',
   displayPhone = '+91 98494 43648',
   categoryTitle = 'KPR PRODUCTION PACKAGES',
-  categorySubtitle = 'Transparent pricing for our luxury photography, videography, aerial drone, live streaming, and post-production video editing services. Click Book Now to reserve your dates via WhatsApp.',
+  categorySubtitle = 'Transparent pricing for our luxury fotogarphy, videography, aerial drone, live streaming, and post-production video editing services. Click Book Now to reserve your dates via WhatsApp.',
   showEyebrow = true,
   showQuoteWidget = true
 }) {

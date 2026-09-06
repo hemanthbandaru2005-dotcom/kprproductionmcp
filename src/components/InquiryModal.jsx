@@ -276,7 +276,7 @@ export default function InquiryModal({ isOpen, onClose, preselectedPackage, pres
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-[#333333] mb-1">Estimated Photography Budget</label>
+                      <label className="block text-xs font-semibold text-[#333333] mb-1">Estimated Fotogarphy Budget</label>
                       <select
                         name="budget"
                         value={formData.budget}
