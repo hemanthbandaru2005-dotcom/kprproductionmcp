@@ -39,11 +39,12 @@ export default function Navbar({ activePage, onSelectPage }) {
         {/* 1. LEFT: Brand Logo */}
         <button
           onClick={() => handlePageClick('home')}
+          aria-label="KPR Productions - Return to Homepage"
           className="flex items-center group cursor-pointer focus:outline-none transition-transform duration-300 hover:scale-105"
         >
           <img
             src={kprProductionsLogo}
-            alt="KPR PRODUCTIONS"
+            alt="KPR PRODUCTIONS - Luxury Wedding Photography, Color Lab and Event Production"
             className="h-8 sm:h-10 w-auto object-contain drop-shadow-sm"
           />
         </button>

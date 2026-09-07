@@ -74,25 +74,32 @@ export default function Hero({ onOpenPage }) {
       className="relative w-full min-h-[100svh] md:h-[100svh] md:max-h-[100svh] overflow-y-auto md:overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-20 sm:pt-22 pb-4 sm:pb-5 lg:pb-6 px-3 sm:px-8 lg:px-12 select-none"
       style={{ minHeight: 'var(--app-height, 100vh)' }}
     >
+      {/* Semantic H1 for Search Engine Indexing */}
+      <h1 className="sr-only">
+        KPR Productions - Luxury Wedding Photography, Fine Art Storytelling, Digital Color Lab Photobooks & Live Stage Event Production
+      </h1>
+
       {/* ── 1. Desktop Background Image (For Laptops & Desktops Only) ── */}
       <img
         src={heroDesktop}
-        alt="KPR Productions Studio Background"
+        alt="KPR Productions Luxury Photography Flatlay Studio Scene with Cameras, Photo Album and Flora"
         className="hidden md:block absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0"
         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
         loading="eager"
         fetchPriority="high"
+        decoding="async"
         draggable="false"
       />
 
       {/* ── 1b. Mobile-Only Background Image (For Mobile Screens Only) ── */}
       <img
         src={heroMobile}
-        alt="KPR Productions Studio Mobile Background"
+        alt="KPR Productions Luxury Photography Flatlay Studio Scene Mobile"
         className="block md:hidden absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0"
         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
         loading="eager"
         fetchPriority="high"
+        decoding="async"
         draggable="false"
       />
 

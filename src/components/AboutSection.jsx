@@ -47,9 +47,9 @@ export default function AboutSection() {
             <span>ESTABLISHED IN 2007 • 20 YEARS OF EXCELLENCE</span>
           </div>
 
-          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl text-white font-light tracking-wide max-w-3xl">
+          <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl text-white font-light tracking-wide max-w-3xl">
             About KPR Productions
-          </h1>
+          </h2>
 
           <div className="w-20 h-0.5 bg-[#C5A880] mx-auto my-4" />
 
