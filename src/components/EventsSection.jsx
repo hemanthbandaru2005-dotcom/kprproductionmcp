@@ -133,14 +133,14 @@ export default function EventsSection({ onOpenPage }) {
     <div id="events" className="w-full bg-[#F7F3EE] transition-all duration-300">
       <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
-        {/* 1. Main Collapsible "KPR EVENTS" Header Bar (Corner-to-Corner Full Bleed Showcase Photos) */}
+        {/* 1. Main Collapsible "KPR EVENTS" Header Bar (Corner Spread Showcase Photos & Grand Center Logo) */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] relative flex items-center justify-between min-h-[95px] sm:min-h-[145px] md:min-h-[185px] border-b border-[#E2D9CC] overflow-hidden group cursor-pointer focus:outline-none transition-colors duration-300"
           aria-label="Toggle KPR Events section"
         >
-          {/* Left Corner Photo (100% Crystal Clarity, True Colors, Full Bleed Corner-to-Corner) */}
-          <div className="absolute left-0 top-0 bottom-0 h-full w-[24%] sm:w-[28%] md:w-[32%] lg:w-[35%] overflow-hidden pointer-events-none z-0">
+          {/* Left Corner Spread Photo (Sofa & Floral Stage Decor - Original Classic Sizing) */}
+          <div className="absolute left-0 top-0 bottom-0 h-full w-20 sm:w-40 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
             <img
               src={eventsHeaderLeft}
               alt="KPR Events - Luxury Stage Sofa & Floral Decor"
@@ -148,17 +148,17 @@ export default function EventsSection({ onOpenPage }) {
             />
           </div>
 
-          {/* Center Logo Area (Clean, undisturbed, prominent with zero photo collision) */}
-          <div className="relative z-10 mx-auto flex items-center justify-center px-2 sm:px-6 md:px-10 py-2 pointer-events-none max-w-[52%] sm:max-w-[48%] md:max-w-[45%]">
+          {/* Center Logo Area (Grand, Undisturbed & Prominent on Laptop and Mobile) */}
+          <div className="relative z-10 mx-auto flex items-center justify-center px-4 sm:px-8 md:px-12 py-2 pointer-events-none max-w-[55%] sm:max-w-[65%] md:max-w-[70%]">
             <img
               src={kprEventsLogo}
               alt="KPR Events"
-              className="h-11 sm:h-22 md:h-30 lg:h-38 w-auto max-w-full object-contain group-hover:scale-105 transition-transform duration-300 select-none drop-shadow-sm"
+              className="h-11 sm:h-22 md:h-32 lg:h-40 w-auto max-w-full object-contain group-hover:scale-105 transition-transform duration-300 select-none drop-shadow-sm"
             />
           </div>
 
-          {/* Right Corner Photo (100% Crystal Clarity, True Colors, Full Bleed Corner-to-Corner) */}
-          <div className="absolute right-0 top-0 bottom-0 h-full w-[24%] sm:w-[28%] md:w-[32%] lg:w-[35%] overflow-hidden pointer-events-none z-0">
+          {/* Right Corner Spread Photo (Stage Dance Performance - Original Classic Sizing) */}
+          <div className="absolute right-0 top-0 bottom-0 h-full w-20 sm:w-40 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
             <img
               src={eventsHeaderRight}
               alt="KPR Events - Live Stage Dance Performance & Choreography"
