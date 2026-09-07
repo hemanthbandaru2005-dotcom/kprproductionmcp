@@ -139,35 +139,31 @@ export default function EventsSection({ onOpenPage }) {
           className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] relative flex items-center justify-between min-h-[95px] sm:min-h-[145px] md:min-h-[185px] border-b border-[#E2D9CC] overflow-hidden group cursor-pointer focus:outline-none transition-colors duration-300"
           aria-label="Toggle KPR Events section"
         >
-          {/* Left Corner Photo (Fills 100% to top, bottom, and left corner - 0 roundness) */}
-          <div className="absolute left-0 top-0 bottom-0 h-full w-[26%] sm:w-[28%] md:w-[32%] lg:w-[35%] overflow-hidden pointer-events-none z-0">
+          {/* Left Corner Photo (100% Crystal Clarity, True Colors, Full Bleed Corner-to-Corner) */}
+          <div className="absolute left-0 top-0 bottom-0 h-full w-[24%] sm:w-[28%] md:w-[32%] lg:w-[35%] overflow-hidden pointer-events-none z-0">
             <img
               src={eventsHeaderLeft}
               alt="KPR Events - Luxury Stage Sofa & Floral Decor"
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 select-none"
             />
-            {/* Smooth transition fade towards center logo */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/95 sm:to-white pointer-events-none" />
           </div>
 
           {/* Center Logo Area (Clean, undisturbed, prominent with zero photo collision) */}
-          <div className="relative z-10 mx-auto flex items-center justify-center px-2 sm:px-6 md:px-10 py-2 pointer-events-none max-w-[56%] sm:max-w-[50%] md:max-w-[45%]">
+          <div className="relative z-10 mx-auto flex items-center justify-center px-2 sm:px-6 md:px-10 py-2 pointer-events-none max-w-[52%] sm:max-w-[48%] md:max-w-[45%]">
             <img
               src={kprEventsLogo}
               alt="KPR Events"
-              className="h-12 sm:h-22 md:h-30 lg:h-38 w-auto max-w-full object-contain group-hover:scale-105 transition-transform duration-300 select-none drop-shadow-sm"
+              className="h-11 sm:h-22 md:h-30 lg:h-38 w-auto max-w-full object-contain group-hover:scale-105 transition-transform duration-300 select-none drop-shadow-sm"
             />
           </div>
 
-          {/* Right Corner Photo (Fills 100% to top, bottom, and right corner - 0 roundness) */}
-          <div className="absolute right-0 top-0 bottom-0 h-full w-[26%] sm:w-[28%] md:w-[32%] lg:w-[35%] overflow-hidden pointer-events-none z-0">
+          {/* Right Corner Photo (100% Crystal Clarity, True Colors, Full Bleed Corner-to-Corner) */}
+          <div className="absolute right-0 top-0 bottom-0 h-full w-[24%] sm:w-[28%] md:w-[32%] lg:w-[35%] overflow-hidden pointer-events-none z-0">
             <img
               src={eventsHeaderRight}
               alt="KPR Events - Live Stage Dance Performance & Choreography"
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 select-none"
             />
-            {/* Smooth transition fade towards center logo */}
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/95 sm:to-white pointer-events-none" />
           </div>
 
           {/* Chevron Rotate Animation */}
