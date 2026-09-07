@@ -2,6 +2,8 @@
 
 @layer base {
   :root {
+    color-scheme: only light !important;
+    supported-color-schemes: light !important;
     --bg-cream: #F7F3EE;
     --bg-dark: #121212;
     --accent-gold: #C5A880;
@@ -19,6 +21,7 @@
     padding: 0;
     width: 100%;
     min-height: 100%;
+    color-scheme: only light !important;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -40,6 +43,15 @@
     margin: 0;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent forced dark mode inversion in mobile browsers (Vivo, Xiaomi, Samsung, Chrome) */
+  @media (prefers-color-scheme: dark) {
+    :root, html, body {
+      color-scheme: only light !important;
+      background-color: var(--bg-cream) !important;
+      color: var(--text-dark) !important;
+    }
   }
 
   h1, h2, h3, h4, .font-serif-luxury {
