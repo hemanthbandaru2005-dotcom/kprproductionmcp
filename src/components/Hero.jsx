@@ -116,8 +116,8 @@ export default function Hero({ onOpenPage }) {
         </button>
       </div>
 
-      {/* ── 3. Responsive 3-Column Services Showcase Cards (Harmonious Light Glassmorphism Matching Flatlay) ── */}
-      <div className="w-full max-w-5xl lg:max-w-6xl mx-auto flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory gap-3 sm:gap-5 lg:gap-6 z-10 mb-2 sm:mb-2 py-2 px-1 scrollbar-none touch-pan-x">
+      {/* ── 3. Unified 3-Column Services Showcase Cards (All 3 side-by-side on Mobile & Desktop) ── */}
+      <div className="w-full max-w-5xl lg:max-w-6xl mx-auto grid grid-cols-3 gap-1.5 sm:gap-4 md:gap-5 lg:gap-6 z-10 mb-2 sm:mb-3 py-1 px-0.5 sm:px-1">
         {SERVICES.map((service, index) => {
           return (
             <motion.div
@@ -126,45 +126,45 @@ export default function Hero({ onOpenPage }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: index * 0.08, ease: 'easeOut' }}
               onClick={() => handleCardClick(service.route)}
-              className="min-w-[72vw] sm:min-w-[280px] md:min-w-0 snap-center shrink-0 md:shrink group relative bg-[#FAF7F2]/95 hover:bg-[#FFFFFF] backdrop-blur-xl border border-[#D8CFC4]/90 hover:border-[#1A1A1A]/60 rounded-[20px] sm:rounded-[24px] p-3.5 sm:p-5 lg:p-6 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(0,0,0,0.22)] shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
+              className="group relative bg-[#FAF7F2]/95 hover:bg-[#FFFFFF] backdrop-blur-xl border border-[#D8CFC4]/90 hover:border-[#1A1A1A]/60 rounded-xl sm:rounded-2xl md:rounded-[24px] p-1.5 sm:p-4 md:p-5 lg:p-6 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(0,0,0,0.22)] shadow-[0_8px_24px_rgba(0,0,0,0.1)]"
             >
               {/* Card hover background subtle glow */}
               <div
-                className="absolute inset-0 rounded-[20px] sm:rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.04)_0%,transparent_70%)]"
+                className="absolute inset-0 rounded-xl sm:rounded-2xl md:rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.04)_0%,transparent_70%)]"
               />
 
               {/* 1. Official Logo Badge Asset (Crystal Clear) */}
-              <div className="h-16 sm:h-22 w-full flex items-center justify-center mb-0.5">
+              <div className="h-9 sm:h-14 md:h-20 w-full flex items-center justify-center mb-0.5">
                 <img
                   src={service.logoSrc}
                   alt={service.title}
-                  className="max-h-16 sm:max-h-22 w-auto max-w-[85%] object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-300 select-none"
+                  className="max-h-9 sm:max-h-14 md:max-h-20 w-auto max-w-[92%] sm:max-w-[85%] object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-300 select-none"
                   loading="eager"
                 />
               </div>
 
-              {/* 2. Title Text (Conditionally rendered to avoid redundancy on Colour Lab) */}
+              {/* 2. Title Text */}
               {service.showTitleText ? (
-                <h3 className="text-sm sm:text-lg lg:text-xl font-black tracking-wider text-[#1A1A1A] uppercase font-sans mt-0.5 sm:mt-1">
+                <h3 className="text-[9px] sm:text-sm md:text-lg lg:text-xl font-black tracking-wide sm:tracking-wider text-[#1A1A1A] uppercase font-sans mt-0.5 sm:mt-1 truncate max-w-full">
                   {service.title}
                 </h3>
               ) : (
-                <div className="h-2 sm:h-3" />
+                <div className="h-1 sm:h-2 md:h-3" />
               )}
 
               {/* 3. Color Divider Underline */}
               <div
-                className="w-8 sm:w-12 h-[2.5px] rounded-full my-1.5 sm:my-2.5 transition-all duration-300 group-hover:w-16"
+                className="w-5 sm:w-8 md:w-12 h-[2px] sm:h-[2.5px] rounded-full my-1 sm:my-2 transition-all duration-300 group-hover:w-14"
                 style={{ backgroundColor: service.accentColor }}
               />
 
-              {/* 4. Readable Charcoal Description */}
-              <p className="text-[10.5px] sm:text-xs text-[#555555] font-medium leading-snug sm:leading-relaxed mb-2 sm:mb-3 px-1 max-w-[240px]">
+              {/* 4. Readable Charcoal Description (Desktop / Tablet view) */}
+              <p className="hidden sm:block text-[10px] sm:text-xs text-[#555555] font-medium leading-snug sm:leading-relaxed mb-1.5 sm:mb-2 px-1 max-w-[240px]">
                 {service.description}
               </p>
 
               {/* 5. Supporting Visual Asset (High Clarity Full Frame Display) */}
-              <div className="w-full h-22 sm:h-28 lg:h-32 flex items-center justify-center my-1 relative overflow-hidden rounded-xl border border-black/10 shadow-[0_8px_20px_rgba(0,0,0,0.16)] bg-white">
+              <div className="w-full h-11 sm:h-20 md:h-26 lg:h-32 flex items-center justify-center my-1 relative overflow-hidden rounded-lg sm:rounded-xl border border-black/10 shadow-[0_4px_14px_rgba(0,0,0,0.12)] bg-white">
                 <img
                   src={service.cardImage}
                   alt={service.cardAlt}
@@ -174,10 +174,10 @@ export default function Hero({ onOpenPage }) {
               </div>
 
               {/* 6. "EXPLORE >" Luxury Outline Button */}
-              <div className="w-full pt-2.5 sm:pt-3.5">
-                <div className="w-full py-1.5 sm:py-2 px-4 rounded-lg border border-[#1A1A1A]/30 group-hover:border-[#1A1A1A] group-hover:bg-[#1A1A1A] text-[#1A1A1A] group-hover:text-white font-bold text-[10px] sm:text-xs tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all duration-300 shadow-sm">
+              <div className="w-full pt-1 sm:pt-2.5">
+                <div className="w-full py-1 sm:py-1.5 md:py-2 px-1 sm:px-3 md:px-4 rounded-md sm:rounded-lg border border-[#1A1A1A]/30 group-hover:border-[#1A1A1A] group-hover:bg-[#1A1A1A] text-[#1A1A1A] group-hover:text-white font-bold text-[8px] sm:text-[10px] md:text-xs tracking-wider uppercase flex items-center justify-center gap-0.5 sm:gap-1 transition-all duration-300 shadow-xs">
                   <span>EXPLORE</span>
-                  <span className="text-xs sm:text-sm leading-none transition-transform duration-300 group-hover:translate-x-1 font-bold">›</span>
+                  <span className="text-[10px] sm:text-xs md:text-sm leading-none transition-transform duration-300 group-hover:translate-x-0.5 font-bold">›</span>
                 </div>
               </div>
             </motion.div>
