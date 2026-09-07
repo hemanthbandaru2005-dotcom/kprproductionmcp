@@ -14,6 +14,7 @@
   :root {
     color-scheme: only light !important;
     supported-color-schemes: light !important;
+    forced-color-adjust: none !important;
     --bg-cream: #F7F3EE;
     --bg-dark: #121212;
     --accent-gold: #C5A880;
@@ -39,6 +40,7 @@
     width: 100%;
     min-height: 100%;
     color-scheme: only light !important;
+    forced-color-adjust: none !important;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -62,12 +64,15 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* ── 2. Prevent Forced Dark Mode Inversion across WebKit / Gecko / Blink ── */
+  /* ── 2. Prevent Forced Dark Mode Inversion across WebKit / Gecko / Blink / Samsung / Vivo / Xiaomi ── */
   @media (prefers-color-scheme: dark) {
-    :root, html, body {
+    :root, html, body, #root, *, *::before, *::after {
       color-scheme: only light !important;
-      background-color: var(--bg-cream) !important;
-      color: var(--text-dark) !important;
+      forced-color-adjust: none !important;
+    }
+
+    img, svg, video, canvas, picture {
+      filter: none !important;
     }
   }
 
