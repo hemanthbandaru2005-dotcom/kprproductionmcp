@@ -72,6 +72,7 @@ export default function Hero({ onOpenPage }) {
     <section
       id="hero"
       className="relative w-full min-h-[100svh] md:h-[100svh] md:max-h-[100svh] overflow-y-auto md:overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-20 sm:pt-22 pb-4 sm:pb-5 lg:pb-6 px-3 sm:px-8 lg:px-12 select-none"
+      style={{ minHeight: 'var(--app-height, 100vh)' }}
     >
       {/* ── 1. Desktop Background Image (For Laptops & Desktops Only) ── */}
       <img

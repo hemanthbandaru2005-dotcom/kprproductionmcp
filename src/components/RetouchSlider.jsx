@@ -1,12 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Sliders, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function RetouchSlider() {
   const [sliderPosition, setSliderPosition] = useState(50);
-  const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
   const containerRef = useRef(null);
 
-  const handleMove = (clientX) => {
+  const updatePosition = useCallback((clientX) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = clientX - rect.left;
@@ -14,18 +14,27 @@ export default function RetouchSlider() {
     if (percentage < 0) percentage = 0;
     if (percentage > 100) percentage = 100;
     setSliderPosition(percentage);
+  }, []);
+
+  const handlePointerDown = (e) => {
+    isDraggingRef.current = true;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch (err) {}
+    updatePosition(e.clientX);
   };
 
-  const handleTouchMove = (e) => {
-    if (e.touches && e.touches[0]) {
-      handleMove(e.touches[0].clientX);
+  const handlePointerMove = (e) => {
+    if (isDraggingRef.current) {
+      updatePosition(e.clientX);
     }
   };
 
-  const handleMouseMove = (e) => {
-    if (isDragging) {
-      handleMove(e.clientX);
-    }
+  const handlePointerUp = (e) => {
+    isDraggingRef.current = false;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (err) {}
   };
 
   return (
@@ -47,37 +56,40 @@ export default function RetouchSlider() {
         {/* Interactive Comparison Container */}
         <div
           ref={containerRef}
-          onMouseDown={() => setIsDragging(true)}
-          onMouseUp={() => setIsDragging(false)}
-          onMouseLeave={() => setIsDragging(false)}
-          onMouseMove={handleMouseMove}
-          onTouchStart={(e) => {
-            if (e.touches && e.touches[0]) handleMove(e.touches[0].clientX);
-          }}
-          onTouchMove={handleTouchMove}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
           className="relative aspect-[16/10] sm:aspect-[16/9] max-w-5xl mx-auto overflow-hidden rounded-sm select-none border border-white/10 shadow-2xl cursor-ew-resize touch-none"
+          style={{ touchAction: 'none' }}
         >
           {/* AFTER (Color Graded Masterpiece) - Full background */}
           <img
             src="/images/21/photo_1.jpg"
             alt="Master Color Graded Photo"
-            className="absolute inset-0 w-full h-full object-cover filter contrast-[1.05] brightness-105"
+            className="absolute inset-0 w-full h-full object-cover filter contrast-[1.05] brightness-105 pointer-events-none"
+            loading="lazy"
+            draggable="false"
           />
-          <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-20 bg-black/70 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded text-[9px] sm:text-[11px] font-medium tracking-wider text-[#C5A880] uppercase flex items-center gap-1.5 border border-[#C5A880]/30">
+          <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-20 bg-black/70 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded text-[9px] sm:text-[11px] font-medium tracking-wider text-[#C5A880] uppercase flex items-center gap-1.5 border border-[#C5A880]/30 pointer-events-none">
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C5A880]" />
             <span>Color Graded</span>
           </div>
 
-          {/* BEFORE (Raw Flat Capture) - Clipped Overlay */}
+          {/* BEFORE (Raw Flat Capture) - Precision Hardware-Accelerated CSS Clip-Path */}
           <div
-            className="absolute inset-y-0 left-0 overflow-hidden"
-            style={{ width: `${sliderPosition}%` }}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            style={{
+              WebkitClipPath: `inset(0 calc(100% - ${sliderPosition}%) 0 0)`,
+              clipPath: `inset(0 calc(100% - ${sliderPosition}%) 0 0)`,
+            }}
           >
             <img
               src="/images/21/photo_1.jpg"
               alt="Raw Unedited Photo"
-              className="absolute inset-0 w-full h-full object-cover filter grayscale-[50%] brightness-75 contrast-80 max-w-none"
-              style={{ width: containerRef.current ? `${containerRef.current.offsetWidth}px` : '100vw' }}
+              className="absolute inset-0 w-full h-full object-cover filter grayscale-[50%] brightness-75 contrast-80"
+              loading="lazy"
+              draggable="false"
             />
             <div className="absolute top-3 left-3 sm:top-6 sm:left-6 z-20 bg-black/70 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded text-[9px] sm:text-[11px] font-medium tracking-wider text-white/80 uppercase border border-white/20 whitespace-nowrap">
               Unedited RAW
@@ -86,7 +98,7 @@ export default function RetouchSlider() {
 
           {/* Vertical Split Line & Handle */}
           <div
-            className="absolute inset-y-0 z-30 w-0.5 sm:w-1 bg-white/80 backdrop-blur-xs cursor-ew-resize"
+            className="absolute inset-y-0 z-30 w-0.5 sm:w-1 bg-white/80 backdrop-blur-xs cursor-ew-resize pointer-events-none"
             style={{ left: `${sliderPosition}%` }}
           >
             <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#C5A880] text-white shadow-xl flex items-center justify-center border-2 border-white">

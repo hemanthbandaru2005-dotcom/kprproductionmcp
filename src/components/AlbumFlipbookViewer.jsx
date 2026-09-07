@@ -219,14 +219,28 @@ BackCoverPage.displayName = 'BackCoverPage';
    ───────────────────────────────────────────────────── */
 function useWindowSize() {
   const [size, setSize] = useState({
-    w: typeof window !== 'undefined' ? window.innerWidth : 1400,
-    h: typeof window !== 'undefined' ? window.innerHeight : 900,
+    w: typeof window !== 'undefined' ? (window.visualViewport?.width || window.innerWidth) : 1400,
+    h: typeof window !== 'undefined' ? (window.visualViewport?.height || window.innerHeight) : 900,
   });
 
   useEffect(() => {
-    const onResize = () => setSize({ w: window.innerWidth, h: window.innerHeight });
+    const onResize = () => {
+      const w = typeof window !== 'undefined' ? (window.visualViewport?.width || window.innerWidth) : 1400;
+      const h = typeof window !== 'undefined' ? (window.visualViewport?.height || window.innerHeight) : 900;
+      setSize({ w, h });
+    };
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    if (typeof window !== 'undefined' && window.visualViewport) {
+      window.visualViewport.addEventListener('resize', onResize);
+    }
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+      if (typeof window !== 'undefined' && window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', onResize);
+      }
+    };
   }, []);
 
   return size;
