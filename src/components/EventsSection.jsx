@@ -133,45 +133,49 @@ export default function EventsSection({ onOpenPage }) {
     <div id="events" className="w-full bg-[#F7F3EE] transition-all duration-300">
       <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
-        {/* 1. Main Collapsible "KPR EVENTS" Header Bar with Clean 3-Box Layout (Left Photo | Center Logo | Right Photo) */}
+        {/* 1. Main Collapsible "KPR EVENTS" Header Bar (Corner-to-Corner Full Bleed Showcase Photos) */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] p-2 sm:p-4 md:p-6 flex items-center justify-between gap-1.5 sm:gap-4 md:gap-6 border-b border-[#E2D9CC] min-h-[85px] sm:min-h-[140px] md:min-h-[175px] overflow-hidden group cursor-pointer focus:outline-none transition-all duration-300"
+          className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] relative flex items-center justify-between min-h-[95px] sm:min-h-[145px] md:min-h-[185px] border-b border-[#E2D9CC] overflow-hidden group cursor-pointer focus:outline-none transition-colors duration-300"
           aria-label="Toggle KPR Events section"
         >
-          {/* Left Showcase Photo Card (Always visible on all screens, separate box) */}
-          <div className="w-14 h-14 sm:w-28 sm:h-28 md:w-48 md:h-34 lg:w-60 lg:h-38 shrink-0 rounded-lg sm:rounded-2xl overflow-hidden border border-[#E2D9CC] shadow-sm pointer-events-none">
+          {/* Left Corner Photo (Fills 100% to top, bottom, and left corner - 0 roundness) */}
+          <div className="absolute left-0 top-0 bottom-0 h-full w-[26%] sm:w-[28%] md:w-[32%] lg:w-[35%] overflow-hidden pointer-events-none z-0">
             <img
               src={eventsHeaderLeft}
               alt="KPR Events - Luxury Stage Sofa & Floral Decor"
-              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 select-none"
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 select-none"
             />
+            {/* Smooth transition fade towards center logo */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/95 sm:to-white pointer-events-none" />
           </div>
 
-          {/* Center Logo Area (Dedicated flexible space with zero photo overlap) */}
-          <div className="flex-1 flex items-center justify-center min-w-0 px-1 sm:px-4 pointer-events-none">
+          {/* Center Logo Area (Clean, undisturbed, prominent with zero photo collision) */}
+          <div className="relative z-10 mx-auto flex items-center justify-center px-2 sm:px-6 md:px-10 py-2 pointer-events-none max-w-[56%] sm:max-w-[50%] md:max-w-[45%]">
             <img
               src={kprEventsLogo}
               alt="KPR Events"
-              className="h-10 sm:h-20 md:h-28 lg:h-36 w-auto max-w-full object-contain group-hover:scale-105 transition-transform duration-300 select-none drop-shadow-sm"
+              className="h-12 sm:h-22 md:h-30 lg:h-38 w-auto max-w-full object-contain group-hover:scale-105 transition-transform duration-300 select-none drop-shadow-sm"
             />
           </div>
 
-          {/* Right Showcase Photo Card (Always visible on all screens, separate box) */}
-          <div className="w-14 h-14 sm:w-28 sm:h-28 md:w-48 md:h-34 lg:w-60 lg:h-38 shrink-0 rounded-lg sm:rounded-2xl overflow-hidden border border-[#E2D9CC] shadow-sm pointer-events-none">
+          {/* Right Corner Photo (Fills 100% to top, bottom, and right corner - 0 roundness) */}
+          <div className="absolute right-0 top-0 bottom-0 h-full w-[26%] sm:w-[28%] md:w-[32%] lg:w-[35%] overflow-hidden pointer-events-none z-0">
             <img
               src={eventsHeaderRight}
               alt="KPR Events - Live Stage Dance Performance & Choreography"
-              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 select-none"
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 select-none"
             />
+            {/* Smooth transition fade towards center logo */}
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-white/95 sm:to-white pointer-events-none" />
           </div>
 
           {/* Chevron Rotate Animation */}
-          <div className="shrink-0 ml-1 sm:ml-2">
-            <div className={`p-1.5 sm:p-2.5 rounded-full border shadow-sm transition-all duration-500 ${
+          <div className="absolute right-2 sm:right-4 md:right-8 z-20">
+            <div className={`p-1.5 sm:p-2.5 rounded-full border shadow-md backdrop-blur-md transition-all duration-500 ${
               isExpanded ? 'rotate-180 bg-[#C5A880] text-white border-[#C5A880]' : 'rotate-0 bg-white/90 text-[#1A1A1A] border-[#E2D9CC] group-hover:bg-[#EAE4DC]'
             }`}>
-              <ChevronDown className="w-3.5 h-3.5 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
             </div>
           </div>
         </button>
