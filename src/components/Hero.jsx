@@ -101,11 +101,7 @@ export default function Hero({ onOpenPage }) {
         <button
           type="button"
           onClick={() => setUploadModalOpen(true)}
-          style={{
-            backgroundImage: 'linear-gradient(0deg, rgba(250, 247, 242, 0.96), rgba(250, 247, 242, 0.96))',
-            forcedColorAdjust: 'none'
-          }}
-          className="kpr-upload-btn group inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[#1A1A1A] border-2 border-[#D8CFC4] hover:border-[#C5A880] backdrop-blur-md shadow-[0_6px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_28px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+          className="group inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#FAF7F2]/95 hover:bg-[#FFFFFF] text-[#1A1A1A] border-2 border-[#D8CFC4] hover:border-[#C5A880] backdrop-blur-md shadow-[0_6px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_28px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
           title="Upload Your Album"
         >
           <div className="w-5 h-5 rounded-full bg-[#C5A880]/20 flex items-center justify-center text-[#9E784F] group-hover:scale-110 transition-transform">
@@ -130,11 +126,7 @@ export default function Hero({ onOpenPage }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: index * 0.08, ease: 'easeOut' }}
               onClick={() => handleCardClick(service.route)}
-              style={{
-                backgroundImage: 'linear-gradient(0deg, rgba(250, 247, 242, 0.96), rgba(250, 247, 242, 0.96))',
-                forcedColorAdjust: 'none'
-              }}
-              className="kpr-showcase-card group relative backdrop-blur-xl border border-[#D8CFC4]/90 hover:border-[#1A1A1A]/60 rounded-xl sm:rounded-2xl md:rounded-[24px] p-1.5 sm:p-4 md:p-5 lg:p-6 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(0,0,0,0.22)] shadow-[0_8px_24px_rgba(0,0,0,0.1)]"
+              className="group relative bg-[#FAF7F2]/95 hover:bg-[#FFFFFF] backdrop-blur-xl border border-[#D8CFC4]/90 hover:border-[#1A1A1A]/60 rounded-xl sm:rounded-2xl md:rounded-[24px] p-1.5 sm:p-4 md:p-5 lg:p-6 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-[0_20px_45px_rgba(0,0,0,0.22)] shadow-[0_8px_24px_rgba(0,0,0,0.1)]"
             >
               {/* Card hover background subtle glow */}
               <div
@@ -172,13 +164,7 @@ export default function Hero({ onOpenPage }) {
               </p>
 
               {/* 5. Supporting Visual Asset (High Clarity Full Frame Display) */}
-              <div
-                style={{
-                  backgroundImage: 'linear-gradient(0deg, #FFFFFF, #FFFFFF)',
-                  forcedColorAdjust: 'none'
-                }}
-                className="w-full h-11 sm:h-20 md:h-26 lg:h-32 flex items-center justify-center my-1 relative overflow-hidden rounded-lg sm:rounded-xl border border-black/10 shadow-[0_4px_14px_rgba(0,0,0,0.12)] bg-white"
-              >
+              <div className="w-full h-11 sm:h-20 md:h-26 lg:h-32 flex items-center justify-center my-1 relative overflow-hidden rounded-lg sm:rounded-xl border border-black/10 shadow-[0_4px_14px_rgba(0,0,0,0.12)] bg-white">
                 <img
                   src={service.cardImage}
                   alt={service.cardAlt}
@@ -189,10 +175,7 @@ export default function Hero({ onOpenPage }) {
 
               {/* 6. "EXPLORE >" Luxury Outline Button */}
               <div className="w-full pt-1 sm:pt-2.5">
-                <div
-                  style={{ forcedColorAdjust: 'none' }}
-                  className="w-full py-1 sm:py-1.5 md:py-2 px-1 sm:px-3 md:px-4 rounded-md sm:rounded-lg border border-[#1A1A1A]/30 group-hover:border-[#1A1A1A] group-hover:bg-[#1A1A1A] text-[#1A1A1A] group-hover:text-white font-bold text-[8px] sm:text-[10px] md:text-xs tracking-wider uppercase flex items-center justify-center gap-0.5 sm:gap-1 transition-all duration-300 shadow-xs"
-                >
+                <div className="w-full py-1 sm:py-1.5 md:py-2 px-1 sm:px-3 md:px-4 rounded-md sm:rounded-lg border border-[#1A1A1A]/30 group-hover:border-[#1A1A1A] group-hover:bg-[#1A1A1A] text-[#1A1A1A] group-hover:text-white font-bold text-[8px] sm:text-[10px] md:text-xs tracking-wider uppercase flex items-center justify-center gap-0.5 sm:gap-1 transition-all duration-300 shadow-xs">
                   <span>EXPLORE</span>
                   <span className="text-[10px] sm:text-xs md:text-sm leading-none transition-transform duration-300 group-hover:translate-x-0.5 font-bold">›</span>
                 </div>
