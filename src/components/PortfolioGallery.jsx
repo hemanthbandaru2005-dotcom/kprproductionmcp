@@ -76,6 +76,10 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
     }
 
     loadGallery();
+
+    const handlePhotosUpdate = () => loadGallery();
+    window.addEventListener('kpr_site_photos_updated', handlePhotosUpdate);
+    return () => window.removeEventListener('kpr_site_photos_updated', handlePhotosUpdate);
   }, []);
 
   // Handle Category Filter Click
@@ -108,9 +112,11 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
     }
   };
 
-  const filteredItems = items.filter(
-    (item) => item.category === activeCategory
-  );
+  const filteredItems = items.filter((item) => {
+    const itemCat = String(item.category || '').toLowerCase().trim();
+    const activeCat = String(activeCategory || '').toLowerCase().trim();
+    return itemCat === activeCat;
+  });
 
   return (
     <section id="portfolio" className="py-8 sm:py-12 bg-[#F7F3EE] relative overflow-hidden w-full">

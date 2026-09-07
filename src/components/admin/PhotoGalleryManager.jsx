@@ -24,7 +24,7 @@ export default function PhotoGalleryManager() {
   const [deletingPhoto, setDeletingPhoto] = useState(null);
 
   // Add form state
-  const [formCategory, setFormCategory] = useState('Weddings');
+  const [formCategory, setFormCategory] = useState(PHOTOGRAPHY_CATEGORIES[0] || 'Wedding');
   const [formTitle, setFormTitle] = useState('');
   const [formImageUrl, setFormImageUrl] = useState('');
   const [formDisplayOrder, setFormDisplayOrder] = useState(1);
@@ -44,9 +44,27 @@ export default function PhotoGalleryManager() {
 
   useEffect(() => {
     setCategoryFilter('all');
-    setFormCategory(activeGallery === 'photography' ? 'Wedding' : 'Prints');
+    setFormCategory(activeGallery === 'photography' ? (PHOTOGRAPHY_CATEGORIES[0] || 'Wedding') : (COLORLAB_CATEGORIES[0] || 'Prints'));
     loadPhotos();
   }, [activeGallery]);
+
+  const openAddModal = (chosenCat = null) => {
+    let target = chosenCat;
+    if (!target) {
+      if (categoryFilter && categoryFilter !== 'all') {
+        target = categoryFilter;
+      } else {
+        target = activeGallery === 'photography' ? 'Wedding' : 'Prints';
+      }
+    }
+    setFormCategory(target);
+    setFormTitle('');
+    setFormImageUrl('');
+    setImagePreview('');
+    setErrorMsg('');
+    setFormDisplayOrder(photos.filter(p => p.category === target).length + 1);
+    setAddModalOpen(true);
+  };
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
@@ -70,10 +88,13 @@ export default function PhotoGalleryManager() {
     setUploading(true);
     setErrorMsg('');
 
+    const targetCat = formCategory || (activeGallery === 'photography' ? 'Wedding' : 'Prints');
+    const autoTitle = formTitle.trim() || `${targetCat} Photo`;
+
     const payload = {
       gallery: activeGallery,
-      category: formCategory,
-      title: formTitle.trim() || `${formCategory} Photo`,
+      category: targetCat,
+      title: autoTitle,
       file_url: formImageUrl,
       display_order: Number(formDisplayOrder) || photos.length + 1
     };
@@ -88,8 +109,9 @@ export default function PhotoGalleryManager() {
       setFormTitle('');
       setFormImageUrl('');
       setImagePreview('');
-      setToastMsg(`Photo added live to the ${activeGallery === 'photography' ? 'Photography' : 'Color Lab'} showcase!`);
+      setToastMsg(`Photo published live to "${targetCat}" in ${activeGallery === 'photography' ? 'Photography' : 'Color Lab'}!`);
       loadPhotos();
+      window.dispatchEvent(new CustomEvent('kpr_site_photos_updated'));
       setTimeout(() => setToastMsg(''), 3500);
     }
   };
@@ -105,6 +127,7 @@ export default function PhotoGalleryManager() {
       setPhotos(photos.filter(p => p.id !== deletingPhoto.id));
       setDeletingPhoto(null);
       setToastMsg('Photo deleted from live site.');
+      window.dispatchEvent(new CustomEvent('kpr_site_photos_updated'));
       setTimeout(() => setToastMsg(''), 3000);
     }
   };
@@ -219,7 +242,7 @@ export default function PhotoGalleryManager() {
           </button>
 
           <button
-            onClick={() => setAddModalOpen(true)}
+            onClick={() => openAddModal()}
             className="px-5 py-2.5 rounded-xl bg-[#C5A880] hover:bg-[#D4BC9A] text-black text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-lg cursor-pointer flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
@@ -238,17 +261,19 @@ export default function PhotoGalleryManager() {
         <div className="py-24 text-center text-white/40 text-xs bg-[#0F1623] rounded-2xl border border-white/5 space-y-3">
           <ImageIcon className="w-12 h-12 text-white/20 mx-auto" />
           <p className="font-serif text-lg text-white/70">
-            No Admin Photos in {activeGallery === 'photography' ? 'Photography' : 'Color Lab'} Yet
+            {categoryFilter === 'all' 
+              ? `No Admin Photos in ${activeGallery === 'photography' ? 'Photography' : 'Color Lab'} Yet`
+              : `No Admin Photos in "${categoryFilter}" Yet`}
           </p>
           <p className="text-white/40 max-w-md mx-auto">
-            Click "Add Photo" to upload a new showcase photo for this gallery. It will appear live on the public site immediately.
+            Click below to upload a new showcase photo for this section. It will appear live on the public site immediately under {categoryFilter === 'all' ? 'this gallery' : `"${categoryFilter}"`}.
           </p>
           <button
-            onClick={() => setAddModalOpen(true)}
+            onClick={() => openAddModal(categoryFilter === 'all' ? null : categoryFilter)}
             className="px-5 py-2 rounded-xl bg-[#C5A880] text-black font-bold text-xs uppercase tracking-wider cursor-pointer hover:bg-[#D4BC9A] mt-2 inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            <span>Upload First Photo</span>
+            <span>Upload Photo to {categoryFilter === 'all' ? (activeGallery === 'photography' ? 'Photography' : 'Color Lab') : `"${categoryFilter}"`}</span>
           </button>
         </div>
       ) : (
@@ -318,6 +343,12 @@ export default function PhotoGalleryManager() {
               </button>
             </div>
 
+            {/* Target Category Banner */}
+            <div className="p-3 bg-[#C5A880]/15 border border-[#C5A880]/30 rounded-xl flex items-center justify-between text-xs text-[#E5D2B8]">
+              <span>Section: <strong className="text-white">{formCategory}</strong> ({activeGallery === 'photography' ? 'Fotography' : 'Color Lab'})</span>
+              <span className="text-[10px] uppercase font-bold text-[#C5A880] bg-black/40 px-2 py-0.5 rounded-full border border-[#C5A880]/30">Live Sync</span>
+            </div>
+
             <form onSubmit={handleAddSubmit} className="space-y-4">
               
               {errorMsg && (
@@ -339,7 +370,7 @@ export default function PhotoGalleryManager() {
                     <button
                       type="button"
                       onClick={() => { setImagePreview(''); setFormImageUrl(''); }}
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 text-white hover:bg-rose-500 transition-colors"
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 text-white hover:bg-rose-500 transition-colors cursor-pointer"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -376,7 +407,7 @@ export default function PhotoGalleryManager() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Royal Telugu Wedding Mandap"
+                  placeholder={`e.g. ${formCategory} Showcase Highlight`}
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#111827] border border-white/15 rounded-xl text-xs text-white placeholder-white/40 focus:outline-none focus:border-[#C5A880]"
