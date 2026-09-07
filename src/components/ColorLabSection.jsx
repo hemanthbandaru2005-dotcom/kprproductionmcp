@@ -231,8 +231,8 @@ export default function ColorLabSection() {
           className="w-full bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] px-2 py-2 sm:px-6 sm:py-4 md:px-8 md:py-5 flex items-center justify-between relative transition-all duration-300 group cursor-pointer focus:outline-none border-b border-[#E2D9CC] min-h-[105px] sm:min-h-[150px] md:min-h-[185px] overflow-hidden"
           aria-label="Toggle KPR Colour Lab section"
         >
-          {/* Left Corner Spread Photo (100% Clear & Crisp) */}
-          <div className="absolute left-0 top-0 bottom-0 h-full w-28 sm:w-44 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
+          {/* Left Corner Spread Photo - Hidden on mobile to prevent logo overlap */}
+          <div className="hidden md:block absolute left-0 top-0 bottom-0 h-full w-44 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
             <img
               src={colorLabHeaderLeft}
               alt="KPR Color Lab - Luxury Heirloom Wedding Albums Stack"
@@ -240,7 +240,7 @@ export default function ColorLabSection() {
             />
           </div>
 
-          {/* Center Logo Area (Undisturbed & Prominent) */}
+          {/* Center Logo Area (Undisturbed & Prominent on all screens) */}
           <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-8 md:px-12 pointer-events-none">
             <img
               src={kprColorLabLogo}
@@ -249,8 +249,8 @@ export default function ColorLabSection() {
             />
           </div>
 
-          {/* Right Corner Spread Photo (Wedding Album Printing) */}
-          <div className="absolute right-0 top-0 bottom-0 h-full w-28 sm:w-44 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
+          {/* Right Corner Spread Photo - Hidden on mobile to prevent logo overlap */}
+          <div className="hidden md:block absolute right-0 top-0 bottom-0 h-full w-44 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
             <img
               src="/images/services/wedding_album_printing.png"
               alt="KPR Color Lab - Wedding Album Printing"
