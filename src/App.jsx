@@ -1,27 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import MediaSection from './components/MediaSection';
-import ColorLabSection from './components/ColorLabSection';
-import EventsSection from './components/EventsSection';
-import LoginSection from './components/LoginSection';
-import AdminDashboard from './components/admin/AdminDashboard';
-import WorkerDashboard from './components/worker/WorkerDashboard';
-import ClientDashboard from './components/client/ClientDashboard';
-import LightboxModal from './components/LightboxModal';
-import MoodboardDrawer from './components/MoodboardDrawer';
-import ContactSection from './components/ContactSection';
-import AboutSection from './components/AboutSection';
 import Footer from './components/Footer';
-import AlbumPreviewPage from './components/AlbumPreviewPage';
-import ServicesShowcase from './components/ServicesShowcase';
 import { SOCIAL_LINKS } from './utils/socialLinks';
+import { Loader2 } from 'lucide-react';
+
+// Lazy-loaded heavy components for ultra-fast initial mobile load & zero memory crashes
+const MediaSection = lazy(() => import('./components/MediaSection'));
+const ColorLabSection = lazy(() => import('./components/ColorLabSection'));
+const EventsSection = lazy(() => import('./components/EventsSection'));
+const LoginSection = lazy(() => import('./components/LoginSection'));
+const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
+const WorkerDashboard = lazy(() => import('./components/worker/WorkerDashboard'));
+const ClientDashboard = lazy(() => import('./components/client/ClientDashboard'));
+const ContactSection = lazy(() => import('./components/ContactSection'));
+const AboutSection = lazy(() => import('./components/AboutSection'));
+const AlbumPreviewPage = lazy(() => import('./components/AlbumPreviewPage'));
+const LightboxModal = lazy(() => import('./components/LightboxModal'));
+const MoodboardDrawer = lazy(() => import('./components/MoodboardDrawer'));
+
+function PageLoader() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center p-8 text-center">
+      <div className="space-y-3">
+        <Loader2 className="w-8 h-8 text-[#C5A880] animate-spin mx-auto" />
+        <p className="text-[11px] font-bold tracking-widest uppercase text-[#888888]">Loading View…</p>
+      </div>
+    </div>
+  );
+}
 
 function getInitialPage() {
   try {
     const hash = window.location.hash.replace('#', '').trim();
-    const validPages = ['home', 'media', 'colorlab', 'events', 'login', 'contact', 'about', 'album-preview', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'];
+    const validPages = [
+      'home', 'media', 'colorlab', 'events', 'login', 'contact', 'about',
+      'album-preview', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'
+    ];
     if (validPages.includes(hash)) return hash;
   } catch (e) {}
   return 'home';
@@ -30,107 +46,30 @@ function getInitialPage() {
 function AppContent() {
   const { user, profile, loading, isRecoveryMode } = useAuth();
 
-  // 'home' | 'media' | 'colorlab' | 'login' | 'admin-dashboard' | 'worker-dashboard' | 'client-dashboard' | 'contact'
   const [activePage, setActivePage] = useState(getInitialPage);
-  const [loginTab, setLoginTab] = useState('admin'); // which tab to pre-select on login page
+  const [loginTab, setLoginTab] = useState('admin');
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [moodboardIds, setMoodboardIds] = useState(['21-photo-1', '21-photo-2']);
   const [moodboardOpen, setMoodboardOpen] = useState(false);
 
-  // Depth tracker: 0 is the root entry. > 0 are internal page navigations
-  const historyDepthRef = useRef(0);
-  const activePageRef = useRef(activePage);
-  activePageRef.current = activePage;
-  const selectedPhotoRef = useRef(selectedPhoto);
-  selectedPhotoRef.current = selectedPhoto;
-  const moodboardOpenRef = useRef(moodboardOpen);
-  moodboardOpenRef.current = moodboardOpen;
+  // Sync route on hash change (supports swipe-back, browser back/forward seamlessly across all mobile browsers)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const page = getInitialPage();
+      setActivePage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
-  // If password reset recovery link was clicked, immediately open login page to show password reset form
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Password reset recovery mode
   useEffect(() => {
     if (isRecoveryMode) {
       handleSelectPage('login', { replace: true });
     }
   }, [isRecoveryMode]);
-
-  // 1. Initial Mount: Initialize the exit guard history state
-  useEffect(() => {
-    const initial = getInitialPage();
-
-    // Push the dummy exit guard state on mount
-    window.history.pushState(
-      { exitGuard: true, page: initial, depth: 0 },
-      '',
-      window.location.href
-    );
-    historyDepthRef.current = 0;
-
-    // Popstate event listener
-    const handlePopState = (event) => {
-      // 1. If LightboxModal is open, close it on back press
-      if (selectedPhotoRef.current) {
-        setSelectedPhoto(null);
-        window.history.pushState(
-          { page: activePageRef.current, depth: historyDepthRef.current, exitGuard: historyDepthRef.current === 0 },
-          '',
-          `#${activePageRef.current}`
-        );
-        return;
-      }
-
-      // 2. If MoodboardDrawer is open, close it on back press
-      if (moodboardOpenRef.current) {
-        setMoodboardOpen(false);
-        window.history.pushState(
-          { page: activePageRef.current, depth: historyDepthRef.current, exitGuard: historyDepthRef.current === 0 },
-          '',
-          `#${activePageRef.current}`
-        );
-        return;
-      }
-
-      const state = event.state;
-
-      // 3. INTERNAL BACK / FORWARD NAVIGATION (BUG 1)
-      // If there is internal history (depth > 0 or state with valid internal page)
-      if (state && state.page && typeof state.depth === 'number' && state.depth > 0) {
-        setActivePage(state.page);
-        historyDepthRef.current = state.depth;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-
-      // If returning to depth 0 (the site entry page) from an internal page
-      if (state && state.page && state.depth === 0 && historyDepthRef.current > 0) {
-        setActivePage(state.page);
-        historyDepthRef.current = 0;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-
-      // 4. GENUINE EXIT ATTEMPT (BUG 2)
-      // When the user has reached the entry page and presses Back to leave the site
-      if (!state || !state.exitGuard || state.depth === undefined || historyDepthRef.current === 0) {
-        const confirmed = window.confirm('Are you sure you want to exit?');
-        if (confirmed) {
-          // Allow exit
-          window.removeEventListener('popstate', handlePopState);
-          window.history.back();
-        } else {
-          // User cancelled — re-push the dummy guard state so back button is intercepted again next time
-          window.history.pushState(
-            { exitGuard: true, page: activePageRef.current, depth: 0 },
-            '',
-            window.location.href
-          );
-          historyDepthRef.current = 0;
-        }
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
 
   const toggleMoodboardItem = (id) => {
     if (moodboardIds.includes(id)) {
@@ -180,30 +119,15 @@ function AppContent() {
     }
 
     if (replace) {
-      // Replace state: used for auth guards, login redirects, recovery mode
-      window.history.replaceState(
-        { page: pageName, depth: historyDepthRef.current, exitGuard: historyDepthRef.current === 0 },
-        '',
-        `#${pageName}`
-      );
+      window.history.replaceState({ page: pageName }, '', `#${pageName}`);
     } else {
-      // Normal internal page navigation (BUG 1): creates a new history entry!
-      historyDepthRef.current += 1;
-      window.history.pushState(
-        { page: pageName, depth: historyDepthRef.current, internalNav: true },
-        '',
-        `#${pageName}`
-      );
+      window.history.pushState({ page: pageName }, '', `#${pageName}`);
     }
 
     setActivePage(pageName);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Handle successful login — navigate to the appropriate dashboard with replaceState
-  // NOTE: We call navigateToPage directly instead of handleSelectPage because
-  // handleSelectPage re-checks the route guards (user/profile state), which
-  // haven't re-rendered yet at this point, causing a redirect loop back to login.
   const handleLoginSuccess = (role) => {
     let target = 'home';
     if (role === 'admin' || role === 'superadmin') target = 'admin-dashboard';
@@ -213,25 +137,24 @@ function AppContent() {
     navigateToPage(target, { replace: true });
   };
 
-  // Handle logout — return to login page with replaceState
   const handleLogout = () => {
     handleSelectPage('login', { replace: true, tab: 'admin' });
   };
 
-  // On initial load, if user is already logged in, go to dashboard
+  // Only auto-redirect to dashboard if user deliberately opened #login with active session
   useEffect(() => {
-    if (!loading && user && profile) {
-      if ((profile.role === 'admin' || profile.role === 'superadmin') && (activePage === 'login' || activePage === 'home')) {
+    if (!loading && user && profile && activePage === 'login') {
+      if (profile.role === 'admin' || profile.role === 'superadmin') {
         handleSelectPage('admin-dashboard', { replace: true });
-      } else if (profile.role === 'worker' && (activePage === 'login' || activePage === 'home')) {
+      } else if (profile.role === 'worker') {
         handleSelectPage('worker-dashboard', { replace: true });
-      } else if (profile.role === 'client' && (activePage === 'login' || activePage === 'home')) {
+      } else if (profile.role === 'client') {
         handleSelectPage('client-dashboard', { replace: true });
       }
     }
-  }, [loading, user, profile]);
+  }, [loading, user, profile, activePage]);
 
-  // Show nothing while checking auth session
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F7F3EE] flex items-center justify-center">
@@ -243,31 +166,43 @@ function AppContent() {
     );
   }
 
-  // Admin dashboard gets its own full-screen layout
+  // Admin dashboard (full screen)
   if (activePage === 'admin-dashboard') {
     if (!user || (profile?.role !== 'admin' && profile?.role !== 'superadmin')) {
       handleSelectPage('login', { replace: true, tab: 'admin' });
       return null;
     }
-    return <AdminDashboard onLogout={handleLogout} />;
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <AdminDashboard onLogout={handleLogout} />
+      </Suspense>
+    );
   }
 
-  // Worker dashboard gets its own full-screen layout
+  // Worker dashboard (full screen)
   if (activePage === 'worker-dashboard') {
     if (!user || profile?.role !== 'worker') {
       handleSelectPage('login', { replace: true, tab: 'worker' });
       return null;
     }
-    return <WorkerDashboard onLogout={handleLogout} />;
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <WorkerDashboard onLogout={handleLogout} />
+      </Suspense>
+    );
   }
 
-  // Client dashboard gets its own full-screen layout
+  // Client dashboard (full screen)
   if (activePage === 'client-dashboard') {
     if (!user || profile?.role !== 'client') {
       handleSelectPage('login', { replace: true, tab: 'client' });
       return null;
     }
-    return <ClientDashboard onLogout={handleLogout} />;
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <ClientDashboard onLogout={handleLogout} />
+      </Suspense>
+    );
   }
 
   return (
@@ -284,58 +219,72 @@ function AppContent() {
       {/* Multi-Page Route Views */}
       <main className="animate-fadeIn w-full m-0 p-0">
         {activePage === 'home' && (
-          <div className="w-full h-full m-0 p-0 overflow-hidden">
+          <div className="w-full h-full m-0 p-0">
             <Hero onOpenPage={handleSelectPage} />
           </div>
         )}
 
         {activePage === 'media' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <MediaSection
-              initialTab="gallery"
-              onSelectPhoto={(photo) => setSelectedPhoto(photo)}
-              moodboardIds={moodboardIds}
-              toggleMoodboardItem={toggleMoodboardItem}
-            />
+            <Suspense fallback={<PageLoader />}>
+              <MediaSection
+                initialTab="gallery"
+                onSelectPhoto={(photo) => setSelectedPhoto(photo)}
+                moodboardIds={moodboardIds}
+                toggleMoodboardItem={toggleMoodboardItem}
+              />
+            </Suspense>
           </div>
         )}
 
         {activePage === 'colorlab' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <ColorLabSection />
+            <Suspense fallback={<PageLoader />}>
+              <ColorLabSection />
+            </Suspense>
           </div>
         )}
 
         {activePage === 'events' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <EventsSection onOpenPage={handleSelectPage} />
+            <Suspense fallback={<PageLoader />}>
+              <EventsSection onOpenPage={handleSelectPage} />
+            </Suspense>
           </div>
         )}
 
         {activePage === 'login' && (
           <div className="pt-20 sm:pt-24 pb-12 animate-fadeIn">
-            <LoginSection
-              onLoginSuccess={handleLoginSuccess}
-              initialTab={loginTab}
-            />
+            <Suspense fallback={<PageLoader />}>
+              <LoginSection
+                onLoginSuccess={handleLoginSuccess}
+                initialTab={loginTab}
+              />
+            </Suspense>
           </div>
         )}
 
         {activePage === 'contact' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <ContactSection />
+            <Suspense fallback={<PageLoader />}>
+              <ContactSection />
+            </Suspense>
           </div>
         )}
 
         {activePage === 'about' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <AboutSection />
+            <Suspense fallback={<PageLoader />}>
+              <AboutSection />
+            </Suspense>
           </div>
         )}
 
         {activePage === 'album-preview' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <AlbumPreviewPage />
+            <Suspense fallback={<PageLoader />}>
+              <AlbumPreviewPage />
+            </Suspense>
           </div>
         )}
       </main>
@@ -408,24 +357,30 @@ function AppContent() {
 
       {/* Photo Lightbox Modal */}
       {selectedPhoto && (
-        <LightboxModal
-          photo={selectedPhoto}
-          onClose={() => setSelectedPhoto(null)}
-          onOpenInquireWithPhoto={() => {}}
-          moodboardIds={moodboardIds}
-          toggleMoodboardItem={toggleMoodboardItem}
-          onSelectPhoto={(photo) => setSelectedPhoto(photo)}
-        />
+        <Suspense fallback={null}>
+          <LightboxModal
+            photo={selectedPhoto}
+            onClose={() => setSelectedPhoto(null)}
+            onOpenInquireWithPhoto={() => {}}
+            moodboardIds={moodboardIds}
+            toggleMoodboardItem={toggleMoodboardItem}
+            onSelectPhoto={(photo) => setSelectedPhoto(photo)}
+          />
+        </Suspense>
       )}
 
       {/* Saved Vision Moodboard Drawer */}
-      <MoodboardDrawer
-        isOpen={moodboardOpen}
-        onClose={() => setMoodboardOpen(false)}
-        moodboardIds={moodboardIds}
-        toggleMoodboardItem={toggleMoodboardItem}
-        onOpenInquireWithMoodboard={() => {}}
-      />
+      {moodboardOpen && (
+        <Suspense fallback={null}>
+          <MoodboardDrawer
+            isOpen={moodboardOpen}
+            onClose={() => setMoodboardOpen(false)}
+            moodboardIds={moodboardIds}
+            toggleMoodboardItem={toggleMoodboardItem}
+            onOpenInquireWithMoodboard={() => {}}
+          />
+        </Suspense>
+      )}
 
     </div>
   );
@@ -457,6 +412,7 @@ class ErrorBoundary extends React.Component {
           <button
             onClick={() => {
               this.setState({ hasError: false, error: null });
+              window.location.hash = '#home';
               window.location.reload();
             }}
             className="px-6 py-2.5 rounded-xl bg-[#C5A880] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#D4BC9A] transition-colors cursor-pointer"

@@ -71,7 +71,7 @@ export default function Hero({ onOpenPage }) {
   return (
     <section
       id="hero"
-      className="relative w-full h-[100svh] min-h-[100svh] max-h-[100svh] overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-16 sm:pt-20 pb-3 sm:pb-5 lg:pb-6 px-3 sm:px-8 lg:px-12 select-none"
+      className="relative w-full min-h-[100svh] md:h-[100svh] md:max-h-[100svh] overflow-y-auto md:overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-20 sm:pt-22 pb-4 sm:pb-5 lg:pb-6 px-3 sm:px-8 lg:px-12 select-none"
     >
       {/* ── 1. Desktop Background Image (For Laptops & Desktops Only) ── */}
       <img
@@ -116,7 +116,7 @@ export default function Hero({ onOpenPage }) {
       </div>
 
       {/* ── 3. Responsive 3-Column Services Showcase Cards (Harmonious Light Glassmorphism Matching Flatlay) ── */}
-      <div className="w-full max-w-5xl lg:max-w-6xl mx-auto flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory gap-3 sm:gap-5 lg:gap-6 z-10 mb-1 sm:mb-2 py-1 px-1 scrollbar-none">
+      <div className="w-full max-w-5xl lg:max-w-6xl mx-auto flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory gap-3 sm:gap-5 lg:gap-6 z-10 mb-2 sm:mb-2 py-2 px-1 scrollbar-none touch-pan-x">
         {SERVICES.map((service, index) => {
           return (
             <motion.div

@@ -7,7 +7,8 @@ import {
   Download, FileText, Receipt
 } from 'lucide-react';
 import { fetchSitePackages, OFFICIAL_PHOTOGRAPHY_PACKAGES } from '../utils/packagesService';
-import GenerateInvoiceModal from './GenerateInvoiceModal';
+
+const GenerateInvoiceModal = React.lazy(() => import('./GenerateInvoiceModal'));
 
 export default function InstantQuoteWidget({
   packages: initialPackages,
@@ -483,14 +484,18 @@ export default function InstantQuoteWidget({
           </div>
         </div>
 
-        {/* Generate Proforma Invoice Modal */}
-        <GenerateInvoiceModal
-          isOpen={invoiceModalOpen}
-          onClose={() => setInvoiceModalOpen(false)}
-          selectedPackages={selectedPackages}
-          customPrice={isManualPrice ? customPriceInput : combinedBasePrice}
-          effectiveDuration={effectiveDuration}
-        />
+        {/* Generate Proforma Invoice Modal (Lazy Loaded on Demand) */}
+        {invoiceModalOpen && (
+          <React.Suspense fallback={null}>
+            <GenerateInvoiceModal
+              isOpen={invoiceModalOpen}
+              onClose={() => setInvoiceModalOpen(false)}
+              selectedPackages={selectedPackages}
+              customPrice={isManualPrice ? customPriceInput : combinedBasePrice}
+              effectiveDuration={effectiveDuration}
+            />
+          </React.Suspense>
+        )}
       </div>
     </div>
   );

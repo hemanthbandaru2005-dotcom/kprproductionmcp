@@ -8,6 +8,10 @@
     --accent-gold-dark: #A4865E;
     --text-dark: #222222;
     --text-muted: #666666;
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
   }
 
   html, body, #root {
@@ -15,16 +19,19 @@
     padding: 0;
     width: 100%;
     min-height: 100%;
+    -webkit-overflow-scrolling: touch;
   }
 
   html {
     overflow-x: hidden;
     max-width: 100vw;
     -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    touch-action: manipulation;
   }
 
   body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-cream);
     color: var(--text-dark);
     overflow-x: hidden;
@@ -32,14 +39,22 @@
     width: 100%;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1, h2, h3, h4, .font-serif-luxury {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;
   }
 
   .font-playfair {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  /* Prevent image drag on mobile touch */
+  img {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 }
 
@@ -71,17 +86,26 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
-/* Custom scrollbar */
+/* Cross-browser scrollbar styling */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F7F3EE;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C5A880;
+  background: rgba(197, 168, 128, 0.5);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #A4865E;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
