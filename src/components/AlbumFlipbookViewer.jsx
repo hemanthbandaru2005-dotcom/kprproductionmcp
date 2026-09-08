@@ -434,6 +434,10 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
 
   const pageRatio = naturalRatio || getPageAspectRatio(size);
 
+  // Compute available area for the book within the modal
+  const availW = Math.max(200, vw - sidePad * 2);
+  const availH = Math.max(150, vh - topPad - bottomPad - 20);
+
   // In 2-page spread: total spread width = 2 * singlePageWidth
   let singlePageW = Math.floor(availW / 2);
   let singlePageH = Math.round(singlePageW / pageRatio);
