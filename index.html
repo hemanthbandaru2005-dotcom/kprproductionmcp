@@ -6,8 +6,8 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <!-- Responsive Mobile Viewport with Safe-Area support for all mobile browsers -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-  <meta name="color-scheme" content="light" />
-  <meta name="supported-color-schemes" content="light" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
   <meta name="darkmode" content="off" />
   <meta name="nightmode" content="disable" />
   <meta name="samsung:color-scheme" content="light" />
@@ -16,6 +16,13 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  
+  <style>
+    :root, html, body, #root {
+      color-scheme: light dark !important;
+      forced-color-adjust: none !important;
+    }
+  </style>
   
   <!-- Primary SEO Meta Tags -->
   <title>KPR Productions | Luxury Wedding Photography, Color Lab & Event Production</title>
