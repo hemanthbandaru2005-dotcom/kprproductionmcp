@@ -56,6 +56,14 @@ export default function Hero({ onOpenPage }) {
   const [flipbookImages, setFlipbookImages] = useState(null);
   const [flipbookSize, setFlipbookSize] = useState('12x36');
 
+  // Pre-loaded realistic 3D luxury wedding album pages for instant page flipping
+  const demoAlbumPages = Array.from({ length: 39 }, (_, i) => `/albums/demo/page_${i + 1}.jpg`);
+
+  const handleOpenAlbum = () => {
+    setFlipbookImages(demoAlbumPages);
+    setFlipbookSize('12x36');
+  };
+
   const handleCardClick = (route) => {
     if (typeof onOpenPage === 'function') {
       onOpenPage(route);
@@ -105,36 +113,39 @@ export default function Hero({ onOpenPage }) {
 
       {/* ── 2. Middle Section: Luxury 3D Printed Album Feature (Laptop & Mobile) ── */}
       <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 sm:py-1.5 pointer-events-auto max-w-4xl mx-auto">
-        {/* Eyebrow Pill Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-0.5 rounded-full bg-[#FAF7F2]/90 border border-[#D8CFC4] text-[#8C6D3F] text-[7.5px] xs:text-[8.5px] sm:text-[10px] font-bold tracking-widest uppercase shadow-xs mb-1 sm:mb-1.5"
-        >
-          <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#8C6D3F]" />
-          <span>YOUR MEMORIES • YOUR ALBUM</span>
-        </motion.div>
+        {/* Text Block: Moved down slightly on mobile view ONLY (sm:mt-0 leaves laptop view completely undisturbed) */}
+        <div className="flex flex-col items-center text-center mt-3 xs:mt-4 sm:mt-0 mb-0.5 sm:mb-1">
+          {/* Eyebrow Pill Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-0.5 rounded-full bg-[#FAF7F2]/90 border border-[#D8CFC4] text-[#8C6D3F] text-[7.5px] xs:text-[8.5px] sm:text-[10px] font-bold tracking-widest uppercase shadow-xs mb-1 sm:mb-1.5"
+          >
+            <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#8C6D3F]" />
+            <span>YOUR MEMORIES • YOUR ALBUM</span>
+          </motion.div>
 
-        {/* Heading: Compact & constrained on mobile so it stays in cream center and never overlaps lens/frame */}
-        <motion.h2
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.05 }}
-          className="font-serif text-[12px] xs:text-[13.5px] sm:text-xl md:text-2xl lg:text-[26px] font-normal text-[#1A1A1A] tracking-tight text-center leading-snug sm:leading-tight max-w-[210px] xs:max-w-[245px] sm:max-w-xl md:max-w-3xl px-1 sm:px-2 mb-0.5 whitespace-normal md:whitespace-nowrap"
-        >
-          Turn your memories into a beautiful printed album.
-        </motion.h2>
+          {/* Heading: Compact & constrained on mobile so it stays in cream center and never overlaps lens/frame */}
+          <motion.h2
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.05 }}
+            className="font-serif text-[12px] xs:text-[13.5px] sm:text-xl md:text-2xl lg:text-[26px] font-normal text-[#1A1A1A] tracking-tight text-center leading-snug sm:leading-tight max-w-[210px] xs:max-w-[245px] sm:max-w-xl md:max-w-3xl px-1 sm:px-2 mb-0.5 whitespace-normal md:whitespace-nowrap"
+          >
+            Turn your memories into a beautiful printed album.
+          </motion.h2>
 
-        {/* Subtitle: Compact on mobile */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.08 }}
-          className="text-[8px] xs:text-[9px] sm:text-[11px] md:text-xs text-[#555555] font-light text-center tracking-normal max-w-[210px] xs:max-w-[245px] sm:max-w-2xl px-1 sm:px-4 mb-1 sm:mb-1.5 leading-tight"
-        >
-          Upload your photos • Preview your album • Print & preserve your memories
-        </motion.p>
+          {/* Subtitle: Compact on mobile */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.08 }}
+            className="text-[8px] xs:text-[9px] sm:text-[11px] md:text-xs text-[#555555] font-light text-center tracking-normal max-w-[210px] xs:max-w-[245px] sm:max-w-2xl px-1 sm:px-4 mb-1 sm:mb-1.5 leading-tight"
+          >
+            Upload your photos • Preview your album • Print & preserve your memories
+          </motion.p>
+        </div>
 
         {/* 3D Open Photobook Album with 'Swipe to explore' annotation */}
         <motion.div
@@ -153,11 +164,11 @@ export default function Hero({ onOpenPage }) {
             />
           </div>
 
-          {/* Clickable Open 3D Album Mockup */}
+          {/* Clickable Open 3D Album Mockup — Opens interactive flipbook pages on laptop & mobile */}
           <div
-            onClick={() => setUploadModalOpen(true)}
+            onClick={handleOpenAlbum}
             className="relative group cursor-pointer transition-transform duration-400 hover:scale-[1.03] active:scale-[0.98]"
-            title="Click to preview and explore your custom album"
+            title="Click to open and flip pages of the luxury album"
           >
             <img
               src="/images/hero_open_album.png"
@@ -168,7 +179,7 @@ export default function Hero({ onOpenPage }) {
           </div>
         </motion.div>
 
-        {/* Action Button: EXPLORE YOUR ALBUM */}
+        {/* Action Button: EXPLORE YOUR ALBUM — Opens interactive flipbook pages on laptop & mobile */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -177,7 +188,7 @@ export default function Hero({ onOpenPage }) {
         >
           <button
             type="button"
-            onClick={() => setUploadModalOpen(true)}
+            onClick={handleOpenAlbum}
             className="group inline-flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 px-3.5 xs:px-4 sm:px-6 py-1 xs:py-1.5 sm:py-2 rounded-full bg-[#141414] hover:bg-[#000000] text-white border border-white/20 hover:border-[#C5A880] shadow-[0_6px_16px_rgba(0,0,0,0.3)] hover:shadow-[0_10px_24px_rgba(197,168,128,0.3)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
           >
             <BookOpen className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-3.5 sm:h-3.5 text-white group-hover:text-[#C5A880] transition-colors" />
