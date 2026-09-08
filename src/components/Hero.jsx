@@ -104,15 +104,15 @@ export default function Hero({ onOpenPage }) {
       />
 
       {/* ── 2. Middle Section: Luxury 3D Printed Album Feature (Laptop & Mobile) ── */}
-      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 sm:py-1.5 pointer-events-auto max-w-4xl mx-auto">
-        {/* Text Block: Moved down slightly on mobile view ONLY (sm:mt-0 leaves laptop view completely undisturbed) */}
-        <div className="flex flex-col items-center text-center mt-3 xs:mt-4 sm:mt-0 mb-0.5 sm:mb-1">
+      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 sm:py-1.5 pointer-events-auto max-w-4xl mx-auto translate-y-4 xs:translate-y-5 sm:translate-y-0">
+        {/* Text Block: Moved down synchronously with album & button on mobile only */}
+        <div className="flex flex-col items-center text-center mt-1.5 xs:mt-2 sm:mt-0 mb-0.5 sm:mb-1">
           {/* Eyebrow Pill Badge */}
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-0.5 rounded-full bg-[#FAF7F2]/90 border border-[#D8CFC4] text-[#8C6D3F] text-[7.5px] xs:text-[8.5px] sm:text-[10px] font-bold tracking-widest uppercase shadow-xs mb-1 sm:mb-1.5"
+            className="inline-flex items-center gap-1 sm:gap-1.5 px-2 xs:px-2.5 sm:px-3.5 py-0.5 rounded-full bg-[#FAF7F2]/90 border border-[#D8CFC4] text-[#8C6D3F] text-[7px] xs:text-[8px] sm:text-[10px] font-bold tracking-widest uppercase shadow-xs mb-1 sm:mb-1.5"
           >
             <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#8C6D3F]" />
             <span>YOUR MEMORIES • YOUR ALBUM</span>
@@ -123,7 +123,7 @@ export default function Hero({ onOpenPage }) {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 }}
-            className="font-serif text-[12px] xs:text-[13.5px] sm:text-xl md:text-2xl lg:text-[26px] font-normal text-[#1A1A1A] tracking-tight text-center leading-snug sm:leading-tight max-w-[210px] xs:max-w-[245px] sm:max-w-xl md:max-w-3xl px-1 sm:px-2 mb-0.5 whitespace-normal md:whitespace-nowrap"
+            className="font-serif text-[11.5px] xs:text-[13px] sm:text-xl md:text-2xl lg:text-[26px] font-normal text-[#1A1A1A] tracking-tight text-center leading-snug sm:leading-tight max-w-[205px] xs:max-w-[240px] sm:max-w-xl md:max-w-3xl px-1 sm:px-2 mb-0.5 whitespace-normal md:whitespace-nowrap"
           >
             Turn your memories into a beautiful printed album.
           </motion.h2>
@@ -133,7 +133,7 @@ export default function Hero({ onOpenPage }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.08 }}
-            className="text-[8px] xs:text-[9px] sm:text-[11px] md:text-xs text-[#555555] font-light text-center tracking-normal max-w-[210px] xs:max-w-[245px] sm:max-w-2xl px-1 sm:px-4 mb-1 sm:mb-1.5 leading-tight"
+            className="text-[7.5px] xs:text-[8.5px] sm:text-[11px] md:text-xs text-[#555555] font-light text-center tracking-normal max-w-[205px] xs:max-w-[240px] sm:max-w-2xl px-1 sm:px-4 mb-1 sm:mb-1.5 leading-tight"
           >
             Upload your photos • Preview your album • Print & preserve your memories
           </motion.p>
