@@ -48,11 +48,20 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, ...props }, ref) => {
         <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 w-3.5 h-3.5 sm:w-6 sm:h-6 border-b-2 border-r-2 border-[#C5A880]/70" />
 
         {/* Cover Content */}
-        <div className="text-center z-10 space-y-1.5 sm:space-y-4 px-2">
-          <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-[#C5A880]/80">
+        <div className="text-center z-10 space-y-1.5 sm:space-y-3.5 px-2 flex flex-col items-center">
+          {/* KPR Logo Badge */}
+          <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-black/50 border border-[#C5A880]/60 p-1 flex items-center justify-center shadow-lg">
+            <img
+              src="/images/kpr_logo.png"
+              alt="KPR Logo"
+              className="w-full h-full object-contain filter drop-shadow-[0_2px_4px_rgba(197,168,128,0.5)]"
+            />
+          </div>
+
+          <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-[#C5A880]/90">
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-[#C5A880]" />
-            <span className="text-[8px] sm:text-[11px] uppercase font-bold tracking-[0.2em] text-[#C5A880]">
-              Heirloom Photobook
+            <span className="text-[8px] sm:text-[11px] uppercase font-bold tracking-[0.25em] text-[#C5A880]">
+              KPR PRODUCTIONS
             </span>
             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-[#C5A880]" />
           </div>
@@ -63,15 +72,13 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, ...props }, ref) => {
             {title || 'Luxury Wedding Album'}
           </h2>
 
-          {size && (
-            <div className="inline-block px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#C5A880]/25 border border-[#C5A880]/50 text-[#F5E6D0] text-[9px] sm:text-xs font-mono font-bold tracking-widest uppercase shadow-xs">
-              {size} LAYFLAT SPREAD
-            </div>
-          )}
+          <div className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#C5A880]/20 border border-[#C5A880]/50 text-[#F5E6D0] text-[8.5px] sm:text-xs font-mono font-bold tracking-widest uppercase shadow-xs">
+            LUXURY LAYFLAT HEIRLOOM
+          </div>
 
           <div className="w-8 sm:w-16 h-0.5 bg-[#C5A880]/60 mx-auto" />
 
-          <p className="text-[#D5C4A6]/70 text-[7.5px] sm:text-[10px] tracking-widest uppercase">
+          <p className="text-[#D5C4A6]/75 text-[7.5px] sm:text-[10px] tracking-widest uppercase">
             {totalPhotos} {totalPhotos === 1 ? 'Page' : 'Pages'} · Archival Silk Print
           </p>
 
@@ -84,8 +91,8 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, ...props }, ref) => {
 
         {/* Footer branding */}
         <div className="absolute bottom-1.5 sm:bottom-4 text-center">
-          <p className="text-[#C5A880]/50 text-[6.5px] sm:text-[8px] tracking-[0.3em] uppercase font-bold select-none">
-            KPR COLOR LAB & STUDIO
+          <p className="text-[#C5A880]/60 text-[6.5px] sm:text-[8px] tracking-[0.3em] uppercase font-bold select-none">
+            KPR PRODUCTIONS · HYDERABAD
           </p>
         </div>
       </div>
@@ -409,10 +416,23 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
   const bottomPad = showThumbnails ? (isMobile ? 120 : 140) : 54;
   const sidePad = isMobile ? 8 : 40;
 
-  const availW = Math.max(vw - sidePad * 2, 200);
-  const availH = Math.max(vh - topPad - bottomPad, 180);
+  const [naturalRatio, setNaturalRatio] = useState(1.4);
 
-  const pageRatio = getPageAspectRatio(size);
+  useEffect(() => {
+    if (safeImages && safeImages.length > 0) {
+      const img = new Image();
+      img.onload = () => {
+        if (img.naturalWidth && img.naturalHeight) {
+          const r = img.naturalWidth / img.naturalHeight;
+          const computed = r > 2.1 ? r / 2 : r;
+          setNaturalRatio(Math.max(0.65, Math.min(computed, 1.8)));
+        }
+      };
+      img.src = safeImages[0];
+    }
+  }, [safeImages]);
+
+  const pageRatio = naturalRatio || getPageAspectRatio(size);
 
   // In 2-page spread: total spread width = 2 * singlePageWidth
   let singlePageW = Math.floor(availW / 2);

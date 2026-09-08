@@ -262,64 +262,22 @@ export default function AlbumPreviewPage() {
     <div className="w-full min-h-[80vh] bg-[#F7F3EE]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
 
-        {/* ═══ Page Header ═══ */}
-        <div className="text-center mb-8 sm:mb-10 space-y-3">
-          <span className="text-[10px] tracking-[0.35em] uppercase text-[#C5A880] font-semibold block">
-            KPR COLOR LAB · LIVE ALBUM PROOFING
-          </span>
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#1A1A1A] font-light">
-            Preview Your Wedding Album
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/30 text-[#C5A880] text-xs font-mono uppercase tracking-widest mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Interactive 3D Photobook Preview</span>
+          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#1A1A1A] font-light uppercase tracking-tight">
+            UPLOAD YOUR ALBUM
           </h1>
           <div className="w-16 h-0.5 bg-[#C5A880] mx-auto my-2" />
           <p className="text-xs sm:text-sm text-[#666666] font-light leading-relaxed max-w-xl mx-auto">
-            Select your physical album size, upload your photo spreads, and experience a realistic 3D page-turning book flipbook without image cropping.
+            Upload your finished album pages or spreads. Any size or format is supported.
           </p>
         </div>
 
-        {/* ═══ 1. Size Selector Bar ═══ */}
-        <div className="bg-white border border-[#E2D9CC] rounded-2xl p-4 sm:p-5 mb-6 shadow-xs space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A] flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-[#C5A880]" />
-                Select Physical Album Size:
-              </span>
-              <p className="text-[11px] text-[#666666] mt-0.5">
-                Choose the print dimensions for your luxury layflat album.
-              </p>
-            </div>
-
-            <div className="text-xs font-mono font-bold text-[#C5A880] bg-[#C5A880]/15 px-3 py-1 rounded-full border border-[#C5A880]/30 self-start sm:self-auto">
-              Selected: {selectedSize}
-            </div>
-          </div>
-
-          {/* Size Pill Buttons */}
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-1">
-            {ALBUM_SIZES.map(s => {
-              const isSelected = selectedSize === s;
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setSelectedSize(s)}
-                  className={`py-2 px-3 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex flex-col items-center justify-center border ${
-                    isSelected
-                      ? 'bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-md ring-2 ring-[#C5A880]/50 scale-[1.02]'
-                      : 'bg-[#FAF8F5] text-[#4A3B2C] border-[#E2D9CC] hover:bg-white hover:border-[#C5A880]'
-                  }`}
-                >
-                  <span>{s}</span>
-                  <span className="text-[9px] font-sans font-normal opacity-75">
-                    {s === '12x36' ? 'Panoramic' : s === '13x39' ? 'Grand Royal' : s === '14x40' ? 'Master Spread' : s === '16x24' ? 'Gallery' : s === '18x24' ? 'Imperial' : 'Classic'}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ═══ 2. Upload Zone ═══ */}
+        {/* ═══ 1. Upload Zone ═══ */}
         <div
           className={`relative border-2 border-dashed rounded-2xl transition-all duration-300 cursor-pointer group ${
             isDragOver
