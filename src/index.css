@@ -261,3 +261,34 @@
   color-scheme: light !important;
   forced-color-adjust: none !important;
 }
+
+/* ── 12. Dedicated Contact Cards Protection (Preserves Exact Colors on Samsung Internet) ── */
+.kpr-contact-card {
+  color-scheme: light !important;
+  forced-color-adjust: none !important;
+  background-color: #1A1816 !important;
+  color: #FFFFFF !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  mix-blend-mode: normal !important;
+  opacity: 1 !important;
+}
+
+.kpr-contact-card.kpr-contact-card-gold-border {
+  border-color: rgba(197, 168, 128, 0.3) !important;
+}
+
+.kpr-contact-card.kpr-contact-card-subtle-border {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.kpr-contact-card * {
+  color-scheme: light !important;
+  forced-color-adjust: none !important;
+}
+
+.kpr-contact-card svg {
+  forced-color-adjust: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}

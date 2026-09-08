@@ -73,7 +73,7 @@ export default function ContactSection() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
               {/* 1. Color Lab Address Card */}
-              <div className="bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden group hover:border-[#C5A880]/60 transition-all flex flex-col justify-between">
+              <div className="kpr-contact-card kpr-contact-card-gold-border bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden group hover:border-[#C5A880]/60 transition-all flex flex-col justify-between">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-[#C5A880]/5 rounded-bl-full pointer-events-none" />
                 
                 <div className="space-y-3">
@@ -107,7 +107,7 @@ export default function ContactSection() {
               </div>
 
               {/* 2. Events Address Card */}
-              <div className="bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden group hover:border-[#C5A880]/60 transition-all flex flex-col justify-between">
+              <div className="kpr-contact-card kpr-contact-card-gold-border bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-5 space-y-4 shadow-xl relative overflow-hidden group hover:border-[#C5A880]/60 transition-all flex flex-col justify-between">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-[#C5A880]/5 rounded-bl-full pointer-events-none" />
                 
                 <div className="space-y-3">
@@ -143,7 +143,7 @@ export default function ContactSection() {
             </div>
 
             {/* Quick Contact Info */}
-            <div className="bg-[#1A1816] border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4">
+            <div className="kpr-contact-card kpr-contact-card-subtle-border bg-[#1A1816] border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4">
               <h4 className="text-xs font-bold text-[#C5A880] uppercase tracking-widest">Direct Contact & Hours</h4>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -185,7 +185,7 @@ export default function ContactSection() {
           </div>
 
           {/* Right Column: Contact Form */}
-          <div className="lg:col-span-6 bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-6 sm:p-10 shadow-2xl relative">
+          <div className="kpr-contact-card kpr-contact-card-gold-border lg:col-span-6 bg-[#1A1816] border border-[#C5A880]/30 rounded-2xl p-6 sm:p-10 shadow-2xl relative">
             <div className="space-y-2 mb-6">
               <span className="text-[10px] tracking-widest text-[#C5A880] uppercase font-bold flex items-center gap-2">
                 <MessageSquare className="w-3.5 h-3.5" />
