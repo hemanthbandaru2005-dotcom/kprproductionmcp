@@ -29,8 +29,10 @@ const ALBUM_SIZE_OPTIONS = [
   { id: '14x40', label: '14x40', desc: 'Ultra Regal Panoramic (40" × 14")', popular: false },
   { id: '16x24', label: '16x24', desc: 'Royal Portrait Master (24" × 16")', popular: false },
   { id: '18x24', label: '18x24', desc: 'Imperial Fine Art (24" × 18")', popular: false },
-  { id: '12x24', label: '12x24', desc: 'Classic Traditional (24" × 12")', popular: false },
 ];
+
+const COLORLAB_WHATSAPP_NUMBER = '919849390876';
+const COLORLAB_DISPLAY_PHONE = '+91 98493 90876';
 
 export default function ColorLabSection() {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -409,7 +411,7 @@ export default function ColorLabSection() {
                         {/* WhatsApp Action Button */}
                         <div className="pt-4 border-t border-[#E8E1D5] flex items-center justify-end">
                           <a
-                            href={`https://wa.me/919849443648?text=${encodeURIComponent(`Hello KPR Colour Lab! I am interested in your ${service.title} services. Please share details and pricing.`)}`}
+                            href={`https://wa.me/${COLORLAB_WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hello KPR Colour Lab! I am interested in your ${service.title} services. Please share details and pricing.`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full sm:w-auto text-center px-5 py-2.5 bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-[10px] font-semibold tracking-widest uppercase transition-all duration-300 rounded shadow-sm hover:shadow"
@@ -470,8 +472,8 @@ export default function ColorLabSection() {
               <div className="animate-fadeIn">
                 <PackagesSection
                   packageType="colorlab"
-                  whatsappNumber="919849443648"
-                  displayPhone="+91 98494 43648"
+                  whatsappNumber={COLORLAB_WHATSAPP_NUMBER}
+                  displayPhone={COLORLAB_DISPLAY_PHONE}
                   showEyebrow={false}
                   showQuoteWidget={false}
                   categoryTitle="PRINTING PACKAGES"

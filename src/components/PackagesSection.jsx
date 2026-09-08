@@ -7,13 +7,16 @@ import InstantQuoteWidget from './InstantQuoteWidget';
 export default function PackagesSection({
   onBackToGallery,
   packageType = 'photography',
-  whatsappNumber = '919849443648',
-  displayPhone = '+91 98494 43648',
+  whatsappNumber,
+  displayPhone,
   categoryTitle = 'KPR PRODUCTION PACKAGES',
   categorySubtitle = 'Transparent pricing for our luxury fotogarphy, videography, aerial drone, live streaming, and post-production video editing services. Click Book Now to reserve your dates via WhatsApp.',
   showEyebrow = true,
   showQuoteWidget = true
 }) {
+  // Resolve correct WhatsApp and display phone based on packageType
+  const resolvedWhatsapp = whatsappNumber || (packageType === 'colorlab' ? '919849390876' : '919849443648');
+  const resolvedPhone = displayPhone || (packageType === 'colorlab' ? '+91 98493 90876' : '+91 98494 43648');
   const [packages, setPackages] = useState(INITIAL_PHOTOGRAPHY_PACKAGES);
 
   useEffect(() => {
@@ -29,13 +32,15 @@ export default function PackagesSection({
   // Function to build WhatsApp direct link with pre-typed message (No price displayed)
   const getWhatsAppUrl = (serviceName, servicePrice, duration) => {
     const dur = duration || 'Coverage';
-    const textMessage = `Hello KPR Production! I would like to inquire about and book the *${serviceName}* service (${dur}). Please share full details, availability, and pricing.`;
-    return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(textMessage)}`;
+    const brandName = packageType === 'colorlab' ? 'KPR Colour Lab' : 'KPR Production';
+    const textMessage = `Hello ${brandName}! I would like to inquire about and book the *${serviceName}* service (${dur}). Please share full details, availability, and pricing.`;
+    return `https://wa.me/${resolvedWhatsapp}?text=${encodeURIComponent(textMessage)}`;
   };
 
   const getCustomWhatsAppUrl = () => {
-    const textMessage = `Hello KPR Production! I want to book a custom package for my upcoming event. Please contact me.`;
-    return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(textMessage)}`;
+    const brandName = packageType === 'colorlab' ? 'KPR Colour Lab' : 'KPR Production';
+    const textMessage = `Hello ${brandName}! I want to book a custom package for my upcoming event. Please contact me.`;
+    return `https://wa.me/${resolvedWhatsapp}?text=${encodeURIComponent(textMessage)}`;
   };
 
   return (
@@ -204,7 +209,7 @@ export default function PackagesSection({
               NEED A TAILORED PACKAGE?
             </h4>
             <p className="text-xs text-white/60 mt-1 font-light">
-              Contact us directly at <span className="font-semibold text-white">{displayPhone}</span> for custom bookings and requirements.
+              Contact us directly at <span className="font-semibold text-white">{resolvedPhone}</span> for custom bookings and requirements.
             </p>
           </div>
 
@@ -217,7 +222,7 @@ export default function PackagesSection({
             <svg className="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
               <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.299.431 2.504 1.16 3.477l-.76 2.776 2.842-.746c.94.512 2.019.803 3.167.803 3.182 0 5.768-2.586 5.768-5.766 0-3.18-2.586-5.766-5.769-5.766zm4.186 8.163c-.174.492-.857.901-1.393.992-.367.062-.846.111-2.457-.557-2.062-.854-3.393-2.951-3.495-3.088-.103-.138-.834-1.112-.834-2.122 0-1.01.527-1.507.714-1.713.188-.206.411-.257.548-.257.137 0 .274.001.394.007.127.006.298-.048.466.356.174.419.599 1.463.651 1.567.052.103.086.223.018.36-.069.137-.103.223-.206.343-.103.12-.216.268-.309.36-.103.103-.211.215-.091.421.12.206.533.88 1.144 1.424.786.7 1.45.918 1.656 1.021.206.103.326.086.446-.052.12-.137.514-.6.651-.806.137-.206.274-.171.463-.103.188.069 1.2.566 1.406.669.206.103.343.154.394.24.051.086.051.497-.123.989zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.66 1.438 5.176L2 22l4.981-1.309A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
             </svg>
-            <span>BOOK NOW ({displayPhone})</span>
+            <span>BOOK NOW ({resolvedPhone})</span>
           </a>
         </div>
 
