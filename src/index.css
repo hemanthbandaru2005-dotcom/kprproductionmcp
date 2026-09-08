@@ -67,45 +67,50 @@
   }
 }
 
-/* ── 2. Top-Priority Samsung Internet & Android Force-Dark Immunity (Solid Gradients) ── */
+/* ── 2. Top-Priority Samsung Internet & Android Force-Dark Immunity (SVG Image Shield) ── */
+body {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23F7F3EE'/%3E%3C/svg%3E") !important;
+  background-color: #F7F3EE !important;
+}
+
 .bg-white,
 [class*="bg-white"] {
-  background-image: linear-gradient(0deg, #FFFFFF, #FFFFFF) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23FFFFFF'/%3E%3C/svg%3E") !important;
   background-color: #FFFFFF !important;
 }
 
 .bg-\[\#F7F3EE\],
 [class*="bg-[#F7F3EE]"] {
-  background-image: linear-gradient(0deg, #F7F3EE, #F7F3EE) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23F7F3EE'/%3E%3C/svg%3E") !important;
   background-color: #F7F3EE !important;
 }
 
 .bg-\[\#FAF8F5\],
 [class*="bg-[#FAF8F5]"] {
-  background-image: linear-gradient(0deg, #FAF8F5, #FAF8F5) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23FAF8F5'/%3E%3C/svg%3E") !important;
   background-color: #FAF8F5 !important;
 }
 
 .bg-\[\#FAF7F2\],
 [class*="bg-[#FAF7F2]"] {
-  background-image: linear-gradient(0deg, #FAF7F2, #FAF7F2) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23FAF7F2'/%3E%3C/svg%3E") !important;
   background-color: #FAF7F2 !important;
 }
 
 .bg-\[\#FAF7F2\]\/95 {
-  background-image: linear-gradient(0deg, rgba(250, 247, 242, 0.95), rgba(250, 247, 242, 0.95)) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23FAF7F2' fill-opacity='0.95'/%3E%3C/svg%3E") !important;
   background-color: #FAF7F2 !important;
 }
 
 .bg-\[\#FDFBF7\],
 [class*="bg-[#FDFBF7]"] {
-  background-image: linear-gradient(0deg, #FDFBF7, #FDFBF7) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23FDFBF7'/%3E%3C/svg%3E") !important;
   background-color: #FDFBF7 !important;
 }
 
 .bg-\[\#FAF6F0\],
 [class*="bg-[#FAF6F0]"] {
-  background-image: linear-gradient(0deg, #FAF6F0, #FAF6F0) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23FAF6F0'/%3E%3C/svg%3E") !important;
   background-color: #FAF6F0 !important;
 }
 
@@ -121,12 +126,12 @@
 .bg-\[\#151515\],
 .bg-\[\#121212\],
 .bg-black {
-  background-image: linear-gradient(0deg, #1A1A1A, #1A1A1A) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%231A1A1A'/%3E%3C/svg%3E") !important;
   background-color: #1A1A1A !important;
 }
 
 .bg-black {
-  background-image: linear-gradient(0deg, #000000, #000000) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23000000'/%3E%3C/svg%3E") !important;
   background-color: #000000 !important;
 }
 
@@ -138,28 +143,28 @@
   }
 
   body {
-    background-image: linear-gradient(0deg, #F7F3EE, #F7F3EE) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23F7F3EE'/%3E%3C/svg%3E") !important;
     background-color: #F7F3EE !important;
     color: #222222 !important;
   }
 
   .bg-white, [class*="bg-white"] {
-    background-image: linear-gradient(0deg, #FFFFFF, #FFFFFF) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23FFFFFF'/%3E%3C/svg%3E") !important;
     background-color: #FFFFFF !important;
   }
 
   .bg-\[\#F7F3EE\], [class*="bg-[#F7F3EE]"] {
-    background-image: linear-gradient(0deg, #F7F3EE, #F7F3EE) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23F7F3EE'/%3E%3C/svg%3E") !important;
     background-color: #F7F3EE !important;
   }
 
   .bg-\[\#FAF8F5\], [class*="bg-[#FAF8F5]"] {
-    background-image: linear-gradient(0deg, #FAF8F5, #FAF8F5) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23FAF8F5'/%3E%3C/svg%3E") !important;
     background-color: #FAF8F5 !important;
   }
 
   .bg-\[\#FAF7F2\], [class*="bg-[#FAF7F2]"] {
-    background-image: linear-gradient(0deg, #FAF7F2, #FAF7F2) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%23FAF7F2'/%3E%3C/svg%3E") !important;
     background-color: #FAF7F2 !important;
   }
 }
