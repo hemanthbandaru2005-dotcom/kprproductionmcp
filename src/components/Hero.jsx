@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Upload, BookOpen } from 'lucide-react';
 import CustomAlbumUploadModal from './CustomAlbumUploadModal';
 import AlbumFlipbookViewer from './AlbumFlipbookViewer';
+import HeroInteractiveAlbum from './HeroInteractiveAlbum';
 import heroDesktop from '../assets/hero_flatlay_desktop.jpg';
 import heroMobile from '../assets/hero_flatlay_mobile.jpg';
 import showcasePhotoLogoExact from '../assets/showcase_photo_logo_exact.png';
@@ -11,6 +12,26 @@ import showcaseEventsLogoExact from '../assets/showcase_events_logo_exact.png';
 import heroApertureSquare from '../assets/hero_aperture_lens_square.jpg';
 import cardAlbumReal from '../assets/card_album_photobook_real.jpg';
 import cardStageReal from '../assets/card_event_stage_real.jpg';
+
+const HERO_SAMPLE_PHOTOS = [
+  '/images/wedding/photo_1.jpg',
+  '/images/wedding/photo_2.jpg',
+  '/images/wedding/photo_3.jpg',
+  '/images/wedding/photo_4.jpg',
+  '/images/wedding/photo_5.jpg',
+  '/images/wedding/photo_6.jpg',
+  '/images/wedding/photo_7.jpg',
+  '/images/wedding/photo_8.jpg',
+  '/images/wedding/photo_9.jpg',
+  '/images/wedding/photo_10.jpg',
+  '/images/wedding/photo_11.jpg',
+  '/images/wedding/photo_12.jpg',
+  '/images/wedding/photo_13.jpg',
+  '/images/wedding/photo_14.jpg',
+  '/images/wedding/photo_15.jpg',
+  '/images/wedding/photo_16.jpg',
+  '/images/wedding/photo_17.jpg',
+];
 
 const SERVICES = [
   {
@@ -55,13 +76,6 @@ export default function Hero({ onOpenPage }) {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [flipbookImages, setFlipbookImages] = useState(null);
   const [flipbookSize, setFlipbookSize] = useState('12x36');
-  const bookVideoRef = useRef(null);
-
-  useEffect(() => {
-    if (bookVideoRef.current) {
-      bookVideoRef.current.play().catch(() => {});
-    }
-  }, []);
 
   const handleCardClick = (route) => {
     if (typeof onOpenPage === 'function') {
@@ -146,54 +160,20 @@ export default function Hero({ onOpenPage }) {
           </motion.p>
         </div>
 
-        {/* 3D Open Photobook Album with 'Swipe to explore' annotation */}
+        {/* Interactive 3D Photobook Album (Flippable with mouse on desktop and hand swipe on phone) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.45, delay: 0.12 }}
           className="relative flex items-center justify-center w-full my-0.5 sm:my-1"
         >
-          {/* Left 'Swipe to explore' handwritten callout */}
-          <div className="absolute left-0 xs:left-1 sm:left-2 md:left-6 lg:left-10 top-1/2 -translate-y-1/2 pointer-events-none select-none z-20">
-            <img
-              src="/images/swipe_to_explore.png"
-              alt="Swipe to explore"
-              className="w-10 xs:w-12 sm:w-16 md:w-20 h-auto object-contain drop-shadow-xs -rotate-2"
-              draggable="false"
-            />
-          </div>
-
-          {/* Clickable Animated 3D Album Mockup (Opens, flips pages, and closes continuously) */}
-          <div
-            onClick={() => setUploadModalOpen(true)}
-            className="relative group cursor-pointer transition-transform duration-400 hover:scale-[1.03] active:scale-[0.98]"
-            title="Click to preview and explore your custom album"
-          >
-            <video
-              ref={bookVideoRef}
-              src="/images/hero_album_animation.mp4"
-              poster="/images/hero_open_album.png"
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              className="w-[190px] xs:w-[220px] sm:w-[260px] md:w-[310px] lg:w-[340px] max-h-[135px] xs:max-h-[155px] sm:max-h-[185px] md:max-h-[200px] max-w-[85vw] h-auto object-contain select-none drop-shadow-[0_15px_30px_rgba(0,0,0,0.22)] group-hover:drop-shadow-[0_22px_38px_rgba(0,0,0,0.3)] transition-all duration-300 pointer-events-none"
-              style={{
-                maskImage: 'radial-gradient(ellipse 96% 96% at 50% 50%, black 82%, transparent 100%)',
-                WebkitMaskImage: 'radial-gradient(ellipse 96% 96% at 50% 50%, black 82%, transparent 100%)',
-              }}
-            >
-              <source src="/images/hero_album_animation.webm" type="video/webm" />
-              <source src="/images/hero_album_animation.mp4" type="video/mp4" />
-              <img
-                src="/images/hero_open_album.png"
-                alt="Turn your memories into a luxury printed photobook album"
-                className="w-full h-auto object-contain"
-                draggable="false"
-              />
-            </video>
-          </div>
+          <HeroInteractiveAlbum
+            onOpenUpload={() => setUploadModalOpen(true)}
+            onOpenFullscreen={() => {
+              setFlipbookImages(HERO_SAMPLE_PHOTOS);
+              setFlipbookSize('12x36');
+            }}
+          />
         </motion.div>
 
         {/* Action Button: EXPLORE YOUR ALBUM */}
