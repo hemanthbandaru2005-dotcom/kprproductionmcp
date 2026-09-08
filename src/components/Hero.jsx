@@ -56,14 +56,6 @@ export default function Hero({ onOpenPage }) {
   const [flipbookImages, setFlipbookImages] = useState(null);
   const [flipbookSize, setFlipbookSize] = useState('12x36');
 
-  // Pre-loaded realistic 3D luxury wedding album pages for instant page flipping
-  const demoAlbumPages = Array.from({ length: 39 }, (_, i) => `/albums/demo/page_${i + 1}.jpg`);
-
-  const handleOpenAlbum = () => {
-    setFlipbookImages(demoAlbumPages);
-    setFlipbookSize('12x36');
-  };
-
   const handleCardClick = (route) => {
     if (typeof onOpenPage === 'function') {
       onOpenPage(route);
@@ -164,11 +156,11 @@ export default function Hero({ onOpenPage }) {
             />
           </div>
 
-          {/* Clickable Open 3D Album Mockup — Opens interactive flipbook pages on laptop & mobile */}
+          {/* Clickable Open 3D Album Mockup */}
           <div
-            onClick={handleOpenAlbum}
+            onClick={() => setUploadModalOpen(true)}
             className="relative group cursor-pointer transition-transform duration-400 hover:scale-[1.03] active:scale-[0.98]"
-            title="Click to open and flip pages of the luxury album"
+            title="Click to preview and explore your custom album"
           >
             <img
               src="/images/hero_open_album.png"
@@ -179,7 +171,7 @@ export default function Hero({ onOpenPage }) {
           </div>
         </motion.div>
 
-        {/* Action Button: EXPLORE YOUR ALBUM — Opens interactive flipbook pages on laptop & mobile */}
+        {/* Action Button: EXPLORE YOUR ALBUM */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -188,7 +180,7 @@ export default function Hero({ onOpenPage }) {
         >
           <button
             type="button"
-            onClick={handleOpenAlbum}
+            onClick={() => setUploadModalOpen(true)}
             className="group inline-flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 px-3.5 xs:px-4 sm:px-6 py-1 xs:py-1.5 sm:py-2 rounded-full bg-[#141414] hover:bg-[#000000] text-white border border-white/20 hover:border-[#C5A880] shadow-[0_6px_16px_rgba(0,0,0,0.3)] hover:shadow-[0_10px_24px_rgba(197,168,128,0.3)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
           >
             <BookOpen className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-3.5 sm:h-3.5 text-white group-hover:text-[#C5A880] transition-colors" />
