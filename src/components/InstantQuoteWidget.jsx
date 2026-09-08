@@ -253,7 +253,7 @@ export default function InstantQuoteWidget({
                   key={pkg.id}
                   type="button"
                   onClick={() => handleTogglePackage(pkg.id)}
-                  className={`relative p-3.5 rounded-xl text-left transition-all duration-200 border flex flex-col justify-between cursor-pointer group select-none ${
+                  className={`kpr-quote-card relative p-3.5 rounded-xl text-left transition-all duration-200 border flex flex-col justify-between cursor-pointer group select-none ${
                     isSelected
                       ? 'bg-gradient-to-br from-[#2A241D] to-[#1B1610] border-[#C5A880] text-white shadow-lg shadow-[#C5A880]/20 ring-2 ring-[#C5A880]/60 scale-[1.01]'
                       : 'bg-white/[0.03] hover:bg-white/[0.07] border-white/10 text-white/70 hover:text-white hover:border-white/20'
@@ -463,7 +463,7 @@ export default function InstantQuoteWidget({
               type="button"
               onClick={() => setInvoiceModalOpen(true)}
               disabled={selectedPackages.length === 0}
-              className="px-6 py-3.5 bg-gradient-to-r from-[#C5A880] to-[#DFCAAB] hover:from-[#DFCAAB] hover:to-[#C5A880] text-black text-xs font-bold tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-[#C5A880]/20 hover:shadow-[#C5A880]/30 hover:scale-[1.02] rounded-xl cursor-pointer disabled:opacity-40"
+              className="kpr-invoice-btn px-6 py-3.5 bg-gradient-to-r from-[#C5A880] to-[#DFCAAB] hover:from-[#DFCAAB] hover:to-[#C5A880] text-black text-xs font-bold tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-[#C5A880]/20 hover:shadow-[#C5A880]/30 hover:scale-[1.02] rounded-xl cursor-pointer disabled:opacity-40"
             >
               <FileText className="w-4 h-4" />
               <span>Generate Invoice ({selectedPackages.length})</span>
@@ -474,7 +474,7 @@ export default function InstantQuoteWidget({
               href={buildWhatsAppLink()}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3.5 bg-[#25D366] hover:bg-[#1EBE5A] text-white text-xs font-bold tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/30 hover:scale-[1.02] rounded-xl cursor-pointer"
+              className="kpr-whatsapp-btn px-6 py-3.5 bg-[#25D366] hover:bg-[#1EBE5A] text-white text-xs font-bold tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/30 hover:scale-[1.02] rounded-xl cursor-pointer"
             >
               <svg className="w-4.5 h-4.5 fill-current shrink-0" viewBox="0 0 24 24">
                 <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.299.431 2.504 1.16 3.477l-.76 2.776 2.842-.746c.94.512 2.019.803 3.167.803 3.182 0 5.768-2.586 5.768-5.766 0-3.18-2.586-5.766-5.769-5.766zm4.186 8.163c-.174.492-.857.901-1.393.992-.367.062-.846.111-2.457-.557-2.062-.854-3.393-2.951-3.495-3.088-.103-.138-.834-1.112-.834-2.122 0-1.01.527-1.507.714-1.713.188-.206.411-.257.548-.257.137 0 .274.001.394.007.127.006.298-.048.466.356.174.419.599 1.463.651 1.567.052.103.086.223.018.36-.069.137-.103.223-.206.343-.103.12-.216.268-.309.36-.103.103-.211.215-.091.421.12.206.533.88 1.144 1.424.786.7 1.45.918 1.656 1.021.206.103.326.086.446-.052.12-.137.514-.6.651-.806.137-.206.274-.171.463-.103.188.069 1.2.566 1.406.669.206.103.343.154.394.24.051.086.051.497-.123.989zM12 2C6.477 2 2 6.477 2 12c0 1.891.524 3.66 1.438 5.176L2 22l4.981-1.309A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>

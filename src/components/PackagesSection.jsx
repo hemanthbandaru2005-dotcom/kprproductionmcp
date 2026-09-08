@@ -86,7 +86,7 @@ export default function PackagesSection({
             return (
               <div
                 key={service.id || index}
-                className="bg-white border border-[#E2D9CC] rounded-xl overflow-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-500 hover:border-[#C5A880]/60 group"
+                className="kpr-package-card bg-white border border-[#E2D9CC] rounded-xl overflow-hidden flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-500 hover:border-[#C5A880]/60 group"
               >
                 {/* Thumbnail Image Header */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-[#121212]">
