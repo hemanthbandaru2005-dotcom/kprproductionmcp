@@ -103,24 +103,92 @@ export default function Hero({ onOpenPage }) {
         draggable="false"
       />
 
-      {/* ── 2. Middle Section: Small "Upload Your Album" Button (Yellow Mark Area) ── */}
-      <div className="w-full flex-1 flex items-end justify-center z-20 pb-3 sm:pb-5 pointer-events-auto">
-        <button
-          type="button"
-          onClick={() => setUploadModalOpen(true)}
-          className="group inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#FAF7F2]/95 hover:bg-[#FFFFFF] text-[#1A1A1A] border-2 border-[#D8CFC4] hover:border-[#C5A880] backdrop-blur-md shadow-[0_6px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_10px_28px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
-          title="Upload Your Album"
+      {/* ── 2. Middle Section: Luxury 3D Printed Album Feature (Laptop & Mobile) ── */}
+      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-2 sm:py-4 pointer-events-auto max-w-4xl mx-auto">
+        {/* Eyebrow Pill Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 rounded-full bg-[#FAF7F2]/90 border border-[#D8CFC4] text-[#8C6D3F] text-[9.5px] sm:text-[11px] font-bold tracking-widest uppercase shadow-xs mb-1.5 sm:mb-2"
         >
-          <div className="w-5 h-5 rounded-full bg-[#C5A880]/20 flex items-center justify-center text-[#9E784F] group-hover:scale-110 transition-transform">
-            <Upload className="w-3 h-3 text-[#9E784F]" />
+          <BookOpen className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#8C6D3F]" />
+          <span>YOUR MEMORIES • YOUR ALBUM</span>
+        </motion.div>
+
+        {/* Heading */}
+        <motion.h2
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.05 }}
+          className="font-serif text-lg sm:text-2xl md:text-3xl lg:text-[32px] font-normal text-[#1A1A1A] tracking-tight text-center leading-tight max-w-2xl px-2 mb-1"
+        >
+          Turn your memories into a beautiful printed album.
+        </motion.h2>
+
+        {/* Subtitle */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.45, delay: 0.1 }}
+          className="text-[10px] sm:text-xs md:text-sm text-[#555555] font-light text-center tracking-normal px-4 mb-2 sm:mb-3"
+        >
+          Upload your photos • Preview your album • Print & preserve your memories
+        </motion.p>
+
+        {/* 3D Open Photobook Album with 'Swipe to explore' annotation */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="relative flex items-center justify-center w-full my-1 sm:my-2"
+        >
+          {/* Left 'Swipe to explore' handwritten callout */}
+          <div className="absolute left-1 sm:left-4 md:left-8 lg:left-14 top-1/2 -translate-y-1/2 pointer-events-none select-none z-20">
+            <img
+              src="/images/swipe_to_explore.png"
+              alt="Swipe to explore"
+              className="w-14 sm:w-18 md:w-22 h-auto object-contain drop-shadow-xs -rotate-2"
+              draggable="false"
+            />
           </div>
-          <span className="text-[11px] sm:text-xs font-black tracking-widest uppercase font-sans text-[#1A1A1A]">
-            Upload Your Album
-          </span>
-          <span className="text-[#C5A880] text-sm font-bold transition-transform duration-300 group-hover:translate-x-0.5 leading-none">
-            ›
-          </span>
-        </button>
+
+          {/* Clickable Open 3D Album Mockup */}
+          <div
+            onClick={() => setUploadModalOpen(true)}
+            className="relative group cursor-pointer transition-transform duration-500 hover:scale-[1.03] active:scale-[0.98]"
+            title="Click to preview and explore your custom album"
+          >
+            <img
+              src="/images/hero_open_album.png"
+              alt="Turn your memories into a luxury printed photobook album"
+              className="w-[270px] sm:w-[340px] md:w-[410px] lg:w-[450px] max-w-[84vw] h-auto object-contain select-none drop-shadow-[0_20px_35px_rgba(0,0,0,0.22)] group-hover:drop-shadow-[0_26px_45px_rgba(0,0,0,0.32)] transition-all duration-300"
+              draggable="false"
+            />
+          </div>
+        </motion.div>
+
+        {/* Action Button: EXPLORE YOUR ALBUM */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.2 }}
+          className="flex justify-center mt-2 sm:mt-3"
+        >
+          <button
+            type="button"
+            onClick={() => setUploadModalOpen(true)}
+            className="group inline-flex items-center gap-2.5 sm:gap-3 px-5 sm:px-7 py-2 sm:py-2.5 rounded-full bg-[#141414] hover:bg-[#000000] text-white border border-white/20 hover:border-[#C5A880] shadow-[0_8px_20px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_28px_rgba(197,168,128,0.3)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+          >
+            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:text-[#C5A880] transition-colors" />
+            <span className="text-[10.5px] sm:text-xs font-bold tracking-[0.16em] uppercase font-sans">
+              EXPLORE YOUR ALBUM
+            </span>
+            <span className="text-white group-hover:text-[#C5A880] text-sm transition-transform duration-300 group-hover:translate-x-1">
+              →
+            </span>
+          </button>
+        </motion.div>
       </div>
 
       {/* ── 3. Unified 3-Column Services Showcase Cards (All 3 side-by-side on Mobile & Desktop) ── */}
