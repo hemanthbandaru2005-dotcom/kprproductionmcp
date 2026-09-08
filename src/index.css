@@ -9,10 +9,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    forced-color-adjust: none !important;
   }
 
   :root {
-    color-scheme: light only;
+    color-scheme: light !important;
+    forced-color-adjust: none !important;
     --bg-cream: #F7F3EE;
     --bg-dark: #121212;
     --accent-gold: #C5A880;
@@ -37,7 +39,8 @@
     padding: 0;
     width: 100%;
     min-height: 100%;
-    color-scheme: light only;
+    color-scheme: light !important;
+    forced-color-adjust: none !important;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -51,7 +54,8 @@
 
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-cream);
+    background-image: linear-gradient(0deg, var(--bg-cream), var(--bg-cream)) !important;
+    background-color: var(--bg-cream) !important;
     color: var(--text-dark);
     overflow-x: hidden;
     max-width: 100vw;
@@ -59,12 +63,70 @@
     margin: 0;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
+    forced-color-adjust: none !important;
   }
 
-  /* ── 2. Permanent Light Mode (Overrides OS / System Dark Mode) ── */
+  /* ── 2. Samsung Internet & Android Force-Dark Mode Immunity (Solid Gradients) ── */
+  .bg-white {
+    background-image: linear-gradient(0deg, #FFFFFF, #FFFFFF) !important;
+    background-color: #FFFFFF !important;
+  }
+
+  .bg-\[\#F7F3EE\] {
+    background-image: linear-gradient(0deg, #F7F3EE, #F7F3EE) !important;
+    background-color: #F7F3EE !important;
+  }
+
+  .bg-\[\#FAF8F5\] {
+    background-image: linear-gradient(0deg, #FAF8F5, #FAF8F5) !important;
+    background-color: #FAF8F5 !important;
+  }
+
+  .bg-\[\#FAF7F2\] {
+    background-image: linear-gradient(0deg, #FAF7F2, #FAF7F2) !important;
+    background-color: #FAF7F2 !important;
+  }
+
+  .bg-\[\#FAF7F2\]\/95 {
+    background-image: linear-gradient(0deg, rgba(250, 247, 242, 0.95), rgba(250, 247, 242, 0.95)) !important;
+    background-color: #FAF7F2 !important;
+  }
+
+  .bg-\[\#FDFBF7\] {
+    background-image: linear-gradient(0deg, #FDFBF7, #FDFBF7) !important;
+    background-color: #FDFBF7 !important;
+  }
+
+  .bg-\[\#FAF6F0\] {
+    background-image: linear-gradient(0deg, #FAF6F0, #FAF6F0) !important;
+    background-color: #FAF6F0 !important;
+  }
+
+  /* Intentionally dark components preserve their rich dark styling */
+  .bg-\[\#0A0A0A\],
+  .bg-\[\#07090D\],
+  .bg-\[\#0D0B08\],
+  .bg-\[\#11100F\],
+  .bg-\[\#111111\],
+  .bg-\[\#111111\]\/98,
+  .bg-\[\#1A1A1A\],
+  .bg-\[\#1A1816\],
+  .bg-\[\#151515\],
+  .bg-\[\#121212\],
+  .bg-black {
+    background-image: linear-gradient(0deg, #1A1A1A, #1A1A1A) !important;
+    background-color: #1A1A1A !important;
+  }
+
+  .bg-black {
+    background-image: linear-gradient(0deg, #000000, #000000) !important;
+    background-color: #000000 !important;
+  }
+
   @media (prefers-color-scheme: dark) {
-    :root, html, body, #root {
-      color-scheme: light only;
+    :root, html, body, #root, *, *::before, *::after {
+      color-scheme: light !important;
+      forced-color-adjust: none !important;
     }
   }
 
