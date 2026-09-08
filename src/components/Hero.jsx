@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, BookOpen } from 'lucide-react';
 import CustomAlbumUploadModal from './CustomAlbumUploadModal';
@@ -55,6 +55,13 @@ export default function Hero({ onOpenPage }) {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [flipbookImages, setFlipbookImages] = useState(null);
   const [flipbookSize, setFlipbookSize] = useState('12x36');
+  const bookVideoRef = useRef(null);
+
+  useEffect(() => {
+    if (bookVideoRef.current) {
+      bookVideoRef.current.play().catch(() => {});
+    }
+  }, []);
 
   const handleCardClick = (route) => {
     if (typeof onOpenPage === 'function') {
@@ -156,18 +163,36 @@ export default function Hero({ onOpenPage }) {
             />
           </div>
 
-          {/* Clickable Open 3D Album Mockup */}
+          {/* Clickable Animated 3D Album Mockup (Opens, flips pages, and closes continuously) */}
           <div
             onClick={() => setUploadModalOpen(true)}
             className="relative group cursor-pointer transition-transform duration-400 hover:scale-[1.03] active:scale-[0.98]"
             title="Click to preview and explore your custom album"
           >
-            <img
-              src="/images/hero_open_album.png"
-              alt="Turn your memories into a luxury printed photobook album"
-              className="w-[190px] xs:w-[220px] sm:w-[260px] md:w-[310px] lg:w-[340px] max-h-[135px] xs:max-h-[155px] sm:max-h-[185px] md:max-h-[200px] max-w-[85vw] h-auto object-contain select-none drop-shadow-[0_15px_30px_rgba(0,0,0,0.22)] group-hover:drop-shadow-[0_22px_38px_rgba(0,0,0,0.3)] transition-all duration-300"
-              draggable="false"
-            />
+            <video
+              ref={bookVideoRef}
+              src="/images/hero_album_animation.mp4"
+              poster="/images/hero_open_album.png"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              className="w-[190px] xs:w-[220px] sm:w-[260px] md:w-[310px] lg:w-[340px] max-h-[135px] xs:max-h-[155px] sm:max-h-[185px] md:max-h-[200px] max-w-[85vw] h-auto object-contain select-none drop-shadow-[0_15px_30px_rgba(0,0,0,0.22)] group-hover:drop-shadow-[0_22px_38px_rgba(0,0,0,0.3)] transition-all duration-300 pointer-events-none"
+              style={{
+                maskImage: 'radial-gradient(ellipse 96% 96% at 50% 50%, black 82%, transparent 100%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 96% 96% at 50% 50%, black 82%, transparent 100%)',
+              }}
+            >
+              <source src="/images/hero_album_animation.webm" type="video/webm" />
+              <source src="/images/hero_album_animation.mp4" type="video/mp4" />
+              <img
+                src="/images/hero_open_album.png"
+                alt="Turn your memories into a luxury printed photobook album"
+                className="w-full h-auto object-contain"
+                draggable="false"
+              />
+            </video>
           </div>
         </motion.div>
 
