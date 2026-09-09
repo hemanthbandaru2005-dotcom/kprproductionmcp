@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import PortfolioGallery from './PortfolioGallery';
 import PackagesSection from './PackagesSection';
-import PhotographyCostEstimator from './estimator/PhotographyCostEstimator';
-import { ChevronDown, Camera, Package, Sparkles } from 'lucide-react';
+import { ChevronDown, Camera, Package } from 'lucide-react';
 import kprLogo from '../assets/kpr_logo.png';
 
 export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodboardItem, onOpenEstimator, initialTab = 'gallery' }) {
   // Collapsible toggle state
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Active subsection state: 'gallery' | 'packages' | 'estimator'
-  const [activeTab, setActiveTab] = useState(initialTab === 'all' ? 'gallery' : initialTab);
+  // Active subsection state: 'gallery' | 'packages'
+  const [activeTab, setActiveTab] = useState(initialTab === 'all' ? 'gallery' : (initialTab === 'estimator' ? 'packages' : initialTab));
 
   useEffect(() => {
-    if (initialTab && initialTab !== 'all') {
+    if (initialTab === 'estimator') {
+      setActiveTab('packages');
+      setTimeout(() => {
+        const el = document.getElementById('cost-estimator');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 200);
+    } else if (initialTab && initialTab !== 'all') {
       setActiveTab(initialTab);
     }
   }, [initialTab]);
@@ -47,13 +52,13 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
         {isExpanded && (
           <div className="transition-all duration-300 ease-in-out">
           
-          {/* 2. Subsections Navigation Tabs (Gallery | Packages | Cost Estimator) */}
+          {/* 2. Subsections Navigation Tabs (Gallery | Packages) */}
           <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-center">
             <div className="inline-flex justify-center items-center gap-1 sm:gap-2 p-1 bg-white border border-[#E2D9CC] rounded-full shadow-sm max-w-full">
               {/* Gallery Tab */}
               <button
                 onClick={() => setActiveTab('gallery')}
-                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-8 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer ${
+                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-5 sm:px-8 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer ${
                   activeTab === 'gallery'
                     ? 'bg-[#1A1A1A] text-white shadow-md'
                     : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
@@ -66,7 +71,7 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
               {/* Packages Tab */}
               <button
                 onClick={() => setActiveTab('packages')}
-                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-8 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer ${
+                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-5 sm:px-8 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer ${
                   activeTab === 'packages'
                     ? 'bg-[#1A1A1A] text-white shadow-md'
                     : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
@@ -74,19 +79,6 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
               >
                 <Package className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'packages' ? 'text-[#C5A880]' : ''}`} />
                 <span>Packages</span>
-              </button>
-
-              {/* Cost Estimator Tab */}
-              <button
-                onClick={() => setActiveTab('estimator')}
-                className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-4 sm:px-8 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer ${
-                  activeTab === 'estimator'
-                    ? 'bg-[#1A1A1A] text-white shadow-md'
-                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
-                }`}
-              >
-                <Sparkles className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'estimator' ? 'text-[#C5A880]' : 'text-[#8C6D3F]'}`} />
-                <span>Cost Estimator</span>
               </button>
             </div>
           </div>
@@ -105,21 +97,11 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
               </div>
             )}
 
-            {/* Packages Subsection Content */}
+            {/* Packages Subsection Content (Contains all packages + full 7-step Cost Estimator at end) */}
             {activeTab === 'packages' && (
               <div className="animate-fadeIn transition-all duration-500">
                 <PackagesSection
                   onBackToGallery={() => setActiveTab('gallery')}
-                  onOpenEstimator={() => setActiveTab('estimator')}
-                />
-              </div>
-            )}
-
-            {/* Cost Estimator Subsection Content */}
-            {activeTab === 'estimator' && (
-              <div className="animate-fadeIn transition-all duration-500">
-                <PhotographyCostEstimator
-                  onBackToHome={() => setActiveTab('gallery')}
                 />
               </div>
             )}
