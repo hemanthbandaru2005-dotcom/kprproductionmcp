@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Check, ArrowLeft, ArrowRight, Sparkles, Download, CheckCircle2,
   Calendar, Phone, User, ShieldCheck, Heart, Camera, Video, Film,
@@ -71,7 +71,17 @@ const OPTIONAL_ADDONS = [
   }
 ];
 
-export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPage }) {
+export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPage, embedded = false }) {
+  const containerRef = useRef(null);
+
+  const scrollToEstimatorTop = () => {
+    if (embedded && containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      scrollToEstimatorTop();
+    }
+  };
+
   // Step tracker (1 through 7)
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -239,7 +249,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
     if (valid) {
       setCurrentStep(2);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToEstimatorTop();
     }
   };
 
@@ -339,7 +349,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     setNeedAlbum(true);
     setAlbumSheets(30);
     setSelectedAddons({});
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToEstimatorTop();
   };
 
   // Stepper Header Data
@@ -354,8 +364,16 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   ];
 
   return (
-    <div className="w-full min-h-screen bg-[#0D0B08] text-[#FAF7F2] py-6 sm:py-12 px-3 sm:px-6 lg:px-8 font-sans selection:bg-[#C5A880] selection:text-black">
-      <div className="max-w-5xl mx-auto">
+    <div
+      ref={containerRef}
+      id="cost-estimator"
+      className={`w-full ${
+        embedded
+          ? 'max-w-5xl mx-auto my-4 sm:my-8 rounded-3xl border border-[#C5A880]/30 shadow-2xl p-4 sm:p-8 lg:p-10'
+          : 'min-h-screen py-6 sm:py-12 px-3 sm:px-6 lg:px-8'
+      } bg-[#0D0B08] text-[#FAF7F2] font-sans selection:bg-[#C5A880] selection:text-black`}
+    >
+      <div className={embedded ? 'w-full' : 'max-w-5xl mx-auto'}>
         
         {/* Top Header Badge */}
         <div className="text-center mb-6 sm:mb-10">
@@ -384,7 +402,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     onClick={() => {
                       if (isCompleted) {
                         setCurrentStep(s.num);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        scrollToEstimatorTop();
                       }
                     }}
                     disabled={!isCompleted && !isCurrent}
@@ -600,7 +618,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(1);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
@@ -612,7 +630,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(3);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-8 py-3.5 bg-[#C5A880] hover:bg-[#D4B991] text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2 cursor-pointer"
                 >
@@ -738,7 +756,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(2);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
@@ -750,7 +768,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(4);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-8 py-3.5 bg-[#C5A880] hover:bg-[#D4B991] text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2 cursor-pointer"
                 >
@@ -941,7 +959,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(3);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
@@ -953,7 +971,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(5);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-8 py-3.5 bg-[#C5A880] hover:bg-[#D4B991] text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2 cursor-pointer"
                 >
@@ -1098,7 +1116,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(4);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
@@ -1110,7 +1128,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(6);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-8 py-3.5 bg-[#C5A880] hover:bg-[#D4B991] text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2 cursor-pointer"
                 >
@@ -1277,7 +1295,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(5);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
@@ -1289,7 +1307,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   type="button"
                   onClick={() => {
                     setCurrentStep(7);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollToEstimatorTop();
                   }}
                   className="px-8 py-3.5 bg-[#C5A880] hover:bg-[#D4B991] text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2 cursor-pointer"
                 >
@@ -1360,7 +1378,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     type="button"
                     onClick={() => {
                       setCurrentStep(6);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      scrollToEstimatorTop();
                     }}
                     className="text-xs text-[#A89F91] hover:text-white underline cursor-pointer"
                   >

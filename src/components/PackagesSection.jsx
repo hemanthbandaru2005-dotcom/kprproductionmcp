@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { fetchSitePackages } from '../utils/packagesService';
 import { Sparkles, ArrowLeft, PhoneCall } from 'lucide-react';
+import PhotographyCostEstimator from './estimator/PhotographyCostEstimator';
 
 export default function PackagesSection({
   onBackToGallery,
@@ -189,22 +190,13 @@ export default function PackagesSection({
           })}
         </div>
 
-        {/* Cost Estimator CTA Button (Replacing old Fotogarphy Packages Estimator) */}
-        {packageType !== 'colorlab' && (
-          <div className="max-w-4xl mx-auto my-8 sm:my-12 text-center flex flex-col items-center justify-center gap-3">
-            <button
-              onClick={() => {
-                if (typeof onOpenEstimator === 'function') {
-                  onOpenEstimator();
-                } else {
-                  window.location.hash = '#estimator';
-                }
-              }}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#D8CFC4] bg-[#FAF7F2] hover:bg-white text-[#1A1A1A] font-bold text-xs sm:text-sm tracking-[0.18em] uppercase shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer hover:scale-105"
-            >
-              <Sparkles className="w-4 h-4 text-[#8C6D3F]" />
-              <span>COST ESTIMATOR</span>
-            </button>
+        {/* Full 7-Step Photography Cost Estimator (Embedded at end of Packages - Not rendered in Color Lab) */}
+        {showQuoteWidget && packageType !== 'colorlab' && (
+          <div id="cost-estimator" className="w-full my-8 sm:my-14 scroll-mt-24">
+            <PhotographyCostEstimator
+              embedded={true}
+              onBackToHome={onBackToGallery}
+            />
           </div>
         )}
 
