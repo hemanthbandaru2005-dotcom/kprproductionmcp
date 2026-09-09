@@ -34,52 +34,27 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, ...props }, ref) => {
       data-density="hard"
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-r-2 border-r-[#8A7862]/40 bg-[#FAF7F2]">
-        {/* User-Provided Artwork Cover Image */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#E8E2D8]">
+        {/* User-Provided Artwork Cover Image (Full & Pristine) */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#FAF7F2]">
           <img
             src="/images/album/front_cover.jpg"
             alt="KPR Productions Wedding Photobook Front Cover"
-            className="w-full h-full object-cover object-center select-none pointer-events-none"
+            className="w-full h-full object-contain object-center select-none pointer-events-none"
             loading="eager"
             draggable={false}
           />
         </div>
 
-        {/* Spine Hinge Crease Shadow & Depth */}
-        <div
-          className="absolute top-0 bottom-0 left-0 w-4 sm:w-7 pointer-events-none z-10"
-          style={{
-            background: 'linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 40%, rgba(255,255,255,0.1) 70%, transparent 100%)',
-            borderRight: '1px solid rgba(0,0,0,0.18)'
-          }}
-        />
-
-        {/* Embossed Linen Cloth Texture Sheen */}
-        <div
-          className="absolute inset-0 pointer-events-none z-10 opacity-30 mix-blend-overlay"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 45%, rgba(0,0,0,0.25) 100%)'
-          }}
-        />
-
         {/* Hardcover Outer Bevel Edge */}
-        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.35)]" />
+        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_6px_rgba(0,0,0,0.15)]" />
 
-        {/* Right Edge Thickness */}
+        {/* Right Edge Stacked Page Thickness Highlight */}
         <div
-          className="absolute top-0 bottom-0 right-0 w-2 sm:w-3 pointer-events-none z-10"
+          className="absolute top-0 bottom-0 right-0 w-2 pointer-events-none z-10"
           style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)'
+            background: 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, transparent 100%)'
           }}
         />
-
-        {/* Subtle Tap to Open indicator */}
-        <div className="absolute bottom-2.5 sm:bottom-4 right-2.5 sm:right-4 z-20">
-          <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] text-[#F5E6D0] font-serif tracking-wider bg-black/75 px-2.5 py-1 rounded-full border border-[#C5A880]/50 shadow-md backdrop-blur-xs">
-            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#C5A880] animate-pulse" />
-            <span>Tap to Open →</span>
-          </span>
-        </div>
       </div>
     </div>
   );
@@ -182,52 +157,27 @@ const BackCoverPage = forwardRef((props, ref) => {
       data-density="hard"
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-l-2 border-l-[#8A7862]/40 bg-[#FAF7F2]">
-        {/* User-Provided Artwork Back Cover Image */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#E8E2D8]">
+        {/* User-Provided Artwork Back Cover Image (Full & Pristine) */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#FAF7F2]">
           <img
             src="/images/album/back_cover.jpg"
             alt="KPR Productions Wedding Photobook Back Cover"
-            className="w-full h-full object-cover object-center select-none pointer-events-none"
+            className="w-full h-full object-contain object-center select-none pointer-events-none"
             loading="lazy"
             draggable={false}
           />
         </div>
 
-        {/* Right Spine Hinge Crease Shadow & Depth */}
-        <div
-          className="absolute top-0 bottom-0 right-0 w-4 sm:w-7 pointer-events-none z-10"
-          style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 40%, rgba(255,255,255,0.1) 70%, transparent 100%)',
-            borderLeft: '1px solid rgba(0,0,0,0.18)'
-          }}
-        />
-
-        {/* Embossed Linen Cloth Texture Sheen */}
-        <div
-          className="absolute inset-0 pointer-events-none z-10 opacity-30 mix-blend-overlay"
-          style={{
-            background: 'linear-gradient(225deg, rgba(255,255,255,0.4) 0%, transparent 45%, rgba(0,0,0,0.25) 100%)'
-          }}
-        />
-
         {/* Hardcover Outer Bevel Edge */}
-        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.35)]" />
+        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_6px_rgba(0,0,0,0.15)]" />
 
-        {/* Left Edge Thickness */}
+        {/* Left Edge Stacked Page Thickness Highlight */}
         <div
-          className="absolute top-0 bottom-0 left-0 w-2 sm:w-3 pointer-events-none z-10"
+          className="absolute top-0 bottom-0 left-0 w-2 pointer-events-none z-10"
           style={{
-            background: 'linear-gradient(to right, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)'
+            background: 'linear-gradient(to right, rgba(0,0,0,0.2) 0%, transparent 100%)'
           }}
         />
-
-        {/* Subtle Back Cover Label */}
-        <div className="absolute bottom-2.5 sm:bottom-4 left-2.5 sm:left-4 z-20">
-          <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] text-[#F5E6D0] font-serif tracking-wider bg-black/75 px-2.5 py-1 rounded-full border border-[#C5A880]/50 shadow-md backdrop-blur-xs">
-            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#C5A880]" />
-            <span>KPR Layflat Heirloom</span>
-          </span>
-        </div>
       </div>
     </div>
   );

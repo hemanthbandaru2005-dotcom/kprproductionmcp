@@ -3,196 +3,210 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
   ChevronRight,
-  Maximize2,
-  Sparkles,
   Upload,
-  RotateCcw
+  BookOpen
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────
-   Responsive Dimension Helper for 3D Physical Book
+   Exact Physical Aspect Ratio: 737 / 1024 = 0.720 (Portrait Photobook)
+   Maintains true uncropped physical album proportions across all devices
    ───────────────────────────────────────────────────── */
 function getBookDimensions() {
   if (typeof window === 'undefined') {
-    return { closedW: 240, closedH: 180, openW: 460, openH: 180 };
+    return { closedW: 198, closedH: 275, openW: 396, openH: 275 };
   }
   const w = window.innerWidth;
-  if (w < 380) return { closedW: 165, closedH: 130, openW: 310, openH: 125 };
-  if (w < 480) return { closedW: 190, closedH: 145, openW: 345, openH: 135 };
-  if (w < 640) return { closedW: 215, closedH: 165, openW: 395, openH: 152 };
-  if (w < 768) return { closedW: 235, closedH: 178, openW: 435, openH: 168 };
-  if (w < 1024) return { closedW: 255, closedH: 192, openW: 480, openH: 182 };
-  if (w < 1280) return { closedW: 270, closedH: 204, openW: 515, openH: 194 };
-  return { closedW: 290, closedH: 218, openW: 550, openH: 206 };
+  if (w < 360) {
+    const h = 190;
+    const cw = Math.round(h * 0.72);
+    return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
+  }
+  if (w < 480) {
+    const h = 210;
+    const cw = Math.round(h * 0.72);
+    return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
+  }
+  if (w < 640) {
+    const h = 230;
+    const cw = Math.round(h * 0.72);
+    return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
+  }
+  if (w < 1024) {
+    const h = 255;
+    const cw = Math.round(h * 0.72);
+    return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
+  }
+  const h = 275;
+  const cw = Math.round(h * 0.72);
+  return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
 }
 
 /* ─────────────────────────────────────────────────────
-   MINIMAL LUXURY FRONT COVER — Matte Charcoal Leatherette
-   Requirement:
-   - NO text ("Archival Certified Edition", etc.)
-   - ONLY centered KPR Productions logo
-   - Solid dark premium matte black / deep charcoal
-   - Real leather/linen physical spine on left + page thickness layers
+   AUTHENTIC LUXURY FRONT COVER (CLOSED STATE)
+   - Zero distracting buttons or badges on top of artwork
+   - 100% full uncropped display of gold filigree corners, KPR logo & couple details
+   - Physical hardcover bevel, rounded spine hinge, stacked paper edge & contact shadow
    ───────────────────────────────────────────────────── */
-function MinimalFrontCover({ onOpen, dimensions }) {
+function FrontCoverLeaf({ onOpen, dimensions }) {
   return (
     <motion.div
-      key="front-cover"
-      initial={{ rotateY: 0 }}
+      key="front-cover-leaf"
+      initial={{ rotateY: 0, opacity: 1 }}
       exit={{
         rotateY: -180,
-        transition: { duration: 0.7, ease: [0.35, 0, 0.15, 1] }
+        opacity: 0,
+        transition: { duration: 0.65, ease: [0.25, 1, 0.5, 1] }
       }}
       onClick={onOpen}
-      className="w-full h-full relative cursor-pointer select-none group origin-left"
+      className="relative cursor-pointer select-none group origin-left"
       style={{
+        width: dimensions.closedW,
+        height: dimensions.closedH,
         transformStyle: 'preserve-3d',
-        borderRadius: '3px 6px 6px 3px'
+        perspective: 1200
       }}
+      title="Click to Open Photobook"
     >
-      {/* ── Outer Physical Leather Cover Casing with New Supplied Artwork ── */}
+      {/* ── Outer Physical Hardcover Casing ── */}
       <div
-        className="w-full h-full relative overflow-hidden flex flex-col items-center justify-center bg-[#FAF8F5]"
+        className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5] transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.015]"
         style={{
-          borderRadius: '3px 6px 6px 3px',
-          border: '1px solid rgba(138,120,98,0.4)',
-          boxShadow: '0 25px 60px -10px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.2)'
+          borderRadius: '3px 7px 7px 3px',
+          boxShadow:
+            '0 24px 50px -12px rgba(0,0,0,0.7), 0 8px 18px rgba(0,0,0,0.3), inset 0 0 1px rgba(255,255,255,0.5)'
         }}
       >
-        {/* User-Supplied New Cover Image Artwork */}
+        {/* User-Supplied Exact Artwork Cover Image (Full, 100% Uncropped) */}
         <img
           src="/images/album/front_cover.jpg"
           alt="KPR Productions Wedding Photobook Front Cover"
-          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          className="w-full h-full object-fill select-none pointer-events-none"
           loading="eager"
           draggable={false}
         />
 
-        {/* Left Spine Groove / Hinge Indentation */}
+        {/* Subtle Natural Hardcover Outer Bevel */}
         <div
-          className="absolute top-0 bottom-0 left-0 w-4 sm:w-6 pointer-events-none z-10"
+          className="absolute inset-0 pointer-events-none border border-[#4A3C28]/25"
           style={{
-            background: 'linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 45%, rgba(255,255,255,0.15) 75%, transparent 100%)',
-            borderRight: '1px solid rgba(0,0,0,0.2)'
+            borderRadius: '3px 7px 7px 3px',
+            boxShadow: 'inset 0 0 5px rgba(0,0,0,0.18)'
           }}
         />
 
-        {/* Outer Bevel Shadow */}
-        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.25)]" />
-
-        {/* ── Minimal Click / Tap Indicator (Clean, non-intrusive) ── */}
-        <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 z-20">
-          <span
-            className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-full text-[8px] sm:text-[9.5px] font-sans font-medium tracking-wider uppercase text-[#F5E6D0] bg-black/75 border border-[#C5A880]/60 backdrop-blur-xs group-hover:bg-black group-hover:scale-105 transition-all shadow-md"
-          >
-            <Sparkles className="w-2.5 h-2.5 text-[#C5A880] animate-pulse" />
-            <span>Open Album</span>
-          </span>
-        </div>
-
-        {/* Hover light sheen */}
+        {/* Silky ambient sheen on hover */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"
+          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
           style={{
-            background: 'linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.06) 50%, transparent 80%)'
+            background:
+              'linear-gradient(115deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%)'
           }}
         />
       </div>
 
-      {/* ── Right-Edge Stacked Page Thickness Layers (Physical Book Depth) ── */}
+      {/* ── Right-Edge Stacked Archival Page Thickness Layers (Physical Depth) ── */}
       <div
-        className="absolute top-1 bottom-1 -right-1 w-1 rounded-r-xs pointer-events-none z-[-1]"
-        style={{ background: '#FAF7F2', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.2)' }}
+        className="absolute top-1 bottom-1 -right-1 w-1 rounded-r-xs pointer-events-none"
+        style={{ background: '#FAF7F2', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.25)' }}
       />
       <div
-        className="absolute top-1.5 bottom-1.5 -right-2 w-1 rounded-r-xs pointer-events-none z-[-2]"
-        style={{ background: '#EDE5D8', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.25)' }}
+        className="absolute top-1.5 bottom-1.5 -right-2 w-1 rounded-r-xs pointer-events-none"
+        style={{ background: '#EDE5D8', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.3)' }}
       />
       <div
-        className="absolute top-2 bottom-2 -right-3 w-1 rounded-r-xs pointer-events-none z-[-3]"
-        style={{ background: '#DDD3C4', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.3)' }}
+        className="absolute top-2 bottom-2 -right-3 w-1 rounded-r-xs pointer-events-none"
+        style={{ background: '#DDD3C4', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.35)' }}
       />
 
-      {/* ── Bottom Stacked Page Rim ── */}
+      {/* ── Bottom Stacked Paper Margin ── */}
       <div
-        className="absolute -bottom-1 left-2 right-1 h-1 rounded-b-xs pointer-events-none z-[-1]"
-        style={{ background: 'linear-gradient(to right, #FAF7F2, #EDE5D8)', opacity: 0.85 }}
+        className="absolute -bottom-1 left-2 right-1 h-1 rounded-b-xs pointer-events-none"
+        style={{ background: 'linear-gradient(to right, #FAF7F2, #EDE5D8)', opacity: 0.9 }}
       />
     </motion.div>
   );
 }
 
 /* ─────────────────────────────────────────────────────
-   MATCHING LUXURY BACK COVER — Real Archival Binding
+   AUTHENTIC LUXURY BACK COVER (CLOSED STATE)
+   - Zero distracting buttons or badges
+   - 100% full uncropped display of matching cream linen back cover
+   - Spine on the right, stacked page layers on the left
    ───────────────────────────────────────────────────── */
-function MinimalBackCover({ onReopen }) {
+function BackCoverLeaf({ onReopen, dimensions }) {
   return (
     <motion.div
-      key="back-cover"
-      initial={{ rotateY: 180 }}
+      key="back-cover-leaf"
+      initial={{ rotateY: 180, opacity: 0 }}
       animate={{
         rotateY: 0,
-        transition: { duration: 0.7, ease: [0.35, 0, 0.15, 1] }
+        opacity: 1,
+        transition: { duration: 0.65, ease: [0.25, 1, 0.5, 1] }
       }}
       onClick={onReopen}
-      className="w-full h-full relative cursor-pointer select-none group origin-right"
+      className="relative cursor-pointer select-none group origin-right"
       style={{
+        width: dimensions.closedW,
+        height: dimensions.closedH,
         transformStyle: 'preserve-3d',
-        borderRadius: '6px 3px 3px 6px'
+        perspective: 1200
       }}
+      title="Click to Reopen Photobook"
     >
       <div
-        className="w-full h-full relative overflow-hidden flex flex-col items-center justify-center bg-[#FAF8F5]"
+        className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5] transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.015]"
         style={{
-          borderRadius: '6px 3px 3px 6px',
-          border: '1px solid rgba(138,120,98,0.4)',
-          boxShadow: '0 25px 60px -10px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.2)'
+          borderRadius: '7px 3px 3px 7px',
+          boxShadow:
+            '0 24px 50px -12px rgba(0,0,0,0.7), 0 8px 18px rgba(0,0,0,0.3), inset 0 0 1px rgba(255,255,255,0.5)'
         }}
       >
-        {/* Generated Matching Back Cover Image */}
+        {/* Matching Back Cover Image (Full, 100% Uncropped) */}
         <img
           src="/images/album/back_cover.jpg"
           alt="KPR Productions Wedding Photobook Back Cover"
-          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          className="w-full h-full object-fill select-none pointer-events-none"
           loading="lazy"
           draggable={false}
         />
 
-        {/* Right Spine Hinge Groove */}
+        {/* Subtle Hardcover Outer Bevel */}
         <div
-          className="absolute top-0 bottom-0 right-0 w-4 sm:w-6 pointer-events-none z-10"
+          className="absolute inset-0 pointer-events-none border border-[#4A3C28]/25"
           style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 45%, rgba(255,255,255,0.15) 75%, transparent 100%)',
-            borderLeft: '1px solid rgba(0,0,0,0.2)'
+            borderRadius: '7px 3px 3px 7px',
+            boxShadow: 'inset 0 0 5px rgba(0,0,0,0.18)'
           }}
         />
 
-        {/* Outer Bevel Shadow */}
-        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.25)]" />
-
-        {/* Reopen Action Badge */}
-        <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 z-20">
-          <span
-            className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-full text-[8px] sm:text-[9.5px] font-sans font-medium tracking-wider uppercase text-[#F5E6D0] bg-black/75 border border-[#C5A880]/60 backdrop-blur-xs group-hover:bg-black group-hover:scale-105 transition-all shadow-md"
-          >
-            <RotateCcw className="w-2.5 h-2.5 text-[#C5A880]" />
-            <span>Reopen Album</span>
-          </span>
-        </div>
+        {/* Silky ambient sheen on hover */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          style={{
+            background:
+              'linear-gradient(225deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%)'
+          }}
+        />
       </div>
 
       {/* Left-Edge Stacked Page Thickness Layers */}
       <div
-        className="absolute top-1 bottom-1 -left-1 w-1 rounded-l-xs pointer-events-none z-[-1]"
-        style={{ background: '#FAF7F2', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.2)' }}
+        className="absolute top-1 bottom-1 -left-1 w-1 rounded-l-xs pointer-events-none"
+        style={{ background: '#FAF7F2', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.25)' }}
       />
       <div
-        className="absolute top-1.5 bottom-1.5 -left-2 w-1 rounded-l-xs pointer-events-none z-[-2]"
-        style={{ background: '#EDE5D8', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.25)' }}
+        className="absolute top-1.5 bottom-1.5 -left-2 w-1 rounded-l-xs pointer-events-none"
+        style={{ background: '#EDE5D8', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.3)' }}
       />
       <div
-        className="absolute top-2 bottom-2 -left-3 w-1 rounded-l-xs pointer-events-none z-[-3]"
-        style={{ background: '#DDD3C4', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.3)' }}
+        className="absolute top-2 bottom-2 -left-3 w-1 rounded-l-xs pointer-events-none"
+        style={{ background: '#DDD3C4', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.35)' }}
+      />
+
+      {/* Bottom Stacked Paper Margin */}
+      <div
+        className="absolute -bottom-1 left-1 right-2 h-1 rounded-b-xs pointer-events-none"
+        style={{ background: 'linear-gradient(to right, #EDE5D8, #FAF7F2)', opacity: 0.9 }}
       />
     </motion.div>
   );
@@ -200,6 +214,9 @@ function MinimalBackCover({ onReopen }) {
 
 /* ─────────────────────────────────────────────────────
    INTERIOR TWO-PAGE SPREAD WITH 3D PAGE-FLIP MOTION
+   - Left Page + Right Page with authentic center binding seam
+   - Click left half to go back / close
+   - Click right half to go forward / close
    ───────────────────────────────────────────────────── */
 function OpenSpread({
   spreadIndex,
@@ -207,47 +224,50 @@ function OpenSpread({
   onNext,
   onClose,
   onOpenUpload,
-  direction
+  direction,
+  dimensions
 }) {
   return (
     <motion.div
       key={`spread-${spreadIndex}`}
       initial={{
-        rotateY: direction > 0 ? 30 : -30,
-        opacity: 0.9,
-        scale: 0.98
+        rotateY: direction > 0 ? 18 : -18,
+        opacity: 0.92,
+        scale: 0.985
       }}
       animate={{
         rotateY: 0,
         opacity: 1,
         scale: 1,
-        transition: { duration: 0.55, ease: [0.25, 1, 0.5, 1] }
+        transition: { duration: 0.45, ease: [0.25, 1, 0.5, 1] }
       }}
       exit={{
-        rotateY: direction > 0 ? -30 : 30,
-        opacity: 0.85,
-        scale: 0.98,
-        transition: { duration: 0.45, ease: [0.5, 0, 0.75, 0] }
+        rotateY: direction > 0 ? -18 : 18,
+        opacity: 0.9,
+        scale: 0.985,
+        transition: { duration: 0.35, ease: [0.5, 0, 0.75, 0] }
       }}
-      className="w-full h-full overflow-hidden flex relative select-none"
+      className="relative overflow-hidden flex select-none"
       style={{
+        width: dimensions.openW,
+        height: dimensions.openH,
         transformStyle: 'preserve-3d',
         borderRadius: '3px 4px 4px 3px',
         background: '#FAF8F5',
         border: '1.5px solid #D5C9B8',
-        boxShadow: '0 20px 50px -10px rgba(0,0,0,0.6), 0 6px 16px rgba(0,0,0,0.35)'
+        boxShadow:
+          '0 22px 55px -10px rgba(0,0,0,0.65), 0 8px 20px rgba(0,0,0,0.35), inset 0 0 1px rgba(255,255,255,0.4)'
       }}
     >
       {/* ── Deep Center Spine Binding Crease Shadow ── */}
       <div
         className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-6 sm:w-10 z-20 pointer-events-none"
         style={{
-          background: 'linear-gradient(to right, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.08) 35%, transparent 50%, rgba(0,0,0,0.08) 65%, rgba(0,0,0,0.28) 100%)'
+          background:
+            'linear-gradient(to right, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.08) 35%, transparent 50%, rgba(0,0,0,0.08) 65%, rgba(0,0,0,0.3) 100%)'
         }}
       />
-      <div
-        className="absolute top-0 bottom-0 left-1/2 w-px z-20 pointer-events-none opacity-40 bg-[#8C7A64]"
-      />
+      <div className="absolute top-0 bottom-0 left-1/2 w-px z-20 pointer-events-none opacity-40 bg-[#8C7A64]" />
 
       {/* ── Left & Right Page Thickness Stack Margins ── */}
       <div
@@ -268,16 +288,16 @@ function OpenSpread({
         }}
       />
 
-      {/* ── Touch tap zones for mobile (Left half = prev, Right half = next) ── */}
+      {/* ── Touch tap zones (Left half = prev, Right half = next) ── */}
       <div
         onClick={onPrev}
         className="absolute left-0 top-0 bottom-0 w-1/2 z-30 cursor-pointer"
-        title="Tap to turn left"
+        title="Click left page to turn back"
       />
       <div
         onClick={onNext}
         className="absolute right-0 top-0 bottom-0 w-1/2 z-30 cursor-pointer"
-        title="Tap to turn right"
+        title="Click right page to turn next"
       />
 
       {/* ── Spread 1: Dedication & Royal Bride ── */}
@@ -348,7 +368,7 @@ function OpenSpread({
         </>
       )}
 
-      {/* ── Spread 5: Closing Spread ── */}
+      {/* ── Spread 5: Studio CTA & Close ── */}
       {spreadIndex === 5 && (
         <>
           <div
@@ -414,9 +434,7 @@ function OpenSpread({
             </span>
           </div>
 
-          <div
-            className="w-1/2 h-full flex flex-col justify-between text-center p-2 sm:p-3 relative overflow-hidden bg-[#FAF8F5]"
-          >
+          <div className="w-1/2 h-full flex flex-col justify-between text-center p-2 sm:p-3 relative overflow-hidden bg-[#FAF8F5]">
             <span
               className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
               style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
@@ -505,6 +523,10 @@ function PhotoHalf({ src, label, side }) {
 
 /* ─────────────────────────────────────────────────────
    Main Export — Hero Interactive Album
+   - Pristine physical photobook structure
+   - True 737x1024 portrait ratio (Zero cropping)
+   - Zero distracting buttons or chevrons on top of the book
+   - 3D physical book opening animation
    ───────────────────────────────────────────────────── */
 export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen }) {
   /*
@@ -577,15 +599,15 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
 
   return (
     <div
-      className="relative flex flex-col items-center justify-center select-none my-1 sm:my-1.5 w-full max-w-full px-2"
+      className="relative flex flex-col items-center justify-center select-none my-1 sm:my-2 w-full max-w-full px-2"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ── 3D Book Stage ── */}
+      {/* ── 3D Physical Book Stage ── */}
       <div className="relative flex items-center justify-center select-none">
-        {/* Soft Ambient Desk Drop Shadow (Rests grounded on the table, not floating) */}
+        {/* Soft Grounding Ambient Contact Shadow (Rests flat on the table, not floating) */}
         <div
-          className="absolute -bottom-3.5 sm:-bottom-5 h-6 sm:h-9 bg-black/75 blur-lg rounded-full pointer-events-none transition-all duration-500 ease-out"
+          className="absolute -bottom-3 sm:-bottom-4.5 h-5 sm:h-7 bg-black/65 blur-md rounded-full pointer-events-none transition-all duration-500 ease-out"
           style={{
             width: isOpen ? dimensions.openW * 0.94 : dimensions.closedW * 0.95,
             left: '50%',
@@ -593,65 +615,40 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
           }}
         />
 
-        {/* Fullscreen Expand Trigger (44px+ touch-friendly target) */}
-        {onOpenFullscreen && (
-          <button
-            type="button"
-            onClick={onOpenFullscreen}
-            className="absolute -top-3 -right-2.5 sm:-top-3.5 sm:-right-3.5 z-40 p-2 sm:p-2.5 rounded-full border shadow-md hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
-            style={{
-              background: 'rgba(20,20,22,0.92)',
-              color: '#C5A880',
-              borderColor: 'rgba(197,168,128,0.5)'
-            }}
-            title="Open Fullscreen 3D Photobook Viewer"
-            aria-label="Open Fullscreen Viewer"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-          </button>
+        {/* ── Discreet Outside Navigation Arrows (Shown ONLY when book is open, positioned completely clear of pages) ── */}
+        {isOpen && (
+          <>
+            <button
+              type="button"
+              onClick={flipPrev}
+              className="absolute -left-9 sm:-left-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
+              style={{
+                background: 'rgba(20,20,22,0.92)',
+                color: '#C5A880',
+                borderColor: 'rgba(197,168,128,0.5)'
+              }}
+              title="Previous page"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={flipNext}
+              className="absolute -right-9 sm:-right-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
+              style={{
+                background: 'rgba(20,20,22,0.92)',
+                color: '#C5A880',
+                borderColor: 'rgba(197,168,128,0.5)'
+              }}
+              title="Next page"
+              aria-label="Next page"
+            >
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+          </>
         )}
-
-        {/* Left Navigation Arrow (44px+ touch friendly) */}
-        <button
-          type="button"
-          onClick={flipPrev}
-          disabled={spreadIndex === 0}
-          className={`absolute -left-3 sm:-left-7 top-1/2 -translate-y-1/2 z-35 min-w-[38px] min-h-[38px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center rounded-full border shadow-lg transition-all duration-200 cursor-pointer ${
-            spreadIndex === 0
-              ? 'opacity-0 pointer-events-none'
-              : 'opacity-90 hover:opacity-100 hover:scale-110 active:scale-95'
-          }`}
-          style={{
-            background: 'rgba(20,20,22,0.95)',
-            color: '#C5A880',
-            borderColor: 'rgba(197,168,128,0.6)'
-          }}
-          title="Previous page"
-          aria-label="Previous page"
-        >
-          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-        </button>
-
-        {/* Right Navigation Arrow (44px+ touch friendly) */}
-        <button
-          type="button"
-          onClick={flipNext}
-          disabled={spreadIndex >= totalSpreads}
-          className={`absolute -right-3 sm:-right-7 top-1/2 -translate-y-1/2 z-35 min-w-[38px] min-h-[38px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center rounded-full border shadow-lg transition-all duration-200 cursor-pointer ${
-            spreadIndex >= totalSpreads
-              ? 'opacity-0 pointer-events-none'
-              : 'opacity-90 hover:opacity-100 hover:scale-110 active:scale-95'
-          }`}
-          style={{
-            background: 'rgba(20,20,22,0.95)',
-            color: '#C5A880',
-            borderColor: 'rgba(197,168,128,0.6)'
-          }}
-          title="Next page"
-          aria-label="Next page"
-        >
-          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-        </button>
 
         {/* ── 3D Book Container with Preserved Perspective ── */}
         <div
@@ -663,9 +660,9 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
           }}
         >
           <AnimatePresence mode="wait" initial={false}>
-            {/* 1. FRONT COVER (Closed) */}
+            {/* 1. FRONT COVER (Closed, pristine, zero overlay distractions) */}
             {isCover && (
-              <MinimalFrontCover key="front" onOpen={flipNext} dimensions={dimensions} />
+              <FrontCoverLeaf key="front" onOpen={flipNext} dimensions={dimensions} />
             )}
 
             {/* 2. OPEN TWO-PAGE SPREAD (Interactive) */}
@@ -678,18 +675,23 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
                 onNext={flipNext}
                 onClose={flipNext}
                 onOpenUpload={onOpenUpload}
+                dimensions={dimensions}
               />
             )}
 
-            {/* 3. BACK COVER (Closed) */}
+            {/* 3. BACK COVER (Closed, matching luxury back) */}
             {isBackCover && (
-              <MinimalBackCover key="back" onReopen={() => goToSpread(0)} />
+              <BackCoverLeaf
+                key="back"
+                onReopen={() => goToSpread(0)}
+                dimensions={dimensions}
+              />
             )}
           </AnimatePresence>
         </div>
       </div>
 
-      {/* ── Page Indicator & Navigation Dots ── */}
+      {/* ── Page Indicator & Navigation Dots (Clean & Discreet Below Book) ── */}
       <div className="flex items-center justify-center gap-1.5 mt-2.5 select-none z-20">
         <div
           className="flex items-center gap-1.5 backdrop-blur-xs px-3 py-1 rounded-full border shadow-sm"
@@ -703,7 +705,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
               key={s}
               type="button"
               onClick={() => goToSpread(s)}
-              className={`transition-all duration-300 rounded-full cursor-pointer min-h-[16px] flex items-center justify-center ${
+              className={`transition-all duration-300 rounded-full cursor-pointer min-h-[14px] flex items-center justify-center ${
                 spreadIndex === s ? 'w-4 bg-[#C5A880]' : 'w-1.5 bg-white/35 hover:bg-white/75'
               }`}
               style={{ height: '4px' }}
@@ -720,10 +722,9 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
         </div>
 
         <span
-          className="text-[#888888] font-medium hidden xs:inline tracking-wide"
-          style={{ fontSize: 'clamp(7px, 1.4vw, 9.5px)' }}
+          className="text-[#888888] font-medium tracking-wide ml-1 text-[8px] xs:text-[9.5px]"
         >
-          • Tap book to turn pages
+          • {isCover ? 'Click book to open' : isBackCover ? 'Click to reopen' : 'Click page to flip'}
         </span>
       </div>
     </div>
