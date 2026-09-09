@@ -176,7 +176,7 @@ export default function Hero({ onOpenPage }) {
           />
         </motion.div>
 
-        {/* Action Button: EXPLORE YOUR ALBUM */}
+        {/* Action Button: PREVIEW */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -190,7 +190,7 @@ export default function Hero({ onOpenPage }) {
           >
             <BookOpen className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-3.5 sm:h-3.5 text-white group-hover:text-[#C5A880] transition-colors" />
             <span className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-bold tracking-[0.16em] uppercase font-sans">
-              EXPLORE YOUR ALBUM
+              PREVIEW
             </span>
             <span className="text-white group-hover:text-[#C5A880] text-xs sm:text-sm transition-transform duration-300 group-hover:translate-x-1">
               →
