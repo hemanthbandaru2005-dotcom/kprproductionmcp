@@ -50,60 +50,43 @@ function MinimalFrontCover({ onOpen, dimensions }) {
         borderRadius: '3px 6px 6px 3px'
       }}
     >
-      {/* ── Outer Physical Leather Cover Casing ── */}
+      {/* ── Outer Physical Leather Cover Casing with New Supplied Artwork ── */}
       <div
-        className="w-full h-full relative overflow-hidden flex flex-col items-center justify-center"
+        className="w-full h-full relative overflow-hidden flex flex-col items-center justify-center bg-[#FAF8F5]"
         style={{
-          background: 'linear-gradient(145deg, #1C1C20 0%, #151518 45%, #0F0F12 100%)',
           borderRadius: '3px 6px 6px 3px',
-          border: '1px solid rgba(255,255,255,0.09)',
-          boxShadow: '0 25px 60px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.12)'
+          border: '1px solid rgba(138,120,98,0.4)',
+          boxShadow: '0 25px 60px -10px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.2)'
         }}
       >
-        {/* Subtle Matte Linen Sheen */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-20"
-          style={{
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px)',
-            backgroundSize: '4px 4px'
-          }}
+        {/* User-Supplied New Cover Image Artwork */}
+        <img
+          src="/images/album/front_cover.jpg"
+          alt="KPR Productions Wedding Photobook Front Cover"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          loading="eager"
+          draggable={false}
         />
 
         {/* Left Spine Groove / Hinge Indentation */}
         <div
           className="absolute top-0 bottom-0 left-0 w-4 sm:w-6 pointer-events-none z-10"
           style={{
-            background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, rgba(255,255,255,0.06) 75%, transparent 100%)',
-            borderRight: '1px solid rgba(0,0,0,0.4)'
+            background: 'linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 45%, rgba(255,255,255,0.15) 75%, transparent 100%)',
+            borderRight: '1px solid rgba(0,0,0,0.2)'
           }}
         />
 
-        {/* ── ONLY KPR Productions Logo Centered on Cover ── */}
-        <div className="relative z-10 flex flex-col items-center justify-center p-2 group-hover:scale-105 transition-transform duration-300">
-          <div
-            className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center p-2"
-            style={{
-              background: 'radial-gradient(circle at 40% 40%, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.5) 100%)',
-              border: '1px solid rgba(197,168,128,0.3)',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1)'
-            }}
-          >
-            <img
-              src="/images/kpr_logo.png"
-              alt="KPR Productions"
-              className="w-full h-full object-contain filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] select-none pointer-events-none"
-              draggable={false}
-            />
-          </div>
-        </div>
+        {/* Outer Bevel Shadow */}
+        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.25)]" />
 
         {/* ── Minimal Click / Tap Indicator (Clean, non-intrusive) ── */}
-        <div className="absolute bottom-2.5 sm:bottom-3.5 right-2.5 sm:right-3.5 z-20">
+        <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 z-20">
           <span
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[8px] sm:text-[9.5px] font-sans font-medium tracking-wider uppercase text-[#E2D4C0] bg-black/60 border border-white/15 backdrop-blur-xs group-hover:border-[#C5A880]/70 group-hover:text-[#F5E6D0] transition-colors shadow-md"
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-full text-[8px] sm:text-[9.5px] font-sans font-medium tracking-wider uppercase text-[#F5E6D0] bg-black/75 border border-[#C5A880]/60 backdrop-blur-xs group-hover:bg-black group-hover:scale-105 transition-all shadow-md"
           >
             <Sparkles className="w-2.5 h-2.5 text-[#C5A880] animate-pulse" />
-            <span>Open Book</span>
+            <span>Open Album</span>
           </span>
         </div>
 
@@ -111,7 +94,7 @@ function MinimalFrontCover({ onOpen, dimensions }) {
         <div
           className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"
           style={{
-            background: 'linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.04) 50%, transparent 80%)'
+            background: 'linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.06) 50%, transparent 80%)'
           }}
         />
       </div>
@@ -140,11 +123,7 @@ function MinimalFrontCover({ onOpen, dimensions }) {
 }
 
 /* ─────────────────────────────────────────────────────
-   MINIMAL LUXURY BACK COVER — Matte Charcoal Leatherette
-   Requirement:
-   - Solid matte black/charcoal matching front cover
-   - Only centered KPR Productions logo
-   - Tap to Reopen
+   MATCHING LUXURY BACK COVER — Real Archival Binding
    ───────────────────────────────────────────────────── */
 function MinimalBackCover({ onReopen }) {
   return (
@@ -163,58 +142,41 @@ function MinimalBackCover({ onReopen }) {
       }}
     >
       <div
-        className="w-full h-full relative overflow-hidden flex flex-col items-center justify-center"
+        className="w-full h-full relative overflow-hidden flex flex-col items-center justify-center bg-[#FAF8F5]"
         style={{
-          background: 'linear-gradient(145deg, #0F0F12 0%, #151518 55%, #1C1C20 100%)',
           borderRadius: '6px 3px 3px 6px',
-          border: '1px solid rgba(255,255,255,0.09)',
-          boxShadow: '0 25px 60px -10px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.12)'
+          border: '1px solid rgba(138,120,98,0.4)',
+          boxShadow: '0 25px 60px -10px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.2)'
         }}
       >
-        {/* Subtle Matte Linen Sheen */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-20"
-          style={{
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px)',
-            backgroundSize: '4px 4px'
-          }}
+        {/* Generated Matching Back Cover Image */}
+        <img
+          src="/images/album/back_cover.jpg"
+          alt="KPR Productions Wedding Photobook Back Cover"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          loading="lazy"
+          draggable={false}
         />
 
         {/* Right Spine Hinge Groove */}
         <div
           className="absolute top-0 bottom-0 right-0 w-4 sm:w-6 pointer-events-none z-10"
           style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, rgba(255,255,255,0.06) 75%, transparent 100%)',
-            borderLeft: '1px solid rgba(0,0,0,0.4)'
+            background: 'linear-gradient(to left, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 45%, rgba(255,255,255,0.15) 75%, transparent 100%)',
+            borderLeft: '1px solid rgba(0,0,0,0.2)'
           }}
         />
 
-        {/* Centered KPR Logo Only */}
-        <div className="relative z-10 flex flex-col items-center justify-center p-2 group-hover:scale-105 transition-transform duration-300">
-          <div
-            className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center p-2"
-            style={{
-              background: 'radial-gradient(circle at 40% 40%, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.5) 100%)',
-              border: '1px solid rgba(197,168,128,0.3)',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1)'
-            }}
-          >
-            <img
-              src="/images/kpr_logo.png"
-              alt="KPR Productions"
-              className="w-full h-full object-contain filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)] select-none pointer-events-none"
-              draggable={false}
-            />
-          </div>
-        </div>
+        {/* Outer Bevel Shadow */}
+        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.25)]" />
 
         {/* Reopen Action Badge */}
-        <div className="absolute bottom-2.5 sm:bottom-3.5 left-2.5 sm:left-3.5 z-20">
+        <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 z-20">
           <span
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[8px] sm:text-[9.5px] font-sans font-medium tracking-wider uppercase text-[#E2D4C0] bg-black/60 border border-white/15 backdrop-blur-xs group-hover:border-[#C5A880]/70 group-hover:text-[#F5E6D0] transition-colors shadow-md"
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-full text-[8px] sm:text-[9.5px] font-sans font-medium tracking-wider uppercase text-[#F5E6D0] bg-black/75 border border-[#C5A880]/60 backdrop-blur-xs group-hover:bg-black group-hover:scale-105 transition-all shadow-md"
           >
             <RotateCcw className="w-2.5 h-2.5 text-[#C5A880]" />
-            <span>Reopen Book</span>
+            <span>Reopen Album</span>
           </span>
         </div>
       </div>
