@@ -55,18 +55,18 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   // Top Left: KPR Fotography Logo
   try {
     if (INVOICE_HEADER_LOGO_BASE64) {
-      doc.addImage(INVOICE_HEADER_LOGO_BASE64, 'PNG', 14, 12, 38, 19, '', 'FAST');
+      doc.addImage(INVOICE_HEADER_LOGO_BASE64, 'PNG', 14, 14, 48, 15, '', 'FAST');
     } else {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
       doc.setTextColor(17, 17, 17);
-      doc.text('KPR FOTOGRAPHY', 14, 20);
+      doc.text('KPR FOTOGRAPHY', 14, 22);
     }
   } catch (e) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(17, 17, 17);
-    doc.text('KPR FOTOGRAPHY', 14, 20);
+    doc.text('KPR FOTOGRAPHY', 14, 22);
   }
 
   // Top Right: ESTIMATE HEADER
@@ -104,7 +104,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
-  doc.text('Luxury Telugu Wedding & Event Photography', 14, addressTop + 8.5);
+  doc.text('Luxury Telugu Wedding & Event Fotography', 14, addressTop + 8.5);
   doc.text('Station Road, Warangal / Hyderabad, Telangana', 14, addressTop + 12.5);
   doc.text('Phone: +91 98494 43648 / +91 98493 90876', 14, addressTop + 16.5);
   doc.text('Email: kprfotography@gmail.com', 14, addressTop + 20.5);
@@ -136,7 +136,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   selectedPackages.forEach(pkg => {
     tableRows.push([
       pkg.name,
-      pkg.category || 'Photography',
+      (pkg.category === 'Photography' ? 'Fotography' : (pkg.category || 'Fotography')),
       pkg.duration || '6 hours',
       `Rs. ${Number(pkg.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
     ]);
@@ -207,12 +207,12 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   let currentY = doc.lastAutoTable.finalY + 4;
 
   // ══════════════════ 4. INCLUDED DELIVERABLES BOX ══════════════════
-  if (deliverables.length > 0 && currentY < 210) {
+  if (deliverables.length > 0 && currentY < 205) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(140, 109, 63);
     doc.text('INCLUDED STANDARD DELIVERABLES (COMPLIMENTARY)', 14, currentY);
-    currentY += 4;
+    currentY += 4.5;
 
     const delivList = deliverables.slice(0, 6);
     const half = Math.ceil(delivList.length / 2);
@@ -223,15 +223,28 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
     doc.setFontSize(7.5);
     doc.setTextColor(70, 70, 70);
 
-    col1.forEach((item, idx) => {
-      doc.text(`✓ ${item}`, 14, currentY + (idx * 4));
+    let col1Y = currentY;
+    col1.forEach((item) => {
+      // Draw crisp golden circular bullet
+      doc.setFillColor(197, 168, 128);
+      doc.circle(15.5, col1Y - 1.1, 0.8, 'F');
+
+      const wrapped = doc.splitTextToSize(item, 82);
+      doc.text(wrapped, 18, col1Y);
+      col1Y += (wrapped.length * 3.6) + 1.2;
     });
 
-    col2.forEach((item, idx) => {
-      doc.text(`✓ ${item}`, 105, currentY + (idx * 4));
+    let col2Y = currentY;
+    col2.forEach((item) => {
+      doc.setFillColor(197, 168, 128);
+      doc.circle(107.5, col2Y - 1.1, 0.8, 'F');
+
+      const wrapped = doc.splitTextToSize(item, 82);
+      doc.text(wrapped, 110, col2Y);
+      col2Y += (wrapped.length * 3.6) + 1.2;
     });
 
-    currentY += (Math.max(col1.length, col2.length) * 4) + 6;
+    currentY = Math.max(col1Y, col2Y) + 3.5;
   }
 
   // ══════════════════ 5. TOTALS BREAKDOWN SUMMARY ══════════════════
@@ -287,7 +300,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.2);
   doc.setTextColor(90, 90, 90);
-  doc.text('• This estimate is generated based on official standard KPR Photography rate cards and is valid for 30 days.', 14, notesTop + 4.5);
+  doc.text('• This estimate is generated based on official standard KPR Fotography rate cards and is valid for 30 days.', 14, notesTop + 4.5);
   doc.text('• Standard Payment Schedule: 30% advance for date reservation, 50% on event date, 20% on final delivery.', 14, notesTop + 8.5);
   doc.text('• Outstation travel, lodging & local conveyance charges (if applicable) are extra at actuals.', 14, notesTop + 12.5);
   doc.text('• To confirm booking or customize dates, please WhatsApp or call our team directly at +91 98494 43648.', 14, notesTop + 16.5);
@@ -317,7 +330,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
 
   if (autoDownload) {
     const sanitizedName = customerName.replace(/[^a-zA-Z0-9]/g, '_');
-    const filename = `KPR_Photography_Estimate_${sanitizedName}_${estimateNumber}.pdf`;
+    const filename = `KPR_Fotography_Estimate_${sanitizedName}_${estimateNumber}.pdf`;
     doc.save(filename);
   }
 

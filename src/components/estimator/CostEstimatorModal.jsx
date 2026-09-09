@@ -21,7 +21,7 @@ export default function CostEstimatorModal({ isOpen, onClose }) {
       {/* Top Close Bar */}
       <div className="sticky top-0 z-50 flex items-center justify-between px-4 sm:px-8 py-3 bg-[#0D0B08]/90 backdrop-blur-md border-b border-[#2A2622]">
         <div className="text-xs uppercase tracking-widest text-[#C5A880] font-bold">
-          KPR Photography Cost Estimator
+          KPR Fotography Cost Estimator
         </div>
         <button
           onClick={onClose}

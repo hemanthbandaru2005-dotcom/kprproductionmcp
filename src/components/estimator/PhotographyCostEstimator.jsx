@@ -120,7 +120,9 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const filteredPackages = useMemo(() => {
     if (packageCategoryFilter === 'ALL') return availablePackages;
     return availablePackages.filter(p => {
-      if (packageCategoryFilter === 'Photography') return p.category === 'Photography';
+      if (packageCategoryFilter === 'Fotography' || packageCategoryFilter === 'Photography') {
+        return p.category === 'Photography' || p.category === 'Fotography';
+      }
       if (packageCategoryFilter === 'Videography') return p.category === 'Videography';
       if (packageCategoryFilter === 'Aerial') return p.category === 'Aerial';
       if (packageCategoryFilter === 'Editing') return p.category === 'Editing';
@@ -327,14 +329,14 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     const pkgNames = selectedPackages.map(p => `• ${p.name} (₹${p.price.toLocaleString('en-IN')})`).join('\n');
     const albumTxt = needAlbum ? `Yes (${albumSheets} Sheets / ${albumSheets * 2} Pages - ₹${albumSubtotal.toLocaleString('en-IN')})` : 'Digital Only';
 
-    const msg = `*KPR PHOTOGRAPHY COST ESTIMATE*\n` +
+    const msg = `*KPR FOTOGRAPHY COST ESTIMATE*\n` +
       `*Estimate No:* ${estimateNumber}\n` +
       `*Client:* ${customerName} (+91 ${customerPhone})\n` +
       `*Celebrating:* ${selectedEvent}\n\n` +
       `*Selected Services:*\n${pkgNames}\n\n` +
       `*Album:* ${albumTxt}\n` +
       `*Total Estimated Investment:* ₹${grandTotal.toLocaleString('en-IN')}/-\n\n` +
-      `Hello KPR Photography team! I have configured my event estimate on your website and would like to verify date availability and discuss booking details.`;
+      `Hello KPR Fotography team! I have configured my event estimate on your website and would like to verify date availability and discuss booking details.`;
 
     return `https://wa.me/919849443648?text=${encodeURIComponent(msg)}`;
   };
@@ -379,13 +381,13 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
         <div className="text-center mb-6 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/40 text-[#E8D4B8] text-[11px] font-semibold tracking-widest uppercase mb-3">
             <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>KPR Photography Studio • Cost Estimator</span>
+            <span>KPR Fotography Studio • Cost Estimator</span>
           </div>
           <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl font-light text-[#FAF7F2] tracking-wide">
-            Event Photography Cost Estimator
+            Event Fotography Cost Estimator
           </h1>
           <p className="text-xs sm:text-sm text-[#A89F91] max-w-xl mx-auto mt-2 font-light">
-            Plan your celebration with 100% transparent studio pricing. Calculate exact costs for candid photography, 4K cinematic video, drone, and luxury layflat albums.
+            Plan your celebration with 100% transparent studio pricing. Calculate exact costs for candid fotography, 4K cinematic video, drone, and luxury layflat albums.
           </p>
         </div>
 
@@ -468,7 +470,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   LET'S GET STARTED
                 </h2>
                 <p className="text-xs sm:text-sm text-[#A89F91] font-light">
-                  Enter your name and mobile number to begin tailoring your accurate photography estimate.
+                  Enter your name and mobile number to begin tailoring your accurate fotography estimate.
                 </p>
               </div>
 
@@ -567,7 +569,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   WHAT ARE YOU CELEBRATING?
                 </h2>
                 <p className="text-xs sm:text-sm text-[#A89F91] font-light">
-                  Select your celebration from KPR Photography's authentic event catalog.
+                  Select your celebration from KPR Fotography's authentic event catalog.
                 </p>
               </div>
 
@@ -642,7 +644,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
           )}
 
           {/* ══════════════════════════════════════════════════════════════════
-              STEP 3: CHOOSE YOUR PHOTOGRAPHY PACKAGE
+              STEP 3: CHOOSE YOUR FOTOGRAPHY PACKAGE
               ══════════════════════════════════════════════════════════════════ */}
           {currentStep === 3 && (
             <div className="space-y-6 animate-fadeIn">
@@ -654,16 +656,16 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   </span>
                 </div>
                 <h2 className="font-serif text-2xl sm:text-3xl text-white font-light">
-                  CHOOSE YOUR PHOTOGRAPHY PACKAGE
+                  CHOOSE YOUR FOTOGRAPHY PACKAGE
                 </h2>
                 <p className="text-xs sm:text-sm text-[#A89F91] font-light">
-                  Select your combination of photography, cinematic video, drone, and editing services. Prices update dynamically.
+                  Select your combination of fotography, cinematic video, drone, and editing services. Prices update dynamically.
                 </p>
               </div>
 
               {/* Category Filter Tabs */}
               <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-none">
-                {['ALL', 'Photography', 'Videography', 'Aerial', 'Editing', 'Commercial'].map((tab) => (
+                {['ALL', 'Fotography', 'Videography', 'Aerial', 'Editing', 'Commercial'].map((tab) => (
                   <button
                     key={tab}
                     type="button"
@@ -743,7 +745,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               {/* Subtotal of Step 3 */}
               <div className="bg-[#1C1814] border border-[#302B26] rounded-xl p-4 flex items-center justify-between">
                 <span className="text-xs uppercase tracking-wider text-[#A89F91]">
-                  Photography & Videography Subtotal:
+                  Fotography & Videography Subtotal:
                 </span>
                 <span className="text-base sm:text-lg font-serif font-bold text-[#C5A880]">
                   ₹{servicesSubtotal.toLocaleString('en-IN')}/-
@@ -1181,7 +1183,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                 {/* 2. Selected Packages Table */}
                 <div className="space-y-2.5">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#C5A880]">
-                    1. Photography & Videography Packages
+                    1. Fotography & Videography Packages
                   </span>
                   <div className="bg-[#12100E] rounded-xl border border-[#28221D] divide-y divide-[#221D18]">
                     {selectedPackages.map(pkg => (
