@@ -4,45 +4,46 @@ import {
   ChevronLeft,
   ChevronRight,
   Upload,
-  BookOpen
+  Maximize2
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────
-   Exact Physical Aspect Ratio: 737 / 1024 = 0.720 (Portrait Photobook)
-   Maintains true uncropped physical album proportions across all devices
+   Exact Physical Aspect Ratio: 697 / 881 = 0.791 (Cropped Photobook)
+   100% True-to-life physical album proportions without black borders
    ───────────────────────────────────────────────────── */
 function getBookDimensions() {
   if (typeof window === 'undefined') {
-    return { closedW: 198, closedH: 275, openW: 396, openH: 275 };
+    return { closedW: 221, closedH: 280, openW: 442, openH: 280 };
   }
   const w = window.innerWidth;
   if (w < 360) {
-    const h = 190;
-    const cw = Math.round(h * 0.72);
+    const h = 195;
+    const cw = Math.round(h * 0.791);
     return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
   }
   if (w < 480) {
-    const h = 210;
-    const cw = Math.round(h * 0.72);
+    const h = 215;
+    const cw = Math.round(h * 0.791);
     return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
   }
   if (w < 640) {
-    const h = 230;
-    const cw = Math.round(h * 0.72);
+    const h = 235;
+    const cw = Math.round(h * 0.791);
     return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
   }
   if (w < 1024) {
-    const h = 255;
-    const cw = Math.round(h * 0.72);
+    const h = 260;
+    const cw = Math.round(h * 0.791);
     return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
   }
-  const h = 275;
-  const cw = Math.round(h * 0.72);
+  const h = 280;
+  const cw = Math.round(h * 0.791);
   return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
 }
 
 /* ─────────────────────────────────────────────────────
    AUTHENTIC LUXURY FRONT COVER (CLOSED STATE)
+   - Zero black borders (precisely cropped to physical book edges)
    - Zero distracting buttons or badges on top of artwork
    - 100% full uncropped display of gold filigree corners, KPR logo & couple details
    - Physical hardcover bevel, rounded spine hinge, stacked paper edge & contact shadow
@@ -76,11 +77,11 @@ function FrontCoverLeaf({ onOpen, dimensions }) {
             '0 24px 50px -12px rgba(0,0,0,0.7), 0 8px 18px rgba(0,0,0,0.3), inset 0 0 1px rgba(255,255,255,0.5)'
         }}
       >
-        {/* User-Supplied Exact Artwork Cover Image (Full, 100% Uncropped) */}
+        {/* User-Supplied Exact Artwork Cover Image (Full, 100% Uncropped, No Black Borders) */}
         <img
           src="/images/album/front_cover.jpg"
           alt="KPR Productions Wedding Photobook Front Cover"
-          className="w-full h-full object-fill select-none pointer-events-none"
+          className="w-full h-full object-cover select-none pointer-events-none"
           loading="eager"
           draggable={false}
         />
@@ -129,8 +130,7 @@ function FrontCoverLeaf({ onOpen, dimensions }) {
 
 /* ─────────────────────────────────────────────────────
    AUTHENTIC LUXURY BACK COVER (CLOSED STATE)
-   - Zero distracting buttons or badges
-   - 100% full uncropped display of matching cream linen back cover
+   - Zero black borders (seamless cream linen matching the front)
    - Spine on the right, stacked page layers on the left
    ───────────────────────────────────────────────────── */
 function BackCoverLeaf({ onReopen, dimensions }) {
@@ -161,11 +161,11 @@ function BackCoverLeaf({ onReopen, dimensions }) {
             '0 24px 50px -12px rgba(0,0,0,0.7), 0 8px 18px rgba(0,0,0,0.3), inset 0 0 1px rgba(255,255,255,0.5)'
         }}
       >
-        {/* Matching Back Cover Image (Full, 100% Uncropped) */}
+        {/* Matching Back Cover Image (Full, 100% Uncropped, Zero Black Borders) */}
         <img
           src="/images/album/back_cover.jpg"
           alt="KPR Productions Wedding Photobook Back Cover"
-          className="w-full h-full object-fill select-none pointer-events-none"
+          className="w-full h-full object-cover select-none pointer-events-none"
           loading="lazy"
           draggable={false}
         />
@@ -214,9 +214,6 @@ function BackCoverLeaf({ onReopen, dimensions }) {
 
 /* ─────────────────────────────────────────────────────
    INTERIOR TWO-PAGE SPREAD WITH 3D PAGE-FLIP MOTION
-   - Left Page + Right Page with authentic center binding seam
-   - Click left half to go back / close
-   - Click right half to go forward / close
    ───────────────────────────────────────────────────── */
 function OpenSpread({
   spreadIndex,
@@ -523,22 +520,12 @@ function PhotoHalf({ src, label, side }) {
 
 /* ─────────────────────────────────────────────────────
    Main Export — Hero Interactive Album
-   - Pristine physical photobook structure
-   - True 737x1024 portrait ratio (Zero cropping)
-   - Zero distracting buttons or chevrons on top of the book
+   - Pristine physical photobook structure (zero black borders)
+   - Clean, zero distraction cover
+   - Dedicated "Full View" launcher button
    - 3D physical book opening animation
    ───────────────────────────────────────────────────── */
 export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen }) {
-  /*
-   Spread index states:
-     0  →  Front Hardcover (closed)
-     1  →  Spread 1: Dedication + Royal Bride
-     2  →  Spread 2: Couple + Mandap
-     3  →  Spread 3: Haldi + Romance
-     4  →  Spread 4: Traditions + Reception
-     5  →  Spread 5: Studio CTA + Close
-     6  →  Back Hardcover (closed)
-  */
   const [spreadIndex, setSpreadIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [dimensions, setDimensions] = useState(getBookDimensions);
@@ -599,7 +586,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
 
   return (
     <div
-      className="relative flex flex-col items-center justify-center select-none my-1 sm:my-2 w-full max-w-full px-2"
+      className="relative flex flex-col items-center justify-center select-none my-1 sm:my-1.5 w-full max-w-full px-2"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -607,7 +594,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
       <div className="relative flex items-center justify-center select-none">
         {/* Soft Grounding Ambient Contact Shadow (Rests flat on the table, not floating) */}
         <div
-          className="absolute -bottom-3 sm:-bottom-4.5 h-5 sm:h-7 bg-black/65 blur-md rounded-full pointer-events-none transition-all duration-500 ease-out"
+          className="absolute -bottom-3 sm:-bottom-4 h-5 sm:h-6 bg-black/60 blur-md rounded-full pointer-events-none transition-all duration-500 ease-out"
           style={{
             width: isOpen ? dimensions.openW * 0.94 : dimensions.closedW * 0.95,
             left: '50%',
@@ -615,7 +602,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
           }}
         />
 
-        {/* ── Discreet Outside Navigation Arrows (Shown ONLY when book is open, positioned completely clear of pages) ── */}
+        {/* ── Discreet Outside Navigation Arrows (Shown ONLY when book is open) ── */}
         {isOpen && (
           <>
             <button
@@ -660,7 +647,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
           }}
         >
           <AnimatePresence mode="wait" initial={false}>
-            {/* 1. FRONT COVER (Closed, pristine, zero overlay distractions) */}
+            {/* 1. FRONT COVER (Closed, pristine, zero black borders, zero overlay distractions) */}
             {isCover && (
               <FrontCoverLeaf key="front" onOpen={flipNext} dimensions={dimensions} />
             )}
@@ -691,42 +678,20 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
         </div>
       </div>
 
-      {/* ── Page Indicator & Navigation Dots (Clean & Discreet Below Book) ── */}
-      <div className="flex items-center justify-center gap-1.5 mt-2.5 select-none z-20">
-        <div
-          className="flex items-center gap-1.5 backdrop-blur-xs px-3 py-1 rounded-full border shadow-sm"
-          style={{
-            background: 'rgba(18,18,20,0.92)',
-            borderColor: 'rgba(213,201,184,0.25)'
-          }}
-        >
-          {[0, 1, 2, 3, 4, 5, 6].map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => goToSpread(s)}
-              className={`transition-all duration-300 rounded-full cursor-pointer min-h-[14px] flex items-center justify-center ${
-                spreadIndex === s ? 'w-4 bg-[#C5A880]' : 'w-1.5 bg-white/35 hover:bg-white/75'
-              }`}
-              style={{ height: '4px' }}
-              title={s === 0 ? 'Front Cover' : s === 6 ? 'Back Cover' : `Spread ${s} of 5`}
-              aria-label={s === 0 ? 'Front Cover' : s === 6 ? 'Back Cover' : `Spread ${s}`}
-            />
-          ))}
-          <span
-            className="font-mono text-[#F5E6D0] ml-1 font-bold tracking-wider"
-            style={{ fontSize: 'clamp(7px, 1.4vw, 9.5px)' }}
+      {/* ── FULL VIEW BUTTON (Replaces previous dots pill bar completely) ── */}
+      {onOpenFullscreen && (
+        <div className="flex items-center justify-center mt-2 sm:mt-2.5 select-none z-20">
+          <button
+            type="button"
+            onClick={onOpenFullscreen}
+            className="group inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[#161412]/95 hover:bg-black text-[#F4ECD8] text-[9.5px] sm:text-xs font-serif tracking-widest uppercase border border-[#C5A880]/60 hover:border-[#C5A880] shadow-[0_4px_12px_rgba(0,0,0,0.35)] hover:shadow-[0_6px_18px_rgba(197,168,128,0.3)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            title="Open in Full View 3D Photobook"
           >
-            {spreadIndex === 0 ? 'COVER' : spreadIndex === 6 ? 'BACK' : `${spreadIndex}/5`}
-          </span>
+            <Maximize2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C5A880] group-hover:scale-110 transition-transform" />
+            <span>Full View</span>
+          </button>
         </div>
-
-        <span
-          className="text-[#888888] font-medium tracking-wide ml-1 text-[8px] xs:text-[9.5px]"
-        >
-          • {isCover ? 'Click book to open' : isBackCover ? 'Click to reopen' : 'Click page to flip'}
-        </span>
-      </div>
+      )}
     </div>
   );
 }
