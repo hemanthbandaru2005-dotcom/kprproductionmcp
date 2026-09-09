@@ -11,28 +11,41 @@ import {
    Responsive Dimension Helper for 3D Photobook
    Aspect ratio: 967 / 881 = 1.097 (Square/Album Format)
    ───────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────
+   Responsive Dimension Helper for 3D Photobook
+   Aspect ratio: 967 / 881 = 1.097 (Square/Album Format)
+   Generous sizing to fill hero showcase area with zero empty side voids
+   ───────────────────────────────────────────────────── */
 function getBookDimensions() {
   if (typeof window === 'undefined') {
-    return { singlePageW: 240, singlePageH: 218 };
+    return { singlePageW: 340, singlePageH: 310 };
   }
   const w = window.innerWidth;
-  if (w < 360) {
-    const sw = 145;
+  if (w < 380) {
+    const sw = 155;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 480) {
-    const sw = 165;
+    const sw = 175;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 640) {
-    const sw = 185;
+    const sw = 215;
+    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
+  }
+  if (w < 768) {
+    const sw = 260;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 1024) {
-    const sw = 210;
+    const sw = 300;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
-  const sw = 240;
+  if (w < 1280) {
+    const sw = 340;
+    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
+  }
+  const sw = 360;
   return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
 }
 
@@ -41,7 +54,7 @@ function getBookDimensions() {
    - data-density="hard" (rigid physical book cover)
    - Zero black borders, 100% full uncropped artwork
    ───────────────────────────────────────────────────── */
-const HeroFrontCover = forwardRef((props, ref) => {
+const HeroFrontCover = forwardRef(({ onCoverClick, ...props }, ref) => {
   return (
     <div
       ref={ref}
@@ -50,6 +63,10 @@ const HeroFrontCover = forwardRef((props, ref) => {
       className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] cursor-pointer ${props.className || ''}`}
       data-density="hard"
       title="Click or drag to open album"
+      onClick={(e) => {
+        props.onClick?.(e);
+        onCoverClick?.();
+      }}
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-r-2 border-r-[#8A7862]/30 bg-[#FAF8F5]">
         <img
@@ -343,7 +360,7 @@ HeroEndsheetPage.displayName = 'HeroEndsheetPage';
    PAGE 11: LUXURY HARDCOVER BACK COVER
    - data-density="hard" (rigid physical book cover)
    ───────────────────────────────────────────────────── */
-const HeroBackCover = forwardRef((props, ref) => {
+const HeroBackCover = forwardRef(({ onCoverClick, ...props }, ref) => {
   return (
     <div
       ref={ref}
@@ -352,6 +369,10 @@ const HeroBackCover = forwardRef((props, ref) => {
       className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] cursor-pointer ${props.className || ''}`}
       data-density="hard"
       title="Click or drag to reopen album"
+      onClick={(e) => {
+        props.onClick?.(e);
+        onCoverClick?.();
+      }}
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-l-2 border-l-[#8A7862]/30 bg-[#FAF8F5]">
         <img
@@ -399,47 +420,66 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
 
   const totalPages = 12;
 
-  const handleFlipNext = () => {
+  const handleFlipNext = useCallback(() => {
     try {
       flipBookRef.current?.pageFlip()?.flipNext();
     } catch (e) {
       console.warn('flipNext error:', e);
     }
-  };
+  }, []);
 
-  const handleFlipPrev = () => {
+  const handleFlipPrev = useCallback(() => {
     try {
       flipBookRef.current?.pageFlip()?.flipPrev();
     } catch (e) {
       console.warn('flipPrev error:', e);
     }
-  };
+  }, []);
 
-  const handlePageFlip = (e) => {
+  const handlePageFlip = useCallback((e) => {
     if (e && typeof e.data === 'number') {
       setCurrentPage(e.data);
     }
-  };
+  }, []);
+
+  const handleChangeState = useCallback((e) => {
+    if (e && e.data === 'read') {
+      try {
+        const idx = flipBookRef.current?.pageFlip()?.getCurrentPageIndex();
+        if (typeof idx === 'number') {
+          setCurrentPage(idx);
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+  }, []);
 
   const isCover = currentPage === 0;
-  const isBackCover = currentPage >= totalPages - 1;
+  const isBackCover = currentPage >= totalPages - 2;
   const isOpen = !isCover && !isBackCover;
 
   return (
     <div className="relative flex flex-col items-center justify-center select-none my-1 sm:my-1.5 w-full max-w-full px-2">
       {/* ── 3D Stage with Outer Drop Shadow ── */}
-      <div className="relative flex items-center justify-center select-none">
+      <div
+        className="relative flex items-center justify-center select-none transition-all duration-500 ease-out"
+        style={{
+          width: isOpen ? dims.singlePageW * 2 : dims.singlePageW,
+          height: dims.singlePageH
+        }}
+      >
         {/* Soft Grounding Ambient Contact Shadow */}
         <div
           className="absolute -bottom-3 sm:-bottom-4 h-5 sm:h-6 bg-black/60 blur-md rounded-full pointer-events-none transition-all duration-500 ease-out"
           style={{
-            width: isOpen ? dims.singlePageW * 1.9 : dims.singlePageW * 0.95,
+            width: isOpen ? dims.singlePageW * 1.85 : dims.singlePageW * 0.92,
             left: '50%',
             transform: 'translateX(-50%)'
           }}
         />
 
-        {/* ── Discreet Outside Navigation Arrows (Visible when open) ── */}
+        {/* ── Discreet Outside Navigation Arrows (Visible ONLY when open) ── */}
         {isOpen && (
           <>
             <button
@@ -486,9 +526,6 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
                 : 'translateX(0px)'
           }}
         >
-          {/* Stacked Pages Thickness Edge Shadow at bottom */}
-          <div className="absolute -bottom-1 left-2 right-2 h-1 bg-gradient-to-r from-[#D8CEBF] via-[#FAF7F2] to-[#D8CEBF] rounded-b-xs opacity-75 pointer-events-none" />
-
           {/* ── REAL 3D PAGE-FLIP ENGINE (HTMLFlipBook) ── */}
           <HTMLFlipBook
             key={`hero-flipbook-${dims.singlePageW}-${dims.singlePageH}`}
@@ -497,9 +534,9 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
             height={dims.singlePageH}
             size="fixed"
             minWidth={130}
-            maxWidth={600}
+            maxWidth={800}
             minHeight={120}
-            maxHeight={600}
+            maxHeight={800}
             maxShadowOpacity={0.6}
             showCover={true}
             mobileScrollSupport={false}
@@ -514,10 +551,11 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
             showPageCorners={true}
             disableFlipByClick={false}
             onFlip={handlePageFlip}
+            onChangeState={handleChangeState}
             className="album-flipbook-shadow"
           >
             {/* Page 0: Front Cover */}
-            <HeroFrontCover />
+            <HeroFrontCover onCoverClick={handleFlipNext} />
 
             {/* Page 1: Dedication (Left) */}
             <HeroDedicationPage />
@@ -550,7 +588,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
             <HeroEndsheetPage onClose={handleFlipNext} />
 
             {/* Page 11: Back Cover */}
-            <HeroBackCover />
+            <HeroBackCover onCoverClick={handleFlipPrev} />
           </HTMLFlipBook>
         </div>
       </div>
