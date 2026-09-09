@@ -17,6 +17,7 @@ const ClientDashboard = lazy(() => import('./components/client/ClientDashboard')
 const ContactSection = lazy(() => import('./components/ContactSection'));
 const AboutSection = lazy(() => import('./components/AboutSection'));
 const AlbumPreviewPage = lazy(() => import('./components/AlbumPreviewPage'));
+const PhotographyCostEstimator = lazy(() => import('./components/estimator/PhotographyCostEstimator'));
 const LightboxModal = lazy(() => import('./components/LightboxModal'));
 const MoodboardDrawer = lazy(() => import('./components/MoodboardDrawer'));
 
@@ -36,9 +37,12 @@ function getInitialPage() {
     const hash = window.location.hash.replace('#', '').trim();
     const validPages = [
       'home', 'media', 'colorlab', 'events', 'login', 'contact', 'about',
-      'album-preview', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'
+      'album-preview', 'estimator', 'cost-estimator', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'
     ];
-    if (validPages.includes(hash)) return hash;
+    if (validPages.includes(hash)) {
+      if (hash === 'cost-estimator') return 'estimator';
+      return hash;
+    }
   } catch (e) {}
   return 'home';
 }
@@ -287,10 +291,21 @@ function AppContent() {
             </Suspense>
           </div>
         )}
+
+        {activePage === 'estimator' && (
+          <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
+            <Suspense fallback={<PageLoader />}>
+              <PhotographyCostEstimator
+                onBackToHome={() => handleSelectPage('home')}
+                onNavigateToPage={handleSelectPage}
+              />
+            </Suspense>
+          </div>
+        )}
       </main>
 
       {/* Footer (shown on inner pages) */}
-      {activePage !== 'login' && activePage !== 'home' && (
+      {activePage !== 'login' && activePage !== 'home' && activePage !== 'estimator' && (
         <footer id="footer">
           <Footer
             onOpenInquire={() => handleSelectPage('contact')}
