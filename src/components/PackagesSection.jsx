@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { fetchSitePackages } from '../utils/packagesService';
 import { Sparkles, ArrowLeft, PhoneCall } from 'lucide-react';
-import InstantQuoteWidget from './InstantQuoteWidget';
 
 export default function PackagesSection({
   onBackToGallery,
@@ -76,38 +75,6 @@ export default function PackagesSection({
             {categorySubtitle}
           </p>
         </div>
- 
-        {/* Cost Estimator CTA Header Banner */}
-        {packageType !== 'colorlab' && (
-          <div className="max-w-4xl mx-auto mb-8 bg-[#161412] text-white p-4 sm:p-6 rounded-2xl border border-[#C5A880]/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="space-y-1 text-center sm:text-left">
-              <div className="inline-flex items-center gap-1.5 text-[#C5A880] text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>7-STEP INTERACTIVE FLOW</span>
-              </div>
-              <h3 className="font-serif text-lg sm:text-xl text-white font-medium">
-                Calculate Your Exact Event Photography Cost
-              </h3>
-              <p className="text-xs text-[#A89F91] font-light">
-                Select your event, customize packages & album sheets, and download a professional PDF estimate instantly.
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                if (typeof onOpenEstimator === 'function') {
-                  onOpenEstimator();
-                } else {
-                  window.location.hash = '#estimator';
-                }
-              }}
-              className="w-full sm:w-auto px-6 py-3 bg-[#C5A880] hover:bg-[#D4B991] text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer shrink-0"
-            >
-              <span>Launch Cost Estimator</span>
-              <span className="text-sm">→</span>
-            </button>
-          </div>
-        )}
 
         {/* Services Grid (Dynamic from Supabase / Admin Editor) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-16">
@@ -222,13 +189,23 @@ export default function PackagesSection({
           })}
         </div>
 
-        {/* Instant Quote Estimator Widget (Bottom of Packages - Not rendered in Color Lab) */}
-        {showQuoteWidget && packageType !== 'colorlab' && (
-          <InstantQuoteWidget
-            packages={packages}
-            whatsappNumber={whatsappNumber}
-            displayPhone={displayPhone}
-          />
+        {/* Cost Estimator CTA Button (Replacing old Fotogarphy Packages Estimator) */}
+        {packageType !== 'colorlab' && (
+          <div className="max-w-4xl mx-auto my-8 sm:my-12 text-center flex flex-col items-center justify-center gap-3">
+            <button
+              onClick={() => {
+                if (typeof onOpenEstimator === 'function') {
+                  onOpenEstimator();
+                } else {
+                  window.location.hash = '#estimator';
+                }
+              }}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#D8CFC4] bg-[#FAF7F2] hover:bg-white text-[#1A1A1A] font-bold text-xs sm:text-sm tracking-[0.18em] uppercase shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer hover:scale-105"
+            >
+              <Sparkles className="w-4 h-4 text-[#8C6D3F]" />
+              <span>COST ESTIMATOR</span>
+            </button>
+          </div>
         )}
 
         {/* Global Booking Banner */}

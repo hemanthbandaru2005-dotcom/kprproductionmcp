@@ -236,6 +236,7 @@ function AppContent() {
                 onSelectPhoto={(photo) => setSelectedPhoto(photo)}
                 moodboardIds={moodboardIds}
                 toggleMoodboardItem={toggleMoodboardItem}
+                onOpenEstimator={() => handleSelectPage('estimator')}
               />
             </Suspense>
           </div>

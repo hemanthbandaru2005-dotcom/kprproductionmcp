@@ -136,10 +136,10 @@ export default function Navbar({ activePage, onSelectPage }) {
         <div className="hidden md:flex items-center space-x-3">
           <button
             onClick={() => handlePageClick('estimator')}
-            className={`px-4 py-2 rounded-full border transition-all duration-300 cursor-pointer shadow-sm hover:scale-105 flex items-center gap-1.5 text-xs font-bold tracking-[0.15em] uppercase ${
+            className={`px-4.5 py-2 rounded-full border transition-all duration-300 cursor-pointer shadow-sm hover:scale-105 flex items-center gap-2 text-xs font-bold tracking-[0.18em] uppercase ${
               activePage === 'estimator'
                 ? 'bg-[#C5A880] text-black border-[#C5A880] shadow-md'
-                : 'border-[#C5A880]/60 bg-[#C5A880]/10 hover:bg-[#C5A880] text-[#1A1A1A] hover:text-black'
+                : 'border-[#D8CFC4] bg-[#FAF7F2] hover:bg-white text-[#1A1A1A]'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-[#8C6D3F]" />
