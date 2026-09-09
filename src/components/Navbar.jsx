@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, User, ChevronDown, Sparkles } from 'lucide-react';
+import { Menu, X, User, ChevronDown } from 'lucide-react';
 import kprProductionsLogo from '../assets/kpr_productions_logo.png';
 
 export default function Navbar({ activePage, onSelectPage }) {
@@ -132,20 +132,8 @@ export default function Navbar({ activePage, onSelectPage }) {
 
         </nav>
 
-        {/* 3. RIGHT: COST ESTIMATOR & LOGIN Buttons */}
-        <div className="hidden md:flex items-center space-x-3">
-          <button
-            onClick={() => handlePageClick('estimator')}
-            className={`px-4.5 py-2 rounded-full border transition-all duration-300 cursor-pointer shadow-sm hover:scale-105 flex items-center gap-2 text-xs font-bold tracking-[0.18em] uppercase ${
-              activePage === 'estimator'
-                ? 'bg-[#C5A880] text-black border-[#C5A880] shadow-md'
-                : 'border-[#D8CFC4] bg-[#FAF7F2] hover:bg-white text-[#1A1A1A]'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#8C6D3F]" />
-            <span>COST ESTIMATOR</span>
-          </button>
-
+        {/* 3. RIGHT: LOGIN Button */}
+        <div className="hidden md:flex items-center">
           <button
             onClick={() => handlePageClick('login')}
             className="px-6 py-2 rounded-full border border-black/25 bg-black/5 hover:bg-black text-[#000000] hover:text-white font-bold text-xs tracking-[0.2em] uppercase backdrop-blur-md transition-all duration-300 cursor-pointer shadow-sm hover:scale-105 flex items-center gap-2"
@@ -194,13 +182,6 @@ export default function Navbar({ activePage, onSelectPage }) {
               className={`text-left py-2 border-b border-white/5 ${activePage === 'events' ? 'text-[#D32F2F]' : 'text-white/90'}`}
             >
               EVENTS
-            </button>
-            <button
-              onClick={() => handlePageClick('estimator')}
-              className={`text-left py-2 border-b border-white/5 flex items-center justify-between ${activePage === 'estimator' ? 'text-[#C5A880]' : 'text-white/90'}`}
-            >
-              <span>COST ESTIMATOR</span>
-              <span className="text-[9px] px-2 py-0.5 rounded bg-[#C5A880] text-black font-bold">CALCULATE</span>
             </button>
             <button
               onClick={() => handlePageClick('contact')}

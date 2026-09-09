@@ -296,9 +296,11 @@ function AppContent() {
         {activePage === 'estimator' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
             <Suspense fallback={<PageLoader />}>
-              <PhotographyCostEstimator
-                onBackToHome={() => handleSelectPage('home')}
-                onNavigateToPage={handleSelectPage}
+              <MediaSection
+                initialTab="estimator"
+                onSelectPhoto={(photo) => setSelectedPhoto(photo)}
+                moodboardIds={moodboardIds}
+                toggleMoodboardItem={toggleMoodboardItem}
               />
             </Suspense>
           </div>
