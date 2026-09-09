@@ -3,8 +3,7 @@ import HTMLFlipBook from 'react-pageflip';
 import {
   ChevronLeft,
   ChevronRight,
-  Maximize2,
-  Upload
+  Maximize2
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────
@@ -151,7 +150,7 @@ const HeroDedicationPage = forwardRef((props, ref) => {
           className="font-mono tracking-wider uppercase text-[#8C6D3F]/80 self-center"
           style={{ fontSize: 'clamp(5px, 1vw, 7px)' }}
         >
-          Spread 1 of 5
+          Spread 1 of 4
         </span>
       </div>
     </div>
@@ -212,149 +211,7 @@ const HeroPhotoPage = forwardRef(({ src, label, isLeftPage, ...props }, ref) => 
 });
 HeroPhotoPage.displayName = 'HeroPhotoPage';
 
-/* ─────────────────────────────────────────────────────
-   PAGE 9: STUDIO CTA (Left Page)
-   ───────────────────────────────────────────────────── */
-const HeroStudioPage = forwardRef(({ onOpenUpload, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      {...props}
-      style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
-      data-density="soft"
-    >
-      <div
-        className="w-full h-full flex flex-col justify-between text-center p-2.5 sm:p-4 relative overflow-hidden border-r-2 border-r-[#BFB19E]"
-        style={{
-          background: 'linear-gradient(135deg, #FAF8F5 0%, #F4EFE6 50%, #EAE0D0 100%)'
-        }}
-      >
-        <span
-          className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
-          style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
-        >
-          CUSTOM ALBUM STUDIO
-        </span>
-        <div className="space-y-1 sm:space-y-1.5">
-          <div
-            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center mx-auto text-[#8C6D3F]"
-            style={{
-              background: 'rgba(140,109,63,0.15)',
-              border: '1px solid rgba(140,109,63,0.3)'
-            }}
-          >
-            <Upload className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-          </div>
-          <h4
-            className="font-serif text-[#2A231C] font-semibold leading-tight"
-            style={{ fontSize: 'clamp(8.5px, 1.6vw, 11px)' }}
-          >
-            Design Your Album
-          </h4>
-          <p
-            className="text-[#6A5A4A] leading-tight"
-            style={{ fontSize: 'clamp(5.5px, 1vw, 7.5px)' }}
-          >
-            Create custom spreads or arrange high-res photo proofs.
-          </p>
-          {onOpenUpload && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenUpload();
-              }}
-              className="inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wider transition-transform hover:scale-105 active:scale-95 cursor-pointer border shadow-xs"
-              style={{
-                fontSize: 'clamp(6px, 1.1vw, 8px)',
-                padding: '3px 10px',
-                background: '#181410',
-                color: '#E8D4B8',
-                borderColor: 'rgba(197,168,128,0.5)'
-              }}
-            >
-              <Upload className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
-              <span>Open Studio</span>
-            </button>
-          )}
-        </div>
-        <span
-          className="font-mono tracking-wider text-[#8C6D3F]"
-          style={{ fontSize: 'clamp(5px, 0.9vw, 6.5px)' }}
-        >
-          KPR Colour Lab
-        </span>
-      </div>
-    </div>
-  );
-});
-HeroStudioPage.displayName = 'HeroStudioPage';
 
-/* ─────────────────────────────────────────────────────
-   PAGE 10: ENDSHEET / CHERISHED FOREVER (Right Page)
-   ───────────────────────────────────────────────────── */
-const HeroEndsheetPage = forwardRef(({ onClose, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      {...props}
-      style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
-      data-density="soft"
-    >
-      <div
-        className="w-full h-full flex flex-col justify-between text-center p-2.5 sm:p-4 relative overflow-hidden border-l-2 border-l-[#BFB19E]"
-        style={{ background: '#FAF8F5' }}
-      >
-        <span
-          className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
-          style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
-        >
-          END OF PREVIEW
-        </span>
-        <div className="space-y-1 sm:space-y-1.5">
-          <h4
-            className="font-serif text-[#2A231C] font-semibold leading-tight"
-            style={{ fontSize: 'clamp(8.5px, 1.6vw, 11px)' }}
-          >
-            Cherished Forever
-          </h4>
-          <p
-            className="text-[#6A5A4A] leading-tight"
-            style={{ fontSize: 'clamp(5.5px, 1vw, 7.5px)' }}
-          >
-            100% Layflat Archival Binding with Ultra-HD Silk Printing
-          </p>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose?.();
-            }}
-            className="inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wider transition-transform hover:scale-105 active:scale-95 cursor-pointer shadow-xs"
-            style={{
-              fontSize: 'clamp(6px, 1.1vw, 8px)',
-              padding: '3px 10px',
-              background: '#C5A880',
-              color: '#120F0C'
-            }}
-          >
-            <span>Close Book</span>
-            <ChevronRight className="w-2.5 h-2.5" />
-          </button>
-        </div>
-        <span
-          className="font-mono tracking-widest uppercase text-[#8C6D3F]/70"
-          style={{ fontSize: 'clamp(5px, 0.9vw, 6.5px)' }}
-        >
-          Tap to Close →
-        </span>
-      </div>
-    </div>
-  );
-});
-HeroEndsheetPage.displayName = 'HeroEndsheetPage';
 
 /* ─────────────────────────────────────────────────────
    PAGE 11: LUXURY HARDCOVER BACK COVER
@@ -418,7 +275,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const totalPages = 12;
+  const totalPages = 10;
 
   const handleFlipNext = useCallback(() => {
     try {
@@ -456,7 +313,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
   }, []);
 
   const isCover = currentPage === 0;
-  const isBackCover = currentPage >= totalPages - 2;
+  const isBackCover = currentPage >= totalPages - 1;
   const isOpen = !isCover && !isBackCover;
 
   return (
@@ -581,13 +438,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
             {/* Page 8: Photo 7 (Right) */}
             <HeroPhotoPage src="/images/wedding/photo_7.jpg" label="07 · Grand Reception" isLeftPage={false} />
 
-            {/* Page 9: Studio CTA (Left) */}
-            <HeroStudioPage onOpenUpload={onOpenUpload} />
-
-            {/* Page 10: Endsheet & Close (Right) */}
-            <HeroEndsheetPage onClose={handleFlipNext} />
-
-            {/* Page 11: Back Cover */}
+            {/* Page 9: Back Cover */}
             <HeroBackCover onCoverClick={handleFlipPrev} />
           </HTMLFlipBook>
         </div>
