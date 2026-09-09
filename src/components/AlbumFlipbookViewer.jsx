@@ -30,70 +30,55 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, ...props }, ref) => {
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#E8E2D8] ${props.className || ''}`}
       data-density="hard"
     >
-      <div className="w-full h-full bg-gradient-to-br from-[#1C1814] via-[#26201A] to-[#120F0C] flex flex-col items-center justify-center p-3 sm:p-8 relative overflow-hidden shadow-2xl border-r-2 border-r-[#C5A880]/40">
-        {/* Leather grain subtle texture */}
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#C5A880_1px,transparent_1px)] [background-size:10px_10px] pointer-events-none" />
-
-        {/* Gold hot-stamped ornate borders */}
-        <div className="absolute inset-2 sm:inset-4 border border-[#C5A880]/40 rounded-xs pointer-events-none" />
-        <div className="absolute inset-3 sm:inset-5.5 border border-[#C5A880]/20 rounded-xs pointer-events-none" />
-
-        {/* Corner filigree accents */}
-        <div className="absolute top-2 left-2 sm:top-4 sm:left-4 w-3.5 h-3.5 sm:w-6 sm:h-6 border-t-2 border-l-2 border-[#C5A880]/70" />
-        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 w-3.5 h-3.5 sm:w-6 sm:h-6 border-t-2 border-r-2 border-[#C5A880]/70" />
-        <div className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 w-3.5 h-3.5 sm:w-6 sm:h-6 border-b-2 border-l-2 border-[#C5A880]/70" />
-        <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 w-3.5 h-3.5 sm:w-6 sm:h-6 border-b-2 border-r-2 border-[#C5A880]/70" />
-
-        {/* Cover Content */}
-        <div className="text-center z-10 space-y-1.5 sm:space-y-3.5 px-2 flex flex-col items-center">
-          {/* KPR Logo Badge */}
-          <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-black/50 border border-[#C5A880]/60 p-1 flex items-center justify-center shadow-lg">
-            <img
-              src="/images/kpr_logo.png"
-              alt="KPR Logo"
-              className="w-full h-full object-contain filter drop-shadow-[0_2px_4px_rgba(197,168,128,0.5)]"
-            />
-          </div>
-
-          <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-[#C5A880]/90">
-            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-[#C5A880]" />
-            <span className="text-[8px] sm:text-[11px] uppercase font-bold tracking-[0.25em] text-[#C5A880]">
-              KPR PRODUCTIONS
-            </span>
-            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-[#C5A880]" />
-          </div>
-
-          <div className="w-8 sm:w-16 h-0.5 bg-[#C5A880]/60 mx-auto" />
-
-          <h2 className="font-serif text-xs sm:text-2xl md:text-3xl text-[#F7F1E5] tracking-wide leading-tight drop-shadow-md uppercase px-1 line-clamp-2">
-            {title || 'Luxury Wedding Album'}
-          </h2>
-
-          <div className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#C5A880]/20 border border-[#C5A880]/50 text-[#F5E6D0] text-[8.5px] sm:text-xs font-mono font-bold tracking-widest uppercase shadow-xs">
-            LUXURY LAYFLAT HEIRLOOM
-          </div>
-
-          <div className="w-8 sm:w-16 h-0.5 bg-[#C5A880]/60 mx-auto" />
-
-          <p className="text-[#D5C4A6]/75 text-[7.5px] sm:text-[10px] tracking-widest uppercase">
-            {totalPhotos} {totalPhotos === 1 ? 'Page' : 'Pages'} · Archival Silk Print
-          </p>
-
-          <div className="pt-1">
-            <span className="inline-flex items-center gap-1 text-[7.5px] sm:text-[10px] text-[#C5A880] font-semibold tracking-wider bg-black/40 px-2 py-0.5 rounded-full border border-[#C5A880]/30 animate-pulse">
-              Tap / Swipe to Open →
-            </span>
-          </div>
+      <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-r-2 border-r-[#8A7862]/40 bg-[#FAF7F2]">
+        {/* User-Provided Artwork Cover Image */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#E8E2D8]">
+          <img
+            src="/images/album/front_cover.jpg"
+            alt="KPR Productions Wedding Photobook Front Cover"
+            className="w-full h-full object-cover object-center select-none pointer-events-none"
+            loading="eager"
+            draggable={false}
+          />
         </div>
 
-        {/* Footer branding */}
-        <div className="absolute bottom-1.5 sm:bottom-4 text-center">
-          <p className="text-[#C5A880]/60 text-[6.5px] sm:text-[8px] tracking-[0.3em] uppercase font-bold select-none">
-            KPR PRODUCTIONS · HYDERABAD
-          </p>
+        {/* Spine Hinge Crease Shadow & Depth */}
+        <div
+          className="absolute top-0 bottom-0 left-0 w-4 sm:w-7 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 40%, rgba(255,255,255,0.1) 70%, transparent 100%)',
+            borderRight: '1px solid rgba(0,0,0,0.18)'
+          }}
+        />
+
+        {/* Embossed Linen Cloth Texture Sheen */}
+        <div
+          className="absolute inset-0 pointer-events-none z-10 opacity-30 mix-blend-overlay"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 45%, rgba(0,0,0,0.25) 100%)'
+          }}
+        />
+
+        {/* Hardcover Outer Bevel Edge */}
+        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.35)]" />
+
+        {/* Right Edge Thickness */}
+        <div
+          className="absolute top-0 bottom-0 right-0 w-2 sm:w-3 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(to left, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)'
+          }}
+        />
+
+        {/* Subtle Tap to Open indicator */}
+        <div className="absolute bottom-2.5 sm:bottom-4 right-2.5 sm:right-4 z-20">
+          <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] text-[#F5E6D0] font-serif tracking-wider bg-black/75 px-2.5 py-1 rounded-full border border-[#C5A880]/50 shadow-md backdrop-blur-xs">
+            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#C5A880] animate-pulse" />
+            <span>Tap to Open →</span>
+          </span>
         </div>
       </div>
     </div>
@@ -193,27 +178,55 @@ const BackCoverPage = forwardRef((props, ref) => {
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#E8E2D8] ${props.className || ''}`}
       data-density="hard"
     >
-      <div className="w-full h-full bg-gradient-to-br from-[#1C1814] via-[#26201A] to-[#120F0C] flex flex-col items-center justify-center p-3 sm:p-8 relative overflow-hidden shadow-2xl border-l-2 border-l-[#C5A880]/40">
-        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#C5A880_1px,transparent_1px)] [background-size:10px_10px] pointer-events-none" />
-        <div className="absolute inset-2 sm:inset-4 border border-[#C5A880]/40 rounded-xs pointer-events-none" />
+      <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-l-2 border-l-[#8A7862]/40 bg-[#FAF7F2]">
+        {/* User-Provided Artwork Back Cover Image */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#E8E2D8]">
+          <img
+            src="/images/album/back_cover.jpg"
+            alt="KPR Productions Wedding Photobook Back Cover"
+            className="w-full h-full object-cover object-center select-none pointer-events-none"
+            loading="lazy"
+            draggable={false}
+          />
+        </div>
 
-        <div className="text-center z-10 space-y-1.5 sm:space-y-3">
-          <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#C5A880]/20 border border-[#C5A880]/50 flex items-center justify-center mx-auto text-[#E8D4B8] shadow-inner">
-            <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 text-[#C5A880]" />
-          </div>
-          <h3 className="font-serif text-[11px] sm:text-lg text-[#F4ECD8] tracking-widest uppercase">
-            KPR Color Lab
-          </h3>
-          <p className="text-[#C5A880] text-[7.5px] sm:text-[9.5px] tracking-[0.25em] uppercase font-semibold">
-            Archival Quality Certified
-          </p>
-          <div className="w-6 sm:w-12 h-0.5 bg-[#C5A880]/50 mx-auto" />
-          <p className="text-[#D5C4A6]/60 text-[6.5px] sm:text-[8.5px] tracking-wider uppercase">
-            100% Layflat · HD Color Proof
-          </p>
+        {/* Right Spine Hinge Crease Shadow & Depth */}
+        <div
+          className="absolute top-0 bottom-0 right-0 w-4 sm:w-7 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(to left, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 40%, rgba(255,255,255,0.1) 70%, transparent 100%)',
+            borderLeft: '1px solid rgba(0,0,0,0.18)'
+          }}
+        />
+
+        {/* Embossed Linen Cloth Texture Sheen */}
+        <div
+          className="absolute inset-0 pointer-events-none z-10 opacity-30 mix-blend-overlay"
+          style={{
+            background: 'linear-gradient(225deg, rgba(255,255,255,0.4) 0%, transparent 45%, rgba(0,0,0,0.25) 100%)'
+          }}
+        />
+
+        {/* Hardcover Outer Bevel Edge */}
+        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_8px_rgba(0,0,0,0.35)]" />
+
+        {/* Left Edge Thickness */}
+        <div
+          className="absolute top-0 bottom-0 left-0 w-2 sm:w-3 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(to right, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)'
+          }}
+        />
+
+        {/* Subtle Back Cover Label */}
+        <div className="absolute bottom-2.5 sm:bottom-4 left-2.5 sm:left-4 z-20">
+          <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] text-[#F5E6D0] font-serif tracking-wider bg-black/75 px-2.5 py-1 rounded-full border border-[#C5A880]/50 shadow-md backdrop-blur-xs">
+            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#C5A880]" />
+            <span>KPR Layflat Heirloom</span>
+          </span>
         </div>
       </div>
     </div>

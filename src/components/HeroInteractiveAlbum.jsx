@@ -46,131 +46,53 @@ function FrontCover({ onOpen, dimensions }) {
       style={{
         transformStyle: 'preserve-3d',
         borderRadius: 3,
-        background: 'linear-gradient(145deg, #231B13 0%, #2D2218 35%, #1A1510 65%, #110E0A 100%)',
-        boxShadow: '0 20px 55px rgba(0,0,0,0.75), 0 6px 18px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(197,168,128,0.15)',
-        border: '2px solid rgba(197,168,128,0.6)',
+        boxShadow: '0 20px 55px rgba(0,0,0,0.75), 0 6px 18px rgba(0,0,0,0.5)',
+        border: '1.5px solid rgba(138,120,98,0.5)',
+        background: '#FAF7F2'
       }}
     >
-      {/* ── Leather grain texture ── */}
-      <div className="absolute inset-0 pointer-events-none opacity-20"
-        style={{ background: 'radial-gradient(#D8C4A4 1px, transparent 1px)', backgroundSize: '6px 6px' }} />
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%)' }} />
+      {/* ── User-Supplied Cover Image ── */}
+      <img
+        src="/images/album/front_cover.jpg"
+        alt="KPR Productions Wedding Photobook"
+        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+      />
 
-      {/* ── Spine hinge on left with stitching ── */}
-      <div className="absolute top-0 bottom-0 left-0 w-4 sm:w-5 flex flex-col justify-around items-center py-2 pointer-events-none z-10"
-        style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85), rgba(0,0,0,0.4), transparent)', borderRight: '1px solid rgba(197,168,128,0.35)' }}>
-        {[...Array(7)].map((_, i) => (
-          <div key={i} className="w-0.5 sm:w-1 h-1.5 sm:h-2 rounded-full bg-[#C5A880]/60 shadow" />
-        ))}
-      </div>
+      {/* ── Spine hinge on left ── */}
+      <div
+        className="absolute top-0 bottom-0 left-0 w-3.5 sm:w-5 pointer-events-none z-10"
+        style={{
+          background: 'linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)',
+          borderRight: '1px solid rgba(0,0,0,0.2)'
+        }}
+      />
 
-      {/* ── Gilt page edges right & bottom ── */}
-      <div className="absolute top-1 bottom-1 right-0 w-1.5 pointer-events-none rounded-r opacity-85"
-        style={{ background: 'linear-gradient(to left, #FBF8F3, #D8CEBB, #9B8C78)' }} />
-      <div className="absolute left-4 right-1 bottom-0 h-1.5 pointer-events-none rounded-b opacity-85"
-        style={{ background: 'linear-gradient(to top, #FBF8F3, #D8CEBB, #9B8C78)' }} />
+      {/* ── Outer Bevel Border & Linen Overlay ── */}
+      <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/25 shadow-[inset_0_0_8px_rgba(0,0,0,0.3)]" />
 
-      {/* ── Double gold foil border ── */}
-      <div className="absolute inset-2 sm:inset-3 pointer-events-none rounded-sm"
-        style={{ border: '1px solid rgba(197,168,128,0.60)' }} />
-      <div className="absolute inset-3 sm:inset-4.5 pointer-events-none rounded-sm"
-        style={{ border: '1px solid rgba(197,168,128,0.25)' }} />
-
-      {/* ── Ornate corner filigree ── */}
-      {[
-        'top-3 left-5 sm:top-4 sm:left-6 border-t-2 border-l-2',
-        'top-3 right-3 sm:top-4 sm:right-4 border-t-2 border-r-2',
-        'bottom-3 left-5 sm:bottom-4 sm:left-6 border-b-2 border-l-2',
-        'bottom-3 right-3 sm:bottom-4 sm:right-4 border-b-2 border-r-2',
-      ].map((cls, i) => (
-        <div key={i} className={`absolute w-3 h-3 sm:w-4 sm:h-4 pointer-events-none border-[#E5D3B3] ${cls}`} />
-      ))}
-
-      {/* ── Top header badge ── */}
-      <div className="absolute top-3 sm:top-4 left-0 right-0 flex items-center justify-center z-10">
-        <div className="flex items-center gap-1 px-2 py-0.5">
-          <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-[#C5A880]" />
-          <span className="text-[5.5px] sm:text-[7px] font-bold tracking-[0.3em] uppercase text-[#C5A880]">
-            ROYAL HEIRLOOM COLLECTION
-          </span>
-          <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-[#C5A880]" />
-        </div>
-      </div>
-
-      {/* ── Center: Main branding ── */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-3 gap-1 sm:gap-2">
-        {/* KPR Logo circle */}
-        <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300"
+      {/* ── Open CTA Badge ── */}
+      <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 z-20">
+        <span
+          className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-full font-serif font-bold uppercase tracking-wider transition-transform duration-200 group-hover:scale-105"
           style={{
-            background: 'radial-gradient(circle at 35% 35%, rgba(197,168,128,0.2) 0%, rgba(0,0,0,0.7) 100%)',
-            border: '1.5px solid rgba(197,168,128,0.65)',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
-          }}>
-          <img
-            src="/images/kpr_logo.png"
-            alt="KPR Productions"
-            className="w-full h-full object-contain rounded-full p-1"
-            style={{ filter: 'drop-shadow(0 2px 5px rgba(197,168,128,0.6))' }}
-          />
-        </div>
-
-        {/* Studio name */}
-        <div className="text-center space-y-0.5">
-          <h2 className="font-serif font-bold tracking-[0.22em] uppercase leading-tight"
-            style={{
-              fontSize: 'clamp(11px, 2.2vw, 17px)',
-              background: 'linear-gradient(to bottom, #FFF8EB 0%, #EDD094 40%, #C5A261 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
-            }}>
-            KPR PRODUCTIONS
-          </h2>
-
-          {/* Separator */}
-          <div className="flex items-center justify-center gap-1.5 py-0.5">
-            <div className="h-px w-6 sm:w-10" style={{ background: 'linear-gradient(to right, transparent, #C5A880)' }} />
-            <Star className="w-1.5 h-1.5 sm:w-2 sm:h-2 text-[#C5A880] fill-[#C5A880]" />
-            <div className="h-px w-6 sm:w-10" style={{ background: 'linear-gradient(to left, transparent, #C5A880)' }} />
-          </div>
-
-          <p className="font-serif italic text-[#F0E6D2] tracking-[0.15em] uppercase"
-            style={{ fontSize: 'clamp(6.5px, 1.4vw, 10px)' }}>
-            Wedding Photobook
-          </p>
-          <p className="font-mono text-[#C5A880]/80 tracking-widest uppercase"
-            style={{ fontSize: 'clamp(5px, 1vw, 7.5px)' }}>
-            Layflat Silk Edition
-          </p>
-        </div>
-
-        {/* Open CTA */}
-        <div className="pt-0.5">
-          <span className="inline-flex items-center gap-1 px-3 py-0.5 sm:py-1 rounded-full font-bold uppercase tracking-wider transition-transform duration-200 group-hover:scale-105"
-            style={{
-              fontSize: 'clamp(6px, 1.2vw, 8.5px)',
-              background: 'linear-gradient(to right, #C5A880, #E5CC88, #C5A880)',
-              color: '#120F0C',
-              boxShadow: '0 2px 12px rgba(197,168,128,0.5)',
-            }}>
-            <span>Open Album</span>
-            <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-          </span>
-        </div>
-      </div>
-
-      {/* ── Footer ── */}
-      <div className="absolute bottom-3 sm:bottom-4 left-0 right-0 flex justify-center z-10">
-        <p className="text-[#C5A880]/70 uppercase tracking-[0.28em] font-medium"
-          style={{ fontSize: 'clamp(5px, 0.9vw, 7px)' }}>
-          KPR COLOUR LAB &amp; STUDIO · HYDERABAD
-        </p>
+            fontSize: 'clamp(6px, 1.1vw, 8px)',
+            background: 'linear-gradient(to right, #1A1612, #2B241E)',
+            color: '#F4ECD8',
+            border: '1px solid rgba(197,168,128,0.6)',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.6)',
+          }}
+        >
+          <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-[#C5A880]" />
+          <span>Open Album</span>
+          <ChevronRight className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-[#C5A880]" />
+        </span>
       </div>
 
       {/* ── Hover shimmer overlay ── */}
-      <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: 'linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.04) 50%, transparent 70%)' }} />
+      <div
+        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"
+        style={{ background: 'linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)' }}
+      />
     </motion.div>
   );
 }
@@ -190,106 +112,47 @@ function BackCover({ onReopen }) {
       style={{
         transformStyle: 'preserve-3d',
         borderRadius: 3,
-        background: 'linear-gradient(145deg, #110E0A 0%, #1A1510 35%, #2D2218 65%, #231B13 100%)',
-        boxShadow: '0 20px 55px rgba(0,0,0,0.75), 0 6px 18px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(197,168,128,0.15)',
-        border: '2px solid rgba(197,168,128,0.6)',
+        boxShadow: '0 20px 55px rgba(0,0,0,0.75), 0 6px 18px rgba(0,0,0,0.5)',
+        border: '1.5px solid rgba(138,120,98,0.5)',
+        background: '#FAF7F2'
       }}
     >
-      {/* Leather grain */}
-      <div className="absolute inset-0 pointer-events-none opacity-20"
-        style={{ background: 'radial-gradient(#D8C4A4 1px, transparent 1px)', backgroundSize: '6px 6px' }} />
+      {/* ── User-Supplied Back Cover Image ── */}
+      <img
+        src="/images/album/back_cover.jpg"
+        alt="KPR Productions Wedding Photobook Back Cover"
+        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+      />
 
-      {/* Spine hinge on right with stitching */}
-      <div className="absolute top-0 bottom-0 right-0 w-4 sm:w-5 flex flex-col justify-around items-center py-2 pointer-events-none z-10"
-        style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85), rgba(0,0,0,0.4), transparent)', borderLeft: '1px solid rgba(197,168,128,0.35)' }}>
-        {[...Array(7)].map((_, i) => (
-          <div key={i} className="w-0.5 sm:w-1 h-1.5 sm:h-2 rounded-full bg-[#C5A880]/60 shadow" />
-        ))}
-      </div>
+      {/* ── Spine hinge on right ── */}
+      <div
+        className="absolute top-0 bottom-0 right-0 w-3.5 sm:w-5 pointer-events-none z-10"
+        style={{
+          background: 'linear-gradient(to left, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)',
+          borderLeft: '1px solid rgba(0,0,0,0.2)'
+        }}
+      />
 
-      {/* Gilt page edges left & bottom */}
-      <div className="absolute top-1 bottom-1 left-0 w-1.5 pointer-events-none rounded-l opacity-85"
-        style={{ background: 'linear-gradient(to right, #FBF8F3, #D8CEBB, #9B8C78)' }} />
-      <div className="absolute left-1 right-4 bottom-0 h-1.5 pointer-events-none rounded-b opacity-85"
-        style={{ background: 'linear-gradient(to top, #FBF8F3, #D8CEBB, #9B8C78)' }} />
+      {/* ── Outer Bevel Border ── */}
+      <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/25 shadow-[inset_0_0_8px_rgba(0,0,0,0.3)]" />
 
-      {/* Double gold foil border */}
-      <div className="absolute inset-2 sm:inset-3 pointer-events-none rounded-sm"
-        style={{ border: '1px solid rgba(197,168,128,0.60)' }} />
-      <div className="absolute inset-3 sm:inset-4.5 pointer-events-none rounded-sm"
-        style={{ border: '1px solid rgba(197,168,128,0.25)' }} />
-
-      {/* Corner filigrees */}
-      {[
-        'top-3 left-3 sm:top-4 sm:left-4 border-t-2 border-l-2',
-        'top-3 right-5 sm:top-4 sm:right-6 border-t-2 border-r-2',
-        'bottom-3 left-3 sm:bottom-4 sm:left-4 border-b-2 border-l-2',
-        'bottom-3 right-5 sm:bottom-4 sm:right-6 border-b-2 border-r-2',
-      ].map((cls, i) => (
-        <div key={i} className={`absolute w-3 h-3 sm:w-4 sm:h-4 pointer-events-none border-[#E5D3B3] ${cls}`} />
-      ))}
-
-      {/* Top badge */}
-      <div className="absolute top-3 sm:top-4 left-0 right-0 flex justify-center z-10">
-        <span className="font-bold tracking-[0.28em] uppercase text-[#C5A880]"
-          style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}>
-          ARCHIVAL CERTIFIED EDITION
-        </span>
-      </div>
-
-      {/* Center seal */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center z-10 gap-1.5 sm:gap-2">
-        <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-inner"
-          style={{
-            background: 'radial-gradient(circle, rgba(197,168,128,0.18) 0%, rgba(18,15,12,0.9) 100%)',
-            border: '1.5px solid rgba(229,211,179,0.65)',
-          }}>
-          <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-[#C5A880]" />
-        </div>
-
-        <div className="text-center space-y-0.5">
-          <h3 className="font-serif font-bold tracking-[0.2em] uppercase leading-tight"
-            style={{
-              fontSize: 'clamp(10px, 2vw, 14px)',
-              background: 'linear-gradient(to bottom, #FFF8EB 0%, #EDD094 40%, #C5A261 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>
-            KPR PRODUCTIONS
-          </h3>
-          <p className="text-[#C5A880] tracking-[0.16em] uppercase font-semibold"
-            style={{ fontSize: 'clamp(6px, 1.2vw, 8.5px)' }}>
-            Luxury Wedding Storytelling
-          </p>
-          <div className="w-8 sm:w-12 h-px mx-auto" style={{ background: 'rgba(197,168,128,0.5)' }} />
-          <p className="text-[#D5C4A6]/65 tracking-wider uppercase"
-            style={{ fontSize: 'clamp(5px, 1vw, 7px)' }}>
-            Digital Color Lab · Hyderabad
-          </p>
-        </div>
-
-        {/* Reopen button */}
+      {/* ── Reopen button ── */}
+      <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 z-20">
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onReopen(); }}
-          className="inline-flex items-center gap-1 px-3 py-0.5 sm:py-1 rounded-full border font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer hover:scale-105"
+          className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-full font-serif font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer hover:scale-105"
           style={{
-            fontSize: 'clamp(6px, 1.2vw, 8.5px)',
-            background: 'rgba(0,0,0,0.7)',
-            color: '#C5A880',
-            borderColor: 'rgba(197,168,128,0.55)',
-          }}>
-          <RotateCcw className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+            fontSize: 'clamp(6px, 1.1vw, 8px)',
+            background: 'linear-gradient(to right, #1A1612, #2B241E)',
+            color: '#F4ECD8',
+            border: '1px solid rgba(197,168,128,0.6)',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.6)',
+          }}
+        >
+          <RotateCcw className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#C5A880]" />
           <span>Reopen Album</span>
         </button>
-      </div>
-
-      {/* Footer */}
-      <div className="absolute bottom-3 sm:bottom-4 left-0 right-0 flex justify-center z-10">
-        <p className="text-[#C5A880]/65 uppercase tracking-[0.22em] font-mono"
-          style={{ fontSize: 'clamp(5px, 0.9vw, 7px)' }}>
-          100% LAYFLAT CERTIFIED
-        </p>
       </div>
     </motion.div>
   );
