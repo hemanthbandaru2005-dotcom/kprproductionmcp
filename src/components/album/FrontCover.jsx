@@ -23,7 +23,7 @@ const FrontCover = forwardRef(({ onOpen, ...props }, ref) => {
           <img
             src="/images/album/front_cover.jpg"
             alt="KPR Productions Wedding Photobook Front Cover"
-            className="w-full h-full object-contain object-center select-none pointer-events-none"
+            className="w-full h-full object-cover object-center select-none pointer-events-none"
             loading="eager"
             draggable={false}
           />

@@ -1,613 +1,450 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef, useEffect, useCallback, forwardRef } from 'react';
+import HTMLFlipBook from 'react-pageflip';
 import {
   ChevronLeft,
   ChevronRight,
-  Upload,
-  Maximize2
+  Maximize2,
+  Upload
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────
-   Exact Physical Aspect Ratio: 697 / 881 = 0.791 (Cropped Photobook)
-   100% True-to-life physical album proportions without black borders
+   Responsive Dimension Helper for 3D Photobook
+   Aspect ratio: 967 / 881 = 1.097 (Square/Album Format)
    ───────────────────────────────────────────────────── */
 function getBookDimensions() {
   if (typeof window === 'undefined') {
-    return { closedW: 221, closedH: 280, openW: 442, openH: 280 };
+    return { singlePageW: 240, singlePageH: 218 };
   }
   const w = window.innerWidth;
   if (w < 360) {
-    const h = 195;
-    const cw = Math.round(h * 0.791);
-    return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
+    const sw = 145;
+    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 480) {
-    const h = 215;
-    const cw = Math.round(h * 0.791);
-    return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
+    const sw = 165;
+    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 640) {
-    const h = 235;
-    const cw = Math.round(h * 0.791);
-    return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
+    const sw = 185;
+    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 1024) {
-    const h = 260;
-    const cw = Math.round(h * 0.791);
-    return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
+    const sw = 210;
+    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
-  const h = 280;
-  const cw = Math.round(h * 0.791);
-  return { closedW: cw, closedH: h, openW: cw * 2, openH: h };
+  const sw = 240;
+  return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
 }
 
 /* ─────────────────────────────────────────────────────
-   AUTHENTIC LUXURY FRONT COVER (CLOSED STATE)
-   - Zero black borders (precisely cropped to physical book edges)
-   - Zero distracting buttons or badges on top of artwork
-   - 100% full uncropped display of gold filigree corners, KPR logo & couple details
-   - Physical hardcover bevel, rounded spine hinge, stacked paper edge & contact shadow
+   PAGE 0: LUXURY HARDCOVER FRONT COVER
+   - data-density="hard" (rigid physical book cover)
+   - Zero black borders, 100% full uncropped artwork
    ───────────────────────────────────────────────────── */
-function FrontCoverLeaf({ onOpen, dimensions }) {
+const HeroFrontCover = forwardRef((props, ref) => {
   return (
-    <motion.div
-      key="front-cover-leaf"
-      initial={{ rotateY: 0, opacity: 1 }}
-      exit={{
-        rotateY: -180,
-        opacity: 0,
-        transition: { duration: 0.65, ease: [0.25, 1, 0.5, 1] }
-      }}
-      onClick={onOpen}
-      className="relative cursor-pointer select-none group origin-left"
-      style={{
-        width: dimensions.closedW,
-        height: dimensions.closedH,
-        transformStyle: 'preserve-3d',
-        perspective: 1200
-      }}
-      title="Click to Open Photobook"
+    <div
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] cursor-pointer ${props.className || ''}`}
+      data-density="hard"
+      title="Click or drag to open album"
     >
-      {/* ── Outer Physical Hardcover Casing ── */}
-      <div
-        className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5] transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.015]"
-        style={{
-          borderRadius: '3px 7px 7px 3px',
-          boxShadow:
-            '0 24px 50px -12px rgba(0,0,0,0.7), 0 8px 18px rgba(0,0,0,0.3), inset 0 0 1px rgba(255,255,255,0.5)'
-        }}
-      >
-        {/* User-Supplied Exact Artwork Cover Image (Full, 100% Uncropped, No Black Borders) */}
+      <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-r-2 border-r-[#8A7862]/30 bg-[#FAF8F5]">
         <img
           src="/images/album/front_cover.jpg"
           alt="KPR Productions Wedding Photobook Front Cover"
-          className="w-full h-full object-cover select-none pointer-events-none"
+          className="w-full h-full object-cover object-center select-none pointer-events-none"
           loading="eager"
           draggable={false}
         />
 
-        {/* Subtle Natural Hardcover Outer Bevel */}
+        {/* Hardcover Outer Bevel Highlight */}
         <div
-          className="absolute inset-0 pointer-events-none border border-[#4A3C28]/25"
-          style={{
-            borderRadius: '3px 7px 7px 3px',
-            boxShadow: 'inset 0 0 5px rgba(0,0,0,0.18)'
-          }}
+          className="absolute inset-0 pointer-events-none border border-[#4A3C28]/20 shadow-[inset_0_0_6px_rgba(0,0,0,0.15)]"
         />
 
-        {/* Silky ambient sheen on hover */}
+        {/* Right Stacked Paper Margin Highlight */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          className="absolute top-0 bottom-0 right-0 w-2 pointer-events-none"
           style={{
-            background:
-              'linear-gradient(115deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%)'
+            background: 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, transparent 100%)'
           }}
         />
       </div>
-
-      {/* ── Right-Edge Stacked Archival Page Thickness Layers (Physical Depth) ── */}
-      <div
-        className="absolute top-1 bottom-1 -right-1 w-1 rounded-r-xs pointer-events-none"
-        style={{ background: '#FAF7F2', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.25)' }}
-      />
-      <div
-        className="absolute top-1.5 bottom-1.5 -right-2 w-1 rounded-r-xs pointer-events-none"
-        style={{ background: '#EDE5D8', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.3)' }}
-      />
-      <div
-        className="absolute top-2 bottom-2 -right-3 w-1 rounded-r-xs pointer-events-none"
-        style={{ background: '#DDD3C4', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.35)' }}
-      />
-
-      {/* ── Bottom Stacked Paper Margin ── */}
-      <div
-        className="absolute -bottom-1 left-2 right-1 h-1 rounded-b-xs pointer-events-none"
-        style={{ background: 'linear-gradient(to right, #FAF7F2, #EDE5D8)', opacity: 0.9 }}
-      />
-    </motion.div>
+    </div>
   );
-}
+});
+HeroFrontCover.displayName = 'HeroFrontCover';
 
 /* ─────────────────────────────────────────────────────
-   AUTHENTIC LUXURY BACK COVER (CLOSED STATE)
-   - Zero black borders (seamless cream linen matching the front)
-   - Spine on the right, stacked page layers on the left
+   PAGE 1: DEDICATION / EX LIBRIS (Left Page)
    ───────────────────────────────────────────────────── */
-function BackCoverLeaf({ onReopen, dimensions }) {
-  return (
-    <motion.div
-      key="back-cover-leaf"
-      initial={{ rotateY: 180, opacity: 0 }}
-      animate={{
-        rotateY: 0,
-        opacity: 1,
-        transition: { duration: 0.65, ease: [0.25, 1, 0.5, 1] }
-      }}
-      onClick={onReopen}
-      className="relative cursor-pointer select-none group origin-right"
-      style={{
-        width: dimensions.closedW,
-        height: dimensions.closedH,
-        transformStyle: 'preserve-3d',
-        perspective: 1200
-      }}
-      title="Click to Reopen Photobook"
-    >
-      <div
-        className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5] transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.015]"
-        style={{
-          borderRadius: '7px 3px 3px 7px',
-          boxShadow:
-            '0 24px 50px -12px rgba(0,0,0,0.7), 0 8px 18px rgba(0,0,0,0.3), inset 0 0 1px rgba(255,255,255,0.5)'
-        }}
-      >
-        {/* Matching Back Cover Image (Full, 100% Uncropped, Zero Black Borders) */}
-        <img
-          src="/images/album/back_cover.jpg"
-          alt="KPR Productions Wedding Photobook Back Cover"
-          className="w-full h-full object-cover select-none pointer-events-none"
-          loading="lazy"
-          draggable={false}
-        />
-
-        {/* Subtle Hardcover Outer Bevel */}
-        <div
-          className="absolute inset-0 pointer-events-none border border-[#4A3C28]/25"
-          style={{
-            borderRadius: '7px 3px 3px 7px',
-            boxShadow: 'inset 0 0 5px rgba(0,0,0,0.18)'
-          }}
-        />
-
-        {/* Silky ambient sheen on hover */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{
-            background:
-              'linear-gradient(225deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%)'
-          }}
-        />
-      </div>
-
-      {/* Left-Edge Stacked Page Thickness Layers */}
-      <div
-        className="absolute top-1 bottom-1 -left-1 w-1 rounded-l-xs pointer-events-none"
-        style={{ background: '#FAF7F2', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.25)' }}
-      />
-      <div
-        className="absolute top-1.5 bottom-1.5 -left-2 w-1 rounded-l-xs pointer-events-none"
-        style={{ background: '#EDE5D8', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.3)' }}
-      />
-      <div
-        className="absolute top-2 bottom-2 -left-3 w-1 rounded-l-xs pointer-events-none"
-        style={{ background: '#DDD3C4', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.35)' }}
-      />
-
-      {/* Bottom Stacked Paper Margin */}
-      <div
-        className="absolute -bottom-1 left-1 right-2 h-1 rounded-b-xs pointer-events-none"
-        style={{ background: 'linear-gradient(to right, #EDE5D8, #FAF7F2)', opacity: 0.9 }}
-      />
-    </motion.div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────
-   INTERIOR TWO-PAGE SPREAD WITH 3D PAGE-FLIP MOTION
-   ───────────────────────────────────────────────────── */
-function OpenSpread({
-  spreadIndex,
-  onPrev,
-  onNext,
-  onClose,
-  onOpenUpload,
-  direction,
-  dimensions
-}) {
-  return (
-    <motion.div
-      key={`spread-${spreadIndex}`}
-      initial={{
-        rotateY: direction > 0 ? 18 : -18,
-        opacity: 0.92,
-        scale: 0.985
-      }}
-      animate={{
-        rotateY: 0,
-        opacity: 1,
-        scale: 1,
-        transition: { duration: 0.45, ease: [0.25, 1, 0.5, 1] }
-      }}
-      exit={{
-        rotateY: direction > 0 ? -18 : 18,
-        opacity: 0.9,
-        scale: 0.985,
-        transition: { duration: 0.35, ease: [0.5, 0, 0.75, 0] }
-      }}
-      className="relative overflow-hidden flex select-none"
-      style={{
-        width: dimensions.openW,
-        height: dimensions.openH,
-        transformStyle: 'preserve-3d',
-        borderRadius: '3px 4px 4px 3px',
-        background: '#FAF8F5',
-        border: '1.5px solid #D5C9B8',
-        boxShadow:
-          '0 22px 55px -10px rgba(0,0,0,0.65), 0 8px 20px rgba(0,0,0,0.35), inset 0 0 1px rgba(255,255,255,0.4)'
-      }}
-    >
-      {/* ── Deep Center Spine Binding Crease Shadow ── */}
-      <div
-        className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-6 sm:w-10 z-20 pointer-events-none"
-        style={{
-          background:
-            'linear-gradient(to right, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.08) 35%, transparent 50%, rgba(0,0,0,0.08) 65%, rgba(0,0,0,0.3) 100%)'
-        }}
-      />
-      <div className="absolute top-0 bottom-0 left-1/2 w-px z-20 pointer-events-none opacity-40 bg-[#8C7A64]" />
-
-      {/* ── Left & Right Page Thickness Stack Margins ── */}
-      <div
-        className="absolute top-1 bottom-1 -left-1.5 w-1.5 rounded-l-xs pointer-events-none z-[-1]"
-        style={{ background: '#EDE5D8', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.2)' }}
-      />
-      <div
-        className="absolute top-1 bottom-1 -right-1.5 w-1.5 rounded-r-xs pointer-events-none z-[-1]"
-        style={{ background: '#EDE5D8', boxShadow: 'inset 0 0 2px rgba(0,0,0,0.2)' }}
-      />
-
-      {/* ── Stacked Paper Bottom Edge ── */}
-      <div
-        className="absolute -bottom-1 left-2 right-2 h-1 pointer-events-none"
-        style={{
-          background: 'linear-gradient(to right, #D5CABB, #FAF7F2, #D5CABB)',
-          opacity: 0.85
-        }}
-      />
-
-      {/* ── Touch tap zones (Left half = prev, Right half = next) ── */}
-      <div
-        onClick={onPrev}
-        className="absolute left-0 top-0 bottom-0 w-1/2 z-30 cursor-pointer"
-        title="Click left page to turn back"
-      />
-      <div
-        onClick={onNext}
-        className="absolute right-0 top-0 bottom-0 w-1/2 z-30 cursor-pointer"
-        title="Click right page to turn next"
-      />
-
-      {/* ── Spread 1: Dedication & Royal Bride ── */}
-      {spreadIndex === 1 && (
-        <>
-          <div
-            className="w-1/2 h-full flex flex-col justify-between text-center p-2 sm:p-3 relative overflow-hidden border-r border-[#D5C9B8]"
-            style={{
-              background: 'linear-gradient(135deg, #FAF8F5 0%, #F5EFE6 50%, #EAE2D2 100%)'
-            }}
-          >
-            <div>
-              <span
-                className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
-                style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
-              >
-                EX LIBRIS · WEDDING HEIRLOOM
-              </span>
-            </div>
-            <div className="space-y-1 sm:space-y-1.5 px-1">
-              <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
-              <h3
-                className="font-serif text-[#2A231C] font-semibold tracking-wide uppercase leading-tight"
-                style={{ fontSize: 'clamp(8px, 1.7vw, 12px)' }}
-              >
-                A Lifetime of Cherished Vows
-              </h3>
-              <p
-                className="font-serif italic text-[#6A5A4A] leading-relaxed line-clamp-2"
-                style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
-              >
-                "Every glance a sacred memory, every smile an eternal treasure."
-              </p>
-              <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
-            </div>
-            <span
-              className="font-mono tracking-wider uppercase text-[#8C6D3F]/80 self-center"
-              style={{ fontSize: 'clamp(5px, 1vw, 7px)' }}
-            >
-              Spread 1 of 5
-            </span>
-          </div>
-          <PhotoHalf src="/images/wedding/photo_1.jpg" label="01 · Royal Bride" side="right" />
-        </>
-      )}
-
-      {/* ── Spread 2 ── */}
-      {spreadIndex === 2 && (
-        <>
-          <PhotoHalf src="/images/wedding/photo_2.jpg" label="02 · Eternal Couple" side="left" />
-          <PhotoHalf src="/images/wedding/photo_3.jpg" label="03 · Mandap Vows" side="right" />
-        </>
-      )}
-
-      {/* ── Spread 3 ── */}
-      {spreadIndex === 3 && (
-        <>
-          <PhotoHalf src="/images/wedding/photo_4.jpg" label="04 · Haldi Splendor" side="left" />
-          <PhotoHalf src="/images/wedding/photo_5.jpg" label="05 · Twilight Romance" side="right" />
-        </>
-      )}
-
-      {/* ── Spread 4 ── */}
-      {spreadIndex === 4 && (
-        <>
-          <PhotoHalf src="/images/wedding/photo_6.jpg" label="06 · Royal Traditions" side="left" />
-          <PhotoHalf src="/images/wedding/photo_7.jpg" label="07 · Grand Reception" side="right" />
-        </>
-      )}
-
-      {/* ── Spread 5: Studio CTA & Close ── */}
-      {spreadIndex === 5 && (
-        <>
-          <div
-            className="w-1/2 h-full flex flex-col justify-between text-center p-2 sm:p-3 relative overflow-hidden border-r border-[#D5C9B8]"
-            style={{
-              background: 'linear-gradient(135deg, #FAF8F5 0%, #F4EFE6 50%, #EAE0D0 100%)'
-            }}
-          >
-            <span
-              className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
-              style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
-            >
-              CUSTOM ALBUM STUDIO
-            </span>
-            <div className="space-y-1 sm:space-y-1.5">
-              <div
-                className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mx-auto text-[#8C6D3F]"
-                style={{
-                  background: 'rgba(140,109,63,0.15)',
-                  border: '1px solid rgba(140,109,63,0.3)'
-                }}
-              >
-                <Upload className="w-3 h-3 sm:w-4 sm:h-4" />
-              </div>
-              <h4
-                className="font-serif text-[#2A231C] font-semibold leading-tight"
-                style={{ fontSize: 'clamp(8px, 1.6vw, 11px)' }}
-              >
-                Design Your Album
-              </h4>
-              <p
-                className="text-[#6A5A4A] leading-tight"
-                style={{ fontSize: 'clamp(5px, 1vw, 7px)' }}
-              >
-                Create custom spreads or arrange high-res photo proofs.
-              </p>
-              {onOpenUpload && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenUpload();
-                  }}
-                  className="inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wider transition-transform hover:scale-105 active:scale-95 cursor-pointer border"
-                  style={{
-                    fontSize: 'clamp(6px, 1.1vw, 8px)',
-                    padding: '3px 10px',
-                    background: '#181410',
-                    color: '#E8D4B8',
-                    borderColor: 'rgba(197,168,128,0.5)'
-                  }}
-                >
-                  <Upload className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
-                  <span>Open Studio</span>
-                </button>
-              )}
-            </div>
-            <span
-              className="font-mono tracking-wider text-[#8C6D3F]"
-              style={{ fontSize: 'clamp(5px, 0.9vw, 6.5px)' }}
-            >
-              KPR Colour Lab
-            </span>
-          </div>
-
-          <div className="w-1/2 h-full flex flex-col justify-between text-center p-2 sm:p-3 relative overflow-hidden bg-[#FAF8F5]">
-            <span
-              className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
-              style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
-            >
-              END OF PREVIEW
-            </span>
-            <div className="space-y-1 sm:space-y-1.5">
-              <h4
-                className="font-serif text-[#2A231C] font-semibold leading-tight"
-                style={{ fontSize: 'clamp(8px, 1.6vw, 11px)' }}
-              >
-                Cherished Forever
-              </h4>
-              <p
-                className="text-[#6A5A4A] leading-tight"
-                style={{ fontSize: 'clamp(5px, 1vw, 7px)' }}
-              >
-                100% Layflat Archival Binding with Ultra-HD Silk Printing
-              </p>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClose();
-                }}
-                className="inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wider transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-                style={{
-                  fontSize: 'clamp(6px, 1.1vw, 8px)',
-                  padding: '3px 10px',
-                  background: '#C5A880',
-                  color: '#120F0C',
-                  boxShadow: '0 2px 8px rgba(197,168,128,0.4)'
-                }}
-              >
-                <span>Close Book</span>
-                <ChevronRight className="w-2.5 h-2.5" />
-              </button>
-            </div>
-            <span
-              className="font-mono tracking-widest uppercase text-[#8C6D3F]/70"
-              style={{ fontSize: 'clamp(5px, 0.9vw, 6.5px)' }}
-            >
-              Tap to Close →
-            </span>
-          </div>
-        </>
-      )}
-    </motion.div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────
-   Photo Half-Page Helper
-   ───────────────────────────────────────────────────── */
-function PhotoHalf({ src, label, side }) {
+const HeroDedicationPage = forwardRef((props, ref) => {
   return (
     <div
-      className={`w-1/2 h-full relative overflow-hidden flex items-center justify-center p-1 sm:p-1.5 ${
-        side === 'left' ? 'border-r' : ''
-      }`}
-      style={{ background: '#FAF8F5', borderColor: '#D5C9B8' }}
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
+      data-density="soft"
     >
       <div
-        className="w-full h-full relative overflow-hidden rounded-sm border"
-        style={{ background: 'rgba(0,0,0,0.08)', borderColor: 'rgba(213,201,184,0.7)' }}
+        className="w-full h-full flex flex-col justify-between text-center p-2.5 sm:p-4 relative overflow-hidden border-r-2 border-r-[#BFB19E]"
+        style={{
+          background: 'linear-gradient(135deg, #FAF8F5 0%, #F5EFE6 50%, #EAE2D2 100%)'
+        }}
       >
-        <img
-          src={src}
-          alt={label}
-          className="w-full h-full object-cover pointer-events-none select-none"
-          loading="eager"
-          draggable={false}
+        {/* Spine Crease Shadow on Right Edge */}
+        <div
+          className="absolute top-0 bottom-0 right-0 w-4 sm:w-6 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(to left, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.05) 50%, transparent 100%)'
+          }}
         />
+
+        <div>
+          <span
+            className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
+            style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
+          >
+            EX LIBRIS · WEDDING HEIRLOOM
+          </span>
+        </div>
+
+        <div className="space-y-1 sm:space-y-1.5 px-1">
+          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
+          <h3
+            className="font-serif text-[#2A231C] font-semibold tracking-wide uppercase leading-tight"
+            style={{ fontSize: 'clamp(8.5px, 1.7vw, 12px)' }}
+          >
+            A Lifetime of Cherished Vows
+          </h3>
+          <p
+            className="font-serif italic text-[#6A5A4A] leading-relaxed line-clamp-2"
+            style={{ fontSize: 'clamp(6px, 1.1vw, 8px)' }}
+          >
+            "Every glance a sacred memory, every smile an eternal treasure."
+          </p>
+          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
+        </div>
+
         <span
-          className={`absolute bottom-1 font-mono text-[#5A4836] rounded-full border shadow-xs font-bold bg-white/95 px-1.5 py-0.5 ${
-            side === 'left' ? 'left-1' : 'right-1'
-          }`}
-          style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)', borderColor: '#D5C9B8' }}
+          className="font-mono tracking-wider uppercase text-[#8C6D3F]/80 self-center"
+          style={{ fontSize: 'clamp(5px, 1vw, 7px)' }}
         >
-          {label}
+          Spread 1 of 5
         </span>
       </div>
     </div>
   );
-}
+});
+HeroDedicationPage.displayName = 'HeroDedicationPage';
 
 /* ─────────────────────────────────────────────────────
-   Main Export — Hero Interactive Album
-   - Pristine physical photobook structure (zero black borders)
-   - Clean, zero distraction cover
-   - Dedicated "Full View" launcher button
-   - 3D physical book opening animation
+   PHOTO PAGE HELPER (Pages 2 to 8)
+   ───────────────────────────────────────────────────── */
+const HeroPhotoPage = forwardRef(({ src, label, isLeftPage, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
+      data-density="soft"
+    >
+      <div
+        className={`w-full h-full p-1 sm:p-2 flex items-center justify-center relative ${
+          isLeftPage ? 'border-r-2 border-r-[#BFB19E]' : 'border-l-2 border-l-[#BFB19E]'
+        }`}
+        style={{ background: '#FAF8F5' }}
+      >
+        {/* Center Spine Crease Shadow */}
+        <div
+          className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
+            isLeftPage
+              ? 'right-0 w-3 sm:w-5 bg-gradient-to-l from-black/20 via-black/5 to-transparent'
+              : 'left-0 w-3 sm:w-5 bg-gradient-to-r from-black/20 via-black/5 to-transparent'
+          }`}
+        />
+
+        <div
+          className="w-full h-full relative overflow-hidden rounded-xs border"
+          style={{ background: 'rgba(0,0,0,0.06)', borderColor: 'rgba(213,201,184,0.7)' }}
+        >
+          <img
+            src={src}
+            alt={label}
+            className="w-full h-full object-cover pointer-events-none select-none"
+            loading="eager"
+            draggable={false}
+          />
+          <span
+            className={`absolute bottom-1 font-mono text-[#5A4836] rounded-full border shadow-xs font-bold bg-white/95 px-1.5 py-0.5 ${
+              isLeftPage ? 'left-1' : 'right-1'
+            }`}
+            style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)', borderColor: '#D5C9B8' }}
+          >
+            {label}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+HeroPhotoPage.displayName = 'HeroPhotoPage';
+
+/* ─────────────────────────────────────────────────────
+   PAGE 9: STUDIO CTA (Left Page)
+   ───────────────────────────────────────────────────── */
+const HeroStudioPage = forwardRef(({ onOpenUpload, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
+      data-density="soft"
+    >
+      <div
+        className="w-full h-full flex flex-col justify-between text-center p-2.5 sm:p-4 relative overflow-hidden border-r-2 border-r-[#BFB19E]"
+        style={{
+          background: 'linear-gradient(135deg, #FAF8F5 0%, #F4EFE6 50%, #EAE0D0 100%)'
+        }}
+      >
+        <span
+          className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
+          style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
+        >
+          CUSTOM ALBUM STUDIO
+        </span>
+        <div className="space-y-1 sm:space-y-1.5">
+          <div
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center mx-auto text-[#8C6D3F]"
+            style={{
+              background: 'rgba(140,109,63,0.15)',
+              border: '1px solid rgba(140,109,63,0.3)'
+            }}
+          >
+            <Upload className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+          </div>
+          <h4
+            className="font-serif text-[#2A231C] font-semibold leading-tight"
+            style={{ fontSize: 'clamp(8.5px, 1.6vw, 11px)' }}
+          >
+            Design Your Album
+          </h4>
+          <p
+            className="text-[#6A5A4A] leading-tight"
+            style={{ fontSize: 'clamp(5.5px, 1vw, 7.5px)' }}
+          >
+            Create custom spreads or arrange high-res photo proofs.
+          </p>
+          {onOpenUpload && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenUpload();
+              }}
+              className="inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wider transition-transform hover:scale-105 active:scale-95 cursor-pointer border shadow-xs"
+              style={{
+                fontSize: 'clamp(6px, 1.1vw, 8px)',
+                padding: '3px 10px',
+                background: '#181410',
+                color: '#E8D4B8',
+                borderColor: 'rgba(197,168,128,0.5)'
+              }}
+            >
+              <Upload className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
+              <span>Open Studio</span>
+            </button>
+          )}
+        </div>
+        <span
+          className="font-mono tracking-wider text-[#8C6D3F]"
+          style={{ fontSize: 'clamp(5px, 0.9vw, 6.5px)' }}
+        >
+          KPR Colour Lab
+        </span>
+      </div>
+    </div>
+  );
+});
+HeroStudioPage.displayName = 'HeroStudioPage';
+
+/* ─────────────────────────────────────────────────────
+   PAGE 10: ENDSHEET / CHERISHED FOREVER (Right Page)
+   ───────────────────────────────────────────────────── */
+const HeroEndsheetPage = forwardRef(({ onClose, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
+      data-density="soft"
+    >
+      <div
+        className="w-full h-full flex flex-col justify-between text-center p-2.5 sm:p-4 relative overflow-hidden border-l-2 border-l-[#BFB19E]"
+        style={{ background: '#FAF8F5' }}
+      >
+        <span
+          className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
+          style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
+        >
+          END OF PREVIEW
+        </span>
+        <div className="space-y-1 sm:space-y-1.5">
+          <h4
+            className="font-serif text-[#2A231C] font-semibold leading-tight"
+            style={{ fontSize: 'clamp(8.5px, 1.6vw, 11px)' }}
+          >
+            Cherished Forever
+          </h4>
+          <p
+            className="text-[#6A5A4A] leading-tight"
+            style={{ fontSize: 'clamp(5.5px, 1vw, 7.5px)' }}
+          >
+            100% Layflat Archival Binding with Ultra-HD Silk Printing
+          </p>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose?.();
+            }}
+            className="inline-flex items-center gap-1 rounded-full font-bold uppercase tracking-wider transition-transform hover:scale-105 active:scale-95 cursor-pointer shadow-xs"
+            style={{
+              fontSize: 'clamp(6px, 1.1vw, 8px)',
+              padding: '3px 10px',
+              background: '#C5A880',
+              color: '#120F0C'
+            }}
+          >
+            <span>Close Book</span>
+            <ChevronRight className="w-2.5 h-2.5" />
+          </button>
+        </div>
+        <span
+          className="font-mono tracking-widest uppercase text-[#8C6D3F]/70"
+          style={{ fontSize: 'clamp(5px, 0.9vw, 6.5px)' }}
+        >
+          Tap to Close →
+        </span>
+      </div>
+    </div>
+  );
+});
+HeroEndsheetPage.displayName = 'HeroEndsheetPage';
+
+/* ─────────────────────────────────────────────────────
+   PAGE 11: LUXURY HARDCOVER BACK COVER
+   - data-density="hard" (rigid physical book cover)
+   ───────────────────────────────────────────────────── */
+const HeroBackCover = forwardRef((props, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] cursor-pointer ${props.className || ''}`}
+      data-density="hard"
+      title="Click or drag to reopen album"
+    >
+      <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-l-2 border-l-[#8A7862]/30 bg-[#FAF8F5]">
+        <img
+          src="/images/album/back_cover.jpg"
+          alt="KPR Productions Wedding Photobook Back Cover"
+          className="w-full h-full object-cover object-center select-none pointer-events-none"
+          loading="lazy"
+          draggable={false}
+        />
+
+        {/* Hardcover Outer Bevel Highlight */}
+        <div
+          className="absolute inset-0 pointer-events-none border border-[#4A3C28]/20 shadow-[inset_0_0_6px_rgba(0,0,0,0.15)]"
+        />
+
+        {/* Left Stacked Paper Margin Highlight */}
+        <div
+          className="absolute top-0 bottom-0 left-0 w-2 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to right, rgba(0,0,0,0.2) 0%, transparent 100%)'
+          }}
+        />
+      </div>
+    </div>
+  );
+});
+HeroBackCover.displayName = 'HeroBackCover';
+
+/* ─────────────────────────────────────────────────────
+   Main Export: HeroInteractiveAlbum
+   - Uses real HTMLFlipBook engine (zero shaking, real 3D page curls)
+   - Smoothly centers closed cover and open spreads
+   - Dedicated [ ⛶ Full View ] button
    ───────────────────────────────────────────────────── */
 export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen }) {
-  const [spreadIndex, setSpreadIndex] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const [dimensions, setDimensions] = useState(getBookDimensions);
-
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
+  const flipBookRef = useRef(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [dims, setDims] = useState(getBookDimensions);
 
   useEffect(() => {
-    const handleResize = () => setDimensions(getBookDimensions());
+    const handleResize = () => setDims(getBookDimensions());
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const totalSpreads = 6;
+  const totalPages = 12;
 
-  const goToSpread = useCallback(
-    (n) => {
-      if (n < 0 || n > totalSpreads) return;
-      setDirection(n >= spreadIndex ? 1 : -1);
-      setSpreadIndex(n);
-    },
-    [spreadIndex]
-  );
-
-  const flipNext = useCallback(() => {
-    if (spreadIndex < totalSpreads) {
-      setDirection(1);
-      setSpreadIndex((p) => p + 1);
-    }
-  }, [spreadIndex]);
-
-  const flipPrev = useCallback(() => {
-    if (spreadIndex > 0) {
-      setDirection(-1);
-      setSpreadIndex((p) => p - 1);
-    }
-  }, [spreadIndex]);
-
-  const handleTouchStart = (e) => {
-    if (e.touches?.[0]) {
-      touchStartX.current = e.touches[0].clientX;
-      touchStartY.current = e.touches[0].clientY;
+  const handleFlipNext = () => {
+    try {
+      flipBookRef.current?.pageFlip()?.flipNext();
+    } catch (e) {
+      console.warn('flipNext error:', e);
     }
   };
 
-  const handleTouchEnd = (e) => {
-    if (!e.changedTouches?.[0]) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    const dy = e.changedTouches[0].clientY - touchStartY.current;
-    if (Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-      dx < 0 ? flipNext() : flipPrev();
+  const handleFlipPrev = () => {
+    try {
+      flipBookRef.current?.pageFlip()?.flipPrev();
+    } catch (e) {
+      console.warn('flipPrev error:', e);
     }
   };
 
-  const isCover = spreadIndex === 0;
-  const isBackCover = spreadIndex === totalSpreads;
+  const handlePageFlip = (e) => {
+    if (e && typeof e.data === 'number') {
+      setCurrentPage(e.data);
+    }
+  };
+
+  const isCover = currentPage === 0;
+  const isBackCover = currentPage >= totalPages - 1;
   const isOpen = !isCover && !isBackCover;
 
   return (
-    <div
-      className="relative flex flex-col items-center justify-center select-none my-1 sm:my-1.5 w-full max-w-full px-2"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* ── 3D Physical Book Stage ── */}
+    <div className="relative flex flex-col items-center justify-center select-none my-1 sm:my-1.5 w-full max-w-full px-2">
+      {/* ── 3D Stage with Outer Drop Shadow ── */}
       <div className="relative flex items-center justify-center select-none">
-        {/* Soft Grounding Ambient Contact Shadow (Rests flat on the table, not floating) */}
+        {/* Soft Grounding Ambient Contact Shadow */}
         <div
           className="absolute -bottom-3 sm:-bottom-4 h-5 sm:h-6 bg-black/60 blur-md rounded-full pointer-events-none transition-all duration-500 ease-out"
           style={{
-            width: isOpen ? dimensions.openW * 0.94 : dimensions.closedW * 0.95,
+            width: isOpen ? dims.singlePageW * 1.9 : dims.singlePageW * 0.95,
             left: '50%',
             transform: 'translateX(-50%)'
           }}
         />
 
-        {/* ── Discreet Outside Navigation Arrows (Shown ONLY when book is open) ── */}
+        {/* ── Discreet Outside Navigation Arrows (Visible when open) ── */}
         {isOpen && (
           <>
             <button
               type="button"
-              onClick={flipPrev}
+              onClick={handleFlipPrev}
               className="absolute -left-9 sm:-left-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
               style={{
                 background: 'rgba(20,20,22,0.92)',
@@ -622,7 +459,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
 
             <button
               type="button"
-              onClick={flipNext}
+              onClick={handleFlipNext}
               className="absolute -right-9 sm:-right-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
               style={{
                 background: 'rgba(20,20,22,0.92)',
@@ -637,48 +474,88 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
           </>
         )}
 
-        {/* ── 3D Book Container with Preserved Perspective ── */}
+        {/* ── Smooth Horizontal Translation Container (Centers Closed Cover & Open Spread) ── */}
         <div
-          className="relative flex items-center justify-center transition-all duration-500 ease-out"
+          className="relative transition-transform duration-500 ease-out"
           style={{
-            width: isOpen ? dimensions.openW : dimensions.closedW,
-            height: isOpen ? dimensions.openH : dimensions.closedH,
-            perspective: 1400
+            transform:
+              currentPage === 0
+                ? `translateX(-${Math.round(dims.singlePageW / 2)}px)`
+                : isBackCover
+                ? `translateX(${Math.round(dims.singlePageW / 2)}px)`
+                : 'translateX(0px)'
           }}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            {/* 1. FRONT COVER (Closed, pristine, zero black borders, zero overlay distractions) */}
-            {isCover && (
-              <FrontCoverLeaf key="front" onOpen={flipNext} dimensions={dimensions} />
-            )}
+          {/* Stacked Pages Thickness Edge Shadow at bottom */}
+          <div className="absolute -bottom-1 left-2 right-2 h-1 bg-gradient-to-r from-[#D8CEBF] via-[#FAF7F2] to-[#D8CEBF] rounded-b-xs opacity-75 pointer-events-none" />
 
-            {/* 2. OPEN TWO-PAGE SPREAD (Interactive) */}
-            {isOpen && (
-              <OpenSpread
-                key={`spread-${spreadIndex}`}
-                spreadIndex={spreadIndex}
-                direction={direction}
-                onPrev={flipPrev}
-                onNext={flipNext}
-                onClose={flipNext}
-                onOpenUpload={onOpenUpload}
-                dimensions={dimensions}
-              />
-            )}
+          {/* ── REAL 3D PAGE-FLIP ENGINE (HTMLFlipBook) ── */}
+          <HTMLFlipBook
+            key={`hero-flipbook-${dims.singlePageW}-${dims.singlePageH}`}
+            ref={flipBookRef}
+            width={dims.singlePageW}
+            height={dims.singlePageH}
+            size="fixed"
+            minWidth={130}
+            maxWidth={600}
+            minHeight={120}
+            maxHeight={600}
+            maxShadowOpacity={0.6}
+            showCover={true}
+            mobileScrollSupport={false}
+            flippingTime={550}
+            usePortrait={false}
+            startPage={0}
+            drawShadow={true}
+            autoSize={false}
+            clickEventForward={true}
+            useMouseEvents={true}
+            swipeDistance={15}
+            showPageCorners={true}
+            disableFlipByClick={false}
+            onFlip={handlePageFlip}
+            className="album-flipbook-shadow"
+          >
+            {/* Page 0: Front Cover */}
+            <HeroFrontCover />
 
-            {/* 3. BACK COVER (Closed, matching luxury back) */}
-            {isBackCover && (
-              <BackCoverLeaf
-                key="back"
-                onReopen={() => goToSpread(0)}
-                dimensions={dimensions}
-              />
-            )}
-          </AnimatePresence>
+            {/* Page 1: Dedication (Left) */}
+            <HeroDedicationPage />
+
+            {/* Page 2: Photo 1 (Right) */}
+            <HeroPhotoPage src="/images/wedding/photo_1.jpg" label="01 · Royal Bride" isLeftPage={false} />
+
+            {/* Page 3: Photo 2 (Left) */}
+            <HeroPhotoPage src="/images/wedding/photo_2.jpg" label="02 · Eternal Couple" isLeftPage={true} />
+
+            {/* Page 4: Photo 3 (Right) */}
+            <HeroPhotoPage src="/images/wedding/photo_3.jpg" label="03 · Mandap Vows" isLeftPage={false} />
+
+            {/* Page 5: Photo 4 (Left) */}
+            <HeroPhotoPage src="/images/wedding/photo_4.jpg" label="04 · Haldi Splendor" isLeftPage={true} />
+
+            {/* Page 6: Photo 5 (Right) */}
+            <HeroPhotoPage src="/images/wedding/photo_5.jpg" label="05 · Twilight Romance" isLeftPage={false} />
+
+            {/* Page 7: Photo 6 (Left) */}
+            <HeroPhotoPage src="/images/wedding/photo_6.jpg" label="06 · Royal Traditions" isLeftPage={true} />
+
+            {/* Page 8: Photo 7 (Right) */}
+            <HeroPhotoPage src="/images/wedding/photo_7.jpg" label="07 · Grand Reception" isLeftPage={false} />
+
+            {/* Page 9: Studio CTA (Left) */}
+            <HeroStudioPage onOpenUpload={onOpenUpload} />
+
+            {/* Page 10: Endsheet & Close (Right) */}
+            <HeroEndsheetPage onClose={handleFlipNext} />
+
+            {/* Page 11: Back Cover */}
+            <HeroBackCover />
+          </HTMLFlipBook>
         </div>
       </div>
 
-      {/* ── FULL VIEW BUTTON (Replaces previous dots pill bar completely) ── */}
+      {/* ── FULL VIEW BUTTON (Dedicated Luxury Launcher) ── */}
       {onOpenFullscreen && (
         <div className="flex items-center justify-center mt-2 sm:mt-2.5 select-none z-20">
           <button
