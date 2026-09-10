@@ -199,7 +199,7 @@ export default function Hero({ onOpenPage }) {
         </div>
       </div>
 
-      {/* ── 3. Unified 3-Column Services Showcase Cards (From Older Image) ── */}
+      {/* ── 3. Unified 3-Column Services Showcase Cards (Matching Background) ── */}
       <div className="w-full max-w-4xl lg:max-w-5xl mx-auto grid grid-cols-3 gap-1.5 xs:gap-2 sm:gap-3 md:gap-4 z-10 mb-1 sm:mb-2 py-0 px-0.5 sm:px-1">
         {SERVICES.map((service, index) => {
           return (
@@ -209,7 +209,7 @@ export default function Hero({ onOpenPage }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.06, ease: 'easeOut' }}
               onClick={() => handleCardClick(service.route)}
-              className="group relative bg-white/95 hover:bg-white backdrop-blur-xl border border-[#E8E2D9] hover:border-[#1A1A1A]/40 rounded-xl sm:rounded-2xl p-1.5 xs:p-2 sm:p-2.5 md:p-3 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.14)]"
+              className="group relative bg-[#FAF5ED]/92 hover:bg-[#FAF5ED] backdrop-blur-md border border-[#C5A880]/50 hover:border-[#C5A880] rounded-xl sm:rounded-2xl p-1.5 xs:p-2 sm:p-2.5 md:p-3 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_16px_rgba(180,140,90,0.16)] hover:shadow-[0_8px_24px_rgba(197,168,128,0.3)]"
             >
               {/* 1. Official Logo Badge Asset */}
               <div className="h-7 xs:h-8 sm:h-9 md:h-11 w-full flex items-center justify-center mb-0.5">
@@ -227,7 +227,7 @@ export default function Hero({ onOpenPage }) {
               </h3>
 
               {/* 3. Supporting Visual Asset */}
-              <div className="w-full h-11 xs:h-13 sm:h-16 md:h-20 lg:h-22 flex items-center justify-center my-0.5 sm:my-1 relative overflow-hidden rounded-md sm:rounded-lg border border-black/10 shadow-[0_2px_8px_rgba(0,0,0,0.08)] bg-white">
+              <div className="w-full h-11 xs:h-13 sm:h-16 md:h-20 lg:h-22 flex items-center justify-center my-0.5 sm:my-1 relative overflow-hidden rounded-md sm:rounded-lg border border-[#C5A880]/30 shadow-[0_2px_8px_rgba(0,0,0,0.06)] bg-[#F5ECE0]">
                 <img
                   src={service.cardImage}
                   alt={service.cardAlt}
@@ -238,9 +238,9 @@ export default function Hero({ onOpenPage }) {
 
               {/* 4. "EXPLORE >" Link */}
               <div className="w-full pt-0.5 sm:pt-1 flex items-center justify-center">
-                <span className="text-[7.5px] xs:text-[8.5px] sm:text-[9.5px] md:text-[10.5px] font-bold tracking-wider text-[#1A1A1A] group-hover:text-[#D32F2F] uppercase flex items-center gap-0.5 transition-colors duration-300">
+                <span className="text-[7.5px] xs:text-[8.5px] sm:text-[9.5px] md:text-[10.5px] font-bold tracking-wider text-[#1A1A1A] group-hover:text-[#A47E43] uppercase flex items-center gap-0.5 transition-colors duration-300">
                   <span>EXPLORE</span>
-                  <span className="text-[9px] sm:text-[11px] md:text-xs leading-none transition-transform duration-300 group-hover:translate-x-0.5 font-bold">&gt;</span>
+                  <span className="text-[9px] sm:text-[11px] md:text-xs leading-none transition-transform duration-300 group-hover:translate-x-0.5 font-bold text-[#A47E43]">&gt;</span>
                 </span>
               </div>
             </motion.div>
