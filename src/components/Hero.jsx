@@ -120,9 +120,9 @@ export default function Hero({ onOpenPage }) {
       />
 
       {/* ── 2. Middle Section: Brand Centerpiece, Album Feature & Showcase ── */}
-      <div className="w-full flex-1 flex flex-col items-center justify-between md:justify-center z-20 py-0.5 pointer-events-auto max-w-4xl mx-auto">
-        {/* 1. Top Logo (Positioned in the upper open space on mobile, seamlessly above on desktop) */}
-        <div className="flex flex-col items-center text-center pt-1.5 xs:pt-2 sm:pt-3 md:pt-0 md:mt-0.5 lg:mt-1">
+      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 pointer-events-auto max-w-4xl mx-auto">
+        {/* Center Logo & Tagline (Quote sits directly on top of the album) */}
+        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1 sm:mb-1.5">
           <motion.img
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -132,21 +132,21 @@ export default function Hero({ onOpenPage }) {
             className="h-10 xs:h-12 sm:h-16 md:h-20 lg:h-24 w-auto object-contain select-none drop-shadow-xs"
             loading="eager"
           />
-        </div>
 
-        {/* 2. Middle Block: Quote on top of Album, 3D Photobook Album & Action Buttons (Centered vertically in middle on mobile) */}
-        <div className="w-full flex-1 flex flex-col items-center justify-center my-auto md:flex-initial md:my-0.5 sm:my-1">
-          {/* Tagline Quote (Directly on top of the album) */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.08 }}
-            className="font-serif italic text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-[#1A1A1A] tracking-normal mb-1 sm:mb-1.5 md:mt-0.5 sm:mt-1 flex items-center justify-center gap-1.5 sm:gap-2.5 select-none"
+            className="font-serif italic text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-[#1A1A1A] tracking-normal mt-0.5 sm:mt-1 flex items-center justify-center gap-1.5 sm:gap-2.5 select-none"
           >
             <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-base leading-none">—</span>
             <span>Turn Your Moments Into Memories</span>
             <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-base leading-none">—</span>
           </motion.p>
+        </div>
+
+        {/* Album + Buttons Block (Centered in the middle on mobile & laptop) */}
+        <div className="w-full flex flex-col items-center justify-center my-0.5 sm:my-1">
           {/* Interactive 3D Photobook Album */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
