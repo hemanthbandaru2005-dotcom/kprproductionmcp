@@ -67,7 +67,7 @@ export default function Navbar({ activePage, onSelectPage }) {
             )}
           </button>
 
-          {/* PHOTOGRAPHY ▾ */}
+          {/* FOTOGRAPHY ▾ */}
           <button
             onClick={() => handlePageClick('media')}
             className={`transition-all duration-300 py-1 cursor-pointer flex items-center gap-1.5 ${
@@ -76,7 +76,7 @@ export default function Navbar({ activePage, onSelectPage }) {
                 : 'text-[#333333] hover:text-[#000000]'
             }`}
           >
-            <span>PHOTOGRAPHY</span>
+            <span>FOTOGRAPHY</span>
             <ChevronDown className={`w-3.5 h-3.5 ${activePage === 'media' ? 'text-[#D32F2F]' : 'text-[#555555]'}`} />
           </button>
 
