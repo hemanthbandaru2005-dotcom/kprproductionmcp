@@ -132,25 +132,26 @@ export default function Navbar({ activePage, onSelectPage }) {
 
         </nav>
 
-        {/* 3. RIGHT: LOGIN Button */}
-        <div className="hidden md:flex items-center">
+        {/* 3. RIGHT: LOGIN Button & Mobile Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => handlePageClick('login')}
-            className="px-6 py-2 rounded-full border border-black/25 bg-black/5 hover:bg-black text-[#000000] hover:text-white font-bold text-xs tracking-[0.2em] uppercase backdrop-blur-md transition-all duration-300 cursor-pointer shadow-sm hover:scale-105 flex items-center gap-2"
+            className="px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full border border-[#C5A880] bg-[#1A1A1A] hover:bg-black text-[#F4ECD8] hover:text-white font-bold text-[10px] sm:text-xs tracking-[0.18em] uppercase shadow-[0_3px_12px_rgba(0,0,0,0.25)] hover:shadow-[0_4px_16px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex items-center gap-1.5 sm:gap-2"
           >
-            <User className="w-4 h-4 stroke-[2.5]" />
+            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C5A880] stroke-[2.5]" />
             <span>LOGIN</span>
           </button>
-        </div>
 
-        {/* Mobile Hamburger Toggle */}
-        <div className="flex md:hidden items-center">
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-xl backdrop-blur-md border border-black/15 bg-black/5 text-[#000000] cursor-pointer"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Hamburger Toggle */}
+          <div className="flex md:hidden items-center">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-1.5 sm:p-2 rounded-xl backdrop-blur-md border border-black/15 bg-white/70 hover:bg-white text-[#000000] shadow-xs transition-colors cursor-pointer"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
+            </button>
+          </div>
         </div>
 
       </div>
@@ -200,9 +201,9 @@ export default function Navbar({ activePage, onSelectPage }) {
           <div className="pt-2">
             <button
               onClick={() => handlePageClick('login')}
-              className="w-full py-3 rounded-xl bg-[#D32F2F] text-white font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 rounded-xl bg-[#1A1A1A] hover:bg-black text-[#F4ECD8] border border-[#C5A880] font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-102 transition-all duration-300"
             >
-              <User className="w-4 h-4" />
+              <User className="w-4 h-4 text-[#C5A880]" />
               <span>LOGIN</span>
             </button>
           </div>

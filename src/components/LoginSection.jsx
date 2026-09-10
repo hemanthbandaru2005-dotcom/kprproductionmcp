@@ -7,10 +7,10 @@ const PORTAL_KEYS = ['admin', 'worker', 'client'];
 
 const THEMES = {
   admin: {
-    primary: '#8B3A6B',
-    primaryDark: '#6E2D55',
-    primaryLight: '#A8527F',
-    primarySoft: '#C97DA8',
+    primary: '#1A1A1A',
+    primaryDark: '#0D0E12',
+    primaryLight: '#C5A880',
+    primarySoft: '#E5D7BE',
     label: 'ADMIN LOGIN',
     icon: ShieldCheck,
     inputIcon: User,
@@ -18,10 +18,10 @@ const THEMES = {
     placeholder: 'Username (e.g. kprfotography, master)',
   },
   worker: {
-    primary: '#2D6A8B',
-    primaryDark: '#1E4F6A',
-    primaryLight: '#3D8AB5',
-    primarySoft: '#6BB3D4',
+    primary: '#1E293B',
+    primaryDark: '#0F172A',
+    primaryLight: '#38BDF8',
+    primarySoft: '#BAE6FD',
     label: 'EMPLOYEE LOGIN',
     icon: UserCheck,
     inputIcon: Mail,
@@ -29,8 +29,8 @@ const THEMES = {
     placeholder: 'Employee Email or ID (e.g. nihal@kpr.com)',
   },
   client: {
-    primary: '#C5A880',
-    primaryDark: '#A4865E',
+    primary: '#B89358',
+    primaryDark: '#1F1A14',
     primaryLight: '#D4BC9A',
     primarySoft: '#E8D4B8',
     label: 'CLIENT LOGIN',

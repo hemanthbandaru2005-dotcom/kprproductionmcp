@@ -164,7 +164,7 @@ export default function Hero({ onOpenPage }) {
             />
           </motion.div>
 
-          {/* Action Buttons: Full View and PREVIEW (Side by side, close to showcase cards) */}
+          {/* Action Buttons: Full View and PREVIEW (Side by side, matching warm cream & gold background) */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -177,21 +177,21 @@ export default function Hero({ onOpenPage }) {
                 setFlipbookImages(HERO_SAMPLE_PHOTOS);
                 setFlipbookSize('12x36');
               }}
-              className="group inline-flex items-center gap-1.5 px-3 xs:px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[#181818] hover:bg-black text-[#F4ECD8] text-[8.5px] xs:text-[9.5px] sm:text-xs font-bold tracking-wider uppercase border border-[#C5A880]/60 hover:border-[#C5A880] shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+              className="group inline-flex items-center gap-1.5 px-3.5 xs:px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-[#FAF5ED]/95 hover:bg-white text-[#1A1A1A] hover:text-black text-[9px] xs:text-[10px] sm:text-xs font-bold tracking-wider uppercase border border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.22)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm"
               title="Open in Full View 3D Photobook"
             >
-              <Maximize2 className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-3.5 sm:h-3.5 text-[#C5A880] group-hover:scale-110 transition-transform" />
+              <Maximize2 className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 text-[#A47E43] group-hover:scale-110 transition-transform" />
               <span>Full View</span>
             </button>
 
             <button
               type="button"
               onClick={() => setUploadModalOpen(true)}
-              className="group inline-flex items-center gap-1.5 px-3.5 xs:px-4 sm:px-5 py-1 sm:py-1.5 rounded-full bg-[#1A1A1A] hover:bg-black text-white border-2 border-[#E5D7BE] hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+              className="group inline-flex items-center gap-1.5 px-4 xs:px-4.5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-[#FAF5ED]/95 hover:bg-white text-[#1A1A1A] hover:text-black border-2 border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.25)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm"
               title="Preview Album"
             >
-              <Eye className="w-3 h-3 xs:w-3.5 xs:h-3.5 text-white group-hover:text-[#C5A880] transition-colors" />
-              <span className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-bold tracking-[0.16em] uppercase font-sans">
+              <Eye className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-[#A47E43] group-hover:text-[#8D652B] transition-colors" />
+              <span className="text-[9px] xs:text-[10px] sm:text-[11px] font-bold tracking-[0.16em] uppercase font-sans">
                 PREVIEW
               </span>
             </button>
