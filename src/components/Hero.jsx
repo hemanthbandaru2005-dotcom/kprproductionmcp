@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, BookOpen } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import CustomAlbumUploadModal from './CustomAlbumUploadModal';
 import AlbumFlipbookViewer from './AlbumFlipbookViewer';
 import HeroInteractiveAlbum from './HeroInteractiveAlbum';
 import heroDesktop from '../assets/hero_flatlay_desktop.jpg';
 import heroMobile from '../assets/hero_flatlay_mobile.jpg';
+import kprProductionsLogo from '../assets/kpr_productions_logo.png';
 import showcasePhotoLogoExact from '../assets/showcase_photo_logo_exact.png';
 import showcaseColorLabLogoExact from '../assets/showcase_colorlab_logo_exact.png';
 import showcaseEventsLogoExact from '../assets/showcase_events_logo_exact.png';
@@ -39,23 +40,19 @@ const SERVICES = [
     route: 'media',
     title: 'FOTOGRAPHY',
     showTitleText: true,
-    accentColor: '#D32F2F', // Vibrant Red Accent
     logoSrc: showcasePhotoLogoExact,
     cardImage: heroApertureSquare,
     cardAlt: 'DSLR Multi-Blade Aperture Lens',
-    description: 'Capturing emotions, moments and stories that last forever.',
     buttonText: 'EXPLORE',
   },
   {
     id: 'colorlab',
     route: 'colorlab',
-    title: 'COLOUR LAB',
-    showTitleText: false, // Avoid redundant 'Colour Lab' font text below logo
-    accentColor: '#1E88E5', // Royal Blue Accent
+    title: 'Colour Lab',
+    showTitleText: true,
     logoSrc: showcaseColorLabLogoExact,
     cardImage: cardAlbumReal,
     cardAlt: 'High-Clarity Luxury Wedding Layflat Photobook Album',
-    description: 'Bringing your memories to life with perfect colours.',
     buttonText: 'EXPLORE',
   },
   {
@@ -63,11 +60,9 @@ const SERVICES = [
     route: 'events',
     title: 'EVENTS',
     showTitleText: true,
-    accentColor: '#D32F2F', // Vibrant Red Accent
     logoSrc: showcaseEventsLogoExact,
     cardImage: cardStageReal,
     cardAlt: 'High-Clarity Grand Wedding Stage & Mandap Decor',
-    description: 'Planning and executing events that leave a lasting impression.',
     buttonText: 'EXPLORE',
   }
 ];
@@ -124,43 +119,33 @@ export default function Hero({ onOpenPage }) {
         draggable="false"
       />
 
-      {/* ── 2. Middle Section: Luxury 3D Printed Album Feature (Laptop & Mobile) ── */}
-      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 sm:py-1.5 pointer-events-auto max-w-4xl mx-auto translate-y-4 xs:translate-y-5 sm:translate-y-0">
-        {/* Text Block: Moved down synchronously with album & button on mobile only */}
-        <div className="flex flex-col items-center text-center mt-1.5 xs:mt-2 sm:mt-0 mb-0.5 sm:mb-1">
-          {/* Eyebrow Pill Badge */}
-          <motion.div
+      {/* ── 2. Middle Section: Brand Centerpiece, Album Feature & Showcase (From Older Image) ── */}
+      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 sm:py-1 pointer-events-auto max-w-4xl mx-auto">
+        {/* Center Logo & Tagline (From Older Image) */}
+        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1 sm:mb-1.5">
+          <motion.img
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="inline-flex items-center gap-1 sm:gap-1.5 px-2 xs:px-2.5 sm:px-3.5 py-0.5 rounded-full bg-[#FAF7F2]/90 border border-[#D8CFC4] text-[#8C6D3F] text-[7px] xs:text-[8px] sm:text-[10px] font-bold tracking-widest uppercase shadow-xs mb-1 sm:mb-1.5"
-          >
-            <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#8C6D3F]" />
-            <span>YOUR MEMORIES • YOUR ALBUM</span>
-          </motion.div>
+            src={kprProductionsLogo}
+            alt="KPR PRODUCTIONS"
+            className="h-8 xs:h-10 sm:h-12 md:h-14 w-auto object-contain select-none drop-shadow-xs"
+            loading="eager"
+          />
 
-          {/* Heading: Compact & constrained on mobile so it stays in cream center and never overlaps lens/frame */}
-          <motion.h2
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-            className="font-serif text-[11.5px] xs:text-[13px] sm:text-xl md:text-2xl lg:text-[26px] font-normal text-[#1A1A1A] tracking-tight text-center leading-snug sm:leading-tight max-w-[205px] xs:max-w-[240px] sm:max-w-xl md:max-w-3xl px-1 sm:px-2 mb-0.5 whitespace-normal md:whitespace-nowrap"
-          >
-            Turn your memories into a beautiful printed album.
-          </motion.h2>
-
-          {/* Subtitle: Compact on mobile */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.08 }}
-            className="text-[7.5px] xs:text-[8.5px] sm:text-[11px] md:text-xs text-[#555555] font-light text-center tracking-normal max-w-[205px] xs:max-w-[240px] sm:max-w-2xl px-1 sm:px-4 mb-1 sm:mb-1.5 leading-tight"
+            className="font-serif italic text-[11px] xs:text-xs sm:text-sm md:text-base text-[#1A1A1A] tracking-normal mt-0.5 sm:mt-1 flex items-center justify-center gap-1.5 sm:gap-2 select-none"
           >
-            Upload your photos • Preview your album • Print & preserve your memories
+            <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-sm leading-none">—</span>
+            <span>Turn Your Moments Into Memories</span>
+            <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-sm leading-none">—</span>
           </motion.p>
         </div>
 
-        {/* Interactive 3D Photobook Album (Flippable with mouse on desktop and hand swipe on phone) */}
+        {/* Interactive 3D Photobook Album */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -176,7 +161,7 @@ export default function Hero({ onOpenPage }) {
           />
         </motion.div>
 
-        {/* Action Button: PREVIEW */}
+        {/* Action Button: PREVIEW with Eye Icon (From Older Image) */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -186,20 +171,18 @@ export default function Hero({ onOpenPage }) {
           <button
             type="button"
             onClick={() => setUploadModalOpen(true)}
-            className="group inline-flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 px-3.5 xs:px-4 sm:px-6 py-1 xs:py-1.5 sm:py-2 rounded-full bg-[#141414] hover:bg-[#000000] text-white border border-white/20 hover:border-[#C5A880] shadow-[0_6px_16px_rgba(0,0,0,0.3)] hover:shadow-[0_10px_24px_rgba(197,168,128,0.3)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            className="group inline-flex items-center gap-1.5 xs:gap-2 px-5 sm:px-6 py-1 xs:py-1.5 sm:py-2 rounded-full bg-[#1A1A1A] hover:bg-[#000000] text-white border-2 border-[#E5D7BE] hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            title="Preview Album"
           >
-            <BookOpen className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-3.5 sm:h-3.5 text-white group-hover:text-[#C5A880] transition-colors" />
-            <span className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-bold tracking-[0.16em] uppercase font-sans">
+            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:text-[#C5A880] transition-colors" />
+            <span className="text-[9.5px] xs:text-[10.5px] sm:text-[11.5px] font-bold tracking-[0.16em] uppercase font-sans">
               PREVIEW
-            </span>
-            <span className="text-white group-hover:text-[#C5A880] text-xs sm:text-sm transition-transform duration-300 group-hover:translate-x-1">
-              →
             </span>
           </button>
         </motion.div>
       </div>
 
-      {/* ── 3. Unified 3-Column Services Showcase Cards (With Bigger Visual Images) ── */}
+      {/* ── 3. Unified 3-Column Services Showcase Cards (From Older Image) ── */}
       <div className="w-full max-w-4xl lg:max-w-5xl mx-auto grid grid-cols-3 gap-1.5 xs:gap-2 sm:gap-3 md:gap-4 z-10 mb-1 sm:mb-2 py-0 px-0.5 sm:px-1">
         {SERVICES.map((service, index) => {
           return (
@@ -209,13 +192,8 @@ export default function Hero({ onOpenPage }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.06, ease: 'easeOut' }}
               onClick={() => handleCardClick(service.route)}
-              className="group relative bg-[#FAF7F2]/95 hover:bg-[#FFFFFF] backdrop-blur-xl border border-[#D8CFC4]/90 hover:border-[#1A1A1A]/60 rounded-xl sm:rounded-2xl p-1.5 xs:p-2 sm:p-2.5 md:p-3 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] shadow-[0_6px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.18)]"
+              className="group relative bg-white/95 hover:bg-white backdrop-blur-xl border border-[#E8E2D9] hover:border-[#1A1A1A]/40 rounded-xl sm:rounded-2xl p-1.5 xs:p-2 sm:p-2.5 md:p-3 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.14)]"
             >
-              {/* Card hover background subtle glow */}
-              <div
-                className="absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.04)_0%,transparent_70%)]"
-              />
-
               {/* 1. Official Logo Badge Asset */}
               <div className="h-7 xs:h-8 sm:h-9 md:h-11 w-full flex items-center justify-center mb-0.5">
                 <img
@@ -226,23 +204,13 @@ export default function Hero({ onOpenPage }) {
                 />
               </div>
 
-              {/* 2. Title Text */}
-              {service.showTitleText ? (
-                <h3 className="text-[8.5px] xs:text-[9.5px] sm:text-xs md:text-sm lg:text-base font-black tracking-wide text-[#1A1A1A] uppercase font-sans mt-0.5 truncate max-w-full">
-                  {service.title}
-                </h3>
-              ) : (
-                <div className="h-0.5 sm:h-1" />
-              )}
+              {/* 2. Title Text (Preserving exact casing: "FOTOGRAPHY", "Colour Lab", "EVENTS") */}
+              <h3 className="text-[8.5px] xs:text-[9.5px] sm:text-xs md:text-sm lg:text-base font-bold tracking-wide text-[#1A1A1A] font-sans mt-0.5 truncate max-w-full">
+                {service.title}
+              </h3>
 
-              {/* 3. Color Divider Underline */}
-              <div
-                className="w-4 sm:w-6 md:w-8 h-[2px] rounded-full my-0.5 sm:my-1 transition-all duration-300 group-hover:w-10"
-                style={{ backgroundColor: service.accentColor }}
-              />
-
-              {/* 4. Supporting Visual Asset (Significantly Bigger, High Clarity Display) */}
-              <div className="w-full h-11 xs:h-13 sm:h-16 md:h-20 lg:h-22 flex items-center justify-center my-0.5 sm:my-1 relative overflow-hidden rounded-md sm:rounded-lg border border-black/10 shadow-[0_2px_8px_rgba(0,0,0,0.1)] bg-white">
+              {/* 3. Supporting Visual Asset */}
+              <div className="w-full h-11 xs:h-13 sm:h-16 md:h-20 lg:h-22 flex items-center justify-center my-0.5 sm:my-1 relative overflow-hidden rounded-md sm:rounded-lg border border-black/10 shadow-[0_2px_8px_rgba(0,0,0,0.08)] bg-white">
                 <img
                   src={service.cardImage}
                   alt={service.cardAlt}
@@ -251,12 +219,12 @@ export default function Hero({ onOpenPage }) {
                 />
               </div>
 
-              {/* 5. "EXPLORE >" Luxury Outline Button */}
-              <div className="w-full pt-0.5 sm:pt-1.5">
-                <div className="w-full py-0.5 xs:py-1 sm:py-1 md:py-1.5 px-1 sm:px-2 rounded sm:rounded-md border border-[#1A1A1A]/30 group-hover:border-[#1A1A1A] group-hover:bg-[#1A1A1A] text-[#1A1A1A] group-hover:text-white font-bold text-[7.5px] xs:text-[8.5px] sm:text-[9.5px] md:text-[10.5px] tracking-wider uppercase flex items-center justify-center gap-0.5 sm:gap-1 transition-all duration-300 shadow-xs">
+              {/* 4. "EXPLORE >" Link */}
+              <div className="w-full pt-0.5 sm:pt-1 flex items-center justify-center">
+                <span className="text-[7.5px] xs:text-[8.5px] sm:text-[9.5px] md:text-[10.5px] font-bold tracking-wider text-[#1A1A1A] group-hover:text-[#D32F2F] uppercase flex items-center gap-0.5 transition-colors duration-300">
                   <span>EXPLORE</span>
-                  <span className="text-[9px] sm:text-[11px] md:text-xs leading-none transition-transform duration-300 group-hover:translate-x-0.5 font-bold">›</span>
-                </div>
+                  <span className="text-[9px] sm:text-[11px] md:text-xs leading-none transition-transform duration-300 group-hover:translate-x-0.5 font-bold">&gt;</span>
+                </span>
               </div>
             </motion.div>
           );
