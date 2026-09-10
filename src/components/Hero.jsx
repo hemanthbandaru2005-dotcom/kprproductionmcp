@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye } from 'lucide-react';
+import { Eye, Maximize2 } from 'lucide-react';
 import CustomAlbumUploadModal from './CustomAlbumUploadModal';
 import AlbumFlipbookViewer from './AlbumFlipbookViewer';
 import HeroInteractiveAlbum from './HeroInteractiveAlbum';
@@ -87,8 +87,8 @@ export default function Hero({ onOpenPage }) {
   return (
     <section
       id="hero"
-      className="relative w-full min-h-[100svh] md:h-[100svh] md:max-h-[100svh] overflow-y-auto md:overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-13 xs:pt-14 sm:pt-16 md:pt-18 pb-2 sm:pb-3 md:pb-3 px-2 sm:px-5 lg:px-8 select-none"
-      style={{ minHeight: 'var(--app-height, 100vh)' }}
+      className="relative w-full h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-14 xs:pt-15 sm:pt-16 md:pt-18 pb-2 sm:pb-3 px-2 sm:px-5 lg:px-8 select-none"
+      style={{ height: 'var(--app-height, 100vh)' }}
     >
       {/* Semantic H1 for Search Engine Indexing */}
       <h1 className="sr-only">
@@ -119,17 +119,17 @@ export default function Hero({ onOpenPage }) {
         draggable="false"
       />
 
-      {/* ── 2. Middle Section: Brand Centerpiece, Album Feature & Showcase (From Older Image) ── */}
-      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 sm:py-1 pointer-events-auto max-w-4xl mx-auto">
-        {/* Center Logo & Tagline (From Older Image) */}
-        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1 sm:mb-1.5">
+      {/* ── 2. Middle Section: Brand Centerpiece, Album Feature & Showcase ── */}
+      <div className="w-full flex-1 flex flex-col items-center justify-between md:justify-center z-20 py-0.5 pointer-events-auto max-w-4xl mx-auto">
+        {/* Center Logo & Tagline (Prominent & Enlarged on Mobile and Desktop) */}
+        <div className="flex flex-col items-center text-center mt-1 sm:mt-1.5 mb-1 sm:mb-2">
           <motion.img
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
             src={kprProductionsLogo}
             alt="KPR PRODUCTIONS"
-            className="h-8 xs:h-10 sm:h-12 md:h-14 w-auto object-contain select-none drop-shadow-xs"
+            className="h-11 xs:h-13 sm:h-16 md:h-20 lg:h-24 w-auto object-contain select-none drop-shadow-xs"
             loading="eager"
           />
 
@@ -137,49 +137,66 @@ export default function Hero({ onOpenPage }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.08 }}
-            className="font-serif italic text-[11px] xs:text-xs sm:text-sm md:text-base text-[#1A1A1A] tracking-normal mt-0.5 sm:mt-1 flex items-center justify-center gap-1.5 sm:gap-2 select-none"
+            className="font-serif italic text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-[#1A1A1A] tracking-normal mt-0.5 sm:mt-1 flex items-center justify-center gap-1.5 sm:gap-2.5 select-none"
           >
-            <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-sm leading-none">—</span>
+            <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-base leading-none">—</span>
             <span>Turn Your Moments Into Memories</span>
-            <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-sm leading-none">—</span>
+            <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-base leading-none">—</span>
           </motion.p>
         </div>
 
-        {/* Interactive 3D Photobook Album */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.45, delay: 0.12 }}
-          className="relative flex items-center justify-center w-full my-0.5 sm:my-1"
-        >
-          <HeroInteractiveAlbum
-            onOpenUpload={() => setUploadModalOpen(true)}
-            onOpenFullscreen={() => {
-              setFlipbookImages(HERO_SAMPLE_PHOTOS);
-              setFlipbookSize('12x36');
-            }}
-          />
-        </motion.div>
-
-        {/* Action Button: PREVIEW with Eye Icon (From Older Image) */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15 }}
-          className="flex justify-center mt-1 sm:mt-1.5"
-        >
-          <button
-            type="button"
-            onClick={() => setUploadModalOpen(true)}
-            className="group inline-flex items-center gap-1.5 xs:gap-2 px-5 sm:px-6 py-1 xs:py-1.5 sm:py-2 rounded-full bg-[#1A1A1A] hover:bg-[#000000] text-white border-2 border-[#E5D7BE] hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
-            title="Preview Album"
+        {/* Album + Buttons Block (Brought down near the service showcases on mobile) */}
+        <div className="w-full flex flex-col items-center justify-center mt-auto md:mt-0 mb-1 sm:mb-2 translate-y-1.5 xs:translate-y-2.5 md:translate-y-0">
+          {/* Interactive 3D Photobook Album */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.45, delay: 0.12 }}
+            className="relative flex items-center justify-center w-full my-0.5"
           >
-            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white group-hover:text-[#C5A880] transition-colors" />
-            <span className="text-[9.5px] xs:text-[10.5px] sm:text-[11.5px] font-bold tracking-[0.16em] uppercase font-sans">
-              PREVIEW
-            </span>
-          </button>
-        </motion.div>
+            <HeroInteractiveAlbum
+              showFullscreenButton={false}
+              onOpenUpload={() => setUploadModalOpen(true)}
+              onOpenFullscreen={() => {
+                setFlipbookImages(HERO_SAMPLE_PHOTOS);
+                setFlipbookSize('12x36');
+              }}
+            />
+          </motion.div>
+
+          {/* Action Buttons: Full View and PREVIEW (Side by side, close to showcase cards) */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+            className="flex items-center justify-center gap-2 sm:gap-3 mt-1 sm:mt-1.5"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setFlipbookImages(HERO_SAMPLE_PHOTOS);
+                setFlipbookSize('12x36');
+              }}
+              className="group inline-flex items-center gap-1.5 px-3 xs:px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[#181818] hover:bg-black text-[#F4ECD8] text-[8.5px] xs:text-[9.5px] sm:text-xs font-bold tracking-wider uppercase border border-[#C5A880]/60 hover:border-[#C5A880] shadow-[0_3px_10px_rgba(0,0,0,0.25)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+              title="Open in Full View 3D Photobook"
+            >
+              <Maximize2 className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-3.5 sm:h-3.5 text-[#C5A880] group-hover:scale-110 transition-transform" />
+              <span>Full View</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setUploadModalOpen(true)}
+              className="group inline-flex items-center gap-1.5 px-3.5 xs:px-4 sm:px-5 py-1 sm:py-1.5 rounded-full bg-[#1A1A1A] hover:bg-black text-white border-2 border-[#E5D7BE] hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+              title="Preview Album"
+            >
+              <Eye className="w-3 h-3 xs:w-3.5 xs:h-3.5 text-white group-hover:text-[#C5A880] transition-colors" />
+              <span className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-bold tracking-[0.16em] uppercase font-sans">
+                PREVIEW
+              </span>
+            </button>
+          </motion.div>
+        </div>
       </div>
 
       {/* ── 3. Unified 3-Column Services Showcase Cards (From Older Image) ── */}

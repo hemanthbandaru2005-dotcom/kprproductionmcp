@@ -21,30 +21,30 @@ function getBookDimensions() {
   }
   const w = window.innerWidth;
   if (w < 380) {
-    const sw = 155;
+    const sw = 140;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 480) {
-    const sw = 175;
+    const sw = 160;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 640) {
-    const sw = 215;
+    const sw = 200;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 768) {
-    const sw = 260;
+    const sw = 240;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 1024) {
-    const sw = 300;
+    const sw = 280;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
   if (w < 1280) {
-    const sw = 340;
+    const sw = 330;
     return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
   }
-  const sw = 360;
+  const sw = 350;
   return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
 }
 
@@ -264,7 +264,7 @@ HeroBackCover.displayName = 'HeroBackCover';
    - Smoothly centers closed cover and open spreads
    - Dedicated [ ⛶ Full View ] button
    ───────────────────────────────────────────────────── */
-export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen }) {
+export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, showFullscreenButton = true }) {
   const flipBookRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [dims, setDims] = useState(getBookDimensions);
@@ -396,7 +396,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
             maxHeight={800}
             maxShadowOpacity={0.6}
             showCover={true}
-            mobileScrollSupport={false}
+            mobileScrollSupport={true}
             flippingTime={550}
             usePortrait={false}
             startPage={0}
@@ -445,7 +445,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen })
       </div>
 
       {/* ── FULL VIEW BUTTON (Dedicated Luxury Launcher) ── */}
-      {onOpenFullscreen && (
+      {onOpenFullscreen && showFullscreenButton && (
         <div className="flex items-center justify-center mt-2 sm:mt-2.5 select-none z-20">
           <button
             type="button"
