@@ -132,13 +132,13 @@ export default function Navbar({ activePage, onSelectPage }) {
 
         </nav>
 
-        {/* 3. RIGHT: LOGIN Button & Mobile Toggle */}
+        {/* 3. RIGHT: LOGIN Button (Laptop / Desktop Only) & Mobile Toggle */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => handlePageClick('login')}
-            className="px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full border border-[#C5A880] bg-[#1A1A1A] hover:bg-black text-[#F4ECD8] hover:text-white font-bold text-[10px] sm:text-xs tracking-[0.18em] uppercase shadow-[0_3px_12px_rgba(0,0,0,0.25)] hover:shadow-[0_4px_16px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer flex items-center gap-1.5 sm:gap-2"
+            className="hidden md:flex px-6 py-2 rounded-full border border-[#C5A880] bg-[#1A1A1A] hover:bg-black text-[#F4ECD8] hover:text-white font-bold text-xs tracking-[0.18em] uppercase shadow-[0_3px_12px_rgba(0,0,0,0.25)] hover:shadow-[0_4px_16px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer items-center gap-2"
           >
-            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C5A880] stroke-[2.5]" />
+            <User className="w-4 h-4 text-[#C5A880] stroke-[2.5]" />
             <span>LOGIN</span>
           </button>
 
