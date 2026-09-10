@@ -115,7 +115,11 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
   const filteredItems = items.filter((item) => {
     const itemCat = String(item.category || '').toLowerCase().trim();
     const activeCat = String(activeCategory || '').toLowerCase().trim();
-    return itemCat === activeCat;
+    if (itemCat === activeCat) return true;
+    if ((activeCat === 'bday' || activeCat === 'birthday') && (itemCat === 'bday' || itemCat === 'birthday')) return true;
+    if (activeCat.includes('corporate') && itemCat.includes('corporate')) return true;
+    if (activeCat.includes('shopping') && itemCat.includes('shopping')) return true;
+    return false;
   });
 
   return (

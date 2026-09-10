@@ -1,20 +1,20 @@
 import { supabase } from './supabaseClient';
 
 export const PHOTOGRAPHY_CATEGORIES = [
-  'Corporate & Commercial Events',
-  'Shopping Malls',
-  '21',
-  'Birthday',
-  'Engagement',
-  'Haldi',
-  'Modeling',
-  'Maternity',
-  'Nature',
-  'Panchalu',
+  'Wedding',
   'Pre Wedding',
+  'Haldi',
+  'Engagement',
+  'Birthday',
+  'Maternity',
   'Reception',
   'Saree Function',
-  'Wedding'
+  'Panchalu',
+  '21',
+  'Modeling',
+  'Nature',
+  'Corporate & Commercial Events',
+  'Shopping Malls'
 ];
 
 export const COLORLAB_CATEGORIES = [
