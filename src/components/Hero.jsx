@@ -120,16 +120,16 @@ export default function Hero({ onOpenPage }) {
       />
 
       {/* ── 2. Middle Section: Brand Centerpiece, Album Feature & Showcase ── */}
-      <div className="w-full flex-1 flex flex-col items-center justify-between md:justify-center z-20 py-0.5 pointer-events-auto max-w-4xl mx-auto">
-        {/* Center Logo & Tagline (Prominent & Enlarged on Mobile and Desktop) */}
-        <div className="flex flex-col items-center text-center mt-1 sm:mt-1.5 mb-1 sm:mb-2">
+      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 pointer-events-auto max-w-4xl mx-auto">
+        {/* Center Logo & Tagline (Quote sits directly on top of the album) */}
+        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1 sm:mb-1.5">
           <motion.img
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
             src={kprProductionsLogo}
             alt="KPR PRODUCTIONS"
-            className="h-11 xs:h-13 sm:h-16 md:h-20 lg:h-24 w-auto object-contain select-none drop-shadow-xs"
+            className="h-10 xs:h-12 sm:h-16 md:h-20 lg:h-24 w-auto object-contain select-none drop-shadow-xs"
             loading="eager"
           />
 
@@ -145,8 +145,8 @@ export default function Hero({ onOpenPage }) {
           </motion.p>
         </div>
 
-        {/* Album + Buttons Block (Brought down near the service showcases on mobile) */}
-        <div className="w-full flex flex-col items-center justify-center mt-auto md:mt-0 mb-1 sm:mb-2 translate-y-1.5 xs:translate-y-2.5 md:translate-y-0">
+        {/* Album + Buttons Block (Centered in the middle on mobile & laptop) */}
+        <div className="w-full flex flex-col items-center justify-center my-0.5 sm:my-1">
           {/* Interactive 3D Photobook Album */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
