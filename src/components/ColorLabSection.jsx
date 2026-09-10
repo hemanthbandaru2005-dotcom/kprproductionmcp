@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import RetouchSlider from './RetouchSlider';
 import PackagesSection from './PackagesSection';
 import AlbumFlipbookViewer from './AlbumFlipbookViewer';
-import AlbumPreviewPage from './AlbumPreviewPage';
 import CustomAlbumUploadModal from './CustomAlbumUploadModal';
 import {
   Palette, Package, BookOpen, ChevronDown, Check, Sparkles,
@@ -436,22 +434,24 @@ export default function ColorLabSection() {
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-6">
-                      {customColorLabPhotos.map((photo) => (
+                      {(customColorLabPhotos || []).filter(Boolean).map((photo, pIdx) => (
                         <div
-                          key={photo.id}
+                          key={photo.id || `cl-custom-photo-${pIdx}`}
                           className="bg-white border border-[#E2D9CC] rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group"
                         >
                           <div className="relative aspect-square overflow-hidden bg-black">
                             <img
-                              src={photo.file_url || photo.url}
+                              src={photo.file_url || photo.url || '/images/services/wedding_album_printing.png'}
                               alt={photo.title || 'Color Lab Print'}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
-                            <div className="absolute top-2 left-2">
-                              <span className="bg-black/70 text-white text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-mono">
-                                {photo.category}
-                              </span>
-                            </div>
+                            {photo.category && (
+                              <div className="absolute top-2 left-2">
+                                <span className="bg-black/70 text-white text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-mono">
+                                  {photo.category}
+                                </span>
+                              </div>
+                            )}
                           </div>
                           {photo.title && (
                             <div className="p-3">

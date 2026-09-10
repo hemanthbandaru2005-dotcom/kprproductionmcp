@@ -37,11 +37,19 @@ function isLegacyDummy(album) {
 
 function normalizeAlbum(album) {
   if (!album || isLegacyDummy(album)) return null;
-  const pages = Array.isArray(album.pages)
-    ? album.pages
-    : typeof album.pages === 'string'
-      ? JSON.parse(album.pages || '[]')
-      : [];
+  let pages = [];
+  if (Array.isArray(album.pages)) {
+    pages = album.pages;
+  } else if (typeof album.pages === 'string') {
+    try {
+      const parsed = JSON.parse(album.pages);
+      pages = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      pages = album.pages.includes(',')
+        ? album.pages.split(',').map(s => s.trim()).filter(Boolean)
+        : (album.pages.trim() ? [album.pages.trim()] : []);
+    }
+  }
 
   return {
     id: album.id,

@@ -6,20 +6,52 @@ import Footer from './components/Footer';
 import { SOCIAL_LINKS } from './utils/socialLinks';
 import { Loader2 } from 'lucide-react';
 
+// Safe lazy loading with auto-retry on stale deployment chunk 404s or network glitches
+function lazyWithRetry(componentImport) {
+  return lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error) {
+      console.warn('Lazy chunk load failed, retrying once...', error);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 600));
+        return await componentImport();
+      } catch (retryError) {
+        const hashKey = 'kpr_chunk_retry_' + (window.location.hash || '#home');
+        const alreadyRetried = sessionStorage.getItem(hashKey);
+        if (!alreadyRetried) {
+          sessionStorage.setItem(hashKey, 'true');
+          window.location.reload();
+          return new Promise(() => {}); // pause until page reloads
+        }
+        sessionStorage.removeItem(hashKey);
+        throw retryError;
+      }
+    }
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', (event) => {
+    event.preventDefault();
+    window.location.reload();
+  });
+}
+
 // Lazy-loaded heavy components for ultra-fast initial mobile load & zero memory crashes
-const MediaSection = lazy(() => import('./components/MediaSection'));
-const ColorLabSection = lazy(() => import('./components/ColorLabSection'));
-const EventsSection = lazy(() => import('./components/EventsSection'));
-const LoginSection = lazy(() => import('./components/LoginSection'));
-const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
-const WorkerDashboard = lazy(() => import('./components/worker/WorkerDashboard'));
-const ClientDashboard = lazy(() => import('./components/client/ClientDashboard'));
-const ContactSection = lazy(() => import('./components/ContactSection'));
-const AboutSection = lazy(() => import('./components/AboutSection'));
-const AlbumPreviewPage = lazy(() => import('./components/AlbumPreviewPage'));
-const PhotographyCostEstimator = lazy(() => import('./components/estimator/PhotographyCostEstimator'));
-const LightboxModal = lazy(() => import('./components/LightboxModal'));
-const MoodboardDrawer = lazy(() => import('./components/MoodboardDrawer'));
+const MediaSection = lazyWithRetry(() => import('./components/MediaSection'));
+const ColorLabSection = lazyWithRetry(() => import('./components/ColorLabSection'));
+const EventsSection = lazyWithRetry(() => import('./components/EventsSection'));
+const LoginSection = lazyWithRetry(() => import('./components/LoginSection'));
+const AdminDashboard = lazyWithRetry(() => import('./components/admin/AdminDashboard'));
+const WorkerDashboard = lazyWithRetry(() => import('./components/worker/WorkerDashboard'));
+const ClientDashboard = lazyWithRetry(() => import('./components/client/ClientDashboard'));
+const ContactSection = lazyWithRetry(() => import('./components/ContactSection'));
+const AboutSection = lazyWithRetry(() => import('./components/AboutSection'));
+const AlbumPreviewPage = lazyWithRetry(() => import('./components/AlbumPreviewPage'));
+const PhotographyCostEstimator = lazyWithRetry(() => import('./components/estimator/PhotographyCostEstimator'));
+const LightboxModal = lazyWithRetry(() => import('./components/LightboxModal'));
+const MoodboardDrawer = lazyWithRetry(() => import('./components/MoodboardDrawer'));
 
 function PageLoader() {
   return (
@@ -45,6 +77,48 @@ function getInitialPage() {
     }
   } catch (e) {}
   return 'home';
+}
+
+class SectionErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error(`SectionErrorBoundary [${this.props.sectionName || 'view'}]:`, error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full min-h-[50vh] flex flex-col items-center justify-center p-8 text-center bg-[#F7F3EE]">
+          <div className="w-12 h-12 rounded-xl bg-[#C5A880]/20 text-[#8C6D3F] border border-[#C5A880]/30 flex items-center justify-center mb-3">
+            <span className="font-serif font-bold text-xl">KPR</span>
+          </div>
+          <h3 className="text-lg font-bold text-[#1A1A1A] mb-1">
+            Unable to display {this.props.sectionName || 'content'}
+          </h3>
+          <p className="text-xs text-[#777777] max-w-md mb-4 font-mono">
+            {this.state.error?.message || 'A temporary display issue occurred.'}
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+            }}
+            className="px-5 py-2 rounded-xl bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            Retry View
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function AppContent() {
@@ -244,52 +318,64 @@ function AppContent() {
 
         {activePage === 'colorlab' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <Suspense fallback={<PageLoader />}>
-              <ColorLabSection />
-            </Suspense>
+            <SectionErrorBoundary sectionName="Color Lab">
+              <Suspense fallback={<PageLoader />}>
+                <ColorLabSection />
+              </Suspense>
+            </SectionErrorBoundary>
           </div>
         )}
 
         {activePage === 'events' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <Suspense fallback={<PageLoader />}>
-              <EventsSection onOpenPage={handleSelectPage} />
-            </Suspense>
+            <SectionErrorBoundary sectionName="Events">
+              <Suspense fallback={<PageLoader />}>
+                <EventsSection onOpenPage={handleSelectPage} />
+              </Suspense>
+            </SectionErrorBoundary>
           </div>
         )}
 
         {activePage === 'login' && (
           <div className="pt-20 sm:pt-24 pb-12 animate-fadeIn">
-            <Suspense fallback={<PageLoader />}>
-              <LoginSection
-                onLoginSuccess={handleLoginSuccess}
-                initialTab={loginTab}
-              />
-            </Suspense>
+            <SectionErrorBoundary sectionName="Login">
+              <Suspense fallback={<PageLoader />}>
+                <LoginSection
+                  onLoginSuccess={handleLoginSuccess}
+                  initialTab={loginTab}
+                />
+              </Suspense>
+            </SectionErrorBoundary>
           </div>
         )}
 
         {activePage === 'contact' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <Suspense fallback={<PageLoader />}>
-              <ContactSection />
-            </Suspense>
+            <SectionErrorBoundary sectionName="Contact">
+              <Suspense fallback={<PageLoader />}>
+                <ContactSection />
+              </Suspense>
+            </SectionErrorBoundary>
           </div>
         )}
 
         {activePage === 'about' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <Suspense fallback={<PageLoader />}>
-              <AboutSection />
-            </Suspense>
+            <SectionErrorBoundary sectionName="About Us">
+              <Suspense fallback={<PageLoader />}>
+                <AboutSection />
+              </Suspense>
+            </SectionErrorBoundary>
           </div>
         )}
 
         {activePage === 'album-preview' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <Suspense fallback={<PageLoader />}>
-              <AlbumPreviewPage />
-            </Suspense>
+            <SectionErrorBoundary sectionName="Album Preview">
+              <Suspense fallback={<PageLoader />}>
+                <AlbumPreviewPage />
+              </Suspense>
+            </SectionErrorBoundary>
           </div>
         )}
 

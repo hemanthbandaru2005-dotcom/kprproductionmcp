@@ -200,7 +200,7 @@ export default function Hero({ onOpenPage }) {
       </div>
 
       {/* ── 3. Unified 3-Column Services Showcase Cards (Matching Background) ── */}
-      <div className="w-full max-w-4xl lg:max-w-5xl mx-auto grid grid-cols-3 gap-1.5 xs:gap-2 sm:gap-3 md:gap-4 z-10 mb-1 sm:mb-2 py-0 px-0.5 sm:px-1">
+      <div className="w-full max-w-4xl lg:max-w-5xl mx-auto grid grid-cols-3 gap-1.5 xs:gap-2 sm:gap-3 md:gap-4 relative z-30 pointer-events-auto mb-1 sm:mb-2 py-0 px-0.5 sm:px-1">
         {SERVICES.map((service, index) => {
           return (
             <motion.div
