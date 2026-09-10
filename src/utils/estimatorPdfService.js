@@ -1,6 +1,6 @@
 import * as jspdfModule from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { INVOICE_HEADER_LOGO_BASE64 } from './invoiceAssetsBase64.js';
+import { INVOICE_HEADER_LOGO_BASE64, INVOICE_UPI_QR_BASE64 } from './invoiceAssetsBase64.js';
 
 const jsPDF = jspdfModule.jsPDF || jspdfModule.default || jspdfModule;
 
@@ -289,8 +289,24 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setTextColor(180, 83, 9); // Amber / Dark Gold
   doc.text(`Rs. ${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, summaryRightVal - 2, currentY + 3, { align: 'right' });
 
-  // ══════════════════ 6. STUDIO TERMS & BOOKING CONFIRMATION ══════════════════
-  const notesTop = Math.max(currentY + 16, 224);
+  // ══════════════════ 6. QR CODE PAYMENT CARD & STUDIO TERMS ══════════════════
+  // Official Google Pay UPI QR Code Card (Placed in marked area on right below Estimated Total)
+  const qrWidth = 37;
+  const qrHeight = qrWidth / 0.67436; // 54.8mm
+  const qrX = 196 - qrWidth; // 159mm
+  const qrY = currentY + 9;
+
+  if (INVOICE_UPI_QR_BASE64) {
+    // Subtle luxury rounded frame for the QR card
+    doc.setDrawColor(216, 207, 196);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(qrX - 0.5, qrY - 0.5, qrWidth + 1, qrHeight + 1, 1.5, 1.5, 'S');
+
+    doc.addImage(INVOICE_UPI_QR_BASE64, 'PNG', qrX, qrY, qrWidth, qrHeight, '', 'FAST');
+  }
+
+  // Terms & Booking Instructions on the Left
+  const notesTop = currentY + 11;
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
@@ -303,19 +319,21 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.text('• This estimate is generated based on official standard KPR Fotography rate cards and is valid for 30 days.', 14, notesTop + 4.5);
   doc.text('• Standard Payment Schedule: 30% advance for date reservation, 50% on event date, 20% on final delivery.', 14, notesTop + 8.5);
   doc.text('• Outstation travel, lodging & local conveyance charges (if applicable) are extra at actuals.', 14, notesTop + 12.5);
-  doc.text('• To confirm booking or customize dates, please WhatsApp or call our team directly at +91 98494 43648.', 14, notesTop + 16.5);
+  doc.text('• Scan the official Google Pay / UPI QR code on the right to pay advance directly.', 14, notesTop + 16.5);
+  doc.text('• To confirm booking or customize dates, please WhatsApp or call our team directly at +91 98494 43648.', 14, notesTop + 20.5);
 
-  // Signature Block
+  // Signature Block (Positioned below QR Card with clean clearance)
+  const sigTop = Math.max(qrY + qrHeight + 4, notesTop + 28);
   const sigLeft = 145;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(40, 40, 40);
-  doc.text('For KPR Fotography & Color Lab', sigLeft, notesTop + 26);
+  doc.text('For KPR Fotography & Color Lab', sigLeft, sigTop);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(110, 110, 110);
-  doc.text('Authorized Studio Representative', sigLeft, notesTop + 30);
+  doc.text('Authorized Studio Representative', sigLeft, sigTop + 4);
 
   // ══════════════════ 7. FOOTER ══════════════════
   doc.setDrawColor(220, 215, 205);
