@@ -17,16 +17,16 @@ export default function CostEstimatorModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm animate-fadeIn">
       {/* Top Close Bar */}
-      <div className="sticky top-0 z-50 flex items-center justify-between px-4 sm:px-8 py-3 bg-[#0D0B08]/90 backdrop-blur-md border-b border-[#2A2622]">
-        <div className="text-xs uppercase tracking-widest text-[#C5A880] font-bold">
+      <div className="sticky top-0 z-50 flex items-center justify-between px-4 sm:px-8 py-3 bg-white/95 backdrop-blur-md border-b border-[#E2D9CC]">
+        <div className="text-xs uppercase tracking-widest text-[#8C6D3F] font-bold">
           KPR Fotography Cost Estimator
         </div>
         <button
           onClick={onClose}
           aria-label="Close Cost Estimator"
-          className="p-2 rounded-full bg-[#1F1A15] hover:bg-[#332B23] text-white/80 hover:text-white transition-colors cursor-pointer"
+          className="p-2 rounded-full bg-[#FAF8F5] hover:bg-[#EFE9DF] text-[#1A1A1A] transition-colors cursor-pointer border border-[#E2D9CC]"
         >
           <X className="w-5 h-5" />
         </button>

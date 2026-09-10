@@ -371,19 +371,19 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
       id="cost-estimator"
       className={`w-full ${
         embedded
-          ? 'max-w-5xl mx-auto my-4 sm:my-8 rounded-3xl border border-[#C5A880]/30 shadow-2xl p-4 sm:p-8 lg:p-10'
+          ? 'max-w-5xl mx-auto my-4 sm:my-8 rounded-3xl border border-[#E2D9CC] shadow-xl p-4 sm:p-8 lg:p-10'
           : 'min-h-screen py-6 sm:py-12 px-3 sm:px-6 lg:px-8'
-      } bg-[#0D0B08] text-[#FAF7F2] font-sans selection:bg-[#C5A880] selection:text-black`}
+      } bg-white text-[#1A1A1A] font-sans selection:bg-[#C5A880] selection:text-white`}
     >
       <div className={embedded ? 'w-full' : 'max-w-5xl mx-auto'}>
         
         {/* Top Header Badge */}
         <div className="text-center mb-6 sm:mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/40 text-[#E8D4B8] text-[11px] font-semibold tracking-widest uppercase mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FAF6F0] border border-[#C5A880]/50 text-[#8C6D3F] text-[11px] font-semibold tracking-widest uppercase mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-[#8C6D3F]" />
             <span>KPR Fotography Studio • Cost Estimator</span>
           </div>
-          <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl font-light text-[#FAF7F2] tracking-wide">
+          <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl font-light text-[#1A1A1A] tracking-wide">
             Event Fotography Cost Estimator
           </h1>
           <p className="text-xs sm:text-sm text-[#A89F91] max-w-xl mx-auto mt-2 font-light">
@@ -392,7 +392,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
         </div>
 
         {/* ── 7-STEP PROGRESS INDICATOR ── */}
-        <div className="bg-[#161412] border border-[#2B2724] rounded-2xl p-3 sm:p-4 mb-8 shadow-xl">
+        <div className="bg-[#FAF8F5] border border-[#E2D9CC] rounded-2xl p-3 sm:p-4 mb-8 shadow-sm">
           <div className="flex items-center justify-between relative overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
             {stepsMeta.map((s, idx) => {
               const isCompleted = currentStep > s.num;
@@ -410,18 +410,18 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     disabled={!isCompleted && !isCurrent}
                     className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-lg transition-all ${
                       isCurrent
-                        ? 'bg-[#C5A880] text-black font-bold shadow-lg shadow-[#C5A880]/20'
+                        ? 'bg-[#1A1A1A] text-white font-bold shadow-md'
                         : isCompleted
-                        ? 'text-[#C5A880] hover:bg-[#C5A880]/10 cursor-pointer'
-                        : 'text-[#666058] cursor-not-allowed'
+                        ? 'text-[#8C6D3F] hover:bg-[#C5A880]/15 cursor-pointer'
+                        : 'text-[#999999] cursor-not-allowed'
                     }`}
                   >
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                       isCurrent
-                        ? 'bg-black text-[#C5A880]'
+                        ? 'bg-[#C5A880] text-black font-bold'
                         : isCompleted
-                        ? 'bg-[#C5A880]/20 text-[#C5A880] border border-[#C5A880]'
-                        : 'bg-[#22201D] text-[#666058]'
+                        ? 'bg-[#8C6D3F]/15 text-[#8C6D3F] border border-[#8C6D3F]'
+                        : 'bg-[#EAE4D9] text-[#888888]'
                     }`}>
                       {isCompleted ? <Check className="w-3.5 h-3.5" /> : s.num}
                     </div>
@@ -433,7 +433,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   {/* Connector Line */}
                   {idx < stepsMeta.length - 1 && (
                     <div className={`w-4 sm:w-8 h-0.5 mx-1 sm:mx-2 rounded-full hidden sm:block ${
-                      currentStep > s.num ? 'bg-[#C5A880]' : 'bg-[#2B2724]'
+                      currentStep > s.num ? 'bg-[#C5A880]' : 'bg-[#E2D9CC]'
                     }`} />
                   )}
                 </div>
@@ -442,14 +442,14 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
           </div>
 
           {/* Current Running Subtotal Banner */}
-          <div className="mt-3 pt-3 border-t border-[#2B2724] flex items-center justify-between text-xs text-[#A89F91]">
+          <div className="mt-3 pt-3 border-t border-[#E8DFC9] flex items-center justify-between text-xs text-[#666666]">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#C5A880] animate-pulse" />
-              <span>Step {currentStep} of 7: <strong className="text-white">{stepsMeta[currentStep - 1]?.title}</strong></span>
+              <span>Step {currentStep} of 7: <strong className="text-[#1A1A1A]">{stepsMeta[currentStep - 1]?.title}</strong></span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[#A89F91]">Running Total:</span>
-              <span className="text-sm sm:text-base font-serif font-bold text-[#E8D4B8]">
+              <span className="text-[#666666]">Running Total:</span>
+              <span className="text-sm sm:text-base font-serif font-bold text-[#8C6D3F]">
                 ₹{grandTotal.toLocaleString('en-IN')}/-
               </span>
             </div>
@@ -457,19 +457,19 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
         </div>
 
         {/* ── MAIN STEP CONTAINER ── */}
-        <div className="bg-[#141210] border border-[#2B2724] rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 shadow-2xl relative overflow-hidden">
+        <div className="bg-white border border-[#E2D9CC] rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 shadow-sm relative overflow-hidden">
 
           {/* ══════════════════════════════════════════════════════════════════
               STEP 1: LET'S GET STARTED
               ══════════════════════════════════════════════════════════════════ */}
           {currentStep === 1 && (
             <div className="space-y-6 animate-fadeIn">
-              <div className="space-y-2 border-b border-[#2B2724] pb-5">
-                <span className="text-[10px] tracking-[0.25em] uppercase text-[#C5A880] font-bold">STEP 1</span>
-                <h2 className="font-serif text-2xl sm:text-3xl text-white font-light">
+              <div className="space-y-2 border-b border-[#E8DFC9] pb-5">
+                <span className="text-[10px] tracking-[0.25em] uppercase text-[#8C6D3F] font-bold">STEP 1</span>
+                <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
                   LET'S GET STARTED
                 </h2>
-                <p className="text-xs sm:text-sm text-[#A89F91] font-light">
+                <p className="text-xs sm:text-sm text-[#666666] font-light">
                   Enter your name and mobile number to begin tailoring your accurate fotography estimate.
                 </p>
               </div>
@@ -477,7 +477,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                 {/* Full Name */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#E8D4B8]">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
                     Full Name <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
@@ -490,7 +490,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                         if (e.target.value.trim().length >= 2) setNameError('');
                       }}
                       placeholder="e.g. Ramesh Reddy / Sneha Patel"
-                      className="w-full bg-[#1B1815] border border-[#3A342F] focus:border-[#C5A880] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-[#666058] outline-none transition-all shadow-inner"
+                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all"
                     />
                   </div>
                   {nameError && (
@@ -503,11 +503,11 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
                 {/* 10-Digit Phone Number */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#E8D4B8]">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
                     10-Digit Mobile Number <span className="text-red-400">*</span>
                   </label>
                   <div className="relative flex">
-                    <div className="bg-[#24201B] border border-r-0 border-[#3A342F] rounded-l-xl px-3 flex items-center text-xs font-bold text-[#C5A880] shrink-0">
+                    <div className="bg-[#F0EBE1] border border-r-0 border-[#D8CFC4] rounded-l-xl px-3 flex items-center text-xs font-bold text-[#8C6D3F] shrink-0">
                       +91
                     </div>
                     <input
@@ -515,7 +515,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                       value={customerPhone}
                       onChange={handlePhoneChange}
                       placeholder="9849443648"
-                      className="w-full bg-[#1B1815] border border-[#3A342F] focus:border-[#C5A880] rounded-r-xl px-4 py-3 text-sm text-white placeholder-[#666058] outline-none transition-all shadow-inner"
+                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-r-xl px-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all"
                     />
                   </div>
                   {phoneError ? (
@@ -524,7 +524,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                       <span>{phoneError}</span>
                     </p>
                   ) : (
-                    <p className="text-[11px] text-[#7A7268]">
+                    <p className="text-[11px] text-[#777777]">
                       We respect your privacy. No spam. You will receive this official PDF estimate.
                     </p>
                   )}
@@ -532,13 +532,13 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               </div>
 
               {/* Studio Guarantee Info Card */}
-              <div className="bg-[#1C1814] border border-[#302B26] rounded-xl p-4 sm:p-5 flex items-start gap-3 mt-4">
-                <ShieldCheck className="w-5 h-5 text-[#C5A880] shrink-0 mt-0.5" />
+              <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-4 sm:p-5 flex items-start gap-3 mt-4">
+                <ShieldCheck className="w-5 h-5 text-[#8C6D3F] shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-[#E8D4B8] tracking-wider uppercase">
+                  <h4 className="text-xs font-bold text-[#1A1A1A] tracking-wider uppercase">
                     Direct Studio Pricing Guarantee
                   </h4>
-                  <p className="text-xs text-[#9E9485] font-light leading-relaxed">
+                  <p className="text-xs text-[#666666] font-light leading-relaxed">
                     All prices are pulled directly from KPR Fotography's official packages database. Zero markup, zero hidden charges.
                   </p>
                 </div>
@@ -563,12 +563,12 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               ══════════════════════════════════════════════════════════════════ */}
           {currentStep === 2 && (
             <div className="space-y-6 animate-fadeIn">
-              <div className="space-y-2 border-b border-[#2B2724] pb-5">
-                <span className="text-[10px] tracking-[0.25em] uppercase text-[#C5A880] font-bold">STEP 2</span>
-                <h2 className="font-serif text-2xl sm:text-3xl text-white font-light">
+              <div className="space-y-2 border-b border-[#E8DFC9] pb-5">
+                <span className="text-[10px] tracking-[0.25em] uppercase text-[#8C6D3F] font-bold">STEP 2</span>
+                <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
                   WHAT ARE YOU CELEBRATING?
                 </h2>
-                <p className="text-xs sm:text-sm text-[#A89F91] font-light">
+                <p className="text-xs sm:text-sm text-[#666666] font-light">
                   Select your celebration from KPR Fotography's authentic event catalog.
                 </p>
               </div>
@@ -586,8 +586,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                       onClick={() => setSelectedEvent(catName)}
                       className={`relative p-3.5 sm:p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-300 cursor-pointer group ${
                         isSelected
-                          ? 'bg-[#C5A880]/15 border-[#C5A880] shadow-lg shadow-[#C5A880]/15 scale-[1.02]'
-                          : 'bg-[#181512] border-[#2E2824] hover:border-[#C5A880]/50 hover:bg-[#201C18]'
+                          ? 'bg-[#FAF5EC] border-[#C5A880] ring-2 ring-[#C5A880]/40 shadow-md scale-[1.02]'
+                          : 'bg-[#FAF8F5] border-[#E2D9CC] hover:border-[#C5A880] hover:bg-[#F5EFE6]'
                       }`}
                     >
                       <div>
@@ -599,13 +599,13 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                             </div>
                           )}
                         </div>
-                        <h3 className={`font-serif text-sm sm:text-base font-medium leading-snug ${isSelected ? 'text-[#FAF7F2]' : 'text-[#D6CEBE]'}`}>
+                        <h3 className={`font-serif text-sm sm:text-base font-medium leading-snug ${isSelected ? 'text-[#1A1A1A] font-bold' : 'text-[#2B2724]'}`}>
                           {catName}
                         </h3>
                       </div>
 
-                      <div className="mt-2 pt-2 border-t border-white/5">
-                        <span className="text-[9px] uppercase tracking-wider text-[#998F80]">
+                      <div className="mt-2 pt-2 border-t border-[#E8DFC9]">
+                        <span className="text-[9px] uppercase tracking-wider text-[#8C6D3F] font-semibold">
                           {meta.tag}
                         </span>
                       </div>
@@ -615,14 +615,14 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               </div>
 
               {/* Navigation Actions */}
-              <div className="pt-6 border-t border-[#2B2724] flex items-center justify-between gap-4">
+              <div className="pt-6 border-t border-[#E8DFC9] flex items-center justify-between gap-4">
                 <button
                   type="button"
                   onClick={() => {
                     setCurrentStep(1);
                     scrollToEstimatorTop();
                   }}
-                  className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 bg-[#F0EBE1] hover:bg-[#E5DDCF] text-[#444444] hover:text-[#1A1A1A] text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back</span>
@@ -648,17 +648,17 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               ══════════════════════════════════════════════════════════════════ */}
           {currentStep === 3 && (
             <div className="space-y-6 animate-fadeIn">
-              <div className="space-y-2 border-b border-[#2B2724] pb-5">
+              <div className="space-y-2 border-b border-[#E8DFC9] pb-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] tracking-[0.25em] uppercase text-[#C5A880] font-bold">STEP 3</span>
-                  <span className="text-xs text-[#C5A880]">
+                  <span className="text-[10px] tracking-[0.25em] uppercase text-[#8C6D3F] font-bold">STEP 3</span>
+                  <span className="text-xs text-[#8C6D3F]">
                     {selectedPackageIds.length} Service{selectedPackageIds.length > 1 ? 's' : ''} Selected
                   </span>
                 </div>
-                <h2 className="font-serif text-2xl sm:text-3xl text-white font-light">
+                <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
                   CHOOSE YOUR FOTOGRAPHY PACKAGE
                 </h2>
-                <p className="text-xs sm:text-sm text-[#A89F91] font-light">
+                <p className="text-xs sm:text-sm text-[#666666] font-light">
                   Select your combination of fotography, cinematic video, drone, and editing services. Prices update dynamically.
                 </p>
               </div>
@@ -672,8 +672,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     onClick={() => setPackageCategoryFilter(tab)}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase whitespace-nowrap transition-all cursor-pointer ${
                       packageCategoryFilter === tab
-                        ? 'bg-[#C5A880] text-black shadow-md'
-                        : 'bg-[#1D1916] text-[#A89F91] hover:text-white hover:bg-[#28221D]'
+                        ? 'bg-[#1A1A1A] text-white shadow-md'
+                        : 'bg-[#F0EBE1] text-[#555555] hover:text-black hover:bg-[#E5DDCF]'
                     }`}
                   >
                     {tab}
@@ -693,46 +693,46 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                       onClick={() => togglePackage(pkg.id)}
                       className={`relative rounded-xl border p-4 sm:p-5 flex flex-col justify-between transition-all duration-300 cursor-pointer select-none group ${
                         isSelected
-                          ? 'bg-[#C5A880]/15 border-[#C5A880] shadow-lg shadow-[#C5A880]/10 scale-[1.01]'
-                          : 'bg-[#181512] border-[#2E2824] hover:border-[#C5A880]/50 hover:bg-[#201C18]'
+                          ? 'bg-[#FAF5EC] border-[#C5A880] ring-2 ring-[#C5A880]/40 shadow-md scale-[1.01]'
+                          : 'bg-[#FAF8F5] border-[#E2D9CC] hover:border-[#C5A880] hover:bg-[#F5EFE6]'
                       }`}
                     >
                       <div>
                         {/* Header Badge & Checkbox */}
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <span className="text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded bg-black/50 text-[#C5A880] font-semibold border border-[#C5A880]/30">
+                          <span className="text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded bg-[#FAF0E1] text-[#8C6D3F] font-semibold border border-[#C5A880]/30">
                             {pkg.category}
                           </span>
 
                           <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
                             isSelected
                               ? 'bg-[#C5A880] text-black'
-                              : 'border border-[#554E44] group-hover:border-[#C5A880]'
+                              : 'border border-[#D8CFC4] group-hover:border-[#C5A880]'
                           }`}>
                             {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                           </div>
                         </div>
 
                         {/* Package Title */}
-                        <h3 className="font-serif text-base sm:text-lg font-medium text-white group-hover:text-[#E8D4B8] transition-colors">
+                        <h3 className="font-serif text-base sm:text-lg font-medium text-[#1A1A1A] group-hover:text-[#8C6D3F] transition-colors">
                           {pkg.name}
                         </h3>
 
                         {/* Description */}
-                        <p className="text-xs text-[#9E9485] mt-1 font-light leading-relaxed line-clamp-2">
+                        <p className="text-xs text-[#666666] mt-1 font-light leading-relaxed line-clamp-2">
                           {pkg.description}
                         </p>
                       </div>
 
                       {/* Price & Duration */}
-                      <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-[11px] text-[#A89F91]">
-                          <Clock className="w-3.5 h-3.5 text-[#C5A880]" />
+                      <div className="mt-4 pt-3 border-t border-[#E8DFC9] flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-[11px] text-[#777777]">
+                          <Clock className="w-3.5 h-3.5 text-[#8C6D3F]" />
                           <span>{displayDuration}</span>
                         </div>
 
                         <div className="text-right">
-                          <span className="text-sm sm:text-base font-serif font-bold text-[#E8D4B8]">
+                          <span className="text-sm sm:text-base font-serif font-bold text-[#8C6D3F]">
                             ₹{Number(pkg.price).toLocaleString('en-IN')}/-
                           </span>
                         </div>
@@ -743,24 +743,24 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               </div>
 
               {/* Subtotal of Step 3 */}
-              <div className="bg-[#1C1814] border border-[#302B26] rounded-xl p-4 flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-[#A89F91]">
+              <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-4 flex items-center justify-between">
+                <span className="text-xs uppercase tracking-wider text-[#666666] font-semibold">
                   Fotography & Videography Subtotal:
                 </span>
-                <span className="text-base sm:text-lg font-serif font-bold text-[#C5A880]">
+                <span className="text-base sm:text-lg font-serif font-bold text-[#8C6D3F]">
                   ₹{servicesSubtotal.toLocaleString('en-IN')}/-
                 </span>
               </div>
 
               {/* Navigation Actions */}
-              <div className="pt-4 border-t border-[#2B2724] flex items-center justify-between gap-4">
+              <div className="pt-4 border-t border-[#E8DFC9] flex items-center justify-between gap-4">
                 <button
                   type="button"
                   onClick={() => {
                     setCurrentStep(2);
                     scrollToEstimatorTop();
                   }}
-                  className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 bg-[#F0EBE1] hover:bg-[#E5DDCF] text-[#444444] hover:text-[#1A1A1A] text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back</span>
@@ -786,12 +786,12 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               ══════════════════════════════════════════════════════════════════ */}
           {currentStep === 4 && (
             <div className="space-y-6 animate-fadeIn">
-              <div className="space-y-2 border-b border-[#2B2724] pb-5">
-                <span className="text-[10px] tracking-[0.25em] uppercase text-[#C5A880] font-bold">STEP 4</span>
-                <h2 className="font-serif text-2xl sm:text-3xl text-white font-light">
+              <div className="space-y-2 border-b border-[#E8DFC9] pb-5">
+                <span className="text-[10px] tracking-[0.25em] uppercase text-[#8C6D3F] font-bold">STEP 4</span>
+                <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
                   ALBUM
                 </h2>
-                <p className="text-xs sm:text-sm text-[#A89F91] font-light">
+                <p className="text-xs sm:text-sm text-[#666666] font-light">
                   Do you need a luxury handcrafted flush-mount wedding photobook album?
                 </p>
               </div>
@@ -803,20 +803,20 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   onClick={() => setNeedAlbum(false)}
                   className={`p-5 rounded-2xl border text-left transition-all cursor-pointer ${
                     !needAlbum
-                      ? 'bg-[#C5A880]/15 border-[#C5A880] shadow-lg shadow-[#C5A880]/10'
-                      : 'bg-[#181512] border-[#2E2824] hover:bg-[#201C18]'
+                      ? 'bg-[#FAF5EC] border-[#C5A880] ring-2 ring-[#C5A880]/40 shadow-md'
+                      : 'bg-[#FAF8F5] border-[#E2D9CC] hover:bg-[#F5EFE6]'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold uppercase tracking-wider text-white">
+                    <span className="text-sm font-bold uppercase tracking-wider text-[#1A1A1A]">
                       No Album Needed
                     </span>
-                    {!needAlbum && <Check className="w-5 h-5 text-[#C5A880]" />}
+                    {!needAlbum && <Check className="w-5 h-5 text-[#8C6D3F]" />}
                   </div>
-                  <p className="text-xs text-[#9E9485] font-light">
+                  <p className="text-xs text-[#666666] font-light">
                     Deliver all high-resolution edited photos via cloud download link only.
                   </p>
-                  <div className="mt-3 text-sm font-serif font-bold text-[#A89F91]">
+                  <div className="mt-3 text-sm font-serif font-bold text-[#777777]">
                     ₹0/-
                   </div>
                 </button>
@@ -826,20 +826,20 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   onClick={() => setNeedAlbum(true)}
                   className={`p-5 rounded-2xl border text-left transition-all cursor-pointer ${
                     needAlbum
-                      ? 'bg-[#C5A880]/15 border-[#C5A880] shadow-lg shadow-[#C5A880]/10'
-                      : 'bg-[#181512] border-[#2E2824] hover:bg-[#201C18]'
+                      ? 'bg-[#FAF5EC] border-[#C5A880] ring-2 ring-[#C5A880]/40 shadow-md'
+                      : 'bg-[#FAF8F5] border-[#E2D9CC] hover:bg-[#F5EFE6]'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold uppercase tracking-wider text-white">
+                    <span className="text-sm font-bold uppercase tracking-wider text-[#1A1A1A]">
                       Yes, I Need An Album
                     </span>
-                    {needAlbum && <Check className="w-5 h-5 text-[#C5A880]" />}
+                    {needAlbum && <Check className="w-5 h-5 text-[#8C6D3F]" />}
                   </div>
-                  <p className="text-xs text-[#9E9485] font-light">
+                  <p className="text-xs text-[#666666] font-light">
                     Handcrafted flush-mount layflat album on non-tearable archival paper with UV coating.
                   </p>
-                  <div className="mt-3 text-sm font-serif font-bold text-[#C5A880]">
+                  <div className="mt-3 text-sm font-serif font-bold text-[#8C6D3F]">
                     From ₹250 / sheet (2 pages)
                   </div>
                 </button>
@@ -847,10 +847,10 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
               {/* If YES: Show Album Sheet Options & Exact Studio Pricing */}
               {needAlbum && (
-                <div className="space-y-6 pt-4 border-t border-[#2B2724] animate-fadeIn">
+                <div className="space-y-6 pt-4 border-t border-[#E8DFC9] animate-fadeIn">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-serif text-lg text-white font-medium">
+                      <h4 className="font-serif text-lg text-[#1A1A1A] font-medium">
                         Select Photobook Album Size
                       </h4>
                       <p className="text-xs text-[#A89F91] font-light">
@@ -860,7 +860,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
                     <div className="text-right">
                       <span className="text-xs text-[#A89F91] uppercase tracking-wider">Album Price</span>
-                      <div className="text-lg sm:text-xl font-serif font-bold text-[#C5A880]">
+                      <div className="text-lg sm:text-xl font-serif font-bold text-[#8C6D3F]">
                         ₹{albumSubtotal.toLocaleString('en-IN')}/-
                       </div>
                     </div>
@@ -882,8 +882,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                           onClick={() => setAlbumSheets(preset.sheets)}
                           className={`relative p-4 rounded-xl border transition-all cursor-pointer ${
                             isPresetActive
-                              ? 'bg-[#C5A880]/20 border-[#C5A880] shadow-md'
-                              : 'bg-[#191613] border-[#302A24] hover:border-[#C5A880]/50'
+                              ? 'bg-[#FAF5EC] border-[#C5A880] ring-1 ring-[#C5A880] shadow-sm'
+                              : 'bg-[#FAF8F5] border-[#E2D9CC] hover:border-[#C5A880]'
                           }`}
                         >
                           {preset.popular && (
@@ -892,18 +892,18 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                             </div>
                           )}
                           <div className="flex items-center justify-between mb-1">
-                            <h5 className="font-serif text-sm font-semibold text-white">
+                            <h5 className="font-serif text-sm font-semibold text-[#1A1A1A]">
                               {preset.title}
                             </h5>
-                            {isPresetActive && <Check className="w-4 h-4 text-[#C5A880]" />}
+                            {isPresetActive && <Check className="w-4 h-4 text-[#8C6D3F]" />}
                           </div>
-                          <div className="text-xs text-[#E8D4B8] font-medium">
+                          <div className="text-xs text-[#8C6D3F] font-semibold">
                             {preset.sheets} Sheets • {preset.pages} Pages
                           </div>
-                          <p className="text-[11px] text-[#8C8375] font-light mt-1">
+                          <p className="text-[11px] text-[#666666] font-light mt-1">
                             {preset.desc}
                           </p>
-                          <div className="mt-3 pt-2 border-t border-white/10 text-sm font-serif font-bold text-[#FAF7F2]">
+                          <div className="mt-3 pt-2 border-t border-[#E8DFC9] text-sm font-serif font-bold text-[#1A1A1A]">
                             ₹{presetPrice.toLocaleString('en-IN')}/-
                           </div>
                         </div>
@@ -912,9 +912,9 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   </div>
 
                   {/* Custom Sheet Counter Slider */}
-                  <div className="bg-[#1C1814] border border-[#302B26] rounded-xl p-4 sm:p-5 space-y-3">
+                  <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-4 sm:p-5 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#E8D4B8]">
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#333333]">
                         Custom Sheet Counter (@ ₹250 / sheet)
                       </span>
                       <span className="text-xs text-[#A89F91]">
@@ -926,7 +926,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                       <button
                         type="button"
                         onClick={() => setAlbumSheets(prev => Math.max(10, prev - 5))}
-                        className="w-10 h-10 rounded-lg bg-[#2B2520] hover:bg-[#C5A880] hover:text-black text-white font-bold flex items-center justify-center transition-all cursor-pointer"
+                        className="w-10 h-10 rounded-lg bg-[#EAE4D9] hover:bg-[#C5A880] text-[#1A1A1A] font-bold flex items-center justify-center transition-all cursor-pointer"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -946,7 +946,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                       <button
                         type="button"
                         onClick={() => setAlbumSheets(prev => Math.min(100, prev + 5))}
-                        className="w-10 h-10 rounded-lg bg-[#2B2520] hover:bg-[#C5A880] hover:text-black text-white font-bold flex items-center justify-center transition-all cursor-pointer"
+                        className="w-10 h-10 rounded-lg bg-[#EAE4D9] hover:bg-[#C5A880] text-[#1A1A1A] font-bold flex items-center justify-center transition-all cursor-pointer"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -956,14 +956,14 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               )}
 
               {/* Navigation Actions */}
-              <div className="pt-6 border-t border-[#2B2724] flex items-center justify-between gap-4">
+              <div className="pt-6 border-t border-[#E8DFC9] flex items-center justify-between gap-4">
                 <button
                   type="button"
                   onClick={() => {
                     setCurrentStep(3);
                     scrollToEstimatorTop();
                   }}
-                  className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 bg-[#F0EBE1] hover:bg-[#E5DDCF] text-[#444444] hover:text-[#1A1A1A] text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back</span>
@@ -989,19 +989,19 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               ══════════════════════════════════════════════════════════════════ */}
           {currentStep === 5 && (
             <div className="space-y-6 animate-fadeIn">
-              <div className="space-y-2 border-b border-[#2B2724] pb-5">
-                <span className="text-[10px] tracking-[0.25em] uppercase text-[#C5A880] font-bold">STEP 5</span>
-                <h2 className="font-serif text-2xl sm:text-3xl text-white font-light">
+              <div className="space-y-2 border-b border-[#E8DFC9] pb-5">
+                <span className="text-[10px] tracking-[0.25em] uppercase text-[#8C6D3F] font-bold">STEP 5</span>
+                <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
                   DELIVERABLES
                 </h2>
-                <p className="text-xs sm:text-sm text-[#A89F91] font-light">
+                <p className="text-xs sm:text-sm text-[#666666] font-light">
                   Review your included deliverables and add any specialized post-production items.
                 </p>
               </div>
 
               {/* Section 1: Included Deliverables (Complimentary based on selections) */}
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C5A880]">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#8C6D3F]">
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Included Deliverables (₹0 Extra)</span>
                 </div>
@@ -1010,16 +1010,16 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   {includedDeliverables.map((item, idx) => (
                     <div
                       key={idx}
-                      className="bg-[#181512] border border-[#2E2824] rounded-xl p-3 flex items-start gap-2.5"
+                      className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-3 flex items-start gap-2.5"
                     >
-                      <div className="w-4 h-4 rounded-full bg-[#C5A880]/20 text-[#C5A880] flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-4 h-4 rounded-full bg-[#C5A880]/20 text-[#8C6D3F] flex items-center justify-center shrink-0 mt-0.5">
                         <Check className="w-3 h-3" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs text-[#E8D4B8] font-medium leading-relaxed">
+                        <p className="text-xs text-[#1A1A1A] font-medium leading-relaxed">
                           {item}
                         </p>
-                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                        <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
                           Included in Package
                         </span>
                       </div>
@@ -1029,14 +1029,14 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               </div>
 
               {/* Section 2: Optional Deliverable Add-ons (Exact pricing) */}
-              <div className="space-y-3 pt-4 border-t border-[#2B2724]">
+              <div className="space-y-3 pt-4 border-t border-[#E8DFC9]">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#E8D4B8]">
-                    <Plus className="w-4 h-4 text-[#C5A880]" />
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#333333]">
+                    <Plus className="w-4 h-4 text-[#8C6D3F]" />
                     <span>Optional Additional-Cost Deliverables</span>
                   </div>
                   {addOnsSubtotal > 0 && (
-                    <span className="text-xs text-[#C5A880]">
+                    <span className="text-xs text-[#8C6D3F]">
                       Add-ons: ₹{addOnsSubtotal.toLocaleString('en-IN')}/-
                     </span>
                   )}
@@ -1052,45 +1052,45 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                         key={addon.id}
                         className={`p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
                           isPicked
-                            ? 'bg-[#C5A880]/15 border-[#C5A880]'
-                            : 'bg-[#181512] border-[#2E2824] hover:border-[#C5A880]/40'
+                            ? 'bg-[#FAF5EC] border-[#C5A880]'
+                            : 'bg-[#FAF8F5] border-[#E2D9CC] hover:border-[#C5A880]'
                         }`}
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <h4 className="text-xs sm:text-sm font-semibold text-white">
+                            <h4 className="text-xs sm:text-sm font-semibold text-[#1A1A1A]">
                               {addon.name}
                             </h4>
-                            <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-black/40 text-[#C5A880] border border-[#C5A880]/30">
+                            <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-[#FAF0E1] text-[#8C6D3F] border border-[#C5A880]/30">
                               {addon.category}
                             </span>
                           </div>
-                          <p className="text-[11px] text-[#9E9485] font-light">
+                          <p className="text-[11px] text-[#666666] font-light">
                             {addon.scope}
                           </p>
                         </div>
 
                         <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 shrink-0">
-                          <span className="text-xs sm:text-sm font-serif font-bold text-[#E8D4B8]">
+                          <span className="text-xs sm:text-sm font-serif font-bold text-[#8C6D3F]">
                             +₹{addon.price.toLocaleString('en-IN')}/-
                           </span>
 
-                          <div className="flex items-center gap-2 bg-[#221E1A] border border-[#3A332C] rounded-lg p-1">
+                          <div className="flex items-center gap-2 bg-[#EAE4D9] border border-[#D8CFC4] rounded-lg p-1">
                             <button
                               type="button"
                               onClick={() => updateAddonQty(addon.id, -1)}
                               disabled={qty === 0}
-                              className="w-6 h-6 rounded bg-[#2F2923] disabled:opacity-30 text-white flex items-center justify-center text-xs font-bold hover:bg-[#C5A880] hover:text-black cursor-pointer"
+                              className="w-6 h-6 rounded bg-[#FAF8F5] disabled:opacity-30 text-[#1A1A1A] flex items-center justify-center text-xs font-bold hover:bg-[#C5A880] cursor-pointer"
                             >
                               <Minus className="w-3 h-3" />
                             </button>
-                            <span className="w-6 text-center text-xs font-bold text-white">
+                            <span className="w-6 text-center text-xs font-bold text-[#1A1A1A]">
                               {qty}
                             </span>
                             <button
                               type="button"
                               onClick={() => updateAddonQty(addon.id, 1)}
-                              className="w-6 h-6 rounded bg-[#2F2923] text-white flex items-center justify-center text-xs font-bold hover:bg-[#C5A880] hover:text-black cursor-pointer"
+                              className="w-6 h-6 rounded bg-[#FAF8F5] text-[#1A1A1A] flex items-center justify-center text-xs font-bold hover:bg-[#C5A880] cursor-pointer"
                             >
                               <Plus className="w-3 h-3" />
                             </button>
@@ -1103,24 +1103,24 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               </div>
 
               {/* Dynamic Deliverables Total Note */}
-              <div className="bg-[#1C1814] border border-[#302B26] rounded-xl p-4 flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-[#A89F91]">
+              <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-4 flex items-center justify-between">
+                <span className="text-xs uppercase tracking-wider text-[#666666] font-semibold">
                   Total with Deliverables & Add-ons:
                 </span>
-                <span className="text-base sm:text-lg font-serif font-bold text-[#C5A880]">
+                <span className="text-base sm:text-lg font-serif font-bold text-[#8C6D3F]">
                   ₹{grandTotal.toLocaleString('en-IN')}/-
                 </span>
               </div>
 
               {/* Navigation Actions */}
-              <div className="pt-4 border-t border-[#2B2724] flex items-center justify-between gap-4">
+              <div className="pt-4 border-t border-[#E8DFC9] flex items-center justify-between gap-4">
                 <button
                   type="button"
                   onClick={() => {
                     setCurrentStep(4);
                     scrollToEstimatorTop();
                   }}
-                  className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 bg-[#F0EBE1] hover:bg-[#E5DDCF] text-[#444444] hover:text-[#1A1A1A] text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back</span>
@@ -1146,25 +1146,25 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               ══════════════════════════════════════════════════════════════════ */}
           {currentStep === 6 && (
             <div className="space-y-6 animate-fadeIn">
-              <div className="space-y-2 border-b border-[#2B2724] pb-5">
-                <span className="text-[10px] tracking-[0.25em] uppercase text-[#C5A880] font-bold">STEP 6</span>
-                <h2 className="font-serif text-2xl sm:text-3xl text-white font-light">
+              <div className="space-y-2 border-b border-[#E8DFC9] pb-5">
+                <span className="text-[10px] tracking-[0.25em] uppercase text-[#8C6D3F] font-bold">STEP 6</span>
+                <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
                   TOTAL ESTIMATED PRICE
                 </h2>
-                <p className="text-xs sm:text-sm text-[#A89F91] font-light">
+                <p className="text-xs sm:text-sm text-[#666666] font-light">
                   Comprehensive review of customer details, selected event, packages, album, and itemized breakdown.
                 </p>
               </div>
 
               {/* Complete Professional Summary Card */}
-              <div className="bg-[#181512] border border-[#2E2824] rounded-2xl p-5 sm:p-7 space-y-6 shadow-xl">
+              <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-2xl p-5 sm:p-7 space-y-6 shadow-sm">
                 
                 {/* 1. Customer & Event Header Bar */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b border-[#2B2724]">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b border-[#E8DFC9]">
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-[#8C8375]">Client Name</span>
                     <h4 className="text-sm sm:text-base font-bold text-white mt-0.5">{customerName}</h4>
-                    <p className="text-xs text-[#C5A880]">+91 {customerPhone}</p>
+                    <p className="text-xs text-[#8C6D3F]">+91 {customerPhone}</p>
                   </div>
 
                   <div>
@@ -1175,26 +1175,26 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-[#8C8375]">Estimate Reference</span>
-                    <h4 className="text-sm font-mono font-bold text-[#E8D4B8] mt-0.5">{estimateNumber}</h4>
+                    <h4 className="text-sm font-mono font-bold text-[#8C6D3F] mt-0.5">{estimateNumber}</h4>
                     <p className="text-xs text-[#8C8375]">{estimateDate.toLocaleDateString('en-GB')}</p>
                   </div>
                 </div>
 
                 {/* 2. Selected Packages Table */}
                 <div className="space-y-2.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#C5A880]">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#8C6D3F]">
                     1. Fotography & Videography Packages
                   </span>
-                  <div className="bg-[#12100E] rounded-xl border border-[#28221D] divide-y divide-[#221D18]">
+                  <div className="bg-white rounded-xl border border-[#E2D9CC] divide-y divide-[#F0EBE1]">
                     {selectedPackages.map(pkg => (
                       <div key={pkg.id} className="p-3 sm:p-3.5 flex items-center justify-between text-xs">
                         <div className="space-y-0.5">
-                          <strong className="text-white text-sm">{pkg.name}</strong>
-                          <div className="text-[11px] text-[#A89F91]">
+                          <strong className="text-[#1A1A1A] text-sm">{pkg.name}</strong>
+                          <div className="text-[11px] text-[#666666]">
                             {pkg.category} • Scope: {pkg.duration}
                           </div>
                         </div>
-                        <span className="font-serif text-sm font-bold text-[#E8D4B8]">
+                        <span className="font-serif text-sm font-bold text-[#8C6D3F]">
                           ₹{Number(pkg.price).toLocaleString('en-IN')}/-
                         </span>
                       </div>
@@ -1204,19 +1204,19 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
                 {/* 3. Album Option */}
                 <div className="space-y-2.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#C5A880]">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#8C6D3F]">
                     2. Album Configuration
                   </span>
-                  <div className="bg-[#12100E] rounded-xl border border-[#28221D] p-3 sm:p-3.5 flex items-center justify-between text-xs">
+                  <div className="bg-white rounded-xl border border-[#E2D9CC] p-3 sm:p-3.5 flex items-center justify-between text-xs">
                     <div>
-                      <strong className="text-white text-sm">
+                      <strong className="text-[#1A1A1A] text-sm">
                         {needAlbum ? `Luxury Flush-Mount Layflat Photobook (${albumSheets} Sheets / ${albumSheets * 2} Pages)` : 'No Album (Digital Deliverables Only)'}
                       </strong>
-                      <div className="text-[11px] text-[#A89F91] mt-0.5">
+                      <div className="text-[11px] text-[#666666] mt-0.5">
                         {needAlbum ? 'Archival non-tearable paper, UV lamination & presentation box' : 'Cloud link delivery'}
                       </div>
                     </div>
-                    <span className="font-serif text-sm font-bold text-[#E8D4B8]">
+                    <span className="font-serif text-sm font-bold text-[#8C6D3F]">
                       ₹{albumSubtotal.toLocaleString('en-IN')}/-
                     </span>
                   </div>
@@ -1224,10 +1224,10 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
                 {/* 4. Deliverables & Add-ons */}
                 <div className="space-y-2.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#C5A880]">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#8C6D3F]">
                     3. Deliverables Summary
                   </span>
-                  <div className="bg-[#12100E] rounded-xl border border-[#28221D] p-3 sm:p-3.5 space-y-2 text-xs">
+                  <div className="bg-white rounded-xl border border-[#E2D9CC] p-3 sm:p-3.5 space-y-2 text-xs">
                     <p className="text-[#A89F91]">
                       <strong>{includedDeliverables.length} Standard Deliverables Included:</strong> High-res cloud link, color grading, multi-angle ceremony master.
                     </p>
@@ -1238,8 +1238,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                           if (!a) return null;
                           return (
                             <div key={id} className="flex items-center justify-between text-xs">
-                              <span className="text-[#E8D4B8]">{a.name} (x{qty})</span>
-                              <span className="font-serif font-bold text-[#C5A880]">
+                              <span className="text-[#8C6D3F]">{a.name} (x{qty})</span>
+                              <span className="font-serif font-bold text-[#8C6D3F]">
                                 +₹{(a.price * qty).toLocaleString('en-IN')}/-
                               </span>
                             </div>
@@ -1273,7 +1273,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
                   <div className="pt-3 border-t border-[#3E342B] flex items-center justify-between">
                     <div>
-                      <span className="text-xs font-bold uppercase tracking-widest text-[#E8D4B8]">
+                      <span className="text-xs font-bold uppercase tracking-widest text-[#8C6D3F]">
                         FINAL ESTIMATED TOTAL
                       </span>
                       <p className="text-[10px] text-[#8C8375]">
@@ -1282,7 +1282,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     </div>
 
                     <div className="text-right">
-                      <span className="font-serif text-xl sm:text-3xl font-bold text-[#C5A880]">
+                      <span className="font-serif text-xl sm:text-3xl font-bold text-[#8C6D3F]">
                         ₹{grandTotal.toLocaleString('en-IN')}/-
                       </span>
                     </div>
@@ -1292,14 +1292,14 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               </div>
 
               {/* Navigation Actions */}
-              <div className="pt-4 border-t border-[#2B2724] flex items-center justify-between gap-4">
+              <div className="pt-4 border-t border-[#E8DFC9] flex items-center justify-between gap-4">
                 <button
                   type="button"
                   onClick={() => {
                     setCurrentStep(5);
                     scrollToEstimatorTop();
                   }}
-                  className="px-6 py-3 bg-[#1C1814] hover:bg-[#2B2520] text-[#A89F91] hover:text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 bg-[#F0EBE1] hover:bg-[#E5DDCF] text-[#444444] hover:text-[#1A1A1A] text-xs font-semibold uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back / Edit</span>
@@ -1333,17 +1333,17 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               </div>
 
               {/* Grand Total Hero Display */}
-              <div className="max-w-md mx-auto bg-gradient-to-b from-[#1E1914] to-[#120F0D] border border-[#C5A880]/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-3">
-                <span className="text-xs uppercase tracking-[0.25em] text-[#C5A880] font-bold">
+              <div className="max-w-md mx-auto bg-gradient-to-b from-[#FAF8F5] to-[#F5EFE6] border border-[#C5A880]/50 rounded-3xl p-6 sm:p-8 shadow-lg space-y-3">
+                <span className="text-xs uppercase tracking-[0.25em] text-[#8C6D3F] font-bold">
                   TOTAL ESTIMATED INVESTMENT
                 </span>
-                <div className="font-serif text-3xl sm:text-5xl font-bold text-white tracking-wide">
+                <div className="font-serif text-3xl sm:text-5xl font-bold text-[#1A1A1A] tracking-wide">
                   ₹{grandTotal.toLocaleString('en-IN')}/-
                 </div>
-                <div className="text-xs text-[#A89F91]">
-                  Prepared for <strong className="text-white">{customerName}</strong> for <strong className="text-white">{selectedEvent}</strong>
+                <div className="text-xs text-[#666666]">
+                  Prepared for <strong className="text-[#1A1A1A]">{customerName}</strong> for <strong className="text-[#1A1A1A]">{selectedEvent}</strong>
                 </div>
-                <div className="text-[11px] font-mono text-[#8C8375] pt-1">
+                <div className="text-[11px] font-mono text-[#777777] pt-1">
                   Reference: {estimateNumber}
                 </div>
               </div>
@@ -1382,7 +1382,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                       setCurrentStep(6);
                       scrollToEstimatorTop();
                     }}
-                    className="text-xs text-[#A89F91] hover:text-white underline cursor-pointer"
+                    className="text-xs text-[#666666] hover:text-[#1A1A1A] underline cursor-pointer"
                   >
                     Edit Selections
                   </button>
@@ -1390,7 +1390,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   <button
                     type="button"
                     onClick={handleStartNewEstimate}
-                    className="text-xs text-[#A89F91] hover:text-white flex items-center gap-1 cursor-pointer"
+                    className="text-xs text-[#666666] hover:text-[#1A1A1A] flex items-center gap-1 cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Start New Estimate</span>
@@ -1399,9 +1399,9 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               </div>
 
               {/* Studio Support Footer */}
-              <div className="pt-6 border-t border-[#2B2724] max-w-lg mx-auto text-xs text-[#7A7268] space-y-1">
+              <div className="pt-6 border-t border-[#E8DFC9] max-w-lg mx-auto text-xs text-[#777777] space-y-1">
                 <p>KPR Fotography Studio • Station Road, Warangal / Hyderabad, Telangana</p>
-                <p>Questions? Call us directly at <a href="tel:+919849443648" className="text-[#C5A880] underline">+91 98494 43648</a></p>
+                <p>Questions? Call us directly at <a href="tel:+919849443648" className="text-[#8C6D3F] underline">+91 98494 43648</a></p>
               </div>
 
             </div>
