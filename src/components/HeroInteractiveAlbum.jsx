@@ -337,7 +337,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const totalPages = 2 + FLEXY_ALBUM_PHOTOS.length + 2;
+  const totalPages = 1 + FLEXY_ALBUM_PHOTOS.length + 2;
 
   const handleFlipNext = useCallback(() => {
     try {
@@ -476,23 +476,20 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
             {/* Page 0: Front Cover */}
             <HeroFrontCover onCoverClick={handleFlipNext} />
 
-            {/* Page 1: Dedication (Left) */}
-            <HeroDedicationPage />
-
-            {/* Pages 2..34: Real Album Photo Pages */}
+            {/* Pages 1..64: Real Album Photo Pages (Split so each image is large & prominent) */}
             {FLEXY_ALBUM_PHOTOS.map((photo, idx) => (
               <HeroPhotoPage
                 key={photo.id}
                 src={photo.src}
                 label={photo.label}
-                isLeftPage={idx % 2 !== 0}
+                isLeftPage={idx % 2 === 0}
               />
             ))}
 
-            {/* Page 35: Luxury Endsheet (Left) */}
+            {/* Page 65: Luxury Endsheet (Left) */}
             <HeroEndsheetPage />
 
-            {/* Page 36: Back Cover */}
+            {/* Page 66: Back Cover */}
             <HeroBackCover onCoverClick={handleFlipPrev} />
           </HTMLFlipBook>
         </div>

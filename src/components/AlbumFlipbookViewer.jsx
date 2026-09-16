@@ -434,7 +434,7 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
         isLeftPage={i % 2 === 0}
       />
     )),
-    ...(totalPhotos % 2 !== 0 ? [<EndsheetPage key="flip-endsheet" />] : []),
+    ...(totalPhotos % 2 === 0 ? [<EndsheetPage key="flip-endsheet" />] : []),
     <BackCoverPage key="flip-backcover" />
   ];
 
