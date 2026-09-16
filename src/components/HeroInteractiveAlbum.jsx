@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Maximize2
 } from 'lucide-react';
+import { FLEXY_ALBUM_PHOTOS } from '../data/albumPhotosData';
 
 /* ─────────────────────────────────────────────────────
    Responsive Dimension Helper for 3D Photobook
@@ -182,14 +183,14 @@ const HeroPhotoPage = forwardRef(({ src, label, isLeftPage, ...props }, ref) => 
         />
 
         <div
-          className="w-full h-full relative overflow-hidden rounded-xs border"
-          style={{ background: 'rgba(0,0,0,0.06)', borderColor: 'rgba(213,201,184,0.7)' }}
+          className="w-full h-full relative overflow-hidden rounded-xs border flex items-center justify-center bg-[#FAF8F5]"
+          style={{ borderColor: 'rgba(213,201,184,0.7)' }}
         >
           <img
             src={src}
             alt={label}
-            className="w-full h-full object-cover pointer-events-none select-none"
-            loading="eager"
+            className="w-full h-full object-contain object-center pointer-events-none select-none drop-shadow-xs"
+            loading="lazy"
             draggable={false}
           />
           <span
@@ -206,6 +207,71 @@ const HeroPhotoPage = forwardRef(({ src, label, isLeftPage, ...props }, ref) => 
   );
 });
 HeroPhotoPage.displayName = 'HeroPhotoPage';
+
+/* ─────────────────────────────────────────────────────
+   PAGE 35: LUXURY ENDSHEET HEIRLOOM (Left Page)
+   ───────────────────────────────────────────────────── */
+const HeroEndsheetPage = forwardRef((props, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
+      data-density="soft"
+    >
+      <div
+        className="w-full h-full flex flex-col justify-between text-center p-3 sm:p-5 relative overflow-hidden border-r-2 border-r-[#BFB19E]"
+        style={{
+          background: 'linear-gradient(135deg, #FAF8F5 0%, #F5EFE6 50%, #EAE2D2 100%)'
+        }}
+      >
+        <div
+          className="absolute top-0 bottom-0 right-0 w-4 sm:w-6 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(to left, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.05) 50%, transparent 100%)'
+          }}
+        />
+
+        <div>
+          <span
+            className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
+            style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
+          >
+            KPR PRODUCTIONS · TIMELESS MEMORIES
+          </span>
+        </div>
+
+        <div className="space-y-1 sm:space-y-1.5 px-1">
+          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
+          <h3
+            className="font-serif text-[#2A231C] font-semibold tracking-wide uppercase leading-tight"
+            style={{ fontSize: 'clamp(8.5px, 1.7vw, 12px)' }}
+          >
+            Preserved for Generations
+          </h3>
+          <p
+            className="font-serif italic text-[#6B5A47] leading-relaxed"
+            style={{ fontSize: 'clamp(6.5px, 1.25vw, 8.5px)' }}
+          >
+            Every smile, ceremony, and sacred blessing bound forever in luxury layflat print.
+          </p>
+          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
+        </div>
+
+        <div>
+          <span
+            className="font-mono text-[#8C6D3F]/80 uppercase tracking-widest"
+            style={{ fontSize: 'clamp(5.5px, 1vw, 7px)' }}
+          >
+            Warangal & Hyderabad
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+HeroEndsheetPage.displayName = 'HeroEndsheetPage';
 
 
 
@@ -271,7 +337,7 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const totalPages = 10;
+  const totalPages = 2 + FLEXY_ALBUM_PHOTOS.length + 2;
 
   const handleFlipNext = useCallback(() => {
     try {
@@ -413,28 +479,20 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
             {/* Page 1: Dedication (Left) */}
             <HeroDedicationPage />
 
-            {/* Page 2: Photo 1 (Right) */}
-            <HeroPhotoPage src="/images/wedding/photo_1.jpg" label="01 · Royal Bride" isLeftPage={false} />
+            {/* Pages 2..34: Real Album Photo Pages */}
+            {FLEXY_ALBUM_PHOTOS.map((photo, idx) => (
+              <HeroPhotoPage
+                key={photo.id}
+                src={photo.src}
+                label={photo.label}
+                isLeftPage={idx % 2 !== 0}
+              />
+            ))}
 
-            {/* Page 3: Photo 2 (Left) */}
-            <HeroPhotoPage src="/images/wedding/photo_2.jpg" label="02 · Eternal Couple" isLeftPage={true} />
+            {/* Page 35: Luxury Endsheet (Left) */}
+            <HeroEndsheetPage />
 
-            {/* Page 4: Photo 3 (Right) */}
-            <HeroPhotoPage src="/images/wedding/photo_3.jpg" label="03 · Mandap Vows" isLeftPage={false} />
-
-            {/* Page 5: Photo 4 (Left) */}
-            <HeroPhotoPage src="/images/wedding/photo_4.jpg" label="04 · Haldi Splendor" isLeftPage={true} />
-
-            {/* Page 6: Photo 5 (Right) */}
-            <HeroPhotoPage src="/images/wedding/photo_5.jpg" label="05 · Twilight Romance" isLeftPage={false} />
-
-            {/* Page 7: Photo 6 (Left) */}
-            <HeroPhotoPage src="/images/wedding/photo_6.jpg" label="06 · Royal Traditions" isLeftPage={true} />
-
-            {/* Page 8: Photo 7 (Right) */}
-            <HeroPhotoPage src="/images/wedding/photo_7.jpg" label="07 · Grand Reception" isLeftPage={false} />
-
-            {/* Page 9: Back Cover */}
+            {/* Page 36: Back Cover */}
             <HeroBackCover onCoverClick={handleFlipPrev} />
           </HTMLFlipBook>
         </div>

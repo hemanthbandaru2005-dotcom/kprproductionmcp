@@ -13,26 +13,9 @@ import showcaseEventsLogoExact from '../assets/showcase_events_logo_exact.png';
 import heroApertureSquare from '../assets/hero_aperture_lens_square.jpg';
 import cardAlbumReal from '../assets/card_album_photobook_real.jpg';
 import cardStageReal from '../assets/card_event_stage_real.jpg';
+import { FLEXY_PHOTO_URLS } from '../data/albumPhotosData';
 
-const HERO_SAMPLE_PHOTOS = [
-  '/images/wedding/photo_1.jpg',
-  '/images/wedding/photo_2.jpg',
-  '/images/wedding/photo_3.jpg',
-  '/images/wedding/photo_4.jpg',
-  '/images/wedding/photo_5.jpg',
-  '/images/wedding/photo_6.jpg',
-  '/images/wedding/photo_7.jpg',
-  '/images/wedding/photo_8.jpg',
-  '/images/wedding/photo_9.jpg',
-  '/images/wedding/photo_10.jpg',
-  '/images/wedding/photo_11.jpg',
-  '/images/wedding/photo_12.jpg',
-  '/images/wedding/photo_13.jpg',
-  '/images/wedding/photo_14.jpg',
-  '/images/wedding/photo_15.jpg',
-  '/images/wedding/photo_16.jpg',
-  '/images/wedding/photo_17.jpg',
-];
+const HERO_SAMPLE_PHOTOS = FLEXY_PHOTO_URLS;
 
 const SERVICES = [
   {
