@@ -389,38 +389,38 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
           height: dims.singlePageH
         }}
       >
-        {/* ── "Swipe to open" Callout (Disappears cleanly as soon as book is opened) ── */}
+        {/* ── "Swipe to open" Callout (Positioned in open space to the right of the book cover) ── */}
         <AnimatePresence>
           {isCover && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.85, y: -6 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.85, y: -8, transition: { duration: 0.22 } }}
+              initial={{ opacity: 0, scale: 0.85, x: 8 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.85, x: 8, transition: { duration: 0.2 } }}
               transition={{ duration: 0.35, delay: 0.15 }}
               onClick={handleFlipNext}
-              className="absolute -top-10 xs:-top-11 sm:-top-13 -right-3 xs:-right-5 sm:-right-8 z-50 flex flex-col items-center cursor-pointer select-none pointer-events-auto group"
+              className="absolute top-[18%] xs:top-[22%] sm:top-[25%] left-full ml-2 xs:ml-3 sm:ml-4 z-50 flex flex-col items-start cursor-pointer select-none pointer-events-auto group"
               title="Click or swipe to open"
             >
-              <span className="font-serif italic font-semibold text-[11.5px] xs:text-xs sm:text-[13px] text-[#C85A48] tracking-wide whitespace-nowrap -rotate-6 group-hover:scale-105 group-hover:text-[#B34533] transition-all drop-shadow-xs">
+              <span className="font-serif italic font-semibold text-[11px] xs:text-xs sm:text-[13px] text-[#C85A48] tracking-wide whitespace-nowrap -rotate-6 group-hover:scale-105 group-hover:text-[#B34533] transition-all drop-shadow-xs">
                 Swipe to open
               </span>
               <svg
                 width="32"
-                height="24"
-                viewBox="0 0 32 24"
+                height="22"
+                viewBox="0 0 32 22"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="text-[#C85A48] group-hover:text-[#B34533] -rotate-3 mt-0.5 group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-all"
+                className="text-[#C85A48] group-hover:text-[#B34533] mt-0.5 ml-1 group-hover:-translate-x-1 transition-all"
               >
                 <path
-                  d="M26 2C26 12 16 16 6 20"
+                  d="M26 4C18 4 12 8 5 15"
                   stroke="currentColor"
                   strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
-                  d="M12 15L5 20L11 23"
+                  d="M11 9L4 15L11 19"
                   stroke="currentColor"
                   strokeWidth="1.8"
                   strokeLinecap="round"
