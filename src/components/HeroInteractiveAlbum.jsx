@@ -8,44 +8,40 @@ import {
 
 /* ─────────────────────────────────────────────────────
    Responsive Dimension Helper for 3D Photobook
-   Aspect ratio: 967 / 881 = 1.097 (Square/Album Format)
-   ───────────────────────────────────────────────────── */
-/* ─────────────────────────────────────────────────────
-   Responsive Dimension Helper for 3D Photobook
-   Aspect ratio: 967 / 881 = 1.097 (Square/Album Format)
+   Aspect ratio: 1.0 (1:1 Square Album Format)
    Generous sizing to fill hero showcase area with zero empty side voids
    ───────────────────────────────────────────────────── */
 function getBookDimensions() {
   if (typeof window === 'undefined') {
-    return { singlePageW: 340, singlePageH: 310 };
+    return { singlePageW: 320, singlePageH: 320 };
   }
   const w = window.innerWidth;
   if (w < 380) {
     const sw = 140;
-    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
+    return { singlePageW: sw, singlePageH: sw };
   }
   if (w < 480) {
     const sw = 160;
-    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
+    return { singlePageW: sw, singlePageH: sw };
   }
   if (w < 640) {
     const sw = 200;
-    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
+    return { singlePageW: sw, singlePageH: sw };
   }
   if (w < 768) {
     const sw = 240;
-    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
+    return { singlePageW: sw, singlePageH: sw };
   }
   if (w < 1024) {
-    const sw = 280;
-    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
+    const sw = 275;
+    return { singlePageW: sw, singlePageH: sw };
   }
   if (w < 1280) {
-    const sw = 330;
-    return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
+    const sw = 315;
+    return { singlePageW: sw, singlePageH: sw };
   }
-  const sw = 350;
-  return { singlePageW: sw, singlePageH: Math.round(sw / 1.097) };
+  const sw = 335;
+  return { singlePageW: sw, singlePageH: sw };
 }
 
 /* ─────────────────────────────────────────────────────
