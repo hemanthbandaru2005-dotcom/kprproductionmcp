@@ -54,8 +54,8 @@ export default function Hero({ onOpenPage }) {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [flipbookImages, setFlipbookImages] = useState(null);
   const [flipbookSize, setFlipbookSize] = useState('12x36');
-  const [customCoverImage, setCustomCoverImage] = useState(null);
-  const [customAlbumPhotos, setCustomAlbumPhotos] = useState(null);
+  const [flipbookCover, setFlipbookCover] = useState(null);
+  const [flipbookBackCover, setFlipbookBackCover] = useState(null);
 
   const handleCardClick = (route) => {
     if (typeof onOpenPage === 'function') {
@@ -141,11 +141,11 @@ export default function Hero({ onOpenPage }) {
           >
             <HeroInteractiveAlbum
               showFullscreenButton={false}
-              customCoverImage={customCoverImage}
-              customPhotos={customAlbumPhotos}
               onOpenUpload={() => setUploadModalOpen(true)}
               onOpenFullscreen={() => {
-                setFlipbookImages(customAlbumPhotos || HERO_SAMPLE_PHOTOS);
+                setFlipbookImages(HERO_SAMPLE_PHOTOS);
+                setFlipbookCover('/images/album/front_cover.jpg');
+                setFlipbookBackCover('/images/album/back_cover.jpg');
                 setFlipbookSize('12x36');
               }}
             />
@@ -162,7 +162,9 @@ export default function Hero({ onOpenPage }) {
               <button
                 type="button"
                 onClick={() => {
-                  setFlipbookImages(customAlbumPhotos || HERO_SAMPLE_PHOTOS);
+                  setFlipbookImages(HERO_SAMPLE_PHOTOS);
+                  setFlipbookCover('/images/album/front_cover.jpg');
+                  setFlipbookBackCover('/images/album/back_cover.jpg');
                   setFlipbookSize('12x36');
                 }}
                 className="group inline-flex items-center gap-1.5 px-3.5 xs:px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-[#FAF5ED]/95 hover:bg-white text-[#1A1A1A] hover:text-black text-[9px] xs:text-[10px] sm:text-xs font-bold tracking-wider uppercase border border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.22)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
@@ -184,32 +186,6 @@ export default function Hero({ onOpenPage }) {
                 </span>
               </button>
             </div>
-
-            {/* Custom Album Active Pill with Quick "Reset to Demo Album" */}
-            {customAlbumPhotos && customAlbumPhotos.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center justify-center gap-1.5 xs:gap-2 mt-0.5"
-              >
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FAF5ED]/95 border border-[#C5A880]/70 shadow-xs text-[8.5px] xs:text-[9.5px] sm:text-[10px] text-[#444]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="font-semibold text-[#1A1A1A]">Your Custom Album</span>
-                  <span className="text-[#777]">({customAlbumPhotos.length} {customAlbumPhotos.length === 1 ? 'photo' : 'photos'})</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCustomCoverImage(null);
-                    setCustomAlbumPhotos(null);
-                  }}
-                  className="inline-flex items-center px-2 py-0.5 rounded-full bg-white hover:bg-red-50 text-[#C85A48] hover:text-[#A83827] border border-[#E2D9CC] hover:border-[#C85A48]/50 text-[8.5px] xs:text-[9.5px] sm:text-[10px] font-bold transition-all cursor-pointer shadow-xs"
-                  title="Revert back to the original demo album"
-                >
-                  Reset to Demo
-                </button>
-              </motion.div>
-            )}
           </motion.div>
         </div>
       </div>
@@ -269,8 +245,9 @@ export default function Hero({ onOpenPage }) {
         onClose={() => setUploadModalOpen(false)}
         onLaunchFlipbook={(photos, size, coverUrl) => {
           const selectedCover = coverUrl || photos[0];
-          setCustomAlbumPhotos(photos);
-          setCustomCoverImage(selectedCover);
+          const selectedBackCover = photos.length > 1 ? photos[photos.length - 1] : selectedCover;
+          setFlipbookCover(selectedCover);
+          setFlipbookBackCover(selectedBackCover);
           setFlipbookImages(photos);
           setFlipbookSize(size || '12x36');
         }}
@@ -281,9 +258,14 @@ export default function Hero({ onOpenPage }) {
         <AlbumFlipbookViewer
           images={flipbookImages}
           size={flipbookSize}
-          title={customCoverImage ? "Custom Photobook Album" : "KPR Luxury Wedding Album"}
-          coverImage={customCoverImage || "/images/album/front_cover.jpg"}
-          onClose={() => setFlipbookImages(null)}
+          title={flipbookCover && flipbookCover !== '/images/album/front_cover.jpg' ? "Custom Photobook Album" : "KPR Luxury Wedding Album"}
+          coverImage={flipbookCover || "/images/album/front_cover.jpg"}
+          backCoverImage={flipbookBackCover || "/images/album/back_cover.jpg"}
+          onClose={() => {
+            setFlipbookImages(null);
+            setFlipbookCover(null);
+            setFlipbookBackCover(null);
+          }}
         />
       )}
     </section>

@@ -181,6 +181,106 @@ function BookTopPagesBlock({ width, height = 22, isReversed = false }) {
 }
 
 /* ─────────────────────────────────────────────────────
+   3D OPEN TOP PAGES BLOCK (When the book is OPEN across 2 pages)
+   - Features center headband notch, gutter dip, paper leaves,
+     and underlying hardcover board lip matching client sketch
+   ───────────────────────────────────────────────────── */
+function BookOpenTopPagesBlock({ width, height = 22 }) {
+  const w = width;
+  const h = height;
+  const cx = Math.round(w / 2);
+  const gutterW = Math.max(16, Math.round(w * 0.05));
+  const halfGutter = Math.round(gutterW / 2);
+
+  return (
+    <svg
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="pointer-events-none drop-shadow-sm select-none"
+    >
+      <defs>
+        <linearGradient id="openPaperGradLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#D5C7B5" />
+          <stop offset="25%" stopColor="#EAE1D3" />
+          <stop offset="70%" stopColor="#FAF7F2" />
+          <stop offset="100%" stopColor="#DFCFC0" />
+        </linearGradient>
+        <linearGradient id="openPaperGradRight" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#DFCFC0" />
+          <stop offset="30%" stopColor="#FAF7F2" />
+          <stop offset="75%" stopColor="#EAE1D3" />
+          <stop offset="100%" stopColor="#D5C7B5" />
+        </linearGradient>
+        <linearGradient id="spineArchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#4A3B2A" />
+          <stop offset="50%" stopColor="#6E5842" />
+          <stop offset="100%" stopColor="#4A3B2A" />
+        </linearGradient>
+      </defs>
+
+      {/* Rear Hardcover Board Lip (Extends behind both open pages) */}
+      <path
+        d={`M 2 3 L ${cx - halfGutter} 1 L ${cx + halfGutter} 1 L ${w - 2} 3 L ${w - 2} 6 L ${cx + halfGutter} 4 L ${cx - halfGutter} 4 L 2 6 Z`}
+        fill="#2A2117"
+      />
+      <path
+        d={`M 2 2.5 L ${cx - halfGutter} 0.5 L ${cx + halfGutter} 0.5 L ${w - 2} 2.5`}
+        stroke="rgba(255,255,255,0.25)"
+        strokeWidth="0.8"
+      />
+
+      {/* Left Page Paper Block (from left fore-edge curving gently down to gutter) */}
+      <path
+        d={`M 4 5 L ${cx - halfGutter} 3 C ${cx - halfGutter * 0.4} 6 ${cx - 2} 11 ${cx} ${h} L 4 ${h} Z`}
+        fill="url(#openPaperGradLeft)"
+      />
+
+      {/* Right Page Paper Block (from gutter curving back up to right fore-edge) */}
+      <path
+        d={`M ${cx} ${h} C ${cx + 2} 11 ${cx + halfGutter * 0.4} 6 ${cx + halfGutter} 3 L ${w - 4} 5 L ${w - 4} ${h} L ${cx} ${h} Z`}
+        fill="url(#openPaperGradRight)"
+      />
+
+      {/* Left Paper Stack Layer Lines */}
+      <path d={`M 5 8 L ${cx - halfGutter - 2} 6`} stroke="#C8BCAF" strokeWidth="0.7" />
+      <path d={`M 5 11 L ${cx - halfGutter - 4} 9`} stroke="#DFCFC0" strokeWidth="0.7" />
+      <path d={`M 5 14 L ${cx - halfGutter - 6} 12`} stroke="#BFB09D" strokeWidth="0.7" />
+      <path d={`M 5 17 L ${cx - halfGutter - 8} 15`} stroke="#DFCFC0" strokeWidth="0.7" />
+      <path d={`M 5 20 L ${cx - halfGutter - 10} 18`} stroke="#C8BCAF" strokeWidth="0.7" />
+
+      {/* Right Paper Stack Layer Lines */}
+      <path d={`M ${cx + halfGutter + 2} 6 L ${w - 5} 8`} stroke="#C8BCAF" strokeWidth="0.7" />
+      <path d={`M ${cx + halfGutter + 4} 9 L ${w - 5} 11`} stroke="#DFCFC0" strokeWidth="0.7" />
+      <path d={`M ${cx + halfGutter + 6} 12 L ${w - 5} 14`} stroke="#BFB09D" strokeWidth="0.7" />
+      <path d={`M ${cx + halfGutter + 8} 15 L ${w - 5} 17`} stroke="#DFCFC0" strokeWidth="0.7" />
+      <path d={`M ${cx + halfGutter + 10} 18 L ${w - 5} 20`} stroke="#C8BCAF" strokeWidth="0.7" />
+
+      {/* Center Spine Headband Arch & Gutter Notch (matches sketch!) */}
+      <path
+        d={`M ${cx - halfGutter} 3 C ${cx - halfGutter * 0.3} 6 ${cx - 2} 12 ${cx} ${h} C ${cx + 2} 12 ${cx + halfGutter * 0.3} 6 ${cx + halfGutter} 3 C ${cx} 1.5 ${cx - halfGutter} 3 Z`}
+        fill="url(#spineArchGrad)"
+      />
+      {/* Decorative Headband Stitching Arc */}
+      <path
+        d={`M ${cx - halfGutter + 2} 4.5 C ${cx - halfGutter * 0.25} 7 ${cx - 1.5} 13 ${cx} ${h - 1} C ${cx + 1.5} 13 ${cx + halfGutter * 0.25} 7 ${cx + halfGutter - 2} 4.5`}
+        stroke="#C5A880"
+        strokeWidth="1.2"
+        strokeDasharray="2,2"
+      />
+
+      {/* Foreground Front Lip Highlights */}
+      <line x1="2" y1={h - 2} x2={cx - 3} y2={h - 2} stroke="#352B20" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1={cx + 3} y1={h - 2} x2={w - 2} y2={h - 2} stroke="#352B20" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="2" y1={h - 3} x2={cx - 3} y2={h - 3} stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
+      <line x1={cx + 3} y1={h - 3} x2={w - 2} y2={h - 3} stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────────────────
    PAGE 0: LUXURY HARDCOVER FRONT COVER
    - data-density="hard" (rigid physical book cover)
    - Realistic French groove, spine roll, and fore-edge
@@ -267,9 +367,12 @@ const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, ...props }, ref) =>
 HeroFrontCover.displayName = 'HeroFrontCover';
 
 /* ─────────────────────────────────────────────────────
-   PAGE 1: DEDICATION / EX LIBRIS (Left Page)
+   PHOTO PAGE HELPER (Full Bleed Edge-to-Edge)
+   - Zero padding / borders so images come FULL in the photobook
+   - Removed labels/names as requested by user
+   - Spine crease shadow for authentic 3D book depth
    ───────────────────────────────────────────────────── */
-const HeroDedicationPage = forwardRef((props, ref) => {
+const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
   return (
     <div
       ref={ref}
@@ -278,241 +381,38 @@ const HeroDedicationPage = forwardRef((props, ref) => {
       className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
       data-density="soft"
     >
-      <div
-        className="w-full h-full flex flex-col justify-between text-center p-2.5 sm:p-4 relative overflow-hidden border-r-2 border-r-[#BFB19E]"
-        style={{
-          background: 'linear-gradient(135deg, #FAF8F5 0%, #F5EFE6 50%, #EAE2D2 100%)'
-        }}
-      >
-        {/* Spine Crease Shadow on Right Edge */}
-        <div
-          className="absolute top-0 bottom-0 right-0 w-4 sm:w-6 pointer-events-none z-10"
-          style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.05) 50%, transparent 100%)'
-          }}
+      <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
+        {/* Full Bleed Photo Edge-to-Edge */}
+        <img
+          src={src}
+          alt="Photobook Page"
+          className="w-full h-full object-cover object-center pointer-events-none select-none"
+          loading="lazy"
+          draggable={false}
         />
 
-        <div>
-          <span
-            className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
-            style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
-          >
-            EX LIBRIS · WEDDING HEIRLOOM
-          </span>
-        </div>
-
-        <div className="space-y-1 sm:space-y-1.5 px-1">
-          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
-          <h3
-            className="font-serif text-[#2A231C] font-semibold tracking-wide uppercase leading-tight"
-            style={{ fontSize: 'clamp(8.5px, 1.7vw, 12px)' }}
-          >
-            A Lifetime of Cherished Vows
-          </h3>
-          <p
-            className="font-serif italic text-[#6A5A4A] leading-relaxed line-clamp-2"
-            style={{ fontSize: 'clamp(6px, 1.1vw, 8px)' }}
-          >
-            "Every glance a sacred memory, every smile an eternal treasure."
-          </p>
-          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
-        </div>
-
-        <span
-          className="font-mono tracking-wider uppercase text-[#8C6D3F]/80 self-center"
-          style={{ fontSize: 'clamp(5px, 1vw, 7px)' }}
-        >
-          Spread 1 of 4
-        </span>
-      </div>
-    </div>
-  );
-});
-HeroDedicationPage.displayName = 'HeroDedicationPage';
-
-/* ─────────────────────────────────────────────────────
-   PHOTO PAGE HELPER (Pages 2 to 8)
-   ───────────────────────────────────────────────────── */
-const HeroPhotoPage = forwardRef(({ src, label, isLeftPage, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      {...props}
-      style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
-      data-density="soft"
-    >
-      <div
-        className={`w-full h-full p-1 sm:p-2 flex items-center justify-center relative ${
-          isLeftPage ? 'border-r-2 border-r-[#BFB19E]' : 'border-l-2 border-l-[#BFB19E]'
-        }`}
-        style={{ background: '#FAF8F5' }}
-      >
-        {/* Center Spine Crease Shadow */}
+        {/* Center Spine Crease / Binding Depth Shadow */}
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-3 sm:w-5 bg-gradient-to-l from-black/20 via-black/5 to-transparent'
-              : 'left-0 w-3 sm:w-5 bg-gradient-to-r from-black/20 via-black/5 to-transparent'
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/25 via-black/8 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/25 via-black/8 to-transparent'
           }`}
         />
 
+        {/* Outer Fore-Edge Paper Thickness Highlight */}
         <div
-          className="w-full h-full relative overflow-hidden rounded-xs border flex items-center justify-center bg-[#FAF8F5]"
-          style={{ borderColor: 'rgba(213,201,184,0.7)' }}
-        >
-          <img
-            src={src}
-            alt={label}
-            className="w-full h-full object-contain object-center pointer-events-none select-none drop-shadow-xs"
-            loading="lazy"
-            draggable={false}
-          />
-          <span
-            className={`absolute bottom-1 font-mono text-[#5A4836] rounded-full border shadow-xs font-bold bg-white/95 px-1.5 py-0.5 ${
-              isLeftPage ? 'left-1' : 'right-1'
-            }`}
-            style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)', borderColor: '#D5C9B8' }}
-          >
-            {label}
-          </span>
-        </div>
+          className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
+            isLeftPage
+              ? 'left-0 w-1 bg-gradient-to-r from-black/10 to-transparent'
+              : 'right-0 w-1 bg-gradient-to-l from-black/10 to-transparent'
+          }`}
+        />
       </div>
     </div>
   );
 });
 HeroPhotoPage.displayName = 'HeroPhotoPage';
-
-/* ─────────────────────────────────────────────────────
-   PAGE 35: LUXURY ENDSHEET HEIRLOOM (Left Page)
-   ───────────────────────────────────────────────────── */
-const HeroEndsheetPage = forwardRef((props, ref) => {
-  return (
-    <div
-      ref={ref}
-      {...props}
-      style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
-      data-density="soft"
-    >
-      <div
-        className="w-full h-full flex flex-col justify-between text-center p-3 sm:p-5 relative overflow-hidden border-r-2 border-r-[#BFB19E]"
-        style={{
-          background: 'linear-gradient(135deg, #FAF8F5 0%, #F5EFE6 50%, #EAE2D2 100%)'
-        }}
-      >
-        <div
-          className="absolute top-0 bottom-0 right-0 w-4 sm:w-6 pointer-events-none z-10"
-          style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.05) 50%, transparent 100%)'
-          }}
-        />
-
-        <div>
-          <span
-            className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
-            style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
-          >
-            KPR PRODUCTIONS · TIMELESS MEMORIES
-          </span>
-        </div>
-
-        <div className="space-y-1 sm:space-y-1.5 px-1">
-          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
-          <h3
-            className="font-serif text-[#2A231C] font-semibold tracking-wide uppercase leading-tight"
-            style={{ fontSize: 'clamp(8.5px, 1.7vw, 12px)' }}
-          >
-            Preserved for Generations
-          </h3>
-          <p
-            className="font-serif italic text-[#6B5A47] leading-relaxed"
-            style={{ fontSize: 'clamp(6.5px, 1.25vw, 8.5px)' }}
-          >
-            Every smile, ceremony, and sacred blessing bound forever in luxury layflat print.
-          </p>
-          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
-        </div>
-
-        <div>
-          <span
-            className="font-mono text-[#8C6D3F]/80 uppercase tracking-widest"
-            style={{ fontSize: 'clamp(5.5px, 1vw, 7px)' }}
-          >
-            Warangal & Hyderabad
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-});
-HeroEndsheetPage.displayName = 'HeroEndsheetPage';
-
-/* ─────────────────────────────────────────────────────
-   LUXURY ENDSHEET RIGHT PAGE (Right Page)
-   Completes the final interior spread before the back cover closes
-   ───────────────────────────────────────────────────── */
-const HeroEndsheetRightPage = forwardRef((props, ref) => {
-  return (
-    <div
-      ref={ref}
-      {...props}
-      style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
-      data-density="soft"
-    >
-      <div
-        className="w-full h-full flex flex-col justify-between text-center p-3 sm:p-5 relative overflow-hidden border-l-2 border-l-[#BFB19E]"
-        style={{
-          background: 'linear-gradient(225deg, #FAF8F5 0%, #F5EFE6 50%, #EAE2D2 100%)'
-        }}
-      >
-        <div
-          className="absolute top-0 bottom-0 left-0 w-4 sm:w-6 pointer-events-none z-10"
-          style={{
-            background: 'linear-gradient(to right, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.05) 50%, transparent 100%)'
-          }}
-        />
-
-        <div>
-          <span
-            className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
-            style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
-          >
-            THE ART OF CINEMATIC MEMORIES
-          </span>
-        </div>
-
-        <div className="space-y-1 sm:space-y-1.5 px-1">
-          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
-          <h3
-            className="font-serif text-[#2A231C] font-semibold tracking-wide uppercase leading-tight"
-            style={{ fontSize: 'clamp(8.5px, 1.7vw, 12px)' }}
-          >
-            Crafted with Passion
-          </h3>
-          <p
-            className="font-serif italic text-[#6B5A47] leading-relaxed"
-            style={{ fontSize: 'clamp(6.5px, 1.25vw, 8.5px)' }}
-          >
-            "Photographs are the pause button of life, keeping precious moments timeless."
-          </p>
-          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
-        </div>
-
-        <div>
-          <span
-            className="font-mono text-[#8C6D3F]/80 uppercase tracking-widest"
-            style={{ fontSize: 'clamp(5.5px, 1vw, 7px)' }}
-          >
-            KPR PRODUCTIONS · 2026
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-});
-HeroEndsheetRightPage.displayName = 'HeroEndsheetRightPage';
 
 /* ─────────────────────────────────────────────────────
    PAGE: LUXURY HARDCOVER BACK COVER
@@ -608,28 +508,13 @@ export default function HeroInteractiveAlbum({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Normalize photos: use custom uploaded photos if provided, otherwise default to demo FLEXY_ALBUM_PHOTOS
-  const activePhotos = (customPhotos && customPhotos.length > 0)
-    ? customPhotos.map((p, idx) => ({
-        id: idx + 1,
-        src: typeof p === 'string' ? p : p.url,
-        label: p.label || `${String(idx + 1).padStart(2, '0')} · Photo ${idx + 1}`
-      }))
-    : FLEXY_ALBUM_PHOTOS;
-
-  // Active cover: use custom uploaded cover image if available, else first custom photo, else default demo cover
-  const activeCover = customCoverImage
-    ? customCoverImage
-    : (customPhotos && customPhotos.length > 0)
-      ? (typeof customPhotos[0] === 'string' ? customPhotos[0] : customPhotos[0].url)
-      : '/images/album/front_cover.jpg';
-
+  // Demo Photobook: Always pristine default demo with full storytelling sequence
+  const activePhotos = FLEXY_ALBUM_PHOTOS;
+  const activeCover = '/images/album/front_cover.jpg';
   const activeBackCover = '/images/album/back_cover.jpg';
 
-  // Endsheets to complete the last spread before the back cover:
-  // Front cover (1) + photos + endsheets + back cover (1) MUST be an EVEN total
-  const endsheetCount = activePhotos.length % 2 === 0 ? 2 : 1;
-  const totalPages = 1 + activePhotos.length + endsheetCount + 1;
+  // 1 (Front Cover) + 66 (Photos) + 1 (Back Cover) = 68 pages (EVEN total, closes cleanly to back cover)
+  const totalPages = 1 + activePhotos.length + 1;
 
   const handleFlipNext = useCallback(() => {
     try {
@@ -777,7 +662,6 @@ export default function HeroInteractiveAlbum({
         />
 
         {/* ── Discreet Outside Navigation Arrows ── */}
-        {/* Previous Page Arrow (Available while open OR when on the back cover to reopen) */}
         {(isOpen || isBackCover) && (
           <button
             type="button"
@@ -795,7 +679,6 @@ export default function HeroInteractiveAlbum({
           </button>
         )}
 
-        {/* Next Page Arrow (Available only while open and not yet at the back cover) */}
         {isOpen && (
           <button
             type="button"
@@ -870,6 +753,39 @@ export default function HeroInteractiveAlbum({
             )}
           </AnimatePresence>
 
+          {/* ── 3D Top Pages Block (Visible when OPEN across 2 pages matching client sketch) ── */}
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 3, transition: { duration: 0.15 } }}
+                transition={{ duration: 0.3 }}
+                className="absolute left-0 z-30 pointer-events-none"
+                style={{
+                  top: `-${topBlockHeight - 2}px`,
+                  width: `${dims.singlePageW * 2}px`
+                }}
+              >
+                <BookOpenTopPagesBlock
+                  width={dims.singlePageW * 2}
+                  height={topBlockHeight}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Hardcover Casing Frame Underneath Open Book */}
+          {isOpen && (
+            <div
+              className="absolute -inset-1 sm:-inset-1.5 rounded-sm pointer-events-none z-0"
+              style={{
+                background: 'linear-gradient(to bottom, #2E2419, #1C150E)',
+                boxShadow: '0 12px 30px rgba(0,0,0,0.55), inset 0 0 4px rgba(255,255,255,0.12)'
+              }}
+            />
+          )}
+
           {/* ── REAL 3D PAGE-FLIP ENGINE (HTMLFlipBook) ── */}
           <HTMLFlipBook
             key={`hero-flipbook-${dims.singlePageW}-${dims.singlePageH}-${activePhotos.length}-${activeCover}`}
@@ -898,27 +814,22 @@ export default function HeroInteractiveAlbum({
             onChangeState={handleChangeState}
             className="album-flipbook-shadow"
           >
-            {/* Page 0: Front Cover (Dynamic user upload or default demo) */}
+            {/* Page 0: Front Cover */}
             <HeroFrontCover
               coverSrc={activeCover}
               onCoverClick={handleFlipNext}
             />
 
-            {/* Photo Pages (Dynamic user upload or default demo) */}
+            {/* Photo Pages: Edge-to-edge full bleed, Haldi to Birthday, no labels */}
             {activePhotos.map((photo, idx) => (
               <HeroPhotoPage
                 key={photo.id}
                 src={photo.src}
-                label={photo.label}
                 isLeftPage={idx % 2 === 0}
               />
             ))}
 
-            {/* Luxury Endsheets: Balanced to ensure an even total page count for crisp back cover closure */}
-            <HeroEndsheetPage />
-            {endsheetCount === 2 && <HeroEndsheetRightPage />}
-
-            {/* Final Page: Luxury Hardcover Back Cover (Closes the book to single-page mode) */}
+            {/* Final Page: Luxury Hardcover Back Cover (Closes directly to single-page mode) */}
             <HeroBackCover
               backCoverSrc={activeBackCover}
               onCoverClick={handleFlipPrev}

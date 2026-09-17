@@ -89,7 +89,7 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, coverSrc, onOpen, ...p
 CoverPage.displayName = 'CoverPage';
 
 /* ─────────────────────────────────────────────────────
-   Inside Photo Page with Spine Shadow & No-Crop Containment
+   Inside Photo Page: Full Bleed Edge-to-Edge with Spine Depth
    ───────────────────────────────────────────────────── */
 const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...props }, ref) => {
   return (
@@ -97,43 +97,36 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FCFBF9] shadow-md ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] shadow-md ${props.className || ''}`}
       data-density="soft"
     >
-      <div
-        className={`w-full h-full p-1 sm:p-2.5 flex flex-col items-center justify-center relative border border-[#DCD2C3] ${
-          isLeftPage
-            ? 'bg-gradient-to-r from-[#FAF8F5] via-[#FAF8F5] to-[#E5DACB]/80 border-r-2 border-r-[#BFB19E]'
-            : 'bg-gradient-to-r from-[#E5DACB]/80 via-[#FAF8F5] to-[#FAF8F5] border-l-2 border-l-[#BFB19E]'
-        }`}
-      >
-        {/* Center Spine Crease / Binding Shadow */}
+      <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
+        {/* Full Bleed Image Edge-to-Edge without borders or cropping */}
+        <img
+          src={src}
+          alt={`Album page ${pageIndex + 1}`}
+          className="w-full h-full object-cover object-center select-none pointer-events-none"
+          loading="lazy"
+          draggable={false}
+        />
+
+        {/* Center Spine Crease / Binding Depth Shadow */}
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/20 via-black/5 to-transparent'
-              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/20 via-black/5 to-transparent'
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/25 via-black/8 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/25 via-black/8 to-transparent'
           }`}
         />
 
-        {/* Photo Canvas Area — object-contain guarantees full photo is visible without cutting */}
-        <div className="w-full h-full flex items-center justify-center relative overflow-hidden rounded-xs bg-[#111111]/[0.02] border border-[#EBE4D8]/80">
-          <img
-            src={src}
-            alt={`Album page ${pageIndex + 1}`}
-            className="max-w-full max-h-full w-auto h-auto object-contain rounded-xs select-none pointer-events-none transition-transform duration-300 drop-shadow-xs"
-            draggable={false}
-          />
-        </div>
-
-        {/* Page Number Watermark Badge */}
-        <span
-          className={`absolute bottom-1 sm:bottom-2 text-[7.5px] sm:text-[9.5px] text-[#5A4836] font-mono select-none bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-full border border-[#D5C9B8] shadow-2xs z-20 ${
-            isLeftPage ? 'left-1.5 sm:left-3' : 'right-1.5 sm:right-3'
+        {/* Outer Fore-Edge Paper Highlight */}
+        <div
+          className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
+            isLeftPage
+              ? 'left-0 w-1.5 bg-gradient-to-r from-black/15 to-transparent'
+              : 'right-0 w-1.5 bg-gradient-to-l from-black/15 to-transparent'
           }`}
-        >
-          {pageIndex + 1}
-        </span>
+        />
       </div>
     </div>
   );
@@ -406,15 +399,10 @@ export default function AlbumFlipbookViewer({
     touchStartY.current = null;
   };
 
-  // Balanced endsheets to ensure an even total page count so HTMLFlipBook closes the back cover in single-page mode
+  // No endsheet pages when total photos is even; only 1 blank parity page if photo count is odd
   const endsheetPages = totalPhotos % 2 === 0
-    ? [
-        <EndsheetPage key="flip-endsheet-left" isLeftPage={true} />,
-        <EndsheetPage key="flip-endsheet-right" isLeftPage={false} />
-      ]
-    : [
-        <EndsheetPage key="flip-endsheet-right" isLeftPage={false} />
-      ];
+    ? []
+    : [<div key="flip-parity-leaf" className="page-wrapper bg-[#FAF8F5]" data-density="soft" />];
 
   const totalPages = 1 + totalPhotos + endsheetPages.length + 1;
 
@@ -495,8 +483,9 @@ export default function AlbumFlipbookViewer({
   singlePageW = Math.max(isNaN(singlePageW) ? 300 : singlePageW, 130);
   singlePageH = Math.max(isNaN(singlePageH) ? 200 : singlePageH, 140);
 
+  // When custom images are uploaded, both front and back cover change to user images
   const activeCover = coverImage || safeImages[0] || '/images/album/front_cover.jpg';
-  const activeBackCover = backCoverImage || '/images/album/back_cover.jpg';
+  const activeBackCover = backCoverImage || (coverImage && coverImage !== '/images/album/front_cover.jpg' ? (safeImages.length > 1 ? safeImages[safeImages.length - 1] : activeCover) : '/images/album/back_cover.jpg');
 
   /* Build guaranteed valid non-falsy children for HTMLFlipBook */
   const flipbookPages = [
