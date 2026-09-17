@@ -274,11 +274,76 @@ const HeroEndsheetPage = forwardRef((props, ref) => {
 });
 HeroEndsheetPage.displayName = 'HeroEndsheetPage';
 
+/* ─────────────────────────────────────────────────────
+   LUXURY ENDSHEET RIGHT PAGE (Right Page)
+   Completes the final interior spread before the back cover closes
+   ───────────────────────────────────────────────────── */
+const HeroEndsheetRightPage = forwardRef((props, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
+      data-density="soft"
+    >
+      <div
+        className="w-full h-full flex flex-col justify-between text-center p-3 sm:p-5 relative overflow-hidden border-l-2 border-l-[#BFB19E]"
+        style={{
+          background: 'linear-gradient(225deg, #FAF8F5 0%, #F5EFE6 50%, #EAE2D2 100%)'
+        }}
+      >
+        <div
+          className="absolute top-0 bottom-0 left-0 w-4 sm:w-6 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(to right, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.05) 50%, transparent 100%)'
+          }}
+        />
 
+        <div>
+          <span
+            className="font-bold tracking-[0.2em] uppercase text-[#8C6D3F]"
+            style={{ fontSize: 'clamp(5.5px, 1.1vw, 7.5px)' }}
+          >
+            THE ART OF CINEMATIC MEMORIES
+          </span>
+        </div>
+
+        <div className="space-y-1 sm:space-y-1.5 px-1">
+          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
+          <h3
+            className="font-serif text-[#2A231C] font-semibold tracking-wide uppercase leading-tight"
+            style={{ fontSize: 'clamp(8.5px, 1.7vw, 12px)' }}
+          >
+            Crafted with Passion
+          </h3>
+          <p
+            className="font-serif italic text-[#6B5A47] leading-relaxed"
+            style={{ fontSize: 'clamp(6.5px, 1.25vw, 8.5px)' }}
+          >
+            "Photographs are the pause button of life, keeping precious moments timeless."
+          </p>
+          <div className="w-8 sm:w-12 h-px mx-auto bg-[#8C6D3F]/40" />
+        </div>
+
+        <div>
+          <span
+            className="font-mono text-[#8C6D3F]/80 uppercase tracking-widest"
+            style={{ fontSize: 'clamp(5.5px, 1vw, 7px)' }}
+          >
+            KPR PRODUCTIONS · 2026
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+HeroEndsheetRightPage.displayName = 'HeroEndsheetRightPage';
 
 /* ─────────────────────────────────────────────────────
-   PAGE 11: LUXURY HARDCOVER BACK COVER
+   PAGE: LUXURY HARDCOVER BACK COVER
    - data-density="hard" (rigid physical book cover)
+   - Closes book cleanly into single-page format
    ───────────────────────────────────────────────────── */
 const HeroBackCover = forwardRef(({ onCoverClick, ...props }, ref) => {
   return (
@@ -338,7 +403,10 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const totalPages = 1 + FLEXY_ALBUM_PHOTOS.length + 2;
+  // Endsheets to complete the last spread before the back cover:
+  // Front cover (1) + photos + endsheets + back cover (1) MUST be an EVEN total
+  const endsheetCount = FLEXY_ALBUM_PHOTOS.length % 2 === 0 ? 2 : 1;
+  const totalPages = 1 + FLEXY_ALBUM_PHOTOS.length + endsheetCount + 1;
 
   const handleFlipNext = useCallback(() => {
     try {
@@ -431,6 +499,48 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
           )}
         </AnimatePresence>
 
+        {/* ── "Tap to reopen" Callout (Positioned in open space to the left of the closed back cover) ── */}
+        <AnimatePresence>
+          {isBackCover && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, x: -8 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.85, x: -8, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.35, delay: 0.15 }}
+              onClick={handleFlipPrev}
+              className="absolute top-[18%] xs:top-[22%] sm:top-[25%] right-full mr-2 xs:mr-3 sm:mr-4 z-50 flex flex-col items-end cursor-pointer select-none pointer-events-auto group"
+              title="Click or swipe to reopen album"
+            >
+              <span className="font-serif italic font-semibold text-[11px] xs:text-xs sm:text-[13px] text-[#C85A48] tracking-wide whitespace-nowrap rotate-6 group-hover:scale-105 group-hover:text-[#B34533] transition-all drop-shadow-xs">
+                Tap to reopen
+              </span>
+              <svg
+                width="32"
+                height="22"
+                viewBox="0 0 32 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-[#C85A48] group-hover:text-[#B34533] mt-0.5 mr-1 group-hover:translate-x-1 transition-all"
+              >
+                <path
+                  d="M6 4C14 4 20 8 27 15"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M21 9L28 15L21 19"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Soft Grounding Ambient Contact Shadow */}
         <div
           className="absolute -bottom-3 sm:-bottom-4 h-5 sm:h-6 bg-black/60 blur-md rounded-full pointer-events-none transition-all duration-500 ease-out"
@@ -441,39 +551,41 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
           }}
         />
 
-        {/* ── Discreet Outside Navigation Arrows (Visible ONLY when open) ── */}
-        {isOpen && (
-          <>
-            <button
-              type="button"
-              onClick={handleFlipPrev}
-              className="absolute -left-9 sm:-left-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
-              style={{
-                background: 'rgba(20,20,22,0.92)',
-                color: '#C5A880',
-                borderColor: 'rgba(197,168,128,0.5)'
-              }}
-              title="Previous page"
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
+        {/* ── Discreet Outside Navigation Arrows ── */}
+        {/* Previous Page Arrow (Available while open OR when on the back cover to reopen) */}
+        {(isOpen || isBackCover) && (
+          <button
+            type="button"
+            onClick={handleFlipPrev}
+            className="absolute -left-9 sm:-left-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
+            style={{
+              background: 'rgba(20,20,22,0.92)',
+              color: '#C5A880',
+              borderColor: 'rgba(197,168,128,0.5)'
+            }}
+            title={isBackCover ? 'Reopen album' : 'Previous page'}
+            aria-label={isBackCover ? 'Reopen album' : 'Previous page'}
+          >
+            <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+        )}
 
-            <button
-              type="button"
-              onClick={handleFlipNext}
-              className="absolute -right-9 sm:-right-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
-              style={{
-                background: 'rgba(20,20,22,0.92)',
-                color: '#C5A880',
-                borderColor: 'rgba(197,168,128,0.5)'
-              }}
-              title="Next page"
-              aria-label="Next page"
-            >
-              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
-          </>
+        {/* Next Page Arrow (Available only while open and not yet at the back cover) */}
+        {isOpen && (
+          <button
+            type="button"
+            onClick={handleFlipNext}
+            className="absolute -right-9 sm:-right-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
+            style={{
+              background: 'rgba(20,20,22,0.92)',
+              color: '#C5A880',
+              borderColor: 'rgba(197,168,128,0.5)'
+            }}
+            title="Next page"
+            aria-label="Next page"
+          >
+            <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
         )}
 
         {/* ── Smooth Horizontal Translation Container (Centers Closed Cover & Open Spread) ── */}
@@ -529,10 +641,11 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
               />
             ))}
 
-            {/* Page 65: Luxury Endsheet (Left) */}
+            {/* Luxury Endsheets: Balanced to ensure an even total page count for crisp back cover closure */}
             <HeroEndsheetPage />
+            {endsheetCount === 2 && <HeroEndsheetRightPage />}
 
-            {/* Page 66: Back Cover */}
+            {/* Final Page: Luxury Hardcover Back Cover (Closes the book to single-page mode) */}
             <HeroBackCover onCoverClick={handleFlipPrev} />
           </HTMLFlipBook>
         </div>

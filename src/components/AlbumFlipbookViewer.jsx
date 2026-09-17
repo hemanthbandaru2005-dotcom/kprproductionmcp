@@ -24,14 +24,19 @@ function getPageAspectRatio(sizeStr) {
 /* ─────────────────────────────────────────────────────
    Luxury Leatherette Front Cover Page
    ───────────────────────────────────────────────────── */
-const CoverPage = forwardRef(({ title, size, totalPhotos, ...props }, ref) => {
+const CoverPage = forwardRef(({ title, size, totalPhotos, onOpen, ...props }, ref) => {
   return (
     <div
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#E8E2D8] ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#E8E2D8] cursor-pointer ${props.className || ''}`}
       data-density="hard"
+      title="Click or drag to open album"
+      onClick={(e) => {
+        props.onClick?.(e);
+        onOpen?.();
+      }}
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-r-2 border-r-[#8A7862]/40 bg-[#FAF7F2]">
         {/* User-Provided Artwork Cover Image (Full & Pristine) */}
@@ -114,9 +119,9 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
 PhotoPage.displayName = 'PhotoPage';
 
 /* ─────────────────────────────────────────────────────
-   Endsheet Page (Balances odd spreads)
+   Endsheet Page (Balances odd spreads and creates luxury heirloom finish)
    ───────────────────────────────────────────────────── */
-const EndsheetPage = forwardRef((props, ref) => {
+const EndsheetPage = forwardRef(({ isLeftPage = false, ...props }, ref) => {
   return (
     <div
       ref={ref}
@@ -125,17 +130,19 @@ const EndsheetPage = forwardRef((props, ref) => {
       className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] shadow-md ${props.className || ''}`}
       data-density="soft"
     >
-      <div className="w-full h-full p-3 sm:p-6 flex flex-col items-center justify-center relative bg-gradient-to-r from-[#E5DACB]/80 via-[#FAF8F5] to-[#FAF8F5] border-l-2 border-l-[#BFB19E] border border-[#DCD2C3]">
-        <div className="absolute top-0 bottom-0 left-0 w-3 sm:w-6 bg-gradient-to-r from-black/20 via-black/5 to-transparent pointer-events-none z-10" />
+      <div className={`w-full h-full p-3 sm:p-6 flex flex-col items-center justify-center relative bg-gradient-to-r from-[#E5DACB]/80 via-[#FAF8F5] to-[#FAF8F5] ${
+        isLeftPage ? 'border-r-2 border-r-[#BFB19E]' : 'border-l-2 border-l-[#BFB19E]'
+      } border border-[#DCD2C3]`}>
+        <div className={`absolute top-0 bottom-0 ${isLeftPage ? 'right-0 bg-gradient-to-l' : 'left-0 bg-gradient-to-r'} w-3 sm:w-6 from-black/20 via-black/5 to-transparent pointer-events-none z-10`} />
         <div className="text-center space-y-1.5 sm:space-y-2 z-10">
           <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/40 flex items-center justify-center mx-auto text-[#C5A880]">
             <Sparkles className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
           </div>
           <h4 className="font-serif text-xs sm:text-base text-[#4A3B2C] tracking-wide">
-            Cherished Memories
+            {isLeftPage ? 'Cherished Memories' : 'Timeless Elegance'}
           </h4>
           <p className="text-[7.5px] sm:text-[9.5px] text-[#7A6B5C] font-mono uppercase tracking-widest">
-            Preserved for Generations
+            {isLeftPage ? 'Preserved for Generations' : 'KPR Productions · 2026'}
           </p>
         </div>
       </div>
@@ -147,14 +154,19 @@ EndsheetPage.displayName = 'EndsheetPage';
 /* ─────────────────────────────────────────────────────
    Luxury Leatherette Back Cover Page
    ───────────────────────────────────────────────────── */
-const BackCoverPage = forwardRef((props, ref) => {
+const BackCoverPage = forwardRef(({ onReopen, ...props }, ref) => {
   return (
     <div
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#E8E2D8] ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#E8E2D8] cursor-pointer ${props.className || ''}`}
       data-density="hard"
+      title="Click or drag to reopen album"
+      onClick={(e) => {
+        props.onClick?.(e);
+        onReopen?.();
+      }}
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-l-2 border-l-[#8A7862]/40 bg-[#FAF7F2]">
         {/* User-Provided Artwork Back Cover Image (Full & Pristine) */}
@@ -343,17 +355,32 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
     touchStartY.current = null;
   };
 
+  // Balanced endsheets to ensure an even total page count so HTMLFlipBook closes the back cover in single-page mode
+  const endsheetPages = totalPhotos % 2 === 0
+    ? [
+        <EndsheetPage key="flip-endsheet-left" isLeftPage={true} />,
+        <EndsheetPage key="flip-endsheet-right" isLeftPage={false} />
+      ]
+    : [
+        <EndsheetPage key="flip-endsheet-right" isLeftPage={false} />
+      ];
+
+  const totalPages = 1 + totalPhotos + endsheetPages.length + 1;
+
   /* ── Dynamic Page Counter Label ── */
   const getPageLabel = () => {
     if (currentPage === 0) {
       return 'Cover · Tap or swipe to open';
+    }
+    if (currentPage >= totalPages - 1) {
+      return 'Back Cover · Archival Quality';
     }
     const maxPhoto = totalPhotos;
     const leftPhoto = currentPage;
     const rightPhoto = currentPage + 1;
 
     if (leftPhoto > maxPhoto) {
-      return 'Back Cover · Archival Quality';
+      return 'Heirloom · Timeless Memories';
     }
     if (rightPhoto > maxPhoto) {
       return `Page ${leftPhoto} of ${maxPhoto}`;
@@ -424,6 +451,7 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
       title={title}
       size={size}
       totalPhotos={totalPhotos}
+      onOpen={handleFlipNext}
     />,
     ...safeImages.map((src, i) => (
       <PhotoPage
@@ -434,8 +462,8 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
         isLeftPage={i % 2 === 0}
       />
     )),
-    ...(totalPhotos % 2 === 0 ? [<EndsheetPage key="flip-endsheet" />] : []),
-    <BackCoverPage key="flip-backcover" />
+    ...endsheetPages,
+    <BackCoverPage key="flip-backcover" onReopen={handleFlipPrev} />
   ];
 
   return (
