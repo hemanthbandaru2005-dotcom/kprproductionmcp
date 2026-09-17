@@ -144,7 +144,15 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setDrawColor(216, 207, 196);
   doc.setLineWidth(0.3);
 
-  const eventsBulletList = selectedEvents.map(e => `• ${e}`).join('    ');
+  const eventSchedules = estimateData.eventSchedules || {};
+  const eventsBulletList = selectedEvents.map(e => {
+    const s = eventSchedules[e];
+    if (s && (s.date || s.time)) {
+      const timeTxt = s.time ? ` (${s.time})` : '';
+      return `• ${e}: ${s.date || ''}${timeTxt}`.trim();
+    }
+    return `• ${e}`;
+  }).join('    ');
   const wrappedEvents = doc.splitTextToSize(eventsBulletList, 172);
   const eventsBoxHeight = 7.5 + (wrappedEvents.length * 3.8);
 
@@ -153,7 +161,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(140, 109, 63);
-  doc.text(`SELECTED CELEBRATION EVENTS (${selectedEvents.length}):`, 18, eventsBoxY + 4.2);
+  doc.text(`SELECTED CELEBRATION EVENTS & SCHEDULE (${selectedEvents.length}):`, 18, eventsBoxY + 4.2);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
