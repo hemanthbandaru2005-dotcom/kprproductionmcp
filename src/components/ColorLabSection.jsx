@@ -348,7 +348,7 @@ export default function ColorLabSection() {
                           <span>Interactive 3D Album Generator</span>
                         </div>
                         <h4 className="font-serif text-2xl sm:text-3xl text-[#F5EFE6] font-medium">
-                          Upload Your Photos & Select Size
+                          Print Your Album
                         </h4>
                         <p className="text-xs sm:text-sm text-[#D5C6B0]/80 font-light max-w-2xl leading-relaxed">
                           Choose from <strong>12x36 · 13x39 · 14x40 · 16x24 · 18x24 · 12x24</strong> layflat sizes, upload your wedding photos or PDF spreads, and preview your realistic 3D photobook instantly before printing.

@@ -41,3 +41,6 @@ Madaling/
 *.sln
 *.sw?
 
+
+.vercel
+.env*

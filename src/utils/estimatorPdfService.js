@@ -68,13 +68,13 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
       doc.setTextColor(17, 17, 17);
-      doc.text('KPR PHOTOGRAPHY', 14, 22);
+      doc.text('KPR FOTOGRAPHY', 14, 22);
     }
   } catch (e) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(17, 17, 17);
-    doc.text('KPR PHOTOGRAPHY', 14, 22);
+    doc.text('KPR FOTOGRAPHY', 14, 22);
   }
 
   // Top Right: ESTIMATE HEADER
@@ -107,7 +107,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(20, 20, 20);
-  doc.text('KPR Photography Studio', 14, addressTop + 4.5);
+  doc.text('KPR Fotography Studio', 14, addressTop + 4.5);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
@@ -115,7 +115,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.text('Luxury Telugu Wedding & Event Photography', 14, addressTop + 8.5);
   doc.text('Station Road, Warangal / Hyderabad, Telangana', 14, addressTop + 12.5);
   doc.text('Phone: +91 98494 43648', 14, addressTop + 16.5);
-  doc.text('Email: kprphotography@gmail.com', 14, addressTop + 20.5);
+  doc.text('Email: kprfotography@gmail.com', 14, addressTop + 20.5);
 
   // ESTIMATE PREPARED FOR & EVENT DETAILS Block (Right)
   const clientLeft = 110;
@@ -361,7 +361,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.2);
   doc.setTextColor(90, 90, 90);
-  doc.text('• This estimate is generated based on official standard KPR Photography rate cards and is valid for 30 days.', 14, notesTop + 4.5);
+  doc.text('• This estimate is generated based on official standard KPR Fotography rate cards and is valid for 30 days.', 14, notesTop + 4.5);
   doc.text('• Standard Payment Schedule: 30% advance for date reservation, 50% on event date, 20% on final delivery.', 14, notesTop + 8.5);
   doc.text('• Outstation travel, lodging & local conveyance charges (if applicable) are extra at actuals.', 14, notesTop + 12.5);
   doc.text('• Scan the official Google Pay / UPI QR code on the right to pay advance directly.', 14, notesTop + 16.5);
@@ -373,7 +373,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(40, 40, 40);
-  doc.text('For KPR Photography Studio', sigLeft, sigTop);
+  doc.text('For KPR Fotography Studio', sigLeft, sigTop);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
@@ -393,7 +393,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
 
   if (autoDownload) {
     const sanitizedName = customerName.replace(/[^a-zA-Z0-9]/g, '_');
-    const filename = `KPR_Photography_Estimate_${sanitizedName}_${estimateNumber}.pdf`;
+    const filename = `KPR_Fotography_Estimate_${sanitizedName}_${estimateNumber}.pdf`;
     doc.save(filename);
   }
 

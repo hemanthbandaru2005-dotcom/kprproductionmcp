@@ -32,7 +32,7 @@ const SERVICES = [
     id: 'colorlab',
     route: 'colorlab',
     title: 'Colour Lab',
-    showTitleText: true,
+    showTitleText: false,
     logoSrc: showcaseColorLabLogoExact,
     cardImage: cardAlbumReal,
     cardAlt: 'High-Clarity Luxury Wedding Layflat Photobook Album',
@@ -219,20 +219,23 @@ export default function Hero({ onOpenPage }) {
               onClick={() => handleCardClick(service.route)}
               className="group relative bg-[#FAF5ED]/92 hover:bg-[#FAF5ED] backdrop-blur-md border border-[#C5A880]/50 hover:border-[#C5A880] rounded-xl sm:rounded-2xl p-1.5 xs:p-2 sm:p-2.5 md:p-3 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_16px_rgba(180,140,90,0.16)] hover:shadow-[0_8px_24px_rgba(197,168,128,0.3)]"
             >
-              {/* 1. Official Logo Badge Asset */}
-              <div className="h-7 xs:h-8 sm:h-9 md:h-11 w-full flex items-center justify-center mb-0.5">
-                <img
-                  src={service.logoSrc}
-                  alt={service.title}
-                  className="max-h-7 xs:max-h-8 sm:max-h-9 md:max-h-11 w-auto max-w-[90%] sm:max-w-[85%] object-contain drop-shadow-xs group-hover:scale-105 transition-transform duration-300 select-none"
-                  loading="eager"
-                />
-              </div>
+              {/* 1. Official Logo Badge & Optional Title Section */}
+              <div className="h-10 xs:h-11 sm:h-13 md:h-16 w-full flex flex-col items-center justify-center">
+                <div className={`w-full flex items-center justify-center ${service.showTitleText ? 'h-6 xs:h-7 sm:h-8 md:h-10' : 'h-10 xs:h-11 sm:h-13 md:h-16'}`}>
+                  <img
+                    src={service.logoSrc}
+                    alt={service.title}
+                    className={`${service.showTitleText ? 'max-h-6 xs:max-h-7 sm:max-h-8 md:max-h-10 max-w-[90%] sm:max-w-[85%]' : 'max-h-8 xs:max-h-9 sm:max-h-11 md:max-h-13 max-w-[92%] sm:max-w-[88%]'} w-auto object-contain drop-shadow-xs group-hover:scale-105 transition-transform duration-300 select-none`}
+                    loading="eager"
+                  />
+                </div>
 
-              {/* 2. Title Text (Preserving exact casing: "FOTOGRAPHY", "Colour Lab", "EVENTS") */}
-              <h3 className="text-[8.5px] xs:text-[9.5px] sm:text-xs md:text-sm lg:text-base font-bold tracking-wide text-[#1A1A1A] font-sans mt-0.5 truncate max-w-full">
-                {service.title}
-              </h3>
+                {service.showTitleText && (
+                  <h3 className="text-[8.5px] xs:text-[9.5px] sm:text-xs md:text-sm lg:text-base font-bold tracking-wide text-[#1A1A1A] font-sans mt-0.5 truncate max-w-full leading-tight">
+                    {service.title}
+                  </h3>
+                )}
+              </div>
 
               {/* 3. Supporting Visual Asset */}
               <div className="w-full h-11 xs:h-13 sm:h-16 md:h-20 lg:h-22 flex items-center justify-center my-0.5 sm:my-1 relative overflow-hidden rounded-md sm:rounded-lg border border-[#C5A880]/30 shadow-[0_2px_8px_rgba(0,0,0,0.06)] bg-[#F5ECE0]">
