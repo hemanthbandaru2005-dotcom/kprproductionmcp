@@ -106,8 +106,8 @@ export default function Hero({ onOpenPage }) {
 
       {/* ── 2. Middle Section: Brand Centerpiece, Album Feature & Showcase ── */}
       <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 pointer-events-auto max-w-4xl mx-auto">
-        {/* Center Logo & Tagline (Quote sits directly on top of the album) */}
-        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1 sm:mb-1.5">
+        {/* Center Logo & Tagline (Quote sits cleanly above the album) */}
+        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1.5 sm:mb-2 relative z-30">
           <motion.img
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -122,7 +122,7 @@ export default function Hero({ onOpenPage }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.08 }}
-            className="font-serif italic text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-[#1A1A1A] tracking-normal mt-0.5 sm:mt-1 flex items-center justify-center gap-1.5 sm:gap-2.5 select-none"
+            className="font-serif italic text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-[#1A1A1A] tracking-normal mt-0.5 sm:mt-1 flex items-center justify-center gap-1.5 sm:gap-2.5 select-none relative z-30"
           >
             <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-base leading-none">—</span>
             <span>Turn Your Moments Into Memories</span>

@@ -434,7 +434,12 @@ export default function HeroInteractiveAlbum({
   const topBlockHeight = Math.round(dims.singlePageW * 0.09) + 4;
 
   return (
-    <div className="relative flex flex-col items-center justify-center select-none my-1 sm:my-1.5 w-full max-w-full px-2">
+    <div
+      className="relative flex flex-col items-center justify-center select-none my-0.5 sm:my-1 w-full max-w-full px-2"
+      style={{
+        paddingTop: `${topBlockHeight + 10}px`
+      }}
+    >
       {/* ── 3D Stage with Outer Drop Shadow ── */}
       <div
         className="relative flex items-center justify-center select-none transition-all duration-500 ease-out"
