@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { PRINTING_DESIGN_SERVICES as INITIAL_COLORLAB_SERVICES } from '../data/servicesData';
 
-const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v20';
+const PACKAGES_STORAGE_KEY = 'kpr_site_packages_v21';
 
 export const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
   {
@@ -62,6 +62,26 @@ export const OFFICIAL_PHOTOGRAPHY_PACKAGES = [
       'Direct cloud link delivery'
     ],
     display_order: 3,
+    status: 'active'
+  },
+  {
+    id: 'pkg-sangeeth-1',
+    type: 'photography',
+    name: 'Sangeeth',
+    clientHighlights: 'Bride & Groom Special • Musical Night',
+    price: 6000,
+    duration: '6 hours',
+    category: 'Photography',
+    image: '/images/packages/user_pkg_sangeeth.jpg',
+    popular: true,
+    description: 'Vibrant musical night and dance celebration coverage dedicated to the Bride and Groom, couple entry, special performances, and candid family moments.',
+    features: [
+      '6 hours musical night coverage',
+      'Dedicated Bride & Groom dance and stage focus',
+      'Candid couple portraits & family celebrations',
+      'High-resolution color-graded digital delivery'
+    ],
+    display_order: 4,
     status: 'active'
   },
   {

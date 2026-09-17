@@ -124,10 +124,10 @@ export default function PackagesSection({
                       {service.name}
                     </h3>
 
-                    {/* Highlights Text for Corporate & Commercial Events and Shopping Malls */}
-                    {(service.clientHighlights || (service.name && (String(service.name).toLowerCase().includes('corporate') || String(service.name).toLowerCase().includes('shopping')))) && (
+                    {/* Highlights Text for Corporate & Commercial Events, Shopping Malls, and Sangeeth (Bride & Groom) */}
+                    {(service.clientHighlights || (service.name && (String(service.name).toLowerCase().includes('corporate') || String(service.name).toLowerCase().includes('shopping') || String(service.name).toLowerCase().includes('sangeeth')))) && (
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#C5A880]/15 border border-[#C5A880]/30 rounded-md text-[#8C6D3F] text-[11px] font-semibold tracking-wide">
-                        <span>✨ {service.clientHighlights || (String(service.name).toLowerCase().includes('corporate') ? 'Tata Tele & JSW • Government Events' : 'Celebrity Invocations • Retail Campaigns • Mall Openings')}</span>
+                        <span>✨ {service.clientHighlights || (String(service.name).toLowerCase().includes('sangeeth') ? 'Bride & Groom Special • Musical Night' : String(service.name).toLowerCase().includes('corporate') ? 'Tata Tele & JSW • Government Events' : 'Celebrity Invocations • Retail Campaigns • Mall Openings')}</span>
                       </div>
                     )}
 

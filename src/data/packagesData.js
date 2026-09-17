@@ -22,6 +22,17 @@ export const SERVICES_PACKAGES = [
     description: 'High-impact visual coverage for mega shopping mall inaugurations, celebrity showroom launches, red-carpet media meets, and retail campaigns.'
   },
   { id: 3, name: 'Traditional Photo', price: 6000, duration: '6 hours', category: 'Photography', image: '/images/packages/user_pkg_trad_photo.png', popular: false },
+  {
+    id: 15,
+    name: 'Sangeeth',
+    clientHighlights: 'Bride & Groom Special • Musical Night',
+    price: 6000,
+    duration: '6 hours',
+    category: 'Photography',
+    image: '/images/packages/user_pkg_sangeeth.jpg',
+    popular: true,
+    description: 'Vibrant musical night and dance celebration coverage dedicated to the Bride and Groom, couple entry, special performances, and candid family moments.'
+  },
   { id: 4, name: 'Traditional Video', price: 6000, duration: '6 hours', category: 'Videography', image: '/images/packages/user_pkg_trad_video.png', popular: false },
   { id: 5, name: 'Candid Photography', price: 12000, duration: '6 hours', category: 'Photography', image: '/images/packages/user_pkg_candid_photo.png', popular: true },
   { id: 6, name: 'Cinematic Video', price: 14000, duration: '6 hours', category: 'Videography', image: '/images/packages/user_pkg_cinematic_video.png', popular: true },

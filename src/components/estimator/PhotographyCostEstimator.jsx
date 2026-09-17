@@ -23,6 +23,7 @@ const EVENT_METADATA = {
   'Modeling': { emoji: '📸', label: 'Fashion, Editorial & Portraiture', tag: 'Portfolio' },
   'Corporate & Commercial Events': { emoji: '🏢', label: 'Conferences, Summits & Protocol', tag: 'Commercial' },
   'Shopping Malls': { emoji: '🛍️', label: 'Mall Launches & Celebrity Invocations', tag: 'High-Impact' },
+  'Sangeeth': { emoji: '💃', label: 'Sangeeth & Musical Night (Bride & Groom)', tag: 'Celebration' },
   '21': { emoji: '🌟', label: '21st Day Cradle & Naming Ceremony', tag: 'Auspicious' },
   'Nature': { emoji: '🌿', label: 'Landscape, Floral & Outdoor', tag: 'Scenic' }
 };
