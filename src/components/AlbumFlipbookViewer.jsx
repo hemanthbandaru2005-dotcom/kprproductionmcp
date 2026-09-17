@@ -101,12 +101,11 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
       data-density="soft"
     >
       <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
-        {/* Full Bleed Image Edge-to-Edge without borders or cropping */}
+        {/* Full Bleed Image Edge-to-Edge with centered balance */}
         <img
           src={src}
           alt={`Album page ${pageIndex + 1}`}
-          className="w-full h-full object-cover select-none pointer-events-none"
-          style={{ objectPosition: isLeftPage ? 'right center' : 'left center' }}
+          className="w-full h-full object-cover object-center select-none pointer-events-none"
           loading="lazy"
           draggable={false}
         />

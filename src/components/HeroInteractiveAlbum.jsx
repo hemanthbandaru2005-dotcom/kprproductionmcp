@@ -10,274 +10,33 @@ import { FLEXY_ALBUM_PHOTOS } from '../data/albumPhotosData';
 
 /* ─────────────────────────────────────────────────────
    Responsive Dimension Helper for 3D Photobook
-   Aspect ratio: 1.0 (1:1 Square Album Format)
-   Generous sizing to fill hero showcase area with zero empty side voids
+   Aspect ratio: ~1.45 (3:2 Landscape Photobook Spread Format)
+   Fills hero showcase area with zero empty side voids
    ───────────────────────────────────────────────────── */
 function getBookDimensions() {
   if (typeof window === 'undefined') {
-    return { singlePageW: 320, singlePageH: 320 };
+    return { singlePageW: 340, singlePageH: 235 };
   }
   const w = window.innerWidth;
   if (w < 380) {
-    const sw = 140;
-    return { singlePageW: sw, singlePageH: sw };
+    return { singlePageW: 155, singlePageH: 108 };
   }
   if (w < 480) {
-    const sw = 160;
-    return { singlePageW: sw, singlePageH: sw };
+    return { singlePageW: 175, singlePageH: 122 };
   }
   if (w < 640) {
-    const sw = 200;
-    return { singlePageW: sw, singlePageH: sw };
+    return { singlePageW: 215, singlePageH: 150 };
   }
   if (w < 768) {
-    const sw = 240;
-    return { singlePageW: sw, singlePageH: sw };
+    return { singlePageW: 255, singlePageH: 178 };
   }
   if (w < 1024) {
-    const sw = 275;
-    return { singlePageW: sw, singlePageH: sw };
+    return { singlePageW: 295, singlePageH: 205 };
   }
   if (w < 1280) {
-    const sw = 315;
-    return { singlePageW: sw, singlePageH: sw };
+    return { singlePageW: 330, singlePageH: 228 };
   }
-  const sw = 335;
-  return { singlePageW: sw, singlePageH: sw };
-}
-
-/* ─────────────────────────────────────────────────────
-   3D TOP PAGES BLOCK (Paper leaves & spine curve from client sketch)
-   Renders the fanned paper block and headband seen at the top of a real book
-   ───────────────────────────────────────────────────── */
-function BookTopPagesBlock({ width, height = 22, isReversed = false }) {
-  const w = width;
-  const h = height;
-  const spineW = Math.max(14, Math.round(w * 0.08));
-
-  if (isReversed) {
-    // Mirrored for back cover (spine on the right)
-    return (
-      <svg
-        width={w}
-        height={h}
-        viewBox={`0 0 ${w} ${h}`}
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="pointer-events-none drop-shadow-sm select-none"
-      >
-        {/* Rear cover board lip (background) */}
-        <path
-          d={`M 0 1 L ${w - spineW} 3 L ${w - spineW} 6 L 0 4 Z`}
-          fill="#352B20"
-        />
-        <path
-          d={`M 0 0.5 L ${w - spineW} 2.5`}
-          stroke="rgba(255,255,255,0.3)"
-          strokeWidth="0.8"
-        />
-
-        {/* Paper block body */}
-        <path
-          d={`M 3 3 L ${w - spineW} 5 C ${w - spineW * 0.4} 8 ${w - 4} 12 ${w - 3} ${h} L 3 ${h} Z`}
-          fill="url(#paperGradientRev)"
-        />
-
-        {/* Paper stack layer lines */}
-        <path d={`M 3 5 L ${w - spineW - 2} 7`} stroke="#C8BCAF" strokeWidth="0.8" />
-        <path d={`M 3 8 L ${w - spineW - 4} 10`} stroke="#DFCFC0" strokeWidth="0.8" />
-        <path d={`M 3 11 L ${w - spineW - 6} 13`} stroke="#BFB09D" strokeWidth="0.8" />
-        <path d={`M 3 14 L ${w - spineW - 8} 16`} stroke="#DFCFC0" strokeWidth="0.8" />
-        <path d={`M 3 17 L ${w - spineW - 10} 19`} stroke="#C8BCAF" strokeWidth="0.8" />
-
-        {/* Spine headband arch (right side) */}
-        <path
-          d={`M ${w - spineW} 5 C ${w - spineW * 0.5} 7 ${w - 4} 12 ${w - 3} ${h} C ${w - 1} ${h} ${w - 2} 9 ${w - spineW} 5 Z`}
-          fill="#5A4733"
-        />
-        <path
-          d={`M ${w - spineW + 2} 6 C ${w - spineW * 0.4} 8 ${w - 3} 13 ${w - 2} ${h}`}
-          stroke="#C5A880"
-          strokeWidth="1.2"
-          strokeDasharray="2,2"
-        />
-
-        {/* Front cover top lip (foreground) */}
-        <rect x="0" y={h - 3} width={w} height="3" rx="0.5" fill="#2E2419" />
-        <line x1="0" y1={h - 3} x2={w} y2={h - 3} stroke="rgba(255,255,255,0.35)" strokeWidth="0.8" />
-
-        <defs>
-          <linearGradient id="paperGradientRev" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ECE3D6" />
-            <stop offset="40%" stopColor="#FAF7F2" />
-            <stop offset="85%" stopColor="#E8DFD1" />
-            <stop offset="100%" stopColor="#D5C7B5" />
-          </linearGradient>
-        </defs>
-      </svg>
-    );
-  }
-
-  // Normal for front cover (spine on the left, matching sketch!)
-  return (
-    <svg
-      width={w}
-      height={h}
-      viewBox={`0 0 ${w} ${h}`}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="pointer-events-none drop-shadow-sm select-none"
-    >
-      {/* Rear cover board lip (background) */}
-      <path
-        d={`M ${spineW} 3 L ${w} 1 L ${w} 4 L ${spineW} 6 Z`}
-        fill="#352B20"
-      />
-      <path
-        d={`M ${spineW} 2.5 L ${w} 0.5`}
-        stroke="rgba(255,255,255,0.3)"
-        strokeWidth="0.8"
-      />
-
-      {/* Paper block body */}
-      <path
-        d={`M ${spineW} 5 L ${w - 3} 3 L ${w - 3} ${h} L 3 ${h} C 4 12 ${spineW * 0.4} 8 ${spineW} 5 Z`}
-        fill="url(#paperGradient)"
-      />
-
-      {/* Paper stack layer lines */}
-      <path d={`M ${spineW + 2} 7 L ${w - 3} 5`} stroke="#C8BCAF" strokeWidth="0.8" />
-      <path d={`M ${spineW + 4} 10 L ${w - 3} 8`} stroke="#DFCFC0" strokeWidth="0.8" />
-      <path d={`M ${spineW + 6} 13 L ${w - 3} 11`} stroke="#BFB09D" strokeWidth="0.8" />
-      <path d={`M ${spineW + 8} 16 L ${w - 3} 14`} stroke="#DFCFC0" strokeWidth="0.8" />
-      <path d={`M ${spineW + 10} 19 L ${w - 3} 17`} stroke="#C8BCAF" strokeWidth="0.8" />
-
-      {/* Spine headband arch (left side, curved notch matching sketch!) */}
-      <path
-        d={`M ${spineW} 5 C ${spineW * 0.5} 7 4 12 3 ${h} C 1 ${h} 2 9 ${spineW} 5 Z`}
-        fill="#5A4733"
-      />
-      <path
-        d={`M ${spineW - 2} 6 C ${spineW * 0.4} 8 3 13 2 ${h}`}
-        stroke="#C5A880"
-        strokeWidth="1.2"
-        strokeDasharray="2,2"
-      />
-
-      {/* Front cover top lip (foreground) */}
-      <rect x="0" y={h - 3} width={w} height="3" rx="0.5" fill="#2E2419" />
-      <line x1="0" y1={h - 3} x2={w} y2={h - 3} stroke="rgba(255,255,255,0.35)" strokeWidth="0.8" />
-
-      <defs>
-        <linearGradient id="paperGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#D5C7B5" />
-          <stop offset="15%" stopColor="#E8DFD1" />
-          <stop offset="60%" stopColor="#FAF7F2" />
-          <stop offset="100%" stopColor="#ECE3D6" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-/* ─────────────────────────────────────────────────────
-   3D OPEN TOP PAGES BLOCK (When the book is OPEN across 2 pages)
-   - Features center headband notch, gutter dip, paper leaves,
-     and underlying hardcover board lip matching client sketch
-   ───────────────────────────────────────────────────── */
-function BookOpenTopPagesBlock({ width, height = 22 }) {
-  const w = width;
-  const h = height;
-  const cx = Math.round(w / 2);
-  const gutterW = Math.max(16, Math.round(w * 0.05));
-  const halfGutter = Math.round(gutterW / 2);
-
-  return (
-    <svg
-      width={w}
-      height={h}
-      viewBox={`0 0 ${w} ${h}`}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="pointer-events-none drop-shadow-sm select-none"
-    >
-      <defs>
-        <linearGradient id="openPaperGradLeft" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#D5C7B5" />
-          <stop offset="25%" stopColor="#EAE1D3" />
-          <stop offset="70%" stopColor="#FAF7F2" />
-          <stop offset="100%" stopColor="#DFCFC0" />
-        </linearGradient>
-        <linearGradient id="openPaperGradRight" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#DFCFC0" />
-          <stop offset="30%" stopColor="#FAF7F2" />
-          <stop offset="75%" stopColor="#EAE1D3" />
-          <stop offset="100%" stopColor="#D5C7B5" />
-        </linearGradient>
-        <linearGradient id="spineArchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#4A3B2A" />
-          <stop offset="50%" stopColor="#6E5842" />
-          <stop offset="100%" stopColor="#4A3B2A" />
-        </linearGradient>
-      </defs>
-
-      {/* Rear Hardcover Board Lip (Extends behind both open pages) */}
-      <path
-        d={`M 2 3 L ${cx - halfGutter} 1 L ${cx + halfGutter} 1 L ${w - 2} 3 L ${w - 2} 6 L ${cx + halfGutter} 4 L ${cx - halfGutter} 4 L 2 6 Z`}
-        fill="#2A2117"
-      />
-      <path
-        d={`M 2 2.5 L ${cx - halfGutter} 0.5 L ${cx + halfGutter} 0.5 L ${w - 2} 2.5`}
-        stroke="rgba(255,255,255,0.25)"
-        strokeWidth="0.8"
-      />
-
-      {/* Left Page Paper Block (from left fore-edge curving gently down to gutter) */}
-      <path
-        d={`M 4 5 L ${cx - halfGutter} 3 C ${cx - halfGutter * 0.4} 6 ${cx - 2} 11 ${cx} ${h} L 4 ${h} Z`}
-        fill="url(#openPaperGradLeft)"
-      />
-
-      {/* Right Page Paper Block (from gutter curving back up to right fore-edge) */}
-      <path
-        d={`M ${cx} ${h} C ${cx + 2} 11 ${cx + halfGutter * 0.4} 6 ${cx + halfGutter} 3 L ${w - 4} 5 L ${w - 4} ${h} L ${cx} ${h} Z`}
-        fill="url(#openPaperGradRight)"
-      />
-
-      {/* Left Paper Stack Layer Lines */}
-      <path d={`M 5 8 L ${cx - halfGutter - 2} 6`} stroke="#C8BCAF" strokeWidth="0.7" />
-      <path d={`M 5 11 L ${cx - halfGutter - 4} 9`} stroke="#DFCFC0" strokeWidth="0.7" />
-      <path d={`M 5 14 L ${cx - halfGutter - 6} 12`} stroke="#BFB09D" strokeWidth="0.7" />
-      <path d={`M 5 17 L ${cx - halfGutter - 8} 15`} stroke="#DFCFC0" strokeWidth="0.7" />
-      <path d={`M 5 20 L ${cx - halfGutter - 10} 18`} stroke="#C8BCAF" strokeWidth="0.7" />
-
-      {/* Right Paper Stack Layer Lines */}
-      <path d={`M ${cx + halfGutter + 2} 6 L ${w - 5} 8`} stroke="#C8BCAF" strokeWidth="0.7" />
-      <path d={`M ${cx + halfGutter + 4} 9 L ${w - 5} 11`} stroke="#DFCFC0" strokeWidth="0.7" />
-      <path d={`M ${cx + halfGutter + 6} 12 L ${w - 5} 14`} stroke="#BFB09D" strokeWidth="0.7" />
-      <path d={`M ${cx + halfGutter + 8} 15 L ${w - 5} 17`} stroke="#DFCFC0" strokeWidth="0.7" />
-      <path d={`M ${cx + halfGutter + 10} 18 L ${w - 5} 20`} stroke="#C8BCAF" strokeWidth="0.7" />
-
-      {/* Center Spine Headband Arch & Gutter Notch (matches sketch!) */}
-      <path
-        d={`M ${cx - halfGutter} 3 C ${cx - halfGutter * 0.3} 6 ${cx - 2} 12 ${cx} ${h} C ${cx + 2} 12 ${cx + halfGutter * 0.3} 6 ${cx + halfGutter} 3 C ${cx} 1.5 ${cx - halfGutter} 3 Z`}
-        fill="url(#spineArchGrad)"
-      />
-      {/* Decorative Headband Stitching Arc */}
-      <path
-        d={`M ${cx - halfGutter + 2} 4.5 C ${cx - halfGutter * 0.25} 7 ${cx - 1.5} 13 ${cx} ${h - 1} C ${cx + 1.5} 13 ${cx + halfGutter * 0.25} 7 ${cx + halfGutter - 2} 4.5`}
-        stroke="#C5A880"
-        strokeWidth="1.2"
-        strokeDasharray="2,2"
-      />
-
-      {/* Foreground Front Lip Highlights */}
-      <line x1="2" y1={h - 2} x2={cx - 3} y2={h - 2} stroke="#352B20" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1={cx + 3} y1={h - 2} x2={w - 2} y2={h - 2} stroke="#352B20" strokeWidth="2.5" strokeLinecap="round" />
-      <line x1="2" y1={h - 3} x2={cx - 3} y2={h - 3} stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
-      <line x1={cx + 3} y1={h - 3} x2={w - 2} y2={h - 3} stroke="rgba(255,255,255,0.3)" strokeWidth="0.8" />
-    </svg>
-  );
+  return { singlePageW: 350, singlePageH: 242 };
 }
 
 /* ─────────────────────────────────────────────────────
@@ -382,22 +141,21 @@ const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
       data-density="soft"
     >
       <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
-        {/* Full Bleed Photo Edge-to-Edge with seamless gutter alignment matching open book reference */}
+        {/* Full Bleed Photo Edge-to-Edge with centered balance */}
         <img
           src={src}
           alt="Photobook Page"
-          className="w-full h-full object-cover pointer-events-none select-none"
-          style={{ objectPosition: isLeftPage ? 'right center' : 'left center' }}
+          className="w-full h-full object-cover object-center pointer-events-none select-none"
           loading="lazy"
           draggable={false}
         />
 
-        {/* Center Spine Crease / Binding Depth Shadow */}
+        {/* Center Layflat Spine Crease Depth Shadow (Matching Image 2 Reference) */}
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/30 via-black/10 to-transparent'
-              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/30 via-black/10 to-transparent'
+              ? 'right-0 w-4 sm:w-8 bg-gradient-to-l from-black/28 via-black/8 to-transparent'
+              : 'left-0 w-4 sm:w-8 bg-gradient-to-r from-black/28 via-black/8 to-transparent'
           }`}
         />
 
@@ -405,8 +163,8 @@ const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'left-0 w-1 bg-gradient-to-r from-black/10 to-transparent'
-              : 'right-0 w-1 bg-gradient-to-l from-black/10 to-transparent'
+              ? 'left-0 w-1 bg-gradient-to-r from-black/8 to-transparent'
+              : 'right-0 w-1 bg-gradient-to-l from-black/8 to-transparent'
           }`}
         />
       </div>
@@ -555,8 +313,6 @@ export default function HeroInteractiveAlbum({
   const isCover = currentPage === 0;
   const isBackCover = currentPage >= totalPages - 1;
   const isOpen = !isCover && !isBackCover;
-
-  const topBlockHeight = Math.round(dims.singlePageW * 0.07) + 6;
 
   return (
     <div className="relative flex flex-col items-center justify-center select-none my-1 sm:my-1.5 w-full max-w-full px-2">
@@ -709,82 +465,19 @@ export default function HeroInteractiveAlbum({
                 : 'translateX(0px)'
           }}
         >
-          {/* ── 3D Top Pages Block (Visible when closed on Front Cover) ── */}
-          <AnimatePresence>
-            {isCover && (
-              <motion.div
-                initial={{ opacity: 0, y: 3 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 3, transition: { duration: 0.15 } }}
-                transition={{ duration: 0.3 }}
-                className="absolute right-0 z-30 pointer-events-none"
-                style={{
-                  top: `-${topBlockHeight - 2}px`,
-                  width: `${dims.singlePageW}px`
-                }}
-              >
-                <BookTopPagesBlock
-                  width={dims.singlePageW}
-                  height={topBlockHeight}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── 3D Top Pages Block (Visible when closed on Back Cover) ── */}
-          <AnimatePresence>
-            {isBackCover && (
-              <motion.div
-                initial={{ opacity: 0, y: 3 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 3, transition: { duration: 0.15 } }}
-                transition={{ duration: 0.3 }}
-                className="absolute left-0 z-30 pointer-events-none"
-                style={{
-                  top: `-${topBlockHeight - 2}px`,
-                  width: `${dims.singlePageW}px`
-                }}
-              >
-                <BookTopPagesBlock
-                  width={dims.singlePageW}
-                  height={topBlockHeight}
-                  isReversed={true}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── 3D Top Pages Block (Visible when OPEN across 2 pages matching client sketch) ── */}
-          <AnimatePresence>
-            {isOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 3 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 3, transition: { duration: 0.15 } }}
-                transition={{ duration: 0.3 }}
-                className="absolute left-0 z-30 pointer-events-none"
-                style={{
-                  top: `-${topBlockHeight - 2}px`,
-                  width: `${dims.singlePageW * 2}px`
-                }}
-              >
-                <BookOpenTopPagesBlock
-                  width={dims.singlePageW * 2}
-                  height={topBlockHeight}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Hardcover Casing Frame Underneath Open Book */}
+          {/* Hardcover Casing Underplate & Fore-Edge Framing (Matching Image 2 Reference) */}
           {isOpen && (
             <div
-              className="absolute -inset-1 sm:-inset-1.5 rounded-sm pointer-events-none z-0"
+              className="absolute -inset-1.5 sm:-inset-2 rounded-xs pointer-events-none z-0"
               style={{
-                background: 'linear-gradient(to bottom, #2E2419, #1C150E)',
-                boxShadow: '0 12px 30px rgba(0,0,0,0.55), inset 0 0 4px rgba(255,255,255,0.12)'
+                background: 'linear-gradient(to bottom, #1E1A16, #120F0C)',
+                boxShadow: '0 20px 48px -6px rgba(0,0,0,0.42), 0 8px 22px -4px rgba(0,0,0,0.22), inset 0 0 2px rgba(255,255,255,0.08)'
               }}
-            />
+            >
+              {/* Visible Paper Block Fore-Edges on Left and Right (Matching Image 2) */}
+              <div className="absolute top-1 bottom-1 left-0.5 w-1 bg-gradient-to-r from-[#EFE9DF] to-[#FAF7F2] border-r border-black/10" />
+              <div className="absolute top-1 bottom-1 right-0.5 w-1 bg-gradient-to-l from-[#EFE9DF] to-[#FAF7F2] border-l border-black/10" />
+            </div>
           )}
 
           {/* ── REAL 3D PAGE-FLIP ENGINE (HTMLFlipBook) ── */}
