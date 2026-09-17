@@ -3,30 +3,11 @@ import {
   Check, ArrowLeft, ArrowRight, Sparkles, Download, CheckCircle2,
   Calendar, Phone, User, ShieldCheck, Heart, Camera, Video, Film,
   Layers, Sliders, ChevronRight, RotateCcw, FileText, Send, Clock,
-  Plus, Minus, AlertCircle, Eye
+  Plus, Minus, AlertCircle, Eye, MapPin
 } from 'lucide-react';
 import { OFFICIAL_PHOTOGRAPHY_PACKAGES } from '../../utils/packagesService';
-import { CATEGORIES } from '../../data/galleryData';
 import { generateEstimatePdf, formatINR } from '../../utils/estimatorPdfService';
-
-// Celebratory Event icons & tags mapping for Step 2
-const EVENT_METADATA = {
-  'Wedding': { emoji: '💍', label: 'Grand Telugu Wedding', tag: 'Most Popular' },
-  'Engagement': { emoji: '✨', label: 'Ring Ceremony & Nischitartham', tag: 'Popular' },
-  'Reception': { emoji: '🥂', label: 'Evening Banquet & Gala', tag: 'Grand' },
-  'Haldi': { emoji: '💛', label: 'Pellikuthuru & Mangalasnanam', tag: 'Traditional' },
-  'Saree Function': { emoji: '🌸', label: 'Half Saree / Ritu Kala Samskara', tag: 'Traditional' },
-  'Birthday': { emoji: '🎂', label: 'Milestone Birthdays & Anniversaries', tag: 'Celebration' },
-  'Panchalu': { emoji: '🪡', label: 'Dhoti Ceremony & Traditional Rituals', tag: 'Traditional' },
-  'Pre Wedding': { emoji: '🌅', label: 'Cinematic Outdoor Love Story', tag: 'Trending' },
-  'Maternity': { emoji: '👶', label: 'Motherhood & Baby Shower', tag: 'Memories' },
-  'Modeling': { emoji: '📸', label: 'Fashion, Editorial & Portraiture', tag: 'Portfolio' },
-  'Corporate & Commercial Events': { emoji: '🏢', label: 'Conferences, Summits & Protocol', tag: 'Commercial' },
-  'Shopping Malls': { emoji: '🛍️', label: 'Mall Launches & Celebrity Invocations', tag: 'High-Impact' },
-  'Sangeeth': { emoji: '💃', label: 'Sangeeth & Musical Night (Bride & Groom)', tag: 'Celebration' },
-  '21': { emoji: '🌟', label: '21st Day Cradle & Naming Ceremony', tag: 'Auspicious' },
-  'Nature': { emoji: '🌿', label: 'Landscape, Floral & Outdoor', tag: 'Scenic' }
-};
+import { EVENT_CATEGORIES, getApplicableCatalogPackages } from '../../utils/catalogService';
 
 // Official Deliverable Add-ons (exact prices)
 const OPTIONAL_ADDONS = [
@@ -78,25 +59,27 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const scrollToEstimatorTop = () => {
     if (embedded && containerRef.current) {
       containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      scrollToEstimatorTop();
+    } else if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   // Step tracker (1 through 7)
   const [currentStep, setCurrentStep] = useState(1);
 
-  // ── STEP 1: Client Information ──
+  // ── STEP 1: Client Information + Event Details ──
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [nameError, setNameError] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [eventTime, setEventTime] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
 
-  // ── STEP 2: Selected Event ──
-  const [selectedEvent, setSelectedEvent] = useState('Wedding');
+  // ── STEP 2: Selected Events (MULTI-SELECT ARRAY) ──
+  const [selectedEvents, setSelectedEvents] = useState(['Wedding']);
 
   // ── STEP 3: Selected Packages ──
-  // Default to popular starter combination: Candid Photo + Traditional Video
   const [selectedPackageIds, setSelectedPackageIds] = useState(['pkg-3', 'pkg-2']);
   const [packageCategoryFilter, setPackageCategoryFilter] = useState('ALL');
 
@@ -104,6 +87,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const [needAlbum, setNeedAlbum] = useState(true);
   const [albumSheets, setAlbumSheets] = useState(30); // 30 sheets = 60 pages = 30 * 250 = ₹7,500
   const [albumCoverStyle, setAlbumCoverStyle] = useState('Italian Leatherette with Gold Embossing');
+  const [albumSheetsError, setAlbumSheetsError] = useState('');
 
   // ── STEP 5: Deliverables Add-Ons ──
   const [selectedAddons, setSelectedAddons] = useState({});
@@ -112,22 +96,21 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const [estimateNumber] = useState(() => `KPR-EST-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`);
   const [estimateDate] = useState(() => new Date());
 
-  // Available studio packages (excluding sheet item from services list, as it belongs to Step 4)
+  // Available studio packages derived from iterating through all selected events (Requirement 6)
   const availablePackages = useMemo(() => {
-    return OFFICIAL_PHOTOGRAPHY_PACKAGES.filter(p => p.id !== 'pkg-12' && p.name !== 'Each Album One Sheet');
-  }, []);
+    return getApplicableCatalogPackages(selectedEvents, OFFICIAL_PHOTOGRAPHY_PACKAGES);
+  }, [selectedEvents]);
 
   // Filtered packages based on Category tab
   const filteredPackages = useMemo(() => {
     if (packageCategoryFilter === 'ALL') return availablePackages;
     return availablePackages.filter(p => {
-      if (packageCategoryFilter === 'Fotography' || packageCategoryFilter === 'Photography') {
+      if (packageCategoryFilter === 'Photography' || packageCategoryFilter === 'Fotography') {
         return p.category === 'Photography' || p.category === 'Fotography';
       }
       if (packageCategoryFilter === 'Videography') return p.category === 'Videography';
       if (packageCategoryFilter === 'Aerial') return p.category === 'Aerial';
       if (packageCategoryFilter === 'Editing') return p.category === 'Editing';
-      if (packageCategoryFilter === 'Commercial') return p.category === 'Corporate & Commercial' || p.category === 'Commercial Retail';
       return true;
     });
   }, [availablePackages, packageCategoryFilter]);
@@ -176,10 +159,9 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     const hasCandid = selectedPackageIds.includes('pkg-3');
     const hasCinematic = selectedPackageIds.includes('pkg-4');
     const hasDrone = selectedPackageIds.includes('pkg-5') || selectedPackageIds.includes('pkg-7');
-    const hasLiveLink = selectedPackageIds.includes('pkg-8');
+    const hasLiveLink = selectedPackageIds.includes('pkg-8') || selectedPackageIds.includes('pkg-sangeeth-1');
     const hasLED = selectedPackageIds.includes('pkg-6');
     const hasTeaser = selectedPackageIds.includes('pkg-9');
-    const hasCommercial = selectedPackageIds.includes('pkg-corp-1') || selectedPackageIds.includes('pkg-mall-1');
 
     if (hasCandid) {
       list.push('Prime lens portraits with artistic depth & emotional storytelling');
@@ -207,12 +189,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     if (hasTeaser && !hasCinematic) {
       list.push('Curated 4-5 minute cinematic teaser with synchronized soundtrack');
     }
-    if (hasCommercial) {
-      list.push('High-speed media turnaround for PR, newspaper & corporate distribution');
-      list.push('Keynote speakers, VIP dignitary portraits & venue merchandising coverage');
-    }
     if (needAlbum) {
-      list.push(`Handcrafted flush-mount layflat wedding album (${albumSheets} Sheets / ${albumSheets * 2} Pages)`);
+      list.push(`Handcrafted flush-mount layflat wedding album (${albumSheets} Custom Sheets / ${albumSheets * 2} Pages)`);
       list.push('Archival museum non-tearable paper with thermal UV gloss/matt protective coating');
     }
 
@@ -260,8 +238,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const togglePackage = (id) => {
     if (selectedPackageIds.includes(id)) {
       if (selectedPackageIds.length === 1) {
-        // Prevent deselecting everything without warning
-        return;
+        return; // prevent empty
       }
       setSelectedPackageIds(selectedPackageIds.filter(item => item !== id));
     } else {
@@ -284,7 +261,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     });
   };
 
-  // Generate Estimate Data Object
+  // Generate Estimate Data Object (Full data flow for multi-events and event details)
   const getEstimateDataObject = () => {
     const addonsList = Object.entries(selectedAddons).map(([id, qty]) => {
       const a = OPTIONAL_ADDONS.find(item => item.id === id);
@@ -302,11 +279,15 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
       date: estimateDate,
       customerName,
       customerPhone,
-      event: selectedEvent,
+      eventDate,
+      eventTime,
+      eventLocation,
+      event: selectedEvents.join(', '),
+      selectedEvents: [...selectedEvents],
       selectedPackages,
       album: {
         needAlbum,
-        sheets: needAlbum ? albumSheets : 0,
+        sheets: needAlbum ? (Number(albumSheets) || 0) : 0,
         coverStyle: albumCoverStyle,
         price: albumSubtotal
       },
@@ -329,15 +310,20 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const getWhatsAppShareUrl = () => {
     const pkgNames = selectedPackages.map(p => `• ${p.name} (₹${p.price.toLocaleString('en-IN')})`).join('\n');
     const albumTxt = needAlbum ? `Yes (${albumSheets} Sheets / ${albumSheets * 2} Pages - ₹${albumSubtotal.toLocaleString('en-IN')})` : 'Digital Only';
+    const eventsList = selectedEvents.join(', ');
+    const dateInfo = eventDate ? `\n*Event Date:* ${eventDate}` : '';
+    const timeInfo = eventTime ? `\n*Event Time:* ${eventTime}` : '';
+    const locationInfo = eventLocation ? `\n*Location:* ${eventLocation}` : '';
 
-    const msg = `*KPR FOTOGRAPHY COST ESTIMATE*\n` +
+    const msg = `*KPR PHOTOGRAPHY COST ESTIMATE*\n` +
       `*Estimate No:* ${estimateNumber}\n` +
       `*Client:* ${customerName} (+91 ${customerPhone})\n` +
-      `*Celebrating:* ${selectedEvent}\n\n` +
-      `*Selected Services:*\n${pkgNames}\n\n` +
+      `*Celebrating:* ${eventsList}` +
+      dateInfo + timeInfo + locationInfo +
+      `\n\n*Selected Services:*\n${pkgNames}\n\n` +
       `*Album:* ${albumTxt}\n` +
       `*Total Estimated Investment:* ₹${grandTotal.toLocaleString('en-IN')}/-\n\n` +
-      `Hello KPR Fotography team! I have configured my event estimate on your website and would like to verify date availability and discuss booking details.`;
+      `Hello KPR Photography team! I have configured my event estimate on your website and would like to verify date availability and discuss booking details.`;
 
     return `https://wa.me/919849443648?text=${encodeURIComponent(msg)}`;
   };
@@ -347,12 +333,48 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     setCurrentStep(1);
     setCustomerName('');
     setCustomerPhone('');
-    setSelectedEvent('Wedding');
+    setEventDate('');
+    setEventTime('');
+    setEventLocation('');
+    setSelectedEvents(['Wedding']);
     setSelectedPackageIds(['pkg-3', 'pkg-2']);
     setNeedAlbum(true);
     setAlbumSheets(30);
+    setAlbumSheetsError('');
     setSelectedAddons({});
     scrollToEstimatorTop();
+  };
+
+  // ── Step 2: Toggle multi-select events ──
+  const toggleEvent = (eventName) => {
+    setSelectedEvents(prev => {
+      if (prev.includes(eventName)) {
+        if (prev.length === 1) return prev; // keep at least 1
+        return prev.filter(e => e !== eventName);
+      }
+      return [...prev, eventName];
+    });
+  };
+
+  // ── Step 4: Album sheets manual input validation ──
+  const handleAlbumSheetsInput = (e) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    if (raw === '') {
+      setAlbumSheets('');
+      setAlbumSheetsError('');
+      return;
+    }
+    const num = parseInt(raw, 10);
+    if (num > 500) {
+      setAlbumSheetsError('Maximum allowed custom sheets is 500.');
+      setAlbumSheets(500);
+    } else if (num < 1) {
+      setAlbumSheets(1);
+      setAlbumSheetsError('');
+    } else {
+      setAlbumSheets(num);
+      setAlbumSheetsError('');
+    }
   };
 
   // Stepper Header Data
@@ -382,13 +404,13 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
         <div className="text-center mb-6 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FAF6F0] border border-[#C5A880]/50 text-[#8C6D3F] text-[11px] font-semibold tracking-widest uppercase mb-3">
             <Sparkles className="w-3.5 h-3.5 text-[#8C6D3F]" />
-            <span>KPR Fotography Studio • Cost Estimator</span>
+            <span>KPR Photography Studio • Cost Estimator</span>
           </div>
           <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl font-light text-[#1A1A1A] tracking-wide">
-            Event Fotography Cost Estimator
+            Event Photography Cost Estimator
           </h1>
           <p className="text-xs sm:text-sm text-[#A89F91] max-w-xl mx-auto mt-2 font-light">
-            Plan your celebration with 100% transparent studio pricing. Calculate exact costs for candid fotography, 4K cinematic video, drone, and luxury layflat albums.
+            Plan your celebration with 100% transparent studio pricing. Calculate exact costs for candid photography, 4K cinematic video, drone, and luxury layflat albums.
           </p>
         </div>
 
@@ -471,7 +493,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   LET'S GET STARTED
                 </h2>
                 <p className="text-xs sm:text-sm text-[#666666] font-light">
-                  Enter your name and mobile number to begin tailoring your accurate fotography estimate.
+                  Enter your contact and event details to begin tailoring your accurate photography estimate.
                 </p>
               </div>
 
@@ -532,6 +554,58 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                 </div>
               </div>
 
+              {/* Event Date, Time, Location */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                {/* Event Date */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
+                    Event Date
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
+                    <input
+                      type="date"
+                      value={eventDate}
+                      onChange={(e) => setEventDate(e.target.value)}
+                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Event Time */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
+                    Event Time
+                  </label>
+                  <div className="relative">
+                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
+                    <input
+                      type="time"
+                      value={eventTime}
+                      onChange={(e) => setEventTime(e.target.value)}
+                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Event Location */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
+                    Event Location
+                  </label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
+                    <input
+                      type="text"
+                      value={eventLocation}
+                      onChange={(e) => setEventLocation(e.target.value)}
+                      placeholder="e.g. Warangal, Hyderabad"
+                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Studio Guarantee Info Card */}
               <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-4 sm:p-5 flex items-start gap-3 mt-4">
                 <ShieldCheck className="w-5 h-5 text-[#8C6D3F] shrink-0 mt-0.5" />
@@ -540,7 +614,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     Direct Studio Pricing Guarantee
                   </h4>
                   <p className="text-xs text-[#666666] font-light leading-relaxed">
-                    All prices are pulled directly from KPR Fotography's official packages database. Zero markup, zero hidden charges.
+                    All prices are pulled directly from KPR Photography's official packages database. Zero markup, zero hidden charges.
                   </p>
                 </div>
               </div>
@@ -560,59 +634,85 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
           )}
 
           {/* ══════════════════════════════════════════════════════════════════
-              STEP 2: WHAT ARE YOU CELEBRATING?
+              STEP 2: WHAT ARE YOU CELEBRATING? (MULTI-SELECT)
               ══════════════════════════════════════════════════════════════════ */}
           {currentStep === 2 && (
             <div className="space-y-6 animate-fadeIn">
               <div className="space-y-2 border-b border-[#E8DFC9] pb-5">
-                <span className="text-[10px] tracking-[0.25em] uppercase text-[#8C6D3F] font-bold">STEP 2</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] tracking-[0.25em] uppercase text-[#8C6D3F] font-bold">STEP 2</span>
+                  <span className="text-xs text-[#8C6D3F] font-semibold">
+                    {selectedEvents.length} Event{selectedEvents.length > 1 ? 's' : ''} Selected
+                  </span>
+                </div>
                 <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
                   WHAT ARE YOU CELEBRATING?
                 </h2>
                 <p className="text-xs sm:text-sm text-[#666666] font-light">
-                  Select your celebration from KPR Fotography's authentic event catalog.
+                  Select one or more celebrations. Your catalog and estimate will be tailored to all chosen events.
                 </p>
               </div>
 
-              {/* Event Categories Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 pt-2">
-                {CATEGORIES.filter(c => c !== 'Nature').map((catName) => {
-                  const meta = EVENT_METADATA[catName] || { emoji: '✨', label: catName, tag: 'Celebration' };
-                  const isSelected = selectedEvent === catName;
-
-                  return (
-                    <button
-                      key={catName}
-                      type="button"
-                      onClick={() => setSelectedEvent(catName)}
-                      className={`relative p-3.5 sm:p-4 rounded-xl border text-left flex flex-col justify-between transition-all duration-300 cursor-pointer group ${
-                        isSelected
-                          ? 'bg-[#FAF5EC] border-[#C5A880] ring-2 ring-[#C5A880]/40 shadow-md scale-[1.02]'
-                          : 'bg-[#FAF8F5] border-[#E2D9CC] hover:border-[#C5A880] hover:bg-[#F5EFE6]'
-                      }`}
+              {/* Selected Events Summary Badges */}
+              {selectedEvents.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {selectedEvents.map(ev => (
+                    <span
+                      key={ev}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C5A880]/15 border border-[#C5A880]/40 text-[#8C6D3F] text-[11px] font-semibold tracking-wide"
                     >
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-2xl sm:text-3xl">{meta.emoji}</span>
-                          {isSelected && (
-                            <div className="w-5 h-5 rounded-full bg-[#C5A880] text-black flex items-center justify-center text-xs">
-                              <Check className="w-3.5 h-3.5 stroke-[3]" />
-                            </div>
-                          )}
-                        </div>
-                        <h3 className={`font-serif text-sm sm:text-base font-medium leading-snug ${isSelected ? 'text-[#1A1A1A] font-bold' : 'text-[#2B2724]'}`}>
-                          {catName}
-                        </h3>
-                      </div>
+                      <Check className="w-3 h-3" />
+                      {ev}
+                      <button
+                        type="button"
+                        onClick={() => toggleEvent(ev)}
+                        className="ml-0.5 hover:text-red-500 transition-colors cursor-pointer"
+                        title="Remove"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
 
-                      <div className="mt-2 pt-2 border-t border-[#E8DFC9]">
-                        <span className="text-[9px] uppercase tracking-wider text-[#8C6D3F] font-semibold">
-                          {meta.tag}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
+              {/* Grouped Event Categories (Exact 5 Categories) */}
+              <div className="space-y-6 pt-2">
+                {EVENT_CATEGORIES.map((cat) => (
+                  <div key={cat.group}>
+                    <h3 className="font-serif text-sm sm:text-base font-semibold text-[#1A1A1A] mb-3 flex items-center gap-2">
+                      <span>{cat.group}</span>
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+                      {cat.items.map((eventName) => {
+                        const isSelected = selectedEvents.includes(eventName);
+                        return (
+                          <button
+                            key={eventName}
+                            type="button"
+                            onClick={() => toggleEvent(eventName)}
+                            className={`relative p-3 sm:p-3.5 rounded-xl border text-left flex items-center gap-2.5 transition-all duration-200 cursor-pointer group ${
+                              isSelected
+                                ? 'bg-[#FAF5EC] border-[#C5A880] ring-1 ring-[#C5A880]/40 shadow-sm'
+                                : 'bg-[#FAF8F5] border-[#E2D9CC] hover:border-[#C5A880] hover:bg-[#F5EFE6]'
+                            }`}
+                          >
+                            <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all ${
+                              isSelected
+                                ? 'bg-[#C5A880] text-black'
+                                : 'border border-[#D8CFC4] group-hover:border-[#C5A880]'
+                            }`}>
+                              {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                            </div>
+                            <span className={`text-xs sm:text-[13px] leading-snug ${isSelected ? 'text-[#1A1A1A] font-semibold' : 'text-[#2B2724]'}`}>
+                              {eventName}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Navigation Actions */}
@@ -645,28 +745,28 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
           )}
 
           {/* ══════════════════════════════════════════════════════════════════
-              STEP 3: CHOOSE YOUR FOTOGRAPHY PACKAGE
+              STEP 3: CHOOSE YOUR PHOTOGRAPHY PACKAGE
               ══════════════════════════════════════════════════════════════════ */}
           {currentStep === 3 && (
             <div className="space-y-6 animate-fadeIn">
               <div className="space-y-2 border-b border-[#E8DFC9] pb-5">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] tracking-[0.25em] uppercase text-[#8C6D3F] font-bold">STEP 3</span>
-                  <span className="text-xs text-[#8C6D3F]">
+                  <span className="text-xs text-[#8C6D3F] font-semibold">
                     {selectedPackageIds.length} Service{selectedPackageIds.length > 1 ? 's' : ''} Selected
                   </span>
                 </div>
                 <h2 className="font-serif text-2xl sm:text-3xl text-[#1A1A1A] font-light">
-                  CHOOSE YOUR FOTOGRAPHY PACKAGE
+                  CHOOSE YOUR PHOTOGRAPHY PACKAGES
                 </h2>
                 <p className="text-xs sm:text-sm text-[#666666] font-light">
-                  Select your combination of fotography, cinematic video, drone, and editing services. Prices update dynamically.
+                  Catalog tailored for your selected celebrations: <strong className="text-[#1A1A1A]">{selectedEvents.join(', ')}</strong>.
                 </p>
               </div>
 
               {/* Category Filter Tabs */}
               <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-none">
-                {['ALL', 'Fotography', 'Videography', 'Aerial', 'Editing', 'Commercial'].map((tab) => (
+                {['ALL', 'Photography', 'Videography', 'Aerial', 'Editing'].map((tab) => (
                   <button
                     key={tab}
                     type="button"
@@ -702,7 +802,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                         {/* Header Badge & Checkbox */}
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <span className="text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded bg-[#FAF0E1] text-[#8C6D3F] font-semibold border border-[#C5A880]/30">
-                            {pkg.category}
+                            {pkg.category === 'Fotography' ? 'Photography' : pkg.category}
                           </span>
 
                           <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${
@@ -746,7 +846,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
               {/* Subtotal of Step 3 */}
               <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-4 flex items-center justify-between">
                 <span className="text-xs uppercase tracking-wider text-[#666666] font-semibold">
-                  Fotography & Videography Subtotal:
+                  Photography & Videography Subtotal:
                 </span>
                 <span className="text-base sm:text-lg font-serif font-bold text-[#8C6D3F]">
                   ₹{servicesSubtotal.toLocaleString('en-IN')}/-
@@ -912,45 +1012,41 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     })}
                   </div>
 
-                  {/* Custom Sheet Counter Slider */}
+                  {/* Custom Sheet Counter — Manual Number Input (Requirement 7 & 8) */}
                   <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-4 sm:p-5 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-wider text-[#333333]">
-                        Custom Sheet Counter (@ ₹250 / sheet)
+                        Custom Sheets (@ ₹250 / sheet)
                       </span>
                       <span className="text-xs text-[#A89F91]">
-                        {albumSheets} Sheets = <strong>{albumSheets * 2} Pages</strong>
+                        {albumSheets || 0} Sheets = <strong>{(albumSheets || 0) * 2} Pages</strong>
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setAlbumSheets(prev => Math.max(10, prev - 5))}
-                        className="w-10 h-10 rounded-lg bg-[#EAE4D9] hover:bg-[#C5A880] text-[#1A1A1A] font-bold flex items-center justify-center transition-all cursor-pointer"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-
-                      <div className="flex-1">
-                        <input
-                          type="range"
-                          min="10"
-                          max="80"
-                          step="2"
-                          value={albumSheets}
-                          onChange={(e) => setAlbumSheets(Number(e.target.value))}
-                          className="w-full accent-[#C5A880] cursor-pointer"
-                        />
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setAlbumSheets(prev => Math.min(100, prev + 5))}
-                        className="w-10 h-10 rounded-lg bg-[#EAE4D9] hover:bg-[#C5A880] text-[#1A1A1A] font-bold flex items-center justify-center transition-all cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
+                    <div className="space-y-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="500"
+                        value={albumSheets}
+                        onChange={handleAlbumSheetsInput}
+                        onBlur={() => {
+                          if (!albumSheets || albumSheets < 1) {
+                            setAlbumSheets(1);
+                          }
+                        }}
+                        placeholder="Enter number of sheets (1 – 500)"
+                        className="w-full bg-white border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl px-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all font-serif font-bold text-center text-lg"
+                      />
+                      {albumSheetsError && (
+                        <p className="text-xs text-red-400 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          <span>{albumSheetsError}</span>
+                        </p>
+                      )}
+                      <p className="text-[11px] text-[#777777] text-center">
+                        Enter any number from 1 to 500. Custom Sheets Price: <strong>₹{((albumSheets || 0) * 250).toLocaleString('en-IN')}/-</strong>
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1153,25 +1249,28 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   TOTAL ESTIMATED PRICE
                 </h2>
                 <p className="text-xs sm:text-sm text-[#666666] font-light">
-                  Comprehensive review of customer details, selected event, packages, album, and itemized breakdown.
+                  Comprehensive review of client details, selected events, packages, album, and itemized breakdown.
                 </p>
               </div>
 
               {/* Complete Professional Summary Card */}
               <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-2xl p-5 sm:p-7 space-y-6 shadow-sm">
                 
-                {/* 1. Customer & Event Header Bar */}
+                {/* 1. Customer & Event Header Bar (Clear dark text on light background) */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b border-[#E8DFC9]">
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-[#8C8375]">Client Name</span>
-                    <h4 className="text-sm sm:text-base font-bold text-white mt-0.5">{customerName}</h4>
+                    <h4 className="text-sm sm:text-base font-bold text-[#1A1A1A] mt-0.5">{customerName}</h4>
                     <p className="text-xs text-[#8C6D3F]">+91 {customerPhone}</p>
                   </div>
 
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#8C8375]">Celebrating Event</span>
-                    <h4 className="text-sm sm:text-base font-bold text-white mt-0.5">{selectedEvent}</h4>
-                    <p className="text-xs text-[#A89F91]">Telangana, India</p>
+                    <span className="text-[10px] uppercase tracking-wider text-[#8C8375]">Event Details</span>
+                    <h4 className="text-sm sm:text-base font-bold text-[#1A1A1A] mt-0.5">{eventLocation || 'Telangana, India'}</h4>
+                    <p className="text-xs text-[#A89F91]">
+                      {eventDate ? `Date: ${eventDate}` : 'Date: To be confirmed'}
+                      {eventTime ? ` • Time: ${eventTime}` : ''}
+                    </p>
                   </div>
 
                   <div>
@@ -1181,10 +1280,28 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   </div>
                 </div>
 
+                {/* 1B. Selected Events Display (Requirement 4 & 5) */}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#8C6D3F]">
+                    Selected Celebrations ({selectedEvents.length})
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedEvents.map(ev => (
+                      <span
+                        key={ev}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF0E1] border border-[#C5A880]/40 text-[#8C6D3F] text-xs font-semibold"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        {ev}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
                 {/* 2. Selected Packages Table */}
                 <div className="space-y-2.5">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#8C6D3F]">
-                    1. Fotography & Videography Packages
+                    1. Photography & Videography Packages
                   </span>
                   <div className="bg-white rounded-xl border border-[#E2D9CC] divide-y divide-[#F0EBE1]">
                     {selectedPackages.map(pkg => (
@@ -1192,7 +1309,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                         <div className="space-y-0.5">
                           <strong className="text-[#1A1A1A] text-sm">{pkg.name}</strong>
                           <div className="text-[11px] text-[#666666]">
-                            {pkg.category} • Scope: {pkg.duration}
+                            {pkg.category === 'Fotography' ? 'Photography' : pkg.category} • Scope: {pkg.duration}
                           </div>
                         </div>
                         <span className="font-serif text-sm font-bold text-[#8C6D3F]">
@@ -1203,7 +1320,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   </div>
                 </div>
 
-                {/* 3. Album Option */}
+                {/* 3. Album Option with Custom Sheets Quantity */}
                 <div className="space-y-2.5">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#8C6D3F]">
                     2. Album Configuration
@@ -1211,7 +1328,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   <div className="bg-white rounded-xl border border-[#E2D9CC] p-3 sm:p-3.5 flex items-center justify-between text-xs">
                     <div>
                       <strong className="text-[#1A1A1A] text-sm">
-                        {needAlbum ? `Luxury Flush-Mount Layflat Photobook (${albumSheets} Sheets / ${albumSheets * 2} Pages)` : 'No Album (Digital Deliverables Only)'}
+                        {needAlbum ? `Luxury Flush-Mount Layflat Photobook (${albumSheets} Custom Sheets / ${albumSheets * 2} Pages)` : 'No Album (Digital Deliverables Only)'}
                       </strong>
                       <div className="text-[11px] text-[#666666] mt-0.5">
                         {needAlbum ? 'Archival non-tearable paper, UV lamination & presentation box' : 'Cloud link delivery'}
@@ -1229,11 +1346,11 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     3. Deliverables Summary
                   </span>
                   <div className="bg-white rounded-xl border border-[#E2D9CC] p-3 sm:p-3.5 space-y-2 text-xs">
-                    <p className="text-[#A89F91]">
+                    <p className="text-[#666666]">
                       <strong>{includedDeliverables.length} Standard Deliverables Included:</strong> High-res cloud link, color grading, multi-angle ceremony master.
                     </p>
                     {Object.keys(selectedAddons).length > 0 && (
-                      <div className="pt-2 border-t border-[#221D18] space-y-1">
+                      <div className="pt-2 border-t border-[#E8DFC9] space-y-1">
                         {Object.entries(selectedAddons).map(([id, qty]) => {
                           const a = OPTIONAL_ADDONS.find(item => item.id === id);
                           if (!a) return null;
@@ -1328,7 +1445,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
             <div className="space-y-8 animate-fadeIn text-center py-4 sm:py-6">
               
               {/* Success Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-widest mx-auto">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold uppercase tracking-widest mx-auto">
                 <Check className="w-4 h-4" />
                 <span>Estimate Ready for Download</span>
               </div>
@@ -1342,7 +1459,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   ₹{grandTotal.toLocaleString('en-IN')}/-
                 </div>
                 <div className="text-xs text-[#666666]">
-                  Prepared for <strong className="text-[#1A1A1A]">{customerName}</strong> for <strong className="text-[#1A1A1A]">{selectedEvent}</strong>
+                  Prepared for <strong className="text-[#1A1A1A]">{customerName}</strong> for <strong className="text-[#1A1A1A]">{selectedEvents.join(', ')}</strong>
                 </div>
                 <div className="text-[11px] font-mono text-[#777777] pt-1">
                   Reference: {estimateNumber}
@@ -1387,7 +1504,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   >
                     Edit Selections
                   </button>
-                  <span className="text-[#3A332C]">•</span>
+                  <span className="text-[#D8CFC4]">•</span>
                   <button
                     type="button"
                     onClick={handleStartNewEstimate}
@@ -1401,8 +1518,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
               {/* Studio Support Footer */}
               <div className="pt-6 border-t border-[#E8DFC9] max-w-lg mx-auto text-xs text-[#777777] space-y-1">
-                <p>KPR Fotography Studio • Station Road, Warangal / Hyderabad, Telangana</p>
-                <p>Questions? Call us directly at <a href="tel:+919849443648" className="text-[#8C6D3F] underline">+91 98494 43648</a></p>
+                <p>KPR Photography Studio • Station Road, Warangal / Hyderabad, Telangana</p>
+                <p>Questions? Call us directly at <a href="tel:+919849443648" className="text-[#8C6D3F] underline font-semibold">+91 98494 43648</a></p>
               </div>
 
             </div>

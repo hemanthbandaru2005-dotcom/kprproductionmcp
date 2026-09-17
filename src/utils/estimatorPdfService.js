@@ -39,7 +39,15 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
 
   const customerName = (estimateData.customerName || 'Valued Customer').trim();
   const customerPhone = (estimateData.customerPhone || '').trim();
-  const celebratingEvent = estimateData.event || 'Special Celebration';
+
+  // Multi-selected events handling (proper array)
+  const selectedEvents = Array.isArray(estimateData.selectedEvents) && estimateData.selectedEvents.length > 0
+    ? estimateData.selectedEvents
+    : (estimateData.event ? estimateData.event.split(',').map(s => s.trim()).filter(Boolean) : ['Wedding']);
+
+  const eventDate = (estimateData.eventDate || '').trim();
+  const eventTime = (estimateData.eventTime || '').trim();
+  const eventLocation = (estimateData.eventLocation || '').trim() || 'Telangana, India';
 
   const selectedPackages = Array.isArray(estimateData.selectedPackages) ? estimateData.selectedPackages : [];
   const albumConfig = estimateData.album || { needAlbum: false, sheets: 0, price: 0 };
@@ -52,7 +60,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   const grandTotal = Number(estimateData.grandTotal) || (servicesSubtotal + albumSubtotal + addOnsSubtotal);
 
   // ══════════════════ 1. HEADER SECTION ══════════════════
-  // Top Left: KPR Fotography Logo
+  // Top Left: KPR Photography Logo
   try {
     if (INVOICE_HEADER_LOGO_BASE64) {
       doc.addImage(INVOICE_HEADER_LOGO_BASE64, 'PNG', 14, 14, 48, 15, '', 'FAST');
@@ -60,13 +68,13 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
       doc.setTextColor(17, 17, 17);
-      doc.text('KPR FOTOGRAPHY', 14, 22);
+      doc.text('KPR PHOTOGRAPHY', 14, 22);
     }
   } catch (e) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(17, 17, 17);
-    doc.text('KPR FOTOGRAPHY', 14, 22);
+    doc.text('KPR PHOTOGRAPHY', 14, 22);
   }
 
   // Top Right: ESTIMATE HEADER
@@ -85,12 +93,12 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   // Divider Line
   doc.setDrawColor(216, 207, 196); // Soft Gold Border: #D8CFC4
   doc.setLineWidth(0.4);
-  doc.line(14, 37, 196, 37);
+  doc.line(14, 36, 196, 36);
 
-  // ══════════════════ 2. FROM & CLIENT BLOCKS ══════════════════
-  const addressTop = 43;
+  // ══════════════════ 2. STUDIO & CLIENT DETAILS ══════════════════
+  const addressTop = 41;
 
-  // FROM Block (Left)
+  // STUDIO DETAILS Block (Left) - Studio Details
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(140, 109, 63); // Gold Dark: #8C6D3F
@@ -99,17 +107,17 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(20, 20, 20);
-  doc.text('KPR Fotography & Color Lab', 14, addressTop + 4.5);
+  doc.text('KPR Photography Studio', 14, addressTop + 4.5);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
-  doc.text('Luxury Telugu Wedding & Event Fotography', 14, addressTop + 8.5);
+  doc.text('Luxury Telugu Wedding & Event Photography', 14, addressTop + 8.5);
   doc.text('Station Road, Warangal / Hyderabad, Telangana', 14, addressTop + 12.5);
-  doc.text('Phone: +91 98494 43648 / +91 98493 90876', 14, addressTop + 16.5);
-  doc.text('Email: kprfotography@gmail.com', 14, addressTop + 20.5);
+  doc.text('Phone: +91 98494 43648', 14, addressTop + 16.5);
+  doc.text('Email: kprphotography@gmail.com', 14, addressTop + 20.5);
 
-  // PREPARED FOR Block (Right)
+  // ESTIMATE PREPARED FOR & EVENT DETAILS Block (Right)
   const clientLeft = 110;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
@@ -125,29 +133,65 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
   doc.text(`Phone: +91 ${customerPhone}`, clientLeft, addressTop + 8.5);
-  doc.text(`Event: ${celebratingEvent}`, clientLeft, addressTop + 12.5);
-  doc.text('Location: Telangana, India', clientLeft, addressTop + 16.5);
-  doc.text(`Reference: ${estimateNumber}`, clientLeft, addressTop + 20.5);
+  doc.text(`Event Date: ${eventDate || 'Date to be confirmed'}`, clientLeft, addressTop + 12.5);
+  doc.text(`Event Time: ${eventTime || 'Time to be confirmed'}`, clientLeft, addressTop + 16.5);
+  doc.text(`Event Location: ${eventLocation}`, clientLeft, addressTop + 20.5);
+
+  // ══════════════════ 2B. SELECTED CELEBRATION EVENTS BLOCK ══════════════════
+  // Displays ALL events selected by the customer (Requirement 4, 5, 7)
+  const eventsBoxY = 66;
+  doc.setFillColor(250, 247, 242); // Elegant cream
+  doc.setDrawColor(216, 207, 196);
+  doc.setLineWidth(0.3);
+
+  const eventsBulletList = selectedEvents.map(e => `• ${e}`).join('    ');
+  const wrappedEvents = doc.splitTextToSize(eventsBulletList, 172);
+  const eventsBoxHeight = 7.5 + (wrappedEvents.length * 3.8);
+
+  doc.roundedRect(14, eventsBoxY, 182, eventsBoxHeight, 1.5, 1.5, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(140, 109, 63);
+  doc.text(`SELECTED CELEBRATION EVENTS (${selectedEvents.length}):`, 18, eventsBoxY + 4.2);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(30, 30, 30);
+  doc.text(wrappedEvents, 18, eventsBoxY + 8.2);
 
   // ══════════════════ 3. ITEMIZED SERVICES TABLE ══════════════════
   const tableRows = [];
 
-  // Add Packages
+  // Add Packages - Guaranteed category name is "Photography" (Requirement 1 & 2)
   selectedPackages.forEach(pkg => {
+    let categoryDisplay = pkg.category || 'Photography';
+    if (categoryDisplay.toLowerCase().includes('foto') || categoryDisplay.toLowerCase().includes('photo')) {
+      categoryDisplay = 'Photography';
+    } else if (categoryDisplay.toLowerCase().includes('video')) {
+      categoryDisplay = 'Videography';
+    } else if (categoryDisplay.toLowerCase().includes('aerial') || categoryDisplay.toLowerCase().includes('drone')) {
+      categoryDisplay = 'Aerial';
+    } else if (categoryDisplay.toLowerCase().includes('edit')) {
+      categoryDisplay = 'Editing';
+    }
+    // Clean any unwanted terms
+    categoryDisplay = categoryDisplay.replace(/colourlab/gi, '').replace(/color\s*lab/gi, '').trim() || 'Photography';
+
     tableRows.push([
       pkg.name,
-      (pkg.category === 'Photography' ? 'Fotography' : (pkg.category || 'Fotography')),
+      categoryDisplay,
       pkg.duration || '6 hours',
       `Rs. ${Number(pkg.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
     ]);
   });
 
-  // Add Album if selected
+  // Add Album with custom sheets if selected (Requirement 7)
   if (albumConfig.needAlbum && albumConfig.sheets > 0) {
     tableRows.push([
-      `Premium Photobook Album (${albumConfig.sheets} Sheets / ${albumConfig.sheets * 2} Pages)`,
+      `Premium Photobook Album (${albumConfig.sheets} Custom Sheets / ${albumConfig.sheets * 2} Pages)`,
       'Print Album',
-      'Layflat Flush Mount, Non-Tearable UV Finish',
+      `Layflat Flush Mount, Non-Tearable UV Finish (${albumConfig.sheets} Sheets)`,
       `Rs. ${Number(albumSubtotal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
     ]);
   }
@@ -164,8 +208,10 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
     ]);
   });
 
+  const tableStartY = eventsBoxY + eventsBoxHeight + 3;
+
   autoTable(doc, {
-    startY: 72,
+    startY: tableStartY,
     margin: { left: 14, right: 14 },
     head: [
       [
@@ -182,12 +228,12 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
       textColor: [232, 212, 184], // Soft Gold Text: #E8D4B8
       fontStyle: 'bold',
       fontSize: 8.5,
-      cellPadding: 3.5
+      cellPadding: 3.2
     },
     bodyStyles: {
       textColor: [30, 30, 30],
       fontSize: 8,
-      cellPadding: 3.2
+      cellPadding: 3.0
     },
     columnStyles: {
       0: { cellWidth: 78, fontStyle: 'normal', halign: 'left' },
@@ -204,7 +250,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
     }
   });
 
-  let currentY = doc.lastAutoTable.finalY + 4;
+  let currentY = doc.lastAutoTable.finalY + 3.5;
 
   // ══════════════════ 4. INCLUDED DELIVERABLES BOX ══════════════════
   if (deliverables.length > 0 && currentY < 205) {
@@ -260,9 +306,9 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.text(`Rs. ${servicesSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, summaryRightVal, currentY, { align: 'right' });
 
   // Album Subtotal (if any)
-  if (albumConfig.needAlbum) {
+  if (albumConfig.needAlbum && albumConfig.sheets > 0) {
     currentY += 4.5;
-    doc.text('Album Subtotal', summaryLeftLabel, currentY);
+    doc.text(`Album Subtotal (${albumConfig.sheets} Sheets)`, summaryLeftLabel, currentY);
     doc.text(`Rs. ${albumSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, summaryRightVal, currentY, { align: 'right' });
   }
 
@@ -290,14 +336,13 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.text(`Rs. ${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, summaryRightVal - 2, currentY + 3, { align: 'right' });
 
   // ══════════════════ 6. QR CODE PAYMENT CARD & STUDIO TERMS ══════════════════
-  // Official Google Pay UPI QR Code Card (Placed in marked area on right below Estimated Total)
+  // Official Google Pay UPI QR Code Card
   const qrWidth = 37;
   const qrHeight = qrWidth / 0.67436; // 54.8mm
   const qrX = 196 - qrWidth; // 159mm
-  const qrY = currentY + 9;
+  const qrY = currentY + 7;
 
   if (INVOICE_UPI_QR_BASE64) {
-    // Subtle luxury rounded frame for the QR card
     doc.setDrawColor(216, 207, 196);
     doc.setLineWidth(0.3);
     doc.roundedRect(qrX - 0.5, qrY - 0.5, qrWidth + 1, qrHeight + 1, 1.5, 1.5, 'S');
@@ -306,7 +351,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   }
 
   // Terms & Booking Instructions on the Left
-  const notesTop = currentY + 11;
+  const notesTop = currentY + 9;
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
@@ -316,7 +361,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.2);
   doc.setTextColor(90, 90, 90);
-  doc.text('• This estimate is generated based on official standard KPR Fotography rate cards and is valid for 30 days.', 14, notesTop + 4.5);
+  doc.text('• This estimate is generated based on official standard KPR Photography rate cards and is valid for 30 days.', 14, notesTop + 4.5);
   doc.text('• Standard Payment Schedule: 30% advance for date reservation, 50% on event date, 20% on final delivery.', 14, notesTop + 8.5);
   doc.text('• Outstation travel, lodging & local conveyance charges (if applicable) are extra at actuals.', 14, notesTop + 12.5);
   doc.text('• Scan the official Google Pay / UPI QR code on the right to pay advance directly.', 14, notesTop + 16.5);
@@ -328,7 +373,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(40, 40, 40);
-  doc.text('For KPR Fotography & Color Lab', sigLeft, sigTop);
+  doc.text('For KPR Photography Studio', sigLeft, sigTop);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
@@ -348,7 +393,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
 
   if (autoDownload) {
     const sanitizedName = customerName.replace(/[^a-zA-Z0-9]/g, '_');
-    const filename = `KPR_Fotography_Estimate_${sanitizedName}_${estimateNumber}.pdf`;
+    const filename = `KPR_Photography_Estimate_${sanitizedName}_${estimateNumber}.pdf`;
     doc.save(filename);
   }
 
