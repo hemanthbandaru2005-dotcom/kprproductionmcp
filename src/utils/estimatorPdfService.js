@@ -112,7 +112,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
-  doc.text('Luxury Telugu Wedding & Event Photography', 14, addressTop + 8.5);
+  doc.text('Luxury Telugu Wedding & Event Fotography', 14, addressTop + 8.5);
   doc.text('Station Road, Warangal / Hyderabad, Telangana', 14, addressTop + 12.5);
   doc.text('Phone: +91 98494 43648', 14, addressTop + 16.5);
   doc.text('Email: kprfotography@gmail.com', 14, addressTop + 20.5);

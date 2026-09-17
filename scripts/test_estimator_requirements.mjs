@@ -157,7 +157,8 @@ console.log('✓ Test 4 Passed: 250 custom sheets correctly calculated and displ
 console.log('--- TEST 5: Strict PDF Content Checks ---');
 // 1. Must say Photography, not FOTOGRAPY in Category or Studio
 assert(!pdfText4.includes('FOTOGRAPY'), 'PDF must NEVER contain FOTOGRAPY');
-assert(pdfText4.includes('Photography'), 'PDF must contain "Photography"');
+assert(pdfText4.includes('Photography'), 'PDF must contain "Photography" for table category');
+assert(pdfText4.includes('Event Fotography'), 'PDF must contain "Event Fotography" in studio subtitle');
 
 // 2. Must NOT contain Colourlab / Colorlab anywhere
 assert(!pdfText4.toLowerCase().includes('colourlab'), 'PDF must NEVER contain "Colourlab"');
