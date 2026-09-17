@@ -443,12 +443,12 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
         )}
 
         {/* Actions Footer */}
-        <div className="pt-3 border-t border-[#E8E1D5] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="pt-3 border-t border-[#E8E1D5] flex items-center justify-center">
           <button
             type="button"
             onClick={handleLaunch}
             disabled={uploadedPages.length === 0}
-            className={`w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer ${
+            className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer ${
               uploadedPages.length > 0
                 ? 'bg-[#1A1A1A] hover:bg-[#C5A880] text-white hover:text-black hover:scale-[1.01]'
                 : 'bg-[#CCCCCC] text-[#777777] cursor-not-allowed shadow-none'
@@ -461,20 +461,6 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
                 : 'Upload pages to Preview in 3D'}
             </span>
           </button>
-
-          <a
-            href={`https://wa.me/919849390876?text=${encodeURIComponent(
-              `Hello KPR Colour Lab! I would like to order a custom wedding album${
-                uploadedPages.length > 0 ? ` with ${uploadedPages.length} uploaded pages` : ''
-              }. Please share pricing and printing details.`
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-sm cursor-pointer"
-          >
-            <Phone className="w-4 h-4" />
-            <span>Order on WhatsApp</span>
-          </a>
         </div>
 
       </div>

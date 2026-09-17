@@ -1,7 +1,7 @@
 /**
  * KPR PRODUCTIONS — INDIVIDUAL ALBUM PHOTO DATA (FULL BLEED PAGES)
- * Generated in storytelling sequence: Starts with Haldi, flows through Wedding & Ceremonies, and ends with Birthday.
- * Total: 66 pages (33 matched 2-page panoramic spreads).
+ * Starts with Haldi Groom & Bride on single pages, flows through Wedding Spreads, ends with Birthday on single page.
+ * Total: 64 pages (32 matched 2-page spreads).
  */
 
 export const FLEXY_ALBUM_PHOTOS = [
@@ -69,8 +69,6 @@ export const FLEXY_ALBUM_PHOTOS = [
   { id: 62, src: '/images/album/flexy/page_62.jpg' },
   { id: 63, src: '/images/album/flexy/page_63.jpg' },
   { id: 64, src: '/images/album/flexy/page_64.jpg' },
-  { id: 65, src: '/images/album/flexy/page_65.jpg' },
-  { id: 66, src: '/images/album/flexy/page_66.jpg' },
 ];
 
 export const FLEXY_PHOTO_URLS = FLEXY_ALBUM_PHOTOS.map(p => p.src);

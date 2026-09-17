@@ -105,7 +105,8 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
         <img
           src={src}
           alt={`Album page ${pageIndex + 1}`}
-          className="w-full h-full object-cover object-center select-none pointer-events-none"
+          className="w-full h-full object-cover select-none pointer-events-none"
+          style={{ objectPosition: isLeftPage ? 'right center' : 'left center' }}
           loading="lazy"
           draggable={false}
         />
@@ -114,8 +115,8 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/25 via-black/8 to-transparent'
-              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/25 via-black/8 to-transparent'
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/30 via-black/10 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/30 via-black/10 to-transparent'
           }`}
         />
 

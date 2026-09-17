@@ -382,11 +382,12 @@ const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
       data-density="soft"
     >
       <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
-        {/* Full Bleed Photo Edge-to-Edge */}
+        {/* Full Bleed Photo Edge-to-Edge with seamless gutter alignment matching open book reference */}
         <img
           src={src}
           alt="Photobook Page"
-          className="w-full h-full object-cover object-center pointer-events-none select-none"
+          className="w-full h-full object-cover pointer-events-none select-none"
+          style={{ objectPosition: isLeftPage ? 'right center' : 'left center' }}
           loading="lazy"
           draggable={false}
         />
@@ -395,8 +396,8 @@ const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/25 via-black/8 to-transparent'
-              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/25 via-black/8 to-transparent'
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/30 via-black/10 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/30 via-black/10 to-transparent'
           }`}
         />
 
