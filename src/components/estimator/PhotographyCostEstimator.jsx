@@ -79,9 +79,48 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   // ── STEP 2: Selected Events (MULTI-SELECT ARRAY) ──
   const [selectedEvents, setSelectedEvents] = useState(['Wedding']);
 
-  // ── STEP 3: Selected Packages ──
+  // ── STEP 3: Selected Packages & Service Scheduling ──
   const [selectedPackageIds, setSelectedPackageIds] = useState(['pkg-3', 'pkg-2']);
   const [packageCategoryFilter, setPackageCategoryFilter] = useState('ALL');
+  // Service-specific date & time scheduling mapping: { [packageId]: { date: string, time: string, eventTag: string } }
+  const [serviceSchedules, setServiceSchedules] = useState({});
+
+  const getServiceSchedule = (pkgId) => {
+    return serviceSchedules[pkgId] || {
+      date: eventDate || '',
+      time: eventTime || '',
+      eventTag: ''
+    };
+  };
+
+  const updateServiceSchedule = (pkgId, field, value) => {
+    setServiceSchedules(prev => {
+      const current = prev[pkgId] || {
+        date: eventDate || '',
+        time: eventTime || '',
+        eventTag: ''
+      };
+      return {
+        ...prev,
+        [pkgId]: {
+          ...current,
+          [field]: value
+        }
+      };
+    });
+  };
+
+  const applyPrimaryScheduleToAll = () => {
+    const updated = {};
+    selectedPackages.forEach(p => {
+      updated[p.id] = {
+        date: eventDate || '',
+        time: eventTime || '',
+        eventTag: serviceSchedules[p.id]?.eventTag || ''
+      };
+    });
+    setServiceSchedules(updated);
+  };
 
   // ── STEP 4: Album Selection ──
   const [needAlbum, setNeedAlbum] = useState(true);
@@ -274,6 +313,16 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
       };
     });
 
+    const selectedPackagesWithSchedule = selectedPackages.map(p => {
+      const sched = getServiceSchedule(p.id);
+      return {
+        ...p,
+        eventDate: sched.date || eventDate || '',
+        eventTime: sched.time || eventTime || '',
+        eventTag: sched.eventTag || ''
+      };
+    });
+
     return {
       estimateNumber,
       date: estimateDate,
@@ -284,7 +333,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
       eventLocation,
       event: selectedEvents.join(', '),
       selectedEvents: [...selectedEvents],
-      selectedPackages,
+      selectedPackages: selectedPackagesWithSchedule,
       album: {
         needAlbum,
         sheets: needAlbum ? (Number(albumSheets) || 0) : 0,
@@ -308,7 +357,11 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
   // WhatsApp 1-Click inquiry
   const getWhatsAppShareUrl = () => {
-    const pkgNames = selectedPackages.map(p => `• ${p.name} (₹${p.price.toLocaleString('en-IN')})`).join('\n');
+    const pkgNames = selectedPackages.map(p => {
+      const sched = getServiceSchedule(p.id);
+      const schedTxt = sched.date ? ` (${sched.date}${sched.time ? ` at ${sched.time}` : ''})` : '';
+      return `• ${p.name}${schedTxt} (₹${p.price.toLocaleString('en-IN')})`;
+    }).join('\n');
     const albumTxt = needAlbum ? `Yes (${albumSheets} Sheets / ${albumSheets * 2} Pages - ₹${albumSubtotal.toLocaleString('en-IN')})` : 'Digital Only';
     const eventsList = selectedEvents.join(', ');
     const dateInfo = eventDate ? `\n*Event Date:* ${eventDate}` : '';
@@ -320,7 +373,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
       `*Client:* ${customerName} (+91 ${customerPhone})\n` +
       `*Celebrating:* ${eventsList}` +
       dateInfo + timeInfo + locationInfo +
-      `\n\n*Selected Services:*\n${pkgNames}\n\n` +
+      `\n\n*Selected Services & Schedules:*\n${pkgNames}\n\n` +
       `*Album:* ${albumTxt}\n` +
       `*Total Estimated Investment:* ₹${grandTotal.toLocaleString('en-IN')}/-\n\n` +
       `Hello KPR Photography team! I have configured my event estimate on your website and would like to verify date availability and discuss booking details.`;
@@ -843,6 +896,165 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                 })}
               </div>
 
+              {/* ══════════════════════════════════════════════════════════════════
+                  SCHEDULE SELECTED SERVICES (Date & Time Allotment for Each Service)
+                  ══════════════════════════════════════════════════════════════════ */}
+              <div className="mt-8 pt-6 border-t-2 border-[#E8DFC9] space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAF6F0] border border-[#C5A880]/50 rounded-2xl p-4 sm:p-5">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-lg bg-[#C5A880]/20 text-[#8C6D3F] flex items-center justify-center">
+                        <Calendar className="w-4 h-4" />
+                      </span>
+                      <h3 className="font-serif text-lg sm:text-xl font-medium text-[#1A1A1A]">
+                        Allot Date & Time for Selected Services
+                      </h3>
+                    </div>
+                    <p className="text-xs text-[#666666] font-light max-w-xl">
+                      Indian celebrations often happen over multiple days. Assign the specific date and timing for each selected service below:
+                    </p>
+                  </div>
+
+                  {selectedPackages.length > 0 && eventDate && (
+                    <button
+                      type="button"
+                      onClick={applyPrimaryScheduleToAll}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#C5A880] text-[#8C6D3F] hover:bg-[#FAF0E1] text-[11px] font-semibold tracking-wider uppercase transition-all shadow-xs shrink-0 cursor-pointer"
+                      title="Copy primary date and time from Step 1 to all selected services"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Set All to {eventDate}</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Service Scheduling Cards */}
+                {selectedPackages.length === 0 ? (
+                  <div className="bg-[#FAF8F5] border border-dashed border-[#D8CFC4] rounded-2xl p-6 text-center text-xs text-[#888888]">
+                    No services selected yet. Select packages above to schedule their individual dates and times.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedPackages.map((pkg) => {
+                      const sched = getServiceSchedule(pkg.id);
+                      const currentDateVal = sched.date || eventDate || '';
+                      const currentTimeVal = sched.time || eventTime || '';
+
+                      return (
+                        <div
+                          key={`schedule-${pkg.id}`}
+                          className="bg-white border border-[#E2D9CC] hover:border-[#C5A880] rounded-xl p-4 sm:p-5 transition-all shadow-xs space-y-3"
+                        >
+                          {/* Top Bar: Service Info */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F0EBE1] pb-3">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-6 h-6 rounded-full bg-[#FAF0E1] text-[#8C6D3F] text-xs font-bold flex items-center justify-center shrink-0 border border-[#C5A880]/30">
+                                <Clock className="w-3.5 h-3.5" />
+                              </span>
+                              <div>
+                                <h4 className="font-serif text-sm sm:text-base font-bold text-[#1A1A1A]">
+                                  {pkg.name}
+                                </h4>
+                                <p className="text-[11px] text-[#777777]">
+                                  {pkg.category === 'Fotography' ? 'Photography' : pkg.category} • {pkg.duration || '6 hours'}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-serif font-bold text-[#8C6D3F]">
+                                ₹{Number(pkg.price).toLocaleString('en-IN')}/-
+                              </span>
+                              {currentDateVal && (
+                                <span className="text-[10px] bg-[#FAF0E1] text-[#8C6D3F] font-semibold px-2 py-0.5 rounded border border-[#C5A880]/30">
+                                  {currentDateVal}
+                                  {currentTimeVal ? ` • ${currentTimeVal}` : ''}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Inputs Grid: Date, Time, and Function Tag */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {/* 1. Date Picker */}
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-semibold uppercase tracking-wider text-[#666666] flex items-center gap-1">
+                                <Calendar className="w-3 h-3 text-[#8C6D3F]" />
+                                <span>Service Date</span>
+                              </label>
+                              <input
+                                type="date"
+                                value={currentDateVal}
+                                onChange={(e) => updateServiceSchedule(pkg.id, 'date', e.target.value)}
+                                className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all"
+                              />
+                            </div>
+
+                            {/* 2. Time Input */}
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-semibold uppercase tracking-wider text-[#666666] flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-[#8C6D3F]" />
+                                <span>Service Time</span>
+                              </label>
+                              <input
+                                type="time"
+                                value={currentTimeVal}
+                                onChange={(e) => updateServiceSchedule(pkg.id, 'time', e.target.value)}
+                                className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all"
+                              />
+                            </div>
+
+                            {/* 3. Celebration / Function Assignment */}
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-semibold uppercase tracking-wider text-[#666666] flex items-center gap-1">
+                                <Heart className="w-3 h-3 text-[#8C6D3F]" />
+                                <span>Associated Celebration</span>
+                              </label>
+                              <select
+                                value={sched.eventTag || (selectedEvents.find(ev => pkg.name.toLowerCase().includes(ev.toLowerCase())) || selectedEvents[0] || '')}
+                                onChange={(e) => updateServiceSchedule(pkg.id, 'eventTag', e.target.value)}
+                                className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all cursor-pointer"
+                              >
+                                <option value="">Select celebration...</option>
+                                {selectedEvents.map(ev => (
+                                  <option key={ev} value={ev}>{ev}</option>
+                                ))}
+                                <option value="General">General / All Day</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Quick Timing Slot Presets */}
+                          <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                            <span className="text-[10px] text-[#999999] uppercase tracking-wider font-semibold mr-1">Quick Slots:</span>
+                            {[
+                              { label: 'Morning (9 AM)', time: '09:00' },
+                              { label: 'Afternoon (2 PM)', time: '14:00' },
+                              { label: 'Evening (6 PM)', time: '18:00' },
+                              { label: 'Night (8 PM)', time: '20:00' },
+                              { label: 'Muhurtham (4:30 AM)', time: '04:30' }
+                            ].map(slot => (
+                              <button
+                                key={slot.label}
+                                type="button"
+                                onClick={() => updateServiceSchedule(pkg.id, 'time', slot.time)}
+                                className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all cursor-pointer ${
+                                  currentTimeVal === slot.time
+                                    ? 'bg-[#8C6D3F] text-white shadow-xs'
+                                    : 'bg-[#F0EBE1] text-[#555555] hover:bg-[#E5DDCF] hover:text-black'
+                                }`}
+                              >
+                                {slot.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               {/* Subtotal of Step 3 */}
               <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-xl p-4 flex items-center justify-between">
                 <span className="text-xs uppercase tracking-wider text-[#666666] font-semibold">
@@ -1304,19 +1516,31 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     1. Photography & Videography Packages
                   </span>
                   <div className="bg-white rounded-xl border border-[#E2D9CC] divide-y divide-[#F0EBE1]">
-                    {selectedPackages.map(pkg => (
-                      <div key={pkg.id} className="p-3 sm:p-3.5 flex items-center justify-between text-xs">
-                        <div className="space-y-0.5">
-                          <strong className="text-[#1A1A1A] text-sm">{pkg.name}</strong>
-                          <div className="text-[11px] text-[#666666]">
-                            {pkg.category === 'Fotography' ? 'Photography' : pkg.category} • Scope: {pkg.duration}
+                    {selectedPackages.map(pkg => {
+                      const sched = getServiceSchedule(pkg.id);
+                      return (
+                        <div key={pkg.id} className="p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <strong className="text-[#1A1A1A] text-sm">{pkg.name}</strong>
+                              {sched.date && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#FAF0E1] text-[#8C6D3F] border border-[#C5A880]/40 text-[10px] font-semibold">
+                                  <Calendar className="w-2.5 h-2.5" />
+                                  {sched.date} {sched.time ? `• ${sched.time}` : ''}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-[#666666]">
+                              {pkg.category === 'Fotography' ? 'Photography' : pkg.category} • Scope: {pkg.duration}
+                              {sched.eventTag ? ` • Function: ${sched.eventTag}` : ''}
+                            </div>
                           </div>
+                          <span className="font-serif text-sm font-bold text-[#8C6D3F]">
+                            ₹{Number(pkg.price).toLocaleString('en-IN')}/-
+                          </span>
                         </div>
-                        <span className="font-serif text-sm font-bold text-[#8C6D3F]">
-                          ₹{Number(pkg.price).toLocaleString('en-IN')}/-
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 

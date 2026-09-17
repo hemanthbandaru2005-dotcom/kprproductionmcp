@@ -178,8 +178,30 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
     // Clean any unwanted terms
     categoryDisplay = categoryDisplay.replace(/colourlab/gi, '').replace(/color\s*lab/gi, '').trim() || 'Photography';
 
+    // Format individual allotted schedule (Date & Time) for each service
+    const sDate = pkg.eventDate || pkg.serviceDate || '';
+    const sTime = pkg.eventTime || pkg.serviceTime || '';
+    const sTag = pkg.eventTag || '';
+
+    let scheduleSnippet = '';
+    if (sDate && sTime) {
+      scheduleSnippet = `Schedule: ${sDate} • ${sTime}`;
+    } else if (sDate) {
+      scheduleSnippet = `Schedule: ${sDate}`;
+    } else if (sTime) {
+      scheduleSnippet = `Schedule: ${sTime}`;
+    }
+
+    if (sTag && sTag !== 'General') {
+      scheduleSnippet = scheduleSnippet ? `${scheduleSnippet} (${sTag})` : `Function: ${sTag}`;
+    }
+
+    const serviceDisplay = scheduleSnippet
+      ? `${pkg.name}\n${scheduleSnippet}`
+      : pkg.name;
+
     tableRows.push([
-      pkg.name,
+      serviceDisplay,
       categoryDisplay,
       pkg.duration || '6 hours',
       `Rs. ${Number(pkg.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
