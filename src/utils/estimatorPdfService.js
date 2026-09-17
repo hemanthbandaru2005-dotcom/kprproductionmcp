@@ -133,9 +133,14 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
   doc.text(`Phone: +91 ${customerPhone}`, clientLeft, addressTop + 8.5);
-  doc.text(`Event Date: ${eventDate || 'Date to be confirmed'}`, clientLeft, addressTop + 12.5);
-  doc.text(`Event Time: ${eventTime || 'Time to be confirmed'}`, clientLeft, addressTop + 16.5);
-  doc.text(`Event Location: ${eventLocation}`, clientLeft, addressTop + 20.5);
+  if (eventDate) {
+    doc.text(`Event Date: ${eventDate}`, clientLeft, addressTop + 12.5);
+    doc.text(`Event Time: ${eventTime || 'Flexible'}`, clientLeft, addressTop + 16.5);
+    doc.text(`Event Location: ${eventLocation}`, clientLeft, addressTop + 20.5);
+  } else {
+    doc.text(`Event Location: ${eventLocation}`, clientLeft, addressTop + 12.5);
+    doc.text(`Schedule: Detailed per celebration below (Sec 2B)`, clientLeft, addressTop + 16.5);
+  }
 
   // ══════════════════ 2B. SELECTED CELEBRATION EVENTS BLOCK ══════════════════
   // Displays ALL events selected by the customer (Requirement 4, 5, 7)

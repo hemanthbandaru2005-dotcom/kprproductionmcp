@@ -616,7 +616,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   LET'S GET STARTED
                 </h2>
                 <p className="text-xs sm:text-sm text-[#666666] font-light">
-                  Enter your contact and event details to begin tailoring your accurate photography estimate.
+                  Enter your contact details and event location to begin tailoring your accurate photography estimate.
                 </p>
               </div>
 
@@ -677,56 +677,24 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                 </div>
               </div>
 
-              {/* Event Date, Time, Location */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                {/* Event Date */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
-                    Event Date
-                  </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
-                    <input
-                      type="date"
-                      value={eventDate}
-                      onChange={(e) => setEventDate(e.target.value)}
-                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all"
-                    />
-                  </div>
+              {/* Event Location */}
+              <div className="space-y-2 pt-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
+                  Event Location
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
+                  <input
+                    type="text"
+                    value={eventLocation}
+                    onChange={(e) => setEventLocation(e.target.value)}
+                    placeholder="e.g. Warangal, Hyderabad, Secunderabad"
+                    className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all"
+                  />
                 </div>
-
-                {/* Event Time */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
-                    Event Time
-                  </label>
-                  <div className="relative">
-                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
-                    <input
-                      type="time"
-                      value={eventTime}
-                      onChange={(e) => setEventTime(e.target.value)}
-                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Event Location */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
-                    Event Location
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
-                    <input
-                      type="text"
-                      value={eventLocation}
-                      onChange={(e) => setEventLocation(e.target.value)}
-                      placeholder="e.g. Warangal, Hyderabad"
-                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-3 text-sm text-[#1A1A1A] placeholder-[#999999] outline-none transition-all"
-                    />
-                  </div>
-                </div>
+                <p className="text-[11px] text-[#777777]">
+                  Venue or city of the events. Specific dates and timings can be scheduled individually for each celebration in Step 3.
+                </p>
               </div>
 
               {/* Studio Guarantee Info Card */}
@@ -1574,8 +1542,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-[#8C8375]">Event Details</span>
                     <h4 className="text-sm sm:text-base font-bold text-[#1A1A1A] mt-0.5">{eventLocation || 'Telangana, India'}</h4>
-                    <p className="text-xs text-[#A89F91]">
-                      {eventDate ? `Date: ${eventDate}` : 'Date: To be confirmed'}
+                    <p className="text-xs text-[#8C6D3F] font-medium">
+                      {eventDate ? `Date: ${eventDate}` : 'Dates scheduled per celebration'}
                       {eventTime ? ` • Time: ${eventTime}` : ''}
                     </p>
                   </div>
