@@ -38,6 +38,123 @@ function getBookDimensions() {
   }
   return { singlePageW: 350, singlePageH: 242 };
 }
+/* ─────────────────────────────────────────────────────
+   3D TOP PAGES BLOCK (Paper leaves, spine notch & stepped fore-edge)
+   Matches the user's line drawing reference exactly:
+   - C/U-notch headband on the spine side
+   - Slanted rear hardcover board
+   - Stepped fanned-out paper leaf edges on the fore-edge side
+   - Crisp, elegant bookbinding paper lines
+   - Visible ONLY when the book is closed (Front Cover or Back Cover)
+   - Hidden when the book is open ("if open the pages should not be appeared")
+   ───────────────────────────────────────────────────── */
+function BookTopPagesBlock({ width, height = 34, isReversed = false }) {
+  const w = width;
+  const h = height;
+  const spineW = Math.max(16, Math.round(w * 0.08));
+
+  // Stepped fore-edge points (7 steps matching user sketch)
+  const stepW = Math.round(spineW * 0.85);
+  const stepStartX = w - stepW;
+
+  return (
+    <svg
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="pointer-events-none select-none"
+      style={{
+        transform: isReversed ? 'scaleX(-1)' : 'none',
+        transformOrigin: 'center'
+      }}
+    >
+      <defs>
+        <linearGradient id="paperGradTop" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ECE3D6" />
+          <stop offset="25%" stopColor="#FAF7F2" />
+          <stop offset="75%" stopColor="#F5ECE0" />
+          <stop offset="100%" stopColor="#E2D4C3" />
+        </linearGradient>
+      </defs>
+
+      {/* ── 1. Rear Hardcover Board (Top slanted board from drawing) ── */}
+      <path
+        d={`M ${spineW * 0.5} ${h * 0.42} L ${stepStartX} 1.5 L ${stepStartX} 4.5 L ${spineW * 0.5} ${h * 0.42 + 3} Z`}
+        fill="#261E16"
+      />
+      <path
+        d={`M ${spineW * 0.5} ${h * 0.42} L ${stepStartX} 1.5`}
+        stroke="rgba(255,255,255,0.4)"
+        strokeWidth="0.8"
+      />
+
+      {/* ── 2. Paper Leaves Body (Stacked paper between rear board, spine & front cover) ── */}
+      <path
+        d={`M ${spineW * 0.5} ${h * 0.42 + 2}
+            L ${stepStartX} 4
+            L ${stepStartX + stepW * 0.15} ${h * 0.22}
+            L ${stepStartX + stepW * 0.30} ${h * 0.36}
+            L ${stepStartX + stepW * 0.45} ${h * 0.50}
+            L ${stepStartX + stepW * 0.60} ${h * 0.64}
+            L ${stepStartX + stepW * 0.75} ${h * 0.78}
+            L ${stepStartX + stepW * 0.90} ${h * 0.90}
+            L ${w} ${h}
+            L 2 ${h}
+            C 2 ${h * 0.7} 4 ${h * 0.45} ${spineW * 0.2} ${h * 0.32}
+            C ${spineW * 0.3} ${h * 0.5} ${spineW * 0.4} ${h * 0.52} ${spineW * 0.5} ${h * 0.42 + 2} Z`}
+        fill="url(#paperGradTop)"
+      />
+
+      {/* ── 3. Individual Paper Layer Lines (Matching pen sketch strokes) ── */}
+      <path d={`M ${spineW * 0.52} ${h * 0.48} L ${stepStartX + stepW * 0.12} ${h * 0.22}`} stroke="#BFAFA0" strokeWidth="0.8" />
+      <path d={`M ${spineW * 0.46} ${h * 0.56} L ${stepStartX + stepW * 0.27} ${h * 0.36}`} stroke="#D8CCC0" strokeWidth="0.8" />
+      <path d={`M ${spineW * 0.40} ${h * 0.64} L ${stepStartX + stepW * 0.42} ${h * 0.50}`} stroke="#BFAFA0" strokeWidth="0.8" />
+      <path d={`M ${spineW * 0.34} ${h * 0.72} L ${stepStartX + stepW * 0.57} ${h * 0.64}`} stroke="#D8CCC0" strokeWidth="0.8" />
+      <path d={`M ${spineW * 0.28} ${h * 0.80} L ${stepStartX + stepW * 0.72} ${h * 0.78}`} stroke="#BFAFA0" strokeWidth="0.8" />
+      <path d={`M ${spineW * 0.22} ${h * 0.88} L ${stepStartX + stepW * 0.87} ${h * 0.90}`} stroke="#D8CCC0" strokeWidth="0.8" />
+      <path d={`M ${spineW * 0.16} ${h * 0.94} L ${w - 1} ${h - 1}`} stroke="#BFAFA0" strokeWidth="0.8" />
+
+      {/* ── 4. Stepped Fore-Edge Outline (Crisp steps on right side) ── */}
+      <path
+        d={`M ${stepStartX} 4
+            L ${stepStartX + stepW * 0.15} ${h * 0.22}
+            L ${stepStartX + stepW * 0.30} ${h * 0.36}
+            L ${stepStartX + stepW * 0.45} ${h * 0.50}
+            L ${stepStartX + stepW * 0.60} ${h * 0.64}
+            L ${stepStartX + stepW * 0.75} ${h * 0.78}
+            L ${stepStartX + stepW * 0.90} ${h * 0.90}
+            L ${w} ${h}`}
+        stroke="#968878"
+        strokeWidth="0.9"
+        fill="none"
+      />
+
+      {/* ── 5. Spine U-Notch Headband Curve (Left side from drawing) ── */}
+      <path
+        d={`M 0 ${h}
+            C 1 ${h * 0.6} 3 ${h * 0.4} ${spineW * 0.2} ${h * 0.3}
+            C ${spineW * 0.32} ${h * 0.52} ${spineW * 0.42} ${h * 0.52} ${spineW * 0.5} ${h * 0.42}
+            L ${spineW * 0.5} ${h * 0.46}
+            C ${spineW * 0.4} ${h * 0.56} ${spineW * 0.3} ${h * 0.56} ${spineW * 0.18} ${h * 0.36}
+            C 2 ${h * 0.46} 1 ${h * 0.7} 0 ${h} Z`}
+        fill="#3A2E20"
+      />
+      {/* Decorative Headband Stitching Arc */}
+      <path
+        d={`M ${spineW * 0.22} ${h * 0.35} C ${spineW * 0.32} ${h * 0.52} ${spineW * 0.42} ${h * 0.52} ${spineW * 0.48} ${h * 0.44}`}
+        stroke="#C5A880"
+        strokeWidth="1"
+        strokeDasharray="2,2"
+      />
+
+      {/* ── 6. Front Cover Top Lip (Foreground edge) ── */}
+      <rect x="0" y={h - 3} width={w} height="3" rx="0.5" fill="#2E2419" />
+      <line x1="0" y1={h - 3} x2={w} y2={h - 3} stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" />
+    </svg>
+  );
+}
 
 /* ─────────────────────────────────────────────────────
    PAGE 0: LUXURY HARDCOVER FRONT COVER
@@ -314,6 +431,8 @@ export default function HeroInteractiveAlbum({
   const isBackCover = currentPage >= totalPages - 1;
   const isOpen = !isCover && !isBackCover;
 
+  const topBlockHeight = Math.round(dims.singlePageW * 0.09) + 4;
+
   return (
     <div className="relative flex flex-col items-center justify-center select-none my-1 sm:my-1.5 w-full max-w-full px-2">
       {/* ── 3D Stage with Outer Drop Shadow ── */}
@@ -465,6 +584,51 @@ export default function HeroInteractiveAlbum({
                 : 'translateX(0px)'
           }}
         >
+          {/* ── 3D Top Pages Block (Visible ONLY when closed on Front Cover, matches drawing) ── */}
+          <AnimatePresence>
+            {isCover && (
+              <motion.div
+                initial={{ opacity: 0, y: 2 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 2, transition: { duration: 0.15 } }}
+                transition={{ duration: 0.25 }}
+                className="absolute right-0 z-30 pointer-events-none"
+                style={{
+                  top: `-${topBlockHeight - 2}px`,
+                  width: `${dims.singlePageW}px`
+                }}
+              >
+                <BookTopPagesBlock
+                  width={dims.singlePageW}
+                  height={topBlockHeight}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── 3D Top Pages Block (Visible ONLY when closed on Back Cover) ── */}
+          <AnimatePresence>
+            {isBackCover && (
+              <motion.div
+                initial={{ opacity: 0, y: 2 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 2, transition: { duration: 0.15 } }}
+                transition={{ duration: 0.25 }}
+                className="absolute left-0 z-30 pointer-events-none"
+                style={{
+                  top: `-${topBlockHeight - 2}px`,
+                  width: `${dims.singlePageW}px`
+                }}
+              >
+                <BookTopPagesBlock
+                  width={dims.singlePageW}
+                  height={topBlockHeight}
+                  isReversed={true}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Hardcover Casing Underplate & Fore-Edge Framing (Matching Image 2 Reference) */}
           {isOpen && (
             <div
