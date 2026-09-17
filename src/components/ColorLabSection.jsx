@@ -37,6 +37,7 @@ export default function ColorLabSection() {
   const [activeSubTab, setActiveSubTab] = useState('designs'); // 'designs' | 'packages' | 'albums'
   const [albumsList, setAlbumsList] = useState(INITIAL_ALBUMS);
   const [flipbookImages, setFlipbookImages] = useState(null); // when set, opens the album flipbook viewer
+  const [flipbookCover, setFlipbookCover] = useState(null);
   const [flipbookSize, setFlipbookSize] = useState('12x36');
   const [flipbookTitle, setFlipbookTitle] = useState('Custom Wedding Album');
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -486,10 +487,11 @@ export default function ColorLabSection() {
             <CustomAlbumUploadModal
               isOpen={uploadModalOpen}
               onClose={() => setUploadModalOpen(false)}
-              onLaunchFlipbook={(photos, size) => {
+              onLaunchFlipbook={(photos, size, coverUrl) => {
                 setFlipbookSize(size);
                 setFlipbookTitle(`Custom ${size} Album`);
                 setFlipbookImages(photos);
+                setFlipbookCover(coverUrl || photos[0]);
               }}
             />
 
@@ -497,9 +499,13 @@ export default function ColorLabSection() {
             {flipbookImages && (
               <AlbumFlipbookViewer
                 images={flipbookImages}
+                coverImage={flipbookCover}
                 size={flipbookSize}
                 title={flipbookTitle}
-                onClose={() => setFlipbookImages(null)}
+                onClose={() => {
+                  setFlipbookImages(null);
+                  setFlipbookCover(null);
+                }}
               />
             )}
 

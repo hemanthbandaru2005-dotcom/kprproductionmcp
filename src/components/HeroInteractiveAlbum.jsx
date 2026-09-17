@@ -47,11 +47,148 @@ function getBookDimensions() {
 }
 
 /* ─────────────────────────────────────────────────────
+   3D TOP PAGES BLOCK (Paper leaves & spine curve from client sketch)
+   Renders the fanned paper block and headband seen at the top of a real book
+   ───────────────────────────────────────────────────── */
+function BookTopPagesBlock({ width, height = 22, isReversed = false }) {
+  const w = width;
+  const h = height;
+  const spineW = Math.max(14, Math.round(w * 0.08));
+
+  if (isReversed) {
+    // Mirrored for back cover (spine on the right)
+    return (
+      <svg
+        width={w}
+        height={h}
+        viewBox={`0 0 ${w} ${h}`}
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="pointer-events-none drop-shadow-sm select-none"
+      >
+        {/* Rear cover board lip (background) */}
+        <path
+          d={`M 0 1 L ${w - spineW} 3 L ${w - spineW} 6 L 0 4 Z`}
+          fill="#352B20"
+        />
+        <path
+          d={`M 0 0.5 L ${w - spineW} 2.5`}
+          stroke="rgba(255,255,255,0.3)"
+          strokeWidth="0.8"
+        />
+
+        {/* Paper block body */}
+        <path
+          d={`M 3 3 L ${w - spineW} 5 C ${w - spineW * 0.4} 8 ${w - 4} 12 ${w - 3} ${h} L 3 ${h} Z`}
+          fill="url(#paperGradientRev)"
+        />
+
+        {/* Paper stack layer lines */}
+        <path d={`M 3 5 L ${w - spineW - 2} 7`} stroke="#C8BCAF" strokeWidth="0.8" />
+        <path d={`M 3 8 L ${w - spineW - 4} 10`} stroke="#DFCFC0" strokeWidth="0.8" />
+        <path d={`M 3 11 L ${w - spineW - 6} 13`} stroke="#BFB09D" strokeWidth="0.8" />
+        <path d={`M 3 14 L ${w - spineW - 8} 16`} stroke="#DFCFC0" strokeWidth="0.8" />
+        <path d={`M 3 17 L ${w - spineW - 10} 19`} stroke="#C8BCAF" strokeWidth="0.8" />
+
+        {/* Spine headband arch (right side) */}
+        <path
+          d={`M ${w - spineW} 5 C ${w - spineW * 0.5} 7 ${w - 4} 12 ${w - 3} ${h} C ${w - 1} ${h} ${w - 2} 9 ${w - spineW} 5 Z`}
+          fill="#5A4733"
+        />
+        <path
+          d={`M ${w - spineW + 2} 6 C ${w - spineW * 0.4} 8 ${w - 3} 13 ${w - 2} ${h}`}
+          stroke="#C5A880"
+          strokeWidth="1.2"
+          strokeDasharray="2,2"
+        />
+
+        {/* Front cover top lip (foreground) */}
+        <rect x="0" y={h - 3} width={w} height="3" rx="0.5" fill="#2E2419" />
+        <line x1="0" y1={h - 3} x2={w} y2={h - 3} stroke="rgba(255,255,255,0.35)" strokeWidth="0.8" />
+
+        <defs>
+          <linearGradient id="paperGradientRev" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ECE3D6" />
+            <stop offset="40%" stopColor="#FAF7F2" />
+            <stop offset="85%" stopColor="#E8DFD1" />
+            <stop offset="100%" stopColor="#D5C7B5" />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  }
+
+  // Normal for front cover (spine on the left, matching sketch!)
+  return (
+    <svg
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="pointer-events-none drop-shadow-sm select-none"
+    >
+      {/* Rear cover board lip (background) */}
+      <path
+        d={`M ${spineW} 3 L ${w} 1 L ${w} 4 L ${spineW} 6 Z`}
+        fill="#352B20"
+      />
+      <path
+        d={`M ${spineW} 2.5 L ${w} 0.5`}
+        stroke="rgba(255,255,255,0.3)"
+        strokeWidth="0.8"
+      />
+
+      {/* Paper block body */}
+      <path
+        d={`M ${spineW} 5 L ${w - 3} 3 L ${w - 3} ${h} L 3 ${h} C 4 12 ${spineW * 0.4} 8 ${spineW} 5 Z`}
+        fill="url(#paperGradient)"
+      />
+
+      {/* Paper stack layer lines */}
+      <path d={`M ${spineW + 2} 7 L ${w - 3} 5`} stroke="#C8BCAF" strokeWidth="0.8" />
+      <path d={`M ${spineW + 4} 10 L ${w - 3} 8`} stroke="#DFCFC0" strokeWidth="0.8" />
+      <path d={`M ${spineW + 6} 13 L ${w - 3} 11`} stroke="#BFB09D" strokeWidth="0.8" />
+      <path d={`M ${spineW + 8} 16 L ${w - 3} 14`} stroke="#DFCFC0" strokeWidth="0.8" />
+      <path d={`M ${spineW + 10} 19 L ${w - 3} 17`} stroke="#C8BCAF" strokeWidth="0.8" />
+
+      {/* Spine headband arch (left side, curved notch matching sketch!) */}
+      <path
+        d={`M ${spineW} 5 C ${spineW * 0.5} 7 4 12 3 ${h} C 1 ${h} 2 9 ${spineW} 5 Z`}
+        fill="#5A4733"
+      />
+      <path
+        d={`M ${spineW - 2} 6 C ${spineW * 0.4} 8 3 13 2 ${h}`}
+        stroke="#C5A880"
+        strokeWidth="1.2"
+        strokeDasharray="2,2"
+      />
+
+      {/* Front cover top lip (foreground) */}
+      <rect x="0" y={h - 3} width={w} height="3" rx="0.5" fill="#2E2419" />
+      <line x1="0" y1={h - 3} x2={w} y2={h - 3} stroke="rgba(255,255,255,0.35)" strokeWidth="0.8" />
+
+      <defs>
+        <linearGradient id="paperGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#D5C7B5" />
+          <stop offset="15%" stopColor="#E8DFD1" />
+          <stop offset="60%" stopColor="#FAF7F2" />
+          <stop offset="100%" stopColor="#ECE3D6" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────────────────
    PAGE 0: LUXURY HARDCOVER FRONT COVER
    - data-density="hard" (rigid physical book cover)
-   - Zero black borders, 100% full uncropped artwork
+   - Realistic French groove, spine roll, and fore-edge
+   - Dynamic coverSrc (custom uploaded photo or demo cover)
    ───────────────────────────────────────────────────── */
-const HeroFrontCover = forwardRef(({ onCoverClick, ...props }, ref) => {
+const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, ...props }, ref) => {
+  const imgSrc = coverSrc || "/images/album/front_cover.jpg";
+
   return (
     <div
       ref={ref}
@@ -67,23 +204,60 @@ const HeroFrontCover = forwardRef(({ onCoverClick, ...props }, ref) => {
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-r-2 border-r-[#8A7862]/30 bg-[#FAF8F5]">
         <img
-          src="/images/album/front_cover.jpg"
-          alt="KPR Productions Wedding Photobook Front Cover"
+          src={imgSrc}
+          alt="Photobook Front Cover"
           className="w-full h-full object-cover object-center select-none pointer-events-none"
           loading="eager"
           draggable={false}
         />
 
-        {/* Hardcover Outer Bevel Highlight */}
+        {/* ── Realistic French Groove / Spine Hinge Indentation (Matches user sketch) ── */}
         <div
-          className="absolute inset-0 pointer-events-none border border-[#4A3C28]/20 shadow-[inset_0_0_6px_rgba(0,0,0,0.15)]"
+          className="absolute top-0 bottom-0 pointer-events-none z-20"
+          style={{
+            left: 'clamp(14px, 7.5%, 22px)',
+            width: '3.5px',
+            background: 'linear-gradient(to right, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.25) 100%)',
+            boxShadow: 'inset 1px 0 2px rgba(0,0,0,0.45)'
+          }}
         />
 
-        {/* Right Stacked Paper Margin Highlight */}
+        {/* ── Rounded Spine Backbone Lighting Roll (Left of groove) ── */}
         <div
-          className="absolute top-0 bottom-0 right-0 w-2 pointer-events-none"
+          className="absolute top-0 bottom-0 left-0 pointer-events-none z-20"
           style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, transparent 100%)'
+            width: 'clamp(14px, 7.5%, 22px)',
+            background: 'linear-gradient(to right, rgba(0,0,0,0.38) 0%, rgba(255,255,255,0.2) 35%, rgba(0,0,0,0.12) 80%, rgba(0,0,0,0.45) 100%)'
+          }}
+        />
+
+        {/* ── Top-Left & Bottom-Left Spine Headband Notches (Matches sketch) ── */}
+        <div
+          className="absolute -top-0.5 left-0 w-3 h-2 pointer-events-none z-30"
+          style={{
+            borderTopLeftRadius: '3px',
+            boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.6)'
+          }}
+        />
+        <div
+          className="absolute -bottom-0.5 left-0 w-3 h-2 pointer-events-none z-30"
+          style={{
+            borderBottomLeftRadius: '3px',
+            boxShadow: 'inset 1px -1px 2px rgba(0,0,0,0.6)'
+          }}
+        />
+
+        {/* ── Hardcover Outer Bevel Highlight ── */}
+        <div
+          className="absolute inset-0 pointer-events-none z-20 border border-[#4A3C28]/25 shadow-[inset_0_0_6px_rgba(0,0,0,0.18)]"
+        />
+
+        {/* ── Right Fore-Edge Stacked Paper Thickness Highlight ── */}
+        <div
+          className="absolute top-0 bottom-0 right-0 w-2.5 pointer-events-none z-20 flex flex-col justify-between"
+          style={{
+            background: 'linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(240,230,215,0.4) 40%, transparent 100%)',
+            borderLeft: '1px solid rgba(0,0,0,0.08)'
           }}
         />
       </div>
@@ -344,8 +518,11 @@ HeroEndsheetRightPage.displayName = 'HeroEndsheetRightPage';
    PAGE: LUXURY HARDCOVER BACK COVER
    - data-density="hard" (rigid physical book cover)
    - Closes book cleanly into single-page format
+   - Symmetrical French groove and spine roll
    ───────────────────────────────────────────────────── */
-const HeroBackCover = forwardRef(({ onCoverClick, ...props }, ref) => {
+const HeroBackCover = forwardRef(({ onCoverClick, backCoverSrc, ...props }, ref) => {
+  const imgSrc = backCoverSrc || "/images/album/back_cover.jpg";
+
   return (
     <div
       ref={ref}
@@ -361,23 +538,44 @@ const HeroBackCover = forwardRef(({ onCoverClick, ...props }, ref) => {
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-l-2 border-l-[#8A7862]/30 bg-[#FAF8F5]">
         <img
-          src="/images/album/back_cover.jpg"
-          alt="KPR Productions Wedding Photobook Back Cover"
+          src={imgSrc}
+          alt="Photobook Back Cover"
           className="w-full h-full object-cover object-center select-none pointer-events-none"
           loading="lazy"
           draggable={false}
         />
 
-        {/* Hardcover Outer Bevel Highlight */}
+        {/* ── Realistic French Groove on Right Side (Hinge) ── */}
         <div
-          className="absolute inset-0 pointer-events-none border border-[#4A3C28]/20 shadow-[inset_0_0_6px_rgba(0,0,0,0.15)]"
+          className="absolute top-0 bottom-0 pointer-events-none z-20"
+          style={{
+            right: 'clamp(14px, 7.5%, 22px)',
+            width: '3.5px',
+            background: 'linear-gradient(to left, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.25) 100%)',
+            boxShadow: 'inset -1px 0 2px rgba(0,0,0,0.45)'
+          }}
         />
 
-        {/* Left Stacked Paper Margin Highlight */}
+        {/* ── Rounded Spine Backbone Lighting Roll (Right of groove) ── */}
         <div
-          className="absolute top-0 bottom-0 left-0 w-2 pointer-events-none"
+          className="absolute top-0 bottom-0 right-0 pointer-events-none z-20"
           style={{
-            background: 'linear-gradient(to right, rgba(0,0,0,0.2) 0%, transparent 100%)'
+            width: 'clamp(14px, 7.5%, 22px)',
+            background: 'linear-gradient(to left, rgba(0,0,0,0.38) 0%, rgba(255,255,255,0.2) 35%, rgba(0,0,0,0.12) 80%, rgba(0,0,0,0.45) 100%)'
+          }}
+        />
+
+        {/* ── Hardcover Outer Bevel Highlight ── */}
+        <div
+          className="absolute inset-0 pointer-events-none z-20 border border-[#4A3C28]/25 shadow-[inset_0_0_6px_rgba(0,0,0,0.18)]"
+        />
+
+        {/* ── Left Fore-Edge Stacked Paper Thickness Highlight ── */}
+        <div
+          className="absolute top-0 bottom-0 left-0 w-2.5 pointer-events-none z-20 flex flex-col justify-between"
+          style={{
+            background: 'linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(240,230,215,0.4) 40%, transparent 100%)',
+            borderRight: '1px solid rgba(0,0,0,0.08)'
           }}
         />
       </div>
@@ -389,10 +587,17 @@ HeroBackCover.displayName = 'HeroBackCover';
 /* ─────────────────────────────────────────────────────
    Main Export: HeroInteractiveAlbum
    - Uses real HTMLFlipBook engine (zero shaking, real 3D page curls)
-   - Smoothly centers closed cover and open spreads
+   - Realistic 3D Physical Book casing with top paper block from client sketch
+   - Supports dynamic user uploads (cover + pages) while preserving demo defaults
    - Dedicated [ ⛶ Full View ] button
    ───────────────────────────────────────────────────── */
-export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, showFullscreenButton = true }) {
+export default function HeroInteractiveAlbum({
+  onOpenUpload,
+  onOpenFullscreen,
+  showFullscreenButton = true,
+  customCoverImage = null,
+  customPhotos = null
+}) {
   const flipBookRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [dims, setDims] = useState(getBookDimensions);
@@ -403,10 +608,28 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Normalize photos: use custom uploaded photos if provided, otherwise default to demo FLEXY_ALBUM_PHOTOS
+  const activePhotos = (customPhotos && customPhotos.length > 0)
+    ? customPhotos.map((p, idx) => ({
+        id: idx + 1,
+        src: typeof p === 'string' ? p : p.url,
+        label: p.label || `${String(idx + 1).padStart(2, '0')} · Photo ${idx + 1}`
+      }))
+    : FLEXY_ALBUM_PHOTOS;
+
+  // Active cover: use custom uploaded cover image if available, else first custom photo, else default demo cover
+  const activeCover = customCoverImage
+    ? customCoverImage
+    : (customPhotos && customPhotos.length > 0)
+      ? (typeof customPhotos[0] === 'string' ? customPhotos[0] : customPhotos[0].url)
+      : '/images/album/front_cover.jpg';
+
+  const activeBackCover = '/images/album/back_cover.jpg';
+
   // Endsheets to complete the last spread before the back cover:
   // Front cover (1) + photos + endsheets + back cover (1) MUST be an EVEN total
-  const endsheetCount = FLEXY_ALBUM_PHOTOS.length % 2 === 0 ? 2 : 1;
-  const totalPages = 1 + FLEXY_ALBUM_PHOTOS.length + endsheetCount + 1;
+  const endsheetCount = activePhotos.length % 2 === 0 ? 2 : 1;
+  const totalPages = 1 + activePhotos.length + endsheetCount + 1;
 
   const handleFlipNext = useCallback(() => {
     try {
@@ -446,6 +669,8 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
   const isCover = currentPage === 0;
   const isBackCover = currentPage >= totalPages - 1;
   const isOpen = !isCover && !isBackCover;
+
+  const topBlockHeight = Math.round(dims.singlePageW * 0.07) + 6;
 
   return (
     <div className="relative flex flex-col items-center justify-center select-none my-1 sm:my-1.5 w-full max-w-full px-2">
@@ -600,9 +825,54 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
                 : 'translateX(0px)'
           }}
         >
+          {/* ── 3D Top Pages Block (Visible when closed on Front Cover) ── */}
+          <AnimatePresence>
+            {isCover && (
+              <motion.div
+                initial={{ opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 3, transition: { duration: 0.15 } }}
+                transition={{ duration: 0.3 }}
+                className="absolute right-0 z-30 pointer-events-none"
+                style={{
+                  top: `-${topBlockHeight - 2}px`,
+                  width: `${dims.singlePageW}px`
+                }}
+              >
+                <BookTopPagesBlock
+                  width={dims.singlePageW}
+                  height={topBlockHeight}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── 3D Top Pages Block (Visible when closed on Back Cover) ── */}
+          <AnimatePresence>
+            {isBackCover && (
+              <motion.div
+                initial={{ opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 3, transition: { duration: 0.15 } }}
+                transition={{ duration: 0.3 }}
+                className="absolute left-0 z-30 pointer-events-none"
+                style={{
+                  top: `-${topBlockHeight - 2}px`,
+                  width: `${dims.singlePageW}px`
+                }}
+              >
+                <BookTopPagesBlock
+                  width={dims.singlePageW}
+                  height={topBlockHeight}
+                  isReversed={true}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* ── REAL 3D PAGE-FLIP ENGINE (HTMLFlipBook) ── */}
           <HTMLFlipBook
-            key={`hero-flipbook-${dims.singlePageW}-${dims.singlePageH}`}
+            key={`hero-flipbook-${dims.singlePageW}-${dims.singlePageH}-${activePhotos.length}-${activeCover}`}
             ref={flipBookRef}
             width={dims.singlePageW}
             height={dims.singlePageH}
@@ -628,11 +898,14 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
             onChangeState={handleChangeState}
             className="album-flipbook-shadow"
           >
-            {/* Page 0: Front Cover */}
-            <HeroFrontCover onCoverClick={handleFlipNext} />
+            {/* Page 0: Front Cover (Dynamic user upload or default demo) */}
+            <HeroFrontCover
+              coverSrc={activeCover}
+              onCoverClick={handleFlipNext}
+            />
 
-            {/* Pages 1..64: Real Album Photo Pages (Split so each image is large & prominent) */}
-            {FLEXY_ALBUM_PHOTOS.map((photo, idx) => (
+            {/* Photo Pages (Dynamic user upload or default demo) */}
+            {activePhotos.map((photo, idx) => (
               <HeroPhotoPage
                 key={photo.id}
                 src={photo.src}
@@ -646,7 +919,10 @@ export default function HeroInteractiveAlbum({ onOpenUpload, onOpenFullscreen, s
             {endsheetCount === 2 && <HeroEndsheetRightPage />}
 
             {/* Final Page: Luxury Hardcover Back Cover (Closes the book to single-page mode) */}
-            <HeroBackCover onCoverClick={handleFlipPrev} />
+            <HeroBackCover
+              backCoverSrc={activeBackCover}
+              onCoverClick={handleFlipPrev}
+            />
           </HTMLFlipBook>
         </div>
       </div>

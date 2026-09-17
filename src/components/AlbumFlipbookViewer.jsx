@@ -24,7 +24,9 @@ function getPageAspectRatio(sizeStr) {
 /* ─────────────────────────────────────────────────────
    Luxury Leatherette Front Cover Page
    ───────────────────────────────────────────────────── */
-const CoverPage = forwardRef(({ title, size, totalPhotos, onOpen, ...props }, ref) => {
+const CoverPage = forwardRef(({ title, size, totalPhotos, coverSrc, onOpen, ...props }, ref) => {
+  const imgSrc = coverSrc || "/images/album/front_cover.jpg";
+
   return (
     <div
       ref={ref}
@@ -39,16 +41,36 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, onOpen, ...props }, re
       }}
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-r-2 border-r-[#8A7862]/40 bg-[#FAF7F2]">
-        {/* User-Provided Artwork Cover Image (Full & Pristine) */}
+        {/* Cover Artwork Image */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#FAF7F2]">
           <img
-            src="/images/album/front_cover.jpg"
-            alt="KPR Productions Wedding Photobook Front Cover"
+            src={imgSrc}
+            alt="Wedding Photobook Front Cover"
             className="w-full h-full object-cover object-center select-none pointer-events-none"
             loading="eager"
             draggable={false}
           />
         </div>
+
+        {/* ── Realistic French Groove / Spine Hinge Indentation (Matches user sketch) ── */}
+        <div
+          className="absolute top-0 bottom-0 pointer-events-none z-20"
+          style={{
+            left: 'clamp(14px, 7.5%, 22px)',
+            width: '3.5px',
+            background: 'linear-gradient(to right, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.25) 100%)',
+            boxShadow: 'inset 1px 0 2px rgba(0,0,0,0.45)'
+          }}
+        />
+
+        {/* ── Rounded Spine Backbone Lighting Roll (Left of groove) ── */}
+        <div
+          className="absolute top-0 bottom-0 left-0 pointer-events-none z-20"
+          style={{
+            width: 'clamp(14px, 7.5%, 22px)',
+            background: 'linear-gradient(to right, rgba(0,0,0,0.38) 0%, rgba(255,255,255,0.2) 35%, rgba(0,0,0,0.12) 80%, rgba(0,0,0,0.45) 100%)'
+          }}
+        />
 
         {/* Hardcover Outer Bevel Edge */}
         <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_6px_rgba(0,0,0,0.15)]" />
@@ -154,7 +176,9 @@ EndsheetPage.displayName = 'EndsheetPage';
 /* ─────────────────────────────────────────────────────
    Luxury Leatherette Back Cover Page
    ───────────────────────────────────────────────────── */
-const BackCoverPage = forwardRef(({ onReopen, ...props }, ref) => {
+const BackCoverPage = forwardRef(({ onReopen, backCoverSrc, ...props }, ref) => {
+  const imgSrc = backCoverSrc || "/images/album/back_cover.jpg";
+
   return (
     <div
       ref={ref}
@@ -169,16 +193,36 @@ const BackCoverPage = forwardRef(({ onReopen, ...props }, ref) => {
       }}
     >
       <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-l-2 border-l-[#8A7862]/40 bg-[#FAF7F2]">
-        {/* User-Provided Artwork Back Cover Image (Full & Pristine) */}
+        {/* Back Cover Artwork Image */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-[#FAF7F2]">
           <img
-            src="/images/album/back_cover.jpg"
-            alt="KPR Productions Wedding Photobook Back Cover"
+            src={imgSrc}
+            alt="Wedding Photobook Back Cover"
             className="w-full h-full object-cover object-center select-none pointer-events-none"
             loading="lazy"
             draggable={false}
           />
         </div>
+
+        {/* ── Realistic French Groove on Right Side (Hinge) ── */}
+        <div
+          className="absolute top-0 bottom-0 pointer-events-none z-20"
+          style={{
+            right: 'clamp(14px, 7.5%, 22px)',
+            width: '3.5px',
+            background: 'linear-gradient(to left, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.25) 100%)',
+            boxShadow: 'inset -1px 0 2px rgba(0,0,0,0.45)'
+          }}
+        />
+
+        {/* ── Rounded Spine Backbone Lighting Roll (Right of groove) ── */}
+        <div
+          className="absolute top-0 bottom-0 right-0 pointer-events-none z-20"
+          style={{
+            width: 'clamp(14px, 7.5%, 22px)',
+            background: 'linear-gradient(to left, rgba(0,0,0,0.38) 0%, rgba(255,255,255,0.2) 35%, rgba(0,0,0,0.12) 80%, rgba(0,0,0,0.45) 100%)'
+          }}
+        />
 
         {/* Hardcover Outer Bevel Edge */}
         <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_6px_rgba(0,0,0,0.15)]" />
@@ -231,7 +275,14 @@ function useWindowSize() {
 /* ─────────────────────────────────────────────────────
    AlbumFlipbookViewer — Full-Page Modal Component
    ───────────────────────────────────────────────────── */
-export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Wedding Album', size = '', onClose }) {
+export default function AlbumFlipbookViewer({
+  images = [],
+  coverImage = null,
+  backCoverImage = null,
+  title = 'Luxury Wedding Album',
+  size = '',
+  onClose
+}) {
   const flipBook = useRef(null);
   const autoplayTimer = useRef(null);
   const touchStartX = useRef(null);
@@ -444,6 +495,9 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
   singlePageW = Math.max(isNaN(singlePageW) ? 300 : singlePageW, 130);
   singlePageH = Math.max(isNaN(singlePageH) ? 200 : singlePageH, 140);
 
+  const activeCover = coverImage || safeImages[0] || '/images/album/front_cover.jpg';
+  const activeBackCover = backCoverImage || '/images/album/back_cover.jpg';
+
   /* Build guaranteed valid non-falsy children for HTMLFlipBook */
   const flipbookPages = [
     <CoverPage
@@ -451,6 +505,7 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
       title={title}
       size={size}
       totalPhotos={totalPhotos}
+      coverSrc={activeCover}
       onOpen={handleFlipNext}
     />,
     ...safeImages.map((src, i) => (
@@ -463,7 +518,11 @@ export default function AlbumFlipbookViewer({ images = [], title = 'Luxury Weddi
       />
     )),
     ...endsheetPages,
-    <BackCoverPage key="flip-backcover" onReopen={handleFlipPrev} />
+    <BackCoverPage
+      key="flip-backcover"
+      backCoverSrc={activeBackCover}
+      onReopen={handleFlipPrev}
+    />
   ];
 
   return (

@@ -16,6 +16,7 @@ const ACCEPTED_FILE_TYPES = [
 
 export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbook }) {
   const [uploadedPages, setUploadedPages] = useState([]); // array of { id, url, name, isPdf }
+  const [coverIndex, setCoverIndex] = useState(0); // index of selected cover photo
   const [uploadError, setUploadError] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState(null);
@@ -127,7 +128,14 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
       if (page && page.url && !page.isPdf) {
         try { URL.revokeObjectURL(page.url); } catch (_) {}
       }
-      return prev.filter((_, i) => i !== index);
+      const next = prev.filter((_, i) => i !== index);
+      setCoverIndex(prevCover => {
+        if (next.length === 0) return 0;
+        if (prevCover >= next.length) return next.length - 1;
+        if (prevCover === index) return 0;
+        return prevCover > index ? prevCover - 1 : prevCover;
+      });
+      return next;
     });
   };
 
@@ -141,6 +149,13 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
       copy[index] = copy[targetIndex];
       copy[targetIndex] = temp;
       return copy;
+    });
+    setCoverIndex(prevCover => {
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= uploadedPages.length) return prevCover;
+      if (prevCover === index) return targetIndex;
+      if (prevCover === targetIndex) return index;
+      return prevCover;
     });
   };
 
@@ -174,6 +189,17 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
       return copy;
     });
 
+    setCoverIndex(prevCover => {
+      if (prevCover === sourceIndex) return targetIndex;
+      if (sourceIndex < targetIndex && prevCover > sourceIndex && prevCover <= targetIndex) {
+        return prevCover - 1;
+      }
+      if (sourceIndex > targetIndex && prevCover >= targetIndex && prevCover < sourceIndex) {
+        return prevCover + 1;
+      }
+      return prevCover;
+    });
+
     draggedItemIndex.current = null;
     setDragOverIndex(null);
   };
@@ -181,7 +207,9 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
   const handleLaunch = () => {
     if (uploadedPages.length === 0) return;
     const urls = uploadedPages.map(p => p.url);
-    onLaunchFlipbook(urls);
+    const safeCoverIdx = (coverIndex >= 0 && coverIndex < uploadedPages.length) ? coverIndex : 0;
+    const coverUrl = uploadedPages[safeCoverIdx]?.url || urls[0];
+    onLaunchFlipbook(urls, '12x36', coverUrl);
     onClose();
   };
 
@@ -279,12 +307,12 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
         {uploadedPages.length > 0 && (
           <div className="space-y-3 pt-1">
             <div className="flex items-center justify-between text-xs text-[#555555]">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-[#1A1A1A]">
                   {uploadedPages.length} {uploadedPages.length === 1 ? 'Page' : 'Pages'} Uploaded
                 </span>
                 <span className="text-[10px] text-[#888888]">
-                  (Drag or use arrows to reorder)
+                  (Drag to reorder · Click "Set as Cover" to pick cover)
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -300,6 +328,7 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
                   type="button"
                   onClick={() => {
                     setUploadedPages([]);
+                    setCoverIndex(0);
                     setUploadError(null);
                   }}
                   className="text-[11px] text-red-600 hover:underline font-semibold cursor-pointer"
@@ -313,6 +342,7 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5 max-h-56 overflow-y-auto p-2.5 bg-white rounded-xl border border-[#E2D9CC] shadow-inner">
               {uploadedPages.map((page, idx) => {
                 const isOver = dragOverIndex === idx;
+                const isCover = coverIndex === idx;
                 return (
                   <div
                     key={page.id}
@@ -321,7 +351,9 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
                     onDragOver={(e) => handleThumbnailDragOver(e, idx)}
                     onDrop={(e) => handleThumbnailDrop(e, idx)}
                     className={`relative aspect-[3/2] rounded-lg overflow-hidden bg-[#1A1A1A] group border transition-all duration-200 cursor-grab active:cursor-grabbing select-none ${
-                      isOver
+                      isCover
+                        ? 'ring-2 ring-[#C5A880] shadow-[0_0_12px_rgba(197,168,128,0.45)] border-[#C5A880]'
+                        : isOver
                         ? 'ring-2 ring-[#C5A880] scale-105 shadow-lg border-[#C5A880]'
                         : 'border-[#DCD2C3] hover:border-[#C5A880]'
                     }`}
@@ -337,11 +369,31 @@ export default function CustomAlbumUploadModal({ isOpen, onClose, onLaunchFlipbo
                       #{idx + 1}
                     </div>
 
+                    {/* Cover Badge or Set as Cover Button */}
+                    {isCover ? (
+                      <div className="absolute top-1 right-7 px-1.5 py-0.5 rounded bg-[#C5A880] text-black font-bold text-[8px] uppercase tracking-wider shadow-sm flex items-center gap-0.5 pointer-events-none z-10">
+                        <Sparkles className="w-2.5 h-2.5 fill-black text-black" />
+                        <span>COVER</span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCoverIndex(idx);
+                        }}
+                        className="absolute top-1 right-7 px-1.5 py-0.5 rounded bg-black/80 hover:bg-[#C5A880] hover:text-black text-white text-[7.5px] font-bold uppercase tracking-wider transition-all opacity-0 group-hover:opacity-100 cursor-pointer shadow-sm z-10"
+                        title="Set this photo as the photobook cover"
+                      >
+                        Set Cover
+                      </button>
+                    )}
+
                     {/* Delete Button */}
                     <button
                       type="button"
                       onClick={(e) => handleRemovePage(idx, e)}
-                      className="absolute top-1 right-1 p-1 bg-black/75 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-sm"
+                      className="absolute top-1 right-1 p-1 bg-black/75 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-sm z-10"
                       title="Remove page"
                     >
                       <X className="w-3 h-3" />
