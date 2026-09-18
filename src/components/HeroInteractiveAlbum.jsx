@@ -62,214 +62,95 @@ function ThreeDClosedBookMockup({
 }) {
   const w = width;
   const h = height;
-  const thickness = Math.max(16, Math.round(w * 0.095)); // ~26px on desktop, ~16px on mobile
-  const overhang = Math.max(3, Math.round(w * 0.015)); // ~4px overhang
-  const boardW = w + overhang;
-  const boardH = h + overhang * 2;
 
   return (
     <div
       onClick={onOpen}
-      className="relative flex items-center justify-center cursor-pointer select-none group py-3 sm:py-4 px-2"
-      style={{
-        perspective: '1200px',
-        perspectiveOrigin: '50% 45%'
-      }}
+      className="relative flex items-center justify-center cursor-pointer select-none group py-2"
       title="Click or swipe to open photobook"
     >
-      {/* ── Studio Ground Contact & Ambient Shadows (matching reference photo) ── */}
+      {/* ── Studio Ground Contact & Ambient Shadow ── */}
       <div
-        className="absolute pointer-events-none transition-all duration-500 ease-out"
+        className="absolute pointer-events-none rounded-lg transition-all duration-300 group-hover:scale-105"
         style={{
-          width: `${boardW * 1.18}px`,
-          height: `${boardH * 0.95}px`,
-          bottom: '6px',
+          width: `${w + 24}px`,
+          height: `${h + 16}px`,
+          bottom: '2px',
           left: '50%',
-          transform: isBackCover
-            ? 'translateX(-50%) rotateX(42deg) rotateY(10deg) rotateZ(20deg) translateY(18px) scale(0.96)'
-            : 'translateX(-50%) rotateX(42deg) rotateY(-8deg) rotateZ(-22deg) translateY(18px) scale(0.96)',
-          background: 'radial-gradient(ellipse at 46% 46%, rgba(0,0,0,0.46) 0%, rgba(0,0,0,0.24) 42%, rgba(0,0,0,0.06) 68%, transparent 82%)',
-          filter: 'blur(15px)',
+          transform: 'translateX(-50%)',
+          background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.18) 45%, rgba(0,0,0,0.04) 70%, transparent 80%)',
+          filter: 'blur(10px)',
           zIndex: 0
         }}
       />
 
-      {/* ── 3D Isometric Hardcover Book Assembly ── */}
+      {/* ── Solid Realistic Hardcover Photobook Body ── */}
       <div
-        className="relative transition-transform duration-500 ease-out group-hover:scale-[1.03] group-hover:-translate-y-2"
+        className="relative overflow-hidden rounded-[3px] transition-all duration-300 ease-out group-hover:-translate-y-1.5 group-hover:scale-[1.02]"
         style={{
           width: `${w}px`,
           height: `${h}px`,
-          transformStyle: 'preserve-3d',
-          transform: isBackCover
-            ? 'rotateX(38deg) rotateY(8deg) rotateZ(22deg)'
-            : 'rotateX(38deg) rotateY(-8deg) rotateZ(-22deg)',
-          zIndex: 10
+          zIndex: 10,
+          background: '#FAF8F5',
+          boxShadow: isBackCover
+            ? '-1px 1px 0 #EDE6DC, -2px 2px 0 #E2DDD5, -3px 3px 0 #D8D2C8, -4px 4px 0 #CFC8BE, -5px 5px 0 #C4BCB1, -6px 6px 0 #B5AC9E, 0 16px 36px -4px rgba(0,0,0,0.38), 0 6px 14px -2px rgba(0,0,0,0.22)'
+            : '1px 1px 0 #EDE6DC, 2px 2px 0 #E2DDD5, 3px 3px 0 #D8D2C8, 4px 4px 0 #CFC8BE, 5px 5px 0 #C4BCB1, 6px 6px 0 #B5AC9E, 0 16px 36px -4px rgba(0,0,0,0.38), 0 6px 14px -2px rgba(0,0,0,0.22)',
+          border: '1px solid rgba(74,60,40,0.18)'
         }}
       >
-        {/* ── 1. BOTTOM HARDCOVER BOARD (Lies flat on ground) ── */}
+        {/* Cover Photo */}
+        <img
+          src={coverSrc}
+          alt="Wedding Photobook Cover"
+          className="w-full h-full object-cover object-center select-none pointer-events-none"
+          loading="eager"
+          draggable={false}
+        />
+
+        {/* Realistic Debossed French Groove (Hinge Indentation) */}
         <div
-          className="absolute pointer-events-none"
+          className="absolute top-0 bottom-0 pointer-events-none z-20"
           style={{
-            width: `${boardW}px`,
-            height: `${boardH}px`,
-            left: `-${overhang * 0.5}px`,
-            top: `-${overhang}px`,
-            transform: 'translateZ(0px)',
-            background: '#F0ECE4',
-            borderRadius: '2px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.28), 0 1px 3px rgba(0,0,0,0.18)',
-            border: '1px solid rgba(0,0,0,0.08)'
+            left: isBackCover ? 'auto' : 'clamp(12px, 6%, 20px)',
+            right: isBackCover ? 'clamp(12px, 6%, 20px)' : 'auto',
+            width: '3.5px',
+            background: isBackCover
+              ? 'linear-gradient(to left, rgba(0,0,0,0.36) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)'
+              : 'linear-gradient(to right, rgba(0,0,0,0.36) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)',
+            boxShadow: isBackCover
+              ? 'inset -1px 0 2px rgba(0,0,0,0.4)'
+              : 'inset 1px 0 2px rgba(0,0,0,0.4)'
           }}
         />
 
-        {/* ── 2. RECESSED STACKED PAPER BLOCK (Pages stacked between boards) ── */}
-        {/* Front-Facing Bottom Edge of Paper Block (Visible in reference image) */}
+        {/* Soft Spine Roll Lighting Highlight */}
         <div
-          className="absolute pointer-events-none"
+          className="absolute top-0 bottom-0 pointer-events-none z-20"
           style={{
-            width: `${w}px`,
-            height: `${thickness}px`,
-            left: '0px',
-            top: `${h}px`,
-            transform: 'translateY(-1px) rotateX(-90deg)',
-            transformOrigin: 'top center',
-            background: 'repeating-linear-gradient(to bottom, #FAF7F2 0px, #FAF7F2 1.5px, #D8CEC0 2px, #FAF7F2 2.5px)',
-            boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.22), inset 0 -2px 4px rgba(0,0,0,0.16)'
+            left: isBackCover ? 'auto' : '0px',
+            right: isBackCover ? '0px' : 'auto',
+            width: 'clamp(12px, 6%, 20px)',
+            background: isBackCover
+              ? 'linear-gradient(to left, rgba(0,0,0,0.24) 0%, rgba(255,255,255,0.22) 45%, rgba(0,0,0,0.08) 100%)'
+              : 'linear-gradient(to right, rgba(0,0,0,0.24) 0%, rgba(255,255,255,0.22) 45%, rgba(0,0,0,0.08) 100%)'
           }}
         />
 
-        {/* Right-Facing Fore-Edge of Paper Block (Visible in reference image) */}
+        {/* Crisp Hardcover Outer Bevel Highlight */}
+        <div className="absolute inset-0 pointer-events-none z-20 border border-white/30 shadow-[inset_0_0_6px_rgba(0,0,0,0.14)]" />
+
+        {/* Fore-Edge Lip Thickness Highlight */}
         <div
-          className="absolute pointer-events-none"
+          className="absolute top-0 bottom-0 pointer-events-none z-20"
           style={{
-            width: `${thickness}px`,
-            height: `${h}px`,
-            left: `${w}px`,
-            top: '0px',
-            transform: 'translateX(-1px) rotateY(90deg)',
-            transformOrigin: 'left center',
-            background: 'repeating-linear-gradient(to right, #FAF7F2 0px, #FAF7F2 1.5px, #D8CEC0 2px, #FAF7F2 2.5px)',
-            boxShadow: 'inset 3px 0 6px rgba(0,0,0,0.22), inset -2px 0 4px rgba(0,0,0,0.16)'
+            left: isBackCover ? '0px' : 'auto',
+            right: isBackCover ? 'auto' : '0px',
+            width: '3px',
+            background: isBackCover
+              ? 'linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
+              : 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
           }}
         />
-
-        {/* Top-Facing Rear Edge of Paper Block */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            width: `${w}px`,
-            height: `${thickness}px`,
-            left: '0px',
-            top: '0px',
-            transform: 'rotateX(90deg)',
-            transformOrigin: 'top center',
-            background: 'repeating-linear-gradient(to top, #FAF7F2 0px, #FAF7F2 1.5px, #D8CEC0 2px, #FAF7F2 2.5px)',
-            boxShadow: 'inset 0 -2px 4px rgba(0,0,0,0.2)'
-          }}
-        />
-
-        {/* ── 3. ROUNDED HARDCOVER SPINE (Left edge, matching reference) ── */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            width: `${thickness}px`,
-            height: `${boardH}px`,
-            left: '0px',
-            top: `-${overhang}px`,
-            transform: 'rotateY(-90deg)',
-            transformOrigin: 'left center',
-            background: 'linear-gradient(to bottom, #2C241C 0%, #4D4033 15%, #7D6B58 35%, #B39F88 50%, #7D6B58 65%, #4D4033 85%, #2C241C 100%)',
-            borderRadius: '4px 0 0 4px',
-            boxShadow: 'inset 0 0 4px rgba(0,0,0,0.6)'
-          }}
-        >
-          {/* Top Spine Cloth Headband Ribbon */}
-          <div
-            className="absolute top-0 left-0 right-0 h-1.5"
-            style={{
-              background: 'repeating-linear-gradient(45deg, #C5A880, #C5A880 2px, #8A2B1E 2px, #8A2B1E 4px)',
-              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)'
-            }}
-          />
-          {/* Bottom Spine Cloth Headband Ribbon */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-1.5"
-            style={{
-              background: 'repeating-linear-gradient(45deg, #C5A880, #C5A880 2px, #8A2B1E 2px, #8A2B1E 4px)',
-              boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.4)'
-            }}
-          />
-        </div>
-
-        {/* ── 4. TOP HARDCOVER BOARD (With Bride photo and debossed groove) ── */}
-        <div
-          className="absolute overflow-hidden rounded-[2px] shadow-2xl transition-transform duration-300 group-hover:translate-z-[3px]"
-          style={{
-            width: `${boardW}px`,
-            height: `${boardH}px`,
-            left: `-${overhang * 0.5}px`,
-            top: `-${overhang}px`,
-            transform: `translateZ(${thickness}px)`,
-            background: '#FAF8F5',
-            border: '1px solid rgba(255,255,255,0.35)',
-            boxShadow: '0 10px 28px -4px rgba(0,0,0,0.35), inset 0 0 6px rgba(0,0,0,0.15)'
-          }}
-        >
-          {/* Cover Photo */}
-          <img
-            src={coverSrc}
-            alt="Wedding Photobook Cover"
-            className="w-full h-full object-cover object-center select-none pointer-events-none"
-            loading="eager"
-            draggable={false}
-          />
-
-          {/* Realistic Debossed French Groove (Joint Indentation) */}
-          <div
-            className="absolute top-0 bottom-0 pointer-events-none z-20"
-            style={{
-              left: isBackCover ? 'auto' : 'clamp(14px, 7%, 22px)',
-              right: isBackCover ? 'clamp(14px, 7%, 22px)' : 'auto',
-              width: '3.5px',
-              background: isBackCover
-                ? 'linear-gradient(to left, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)'
-                : 'linear-gradient(to right, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)',
-              boxShadow: isBackCover
-                ? 'inset -1px 0 2px rgba(0,0,0,0.45)'
-                : 'inset 1px 0 2px rgba(0,0,0,0.45)'
-            }}
-          />
-
-          {/* Soft Spine Roll Lighting Highlight */}
-          <div
-            className="absolute top-0 bottom-0 pointer-events-none z-20"
-            style={{
-              left: isBackCover ? 'auto' : '0px',
-              right: isBackCover ? '0px' : 'auto',
-              width: 'clamp(14px, 7%, 22px)',
-              background: isBackCover
-                ? 'linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(255,255,255,0.2) 40%, rgba(0,0,0,0.08) 100%)'
-                : 'linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(255,255,255,0.2) 40%, rgba(0,0,0,0.08) 100%)'
-            }}
-          />
-
-          {/* Hardcover Outer Bevel Highlight */}
-          <div className="absolute inset-0 pointer-events-none z-20 border border-white/25 shadow-[inset_0_0_6px_rgba(0,0,0,0.18)]" />
-
-          {/* Fore-Edge Lip Thickness Highlight */}
-          <div
-            className="absolute top-0 bottom-0 pointer-events-none z-20"
-            style={{
-              left: isBackCover ? '0px' : 'auto',
-              right: isBackCover ? 'auto' : '0px',
-              width: '2.5px',
-              background: isBackCover
-                ? 'linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
-                : 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
-            }}
-          />
-        </div>
       </div>
     </div>
   );
@@ -361,48 +242,23 @@ const HeroPhotoPage = forwardRef(({ src, isLeftPage, pageNumber, totalPhotos, ..
       className={`page-wrapper select-none relative overflow-hidden bg-[#FAF7F2] ${props.className || ''}`}
       data-density="soft"
     >
-      {/* ── Archival Fine-Art Album Page Structure ── */}
-      <div
-        className={`w-full h-full relative overflow-hidden flex flex-col justify-between bg-[#FAF7F2] ${
-          isLeftPage
-            ? 'p-2 sm:p-2.5 pr-0 sm:pr-0 pb-2.5 sm:pb-3'
-            : 'p-2 sm:p-2.5 pl-0 sm:pl-0 pb-2.5 sm:pb-3'
-        }`}
-      >
-        {/* ── Mounted Photo Frame (Inserted Into The Page) ── */}
-        <div className="w-full flex-1 relative overflow-hidden rounded-[1.5px] bg-[#EDE6DC] shadow-[0_1px_4px_rgba(0,0,0,0.12),inset_0_0_1px_rgba(0,0,0,0.18)] border border-[#4A3C28]/10">
-          <img
-            src={src}
-            alt={`Photobook Page ${pageNumber || ''}`}
-            className="w-full h-full object-cover object-center select-none pointer-events-none"
-            style={{
-              imageRendering: 'high-quality',
-              WebkitBackfaceVisibility: 'hidden',
-              transform: 'translateZ(0)'
-            }}
-            loading="lazy"
-            draggable={false}
-          />
-          {/* Subtle archival matte print sheen */}
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-black/5 via-transparent to-white/10" />
-        </div>
+      <div className="w-full h-full relative overflow-hidden bg-[#FAF7F2]">
+        {/* Full Bleed Image Edge-to-Edge with centered balance — fills page completely */}
+        <img
+          src={src}
+          alt={`Photobook Page ${pageNumber || ''}`}
+          className="w-full h-full object-cover object-center select-none pointer-events-none"
+          style={{
+            imageRendering: 'high-quality',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'translateZ(0)'
+          }}
+          loading="lazy"
+          draggable={false}
+        />
 
-        {/* ── Fine-Art Page Folio / Luxury Album Footer ── */}
-        <div
-          className={`flex items-center mt-1 px-1 select-none pointer-events-none ${
-            isLeftPage ? 'justify-start' : 'justify-end'
-          }`}
-        >
-          {isLeftPage ? (
-            <span className="font-serif tracking-[0.18em] text-[7px] sm:text-[8.5px] uppercase text-[#7A6B58]/80 font-medium">
-              KPR PRODUCTIONS • WEDDING ALBUM
-            </span>
-          ) : (
-            <span className="font-serif tracking-[0.18em] text-[7px] sm:text-[8.5px] uppercase text-[#7A6B58]/80 font-medium">
-              {pageNumber ? `PAGE ${String(pageNumber).padStart(2, '0')}` : 'FINE ART'}
-            </span>
-          )}
-        </div>
+        {/* Subtle archival matte print sheen */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-black/5 via-transparent to-white/10" />
 
         {/* Center Layflat Spine Crease Depth Shadow */}
         <div
@@ -849,25 +705,8 @@ export default function HeroInteractiveAlbum({
         </div>
       </div>
 
-      {/* ── CONTROLS TOOLBAR: CLOSE ALBUM & FULL VIEW BUTTONS ── */}
+      {/* ── CONTROLS TOOLBAR: FULL VIEW BUTTON ── */}
       <div className="flex items-center justify-center gap-2 mt-2 sm:mt-2.5 select-none z-20">
-        {isOpen && (
-          <button
-            type="button"
-            onClick={handleCloseBook}
-            className="group inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#2A241E]/90 hover:bg-[#1E1914] text-[#E8DEC8] text-[9.5px] sm:text-xs font-serif tracking-wider border border-[#8A7862]/40 hover:border-[#C5A880] shadow-sm hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
-            title="Close photobook to 3D cover"
-          >
-            <span>✕ Close Book</span>
-          </button>
-        )}
-
-        {isOpen && (
-          <span className="text-[10px] sm:text-[11px] font-serif italic text-[#6B5E4E]">
-            Page {currentPage} of {totalPages - 2}
-          </span>
-        )}
-
         {onOpenFullscreen && showFullscreenButton && (
           <button
             type="button"

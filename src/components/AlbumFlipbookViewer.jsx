@@ -108,48 +108,23 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
       className={`page-wrapper select-none relative overflow-hidden bg-[#FAF7F2] shadow-md ${props.className || ''}`}
       data-density="soft"
     >
-      {/* ── Archival Fine-Art Album Page Structure ── */}
-      <div
-        className={`w-full h-full relative overflow-hidden flex flex-col justify-between bg-[#FAF7F2] ${
-          isLeftPage
-            ? 'p-2 sm:p-3 pr-0 sm:pr-0 pb-2.5 sm:pb-3.5'
-            : 'p-2 sm:p-3 pl-0 sm:pl-0 pb-2.5 sm:pb-3.5'
-        }`}
-      >
-        {/* ── Mounted Photo Frame (Inserted Into The Page) ── */}
-        <div className="w-full flex-1 relative overflow-hidden rounded-[1.5px] bg-[#EDE6DC] shadow-[0_1px_4px_rgba(0,0,0,0.12),inset_0_0_1px_rgba(0,0,0,0.18)] border border-[#4A3C28]/10">
-          <img
-            src={src}
-            alt={`Album page ${pageIndex + 1}`}
-            className="w-full h-full object-cover object-center select-none pointer-events-none"
-            style={{
-              imageRendering: 'high-quality',
-              WebkitBackfaceVisibility: 'hidden',
-              transform: 'translateZ(0)'
-            }}
-            loading="lazy"
-            draggable={false}
-          />
-          {/* Subtle archival matte print sheen */}
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-black/5 via-transparent to-white/10" />
-        </div>
+      <div className="w-full h-full relative overflow-hidden bg-[#FAF7F2]">
+        {/* Full Bleed Image Edge-to-Edge with centered balance — fills page completely */}
+        <img
+          src={src}
+          alt={`Album page ${pageIndex + 1}`}
+          className="w-full h-full object-cover object-center select-none pointer-events-none"
+          style={{
+            imageRendering: 'high-quality',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'translateZ(0)'
+          }}
+          loading="lazy"
+          draggable={false}
+        />
 
-        {/* ── Fine-Art Page Folio / Luxury Album Footer ── */}
-        <div
-          className={`flex items-center mt-1 px-1 select-none pointer-events-none ${
-            isLeftPage ? 'justify-start' : 'justify-end'
-          }`}
-        >
-          {isLeftPage ? (
-            <span className="font-serif tracking-[0.18em] text-[7.5px] sm:text-[9px] uppercase text-[#7A6B58]/80 font-medium">
-              KPR PRODUCTIONS • WEDDING ALBUM
-            </span>
-          ) : (
-            <span className="font-serif tracking-[0.18em] text-[7.5px] sm:text-[9px] uppercase text-[#7A6B58]/80 font-medium">
-              PAGE {String(pageIndex + 1).padStart(2, '0')}
-            </span>
-          )}
-        </div>
+        {/* Subtle archival matte print sheen */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-black/5 via-transparent to-white/10" />
 
         {/* Center Spine Crease / Binding Depth Shadow */}
         <div

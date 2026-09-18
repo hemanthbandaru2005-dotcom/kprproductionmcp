@@ -1,74 +1,12 @@
 /**
  * KPR PRODUCTIONS — INDIVIDUAL ALBUM PHOTO DATA (FULL BLEED PAGES)
- * Starts with Haldi Groom & Bride on single pages, flows through Wedding Spreads, ends with Birthday on single page.
- * Total: 64 pages (32 matched 2-page spreads).
+ * 31 authentic Telugu Wedding & Event spreads split into perfectly matched Left & Right pages.
+ * Total: 62 pages (31 matched 2-page spreads).
  */
 
-export const FLEXY_ALBUM_PHOTOS = [
-  { id: 1, src: '/images/album/flexy/page_01.jpg' },
-  { id: 2, src: '/images/album/flexy/page_02.jpg' },
-  { id: 3, src: '/images/album/flexy/page_03.jpg' },
-  { id: 4, src: '/images/album/flexy/page_04.jpg' },
-  { id: 5, src: '/images/album/flexy/page_05.jpg' },
-  { id: 6, src: '/images/album/flexy/page_06.jpg' },
-  { id: 7, src: '/images/album/flexy/page_07.jpg' },
-  { id: 8, src: '/images/album/flexy/page_08.jpg' },
-  { id: 9, src: '/images/album/flexy/page_09.jpg' },
-  { id: 10, src: '/images/album/flexy/page_10.jpg' },
-  { id: 11, src: '/images/album/flexy/page_11.jpg' },
-  { id: 12, src: '/images/album/flexy/page_12.jpg' },
-  { id: 13, src: '/images/album/flexy/page_13.jpg' },
-  { id: 14, src: '/images/album/flexy/page_14.jpg' },
-  { id: 15, src: '/images/album/flexy/page_15.jpg' },
-  { id: 16, src: '/images/album/flexy/page_16.jpg' },
-  { id: 17, src: '/images/album/flexy/page_17.jpg' },
-  { id: 18, src: '/images/album/flexy/page_18.jpg' },
-  { id: 19, src: '/images/album/flexy/page_19.jpg' },
-  { id: 20, src: '/images/album/flexy/page_20.jpg' },
-  { id: 21, src: '/images/album/flexy/page_21.jpg' },
-  { id: 22, src: '/images/album/flexy/page_22.jpg' },
-  { id: 23, src: '/images/album/flexy/page_23.jpg' },
-  { id: 24, src: '/images/album/flexy/page_24.jpg' },
-  { id: 25, src: '/images/album/flexy/page_25.jpg' },
-  { id: 26, src: '/images/album/flexy/page_26.jpg' },
-  { id: 27, src: '/images/album/flexy/page_27.jpg' },
-  { id: 28, src: '/images/album/flexy/page_28.jpg' },
-  { id: 29, src: '/images/album/flexy/page_29.jpg' },
-  { id: 30, src: '/images/album/flexy/page_30.jpg' },
-  { id: 31, src: '/images/album/flexy/page_31.jpg' },
-  { id: 32, src: '/images/album/flexy/page_32.jpg' },
-  { id: 33, src: '/images/album/flexy/page_33.jpg' },
-  { id: 34, src: '/images/album/flexy/page_34.jpg' },
-  { id: 35, src: '/images/album/flexy/page_35.jpg' },
-  { id: 36, src: '/images/album/flexy/page_36.jpg' },
-  { id: 37, src: '/images/album/flexy/page_37.jpg' },
-  { id: 38, src: '/images/album/flexy/page_38.jpg' },
-  { id: 39, src: '/images/album/flexy/page_39.jpg' },
-  { id: 40, src: '/images/album/flexy/page_40.jpg' },
-  { id: 41, src: '/images/album/flexy/page_41.jpg' },
-  { id: 42, src: '/images/album/flexy/page_42.jpg' },
-  { id: 43, src: '/images/album/flexy/page_43.jpg' },
-  { id: 44, src: '/images/album/flexy/page_44.jpg' },
-  { id: 45, src: '/images/album/flexy/page_45.jpg' },
-  { id: 46, src: '/images/album/flexy/page_46.jpg' },
-  { id: 47, src: '/images/album/flexy/page_47.jpg' },
-  { id: 48, src: '/images/album/flexy/page_48.jpg' },
-  { id: 49, src: '/images/album/flexy/page_49.jpg' },
-  { id: 50, src: '/images/album/flexy/page_50.jpg' },
-  { id: 51, src: '/images/album/flexy/page_51.jpg' },
-  { id: 52, src: '/images/album/flexy/page_52.jpg' },
-  { id: 53, src: '/images/album/flexy/page_53.jpg' },
-  { id: 54, src: '/images/album/flexy/page_54.jpg' },
-  { id: 55, src: '/images/album/flexy/page_55.jpg' },
-  { id: 56, src: '/images/album/flexy/page_56.jpg' },
-  { id: 57, src: '/images/album/flexy/page_57.jpg' },
-  { id: 58, src: '/images/album/flexy/page_58.jpg' },
-  { id: 59, src: '/images/album/flexy/page_59.jpg' },
-  { id: 60, src: '/images/album/flexy/page_60.jpg' },
-  { id: 61, src: '/images/album/flexy/page_61.jpg' },
-  { id: 62, src: '/images/album/flexy/page_62.jpg' },
-  { id: 63, src: '/images/album/flexy/page_63.jpg' },
-  { id: 64, src: '/images/album/flexy/page_64.jpg' },
-];
+export const FLEXY_ALBUM_PHOTOS = Array.from({ length: 62 }, (_, i) => ({
+  id: i + 1,
+  src: `/images/album/flexy/page_${String(i + 1).padStart(2, '0')}.jpg`
+}));
 
 export const FLEXY_PHOTO_URLS = FLEXY_ALBUM_PHOTOS.map(p => p.src);
