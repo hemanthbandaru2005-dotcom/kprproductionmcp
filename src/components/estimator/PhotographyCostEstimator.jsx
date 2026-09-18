@@ -92,13 +92,14 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const [selectedEvents, setSelectedEvents] = useState([]);
 
   // ── STEP 3: Celebration Sections scheduling & per-event package assignments ──
-  // Format: { [eventName]: { date: string, startTime: string, endTime: string, serviceIds: string[] } }
+  // Format: { [eventName]: { dates: string[], startTime: string, endTime: string, serviceIds: string[] } }
   const [eventSchedules, setEventSchedules] = useState({});
   const [packageCategoryFilter, setPackageCategoryFilter] = useState('ALL');
 
   const getEventSchedule = (eventName) => {
     return eventSchedules[eventName] || {
-      date: '',
+      dates: [],
+      times: [],
       startTime: '',
       endTime: '',
       serviceIds: []
@@ -108,7 +109,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const updateEventSchedule = (eventName, field, value) => {
     setEventSchedules(prev => {
       const current = prev[eventName] || {
-        date: '',
+        dates: [],
+        times: [],
         startTime: '',
         endTime: '',
         serviceIds: []
@@ -123,6 +125,129 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     });
   };
 
+  // Multi-date helpers for Step 3
+  const addDateToEvent = (eventName) => {
+    setEventSchedules(prev => {
+      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
+      const currentDates = Array.isArray(current.dates) ? current.dates : (current.date ? [current.date] : []);
+      return {
+        ...prev,
+        [eventName]: {
+          ...current,
+          dates: [...currentDates, '']
+        }
+      };
+    });
+  };
+
+  const updateDateInEvent = (eventName, dateIndex, dateValue) => {
+    setEventSchedules(prev => {
+      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
+      const currentDates = Array.isArray(current.dates) ? [...current.dates] : (current.date ? [current.date] : []);
+      currentDates[dateIndex] = dateValue;
+      return {
+        ...prev,
+        [eventName]: {
+          ...current,
+          dates: currentDates
+        }
+      };
+    });
+  };
+
+  const removeDateFromEvent = (eventName, dateIndex) => {
+    setEventSchedules(prev => {
+      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
+      const currentDates = Array.isArray(current.dates) ? [...current.dates] : (current.date ? [current.date] : []);
+      currentDates.splice(dateIndex, 1);
+      return {
+        ...prev,
+        [eventName]: {
+          ...current,
+          dates: currentDates
+        }
+      };
+    });
+  };
+
+  // Multi-time helpers for Step 3
+  const addTimeToEvent = (eventName) => {
+    setEventSchedules(prev => {
+      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
+      let currentTimes = Array.isArray(current.times) ? [...current.times] : [];
+      if (currentTimes.length === 0 && (current.startTime || current.endTime)) {
+        currentTimes = [{ startTime: current.startTime || '', endTime: current.endTime || '' }];
+      }
+      return {
+        ...prev,
+        [eventName]: {
+          ...current,
+          times: [...currentTimes, { startTime: '', endTime: '' }]
+        }
+      };
+    });
+  };
+
+  const updateTimeInEvent = (eventName, timeIndex, field, value) => {
+    setEventSchedules(prev => {
+      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
+      let currentTimes = Array.isArray(current.times) ? [...current.times] : [];
+      if (currentTimes.length === 0 && (current.startTime || current.endTime)) {
+        currentTimes = [{ startTime: current.startTime || '', endTime: current.endTime || '' }];
+      }
+      const targetSlot = currentTimes[timeIndex] ? { ...currentTimes[timeIndex] } : { startTime: '', endTime: '' };
+      targetSlot[field] = value;
+      currentTimes[timeIndex] = targetSlot;
+
+      const firstSlot = currentTimes[0] || {};
+      return {
+        ...prev,
+        [eventName]: {
+          ...current,
+          times: currentTimes,
+          startTime: firstSlot.startTime || '',
+          endTime: firstSlot.endTime || ''
+        }
+      };
+    });
+  };
+
+  const removeTimeFromEvent = (eventName, timeIndex) => {
+    setEventSchedules(prev => {
+      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
+      let currentTimes = Array.isArray(current.times) ? [...current.times] : [];
+      if (currentTimes.length === 0 && (current.startTime || current.endTime)) {
+        currentTimes = [{ startTime: current.startTime || '', endTime: current.endTime || '' }];
+      }
+      currentTimes.splice(timeIndex, 1);
+      const firstSlot = currentTimes[0] || {};
+      return {
+        ...prev,
+        [eventName]: {
+          ...current,
+          times: currentTimes,
+          startTime: firstSlot.startTime || '',
+          endTime: firstSlot.endTime || ''
+        }
+      };
+    });
+  };
+
+  const formatEventTimes = (sched) => {
+    if (!sched) return '';
+    if (Array.isArray(sched.times) && sched.times.length > 0) {
+      const formatted = sched.times
+        .map(t => {
+          if (t.startTime && t.endTime) return `${t.startTime} – ${t.endTime}`;
+          return t.startTime || t.endTime || '';
+        })
+        .filter(Boolean);
+      if (formatted.length > 0) return formatted.join(', ');
+    }
+    if (sched.startTime && sched.endTime) return `${sched.startTime} – ${sched.endTime}`;
+    return sched.startTime || sched.endTime || sched.time || '';
+  };
+
   const isServiceAssignedToEvent = (pkgId, eventName) => {
     const ids = eventSchedules[eventName]?.serviceIds;
     return Array.isArray(ids) ? ids.includes(pkgId) : false;
@@ -131,7 +256,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const toggleServiceForEvent = (pkgId, eventName) => {
     setEventSchedules(prev => {
       const current = prev[eventName] || {
-        date: '',
+        dates: [],
         startTime: '',
         endTime: '',
         serviceIds: []
@@ -212,12 +337,11 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     selectedEvents.forEach(evName => {
       const sched = eventSchedules[evName] || {};
       const serviceIds = sched.serviceIds || [];
-      const sDate = sched.date || '';
+      const schedDates = Array.isArray(sched.dates) ? sched.dates.filter(Boolean) : (sched.date ? [sched.date] : []);
+      const sDate = schedDates.join(', ');
       const sStartTime = sched.startTime || '';
       const sEndTime = sched.endTime || '';
-      const sTime = (sStartTime && sEndTime)
-        ? `${sStartTime} – ${sEndTime}`
-        : (sStartTime || sEndTime || sched.time || '');
+      const sTime = formatEventTimes(sched);
 
       serviceIds.forEach(id => {
         const pkg = availablePackages.find(p => p.id === id) || OFFICIAL_PHOTOGRAPHY_PACKAGES.find(p => p.id === id);
@@ -249,17 +373,29 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
   // Derived list of all event dates across celebrations
   const allEventDates = useMemo(() => {
-    const dates = selectedEvents.map(ev => eventSchedules[ev]?.date).filter(Boolean);
+    const dates = [];
+    selectedEvents.forEach(ev => {
+      const sched = eventSchedules[ev];
+      if (sched) {
+        if (Array.isArray(sched.dates)) {
+          sched.dates.filter(Boolean).forEach(d => dates.push(d));
+        } else if (sched.date) {
+          dates.push(sched.date);
+        }
+      }
+    });
     return Array.from(new Set(dates));
   }, [selectedEvents, eventSchedules]);
 
   const eventDate = allEventDates[0] || '';
   const eventTime = useMemo(() => {
-    const firstSched = selectedEvents.map(ev => eventSchedules[ev]).find(s => s?.startTime || s?.endTime || s?.time);
+    const firstSched = selectedEvents.map(ev => eventSchedules[ev]).find(s => {
+      if (!s) return false;
+      if (Array.isArray(s.times) && s.times.some(t => t.startTime || t.endTime)) return true;
+      return s.startTime || s.endTime || s.time;
+    });
     if (firstSched) {
-      return (firstSched.startTime && firstSched.endTime)
-        ? `${firstSched.startTime} – ${firstSched.endTime}`
-        : (firstSched.startTime || firstSched.endTime || firstSched.time || '');
+      return formatEventTimes(firstSched);
     }
     return '';
   }, [selectedEvents, eventSchedules]);
@@ -443,9 +579,11 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
       const evPkgs = selectedPackages.filter(p => p.eventTag === ev);
       if (evPkgs.length > 0) {
         const sched = eventSchedules[ev] || {};
-        const sDate = sched.date || '';
-        const sTime = (sched.startTime && sched.endTime) ? `${sched.startTime} – ${sched.endTime}` : (sched.startTime || sched.endTime || sched.time || '');
-        const schedTxt = sDate ? ` (${sDate}${sTime ? ` • ${sTime}` : ''})` : '';
+        const schedDates = Array.isArray(sched.dates) ? sched.dates.filter(Boolean) : (sched.date ? [sched.date] : []);
+        const sDateStr = schedDates.join(', ');
+        const sTime = formatEventTimes(sched);
+        const schedDetails = [sDateStr, sTime].filter(Boolean).join(' • ');
+        const schedTxt = schedDetails ? ` (${schedDetails})` : '';
         servicesSummary += `\n*${ev}*${schedTxt}:\n` + evPkgs.map(p => `  • ${p.name} (₹${p.price.toLocaleString('en-IN')})`).join('\n');
       }
     });
@@ -961,56 +1099,165 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                         </div>
                       </div>
 
-                      {/* Schedule: Date, Starting Time, Ending Time (NO Quick Timing Presets!) */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 bg-[#FAF8F5] p-4 rounded-xl border border-[#E8DFC9]">
-                        {/* 1. Date */}
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold uppercase tracking-wider text-[#444444] flex items-center gap-1.5">
-                            <Calendar className="w-3.5 h-3.5 text-[#8C6D3F]" />
-                            <span>{eventName} Date</span>
-                          </label>
-                          <input
-                            type="date"
-                            value={eventSched.date || ''}
-                            onChange={(e) => updateEventSchedule(eventName, 'date', e.target.value)}
-                            className="w-full bg-white border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all shadow-xs cursor-pointer"
-                          />
+                      {/* Schedule: Multiple Dates, Starting Time, Ending Time */}
+                      <div className="bg-[#FAF8F5] p-4 rounded-xl border border-[#E8DFC9] space-y-3.5">
+                        {/* Multi-Date Section */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold uppercase tracking-wider text-[#444444] flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-[#8C6D3F]" />
+                              <span>{eventName} Date{(Array.isArray(eventSched.dates) ? eventSched.dates : []).length > 1 ? 's' : ''}</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => addDateToEvent(eventName)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#C5A880]/15 hover:bg-[#C5A880]/30 border border-[#C5A880]/40 text-[#8C6D3F] text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>Add Date</span>
+                            </button>
+                          </div>
+
+                          {/* Date Inputs List */}
+                          {(() => {
+                            const eventDatesArr = Array.isArray(eventSched.dates) ? eventSched.dates : [];
+                            if (eventDatesArr.length === 0) {
+                              return (
+                                <div className="bg-white border border-dashed border-[#D8CFC4] rounded-xl p-3 text-center">
+                                  <p className="text-[11px] text-[#888888] italic">
+                                    No dates added yet. Click "Add Date" to schedule this celebration.
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return (
+                              <div className="space-y-2">
+                                {eventDatesArr.map((dateVal, dateIdx) => (
+                                  <div key={`${eventName}-date-${dateIdx}`} className="flex items-center gap-2">
+                                    <span className="text-[10px] font-bold text-[#8C6D3F] bg-[#FAF0E1] border border-[#C5A880]/30 rounded-lg w-7 h-7 flex items-center justify-center shrink-0">
+                                      {dateIdx + 1}
+                                    </span>
+                                    <input
+                                      type="date"
+                                      value={dateVal || ''}
+                                      onChange={(e) => updateDateInEvent(eventName, dateIdx, e.target.value)}
+                                      className="flex-1 bg-white border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all shadow-xs cursor-pointer"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeDateFromEvent(eventName, dateIdx)}
+                                      className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-400 hover:text-red-600 flex items-center justify-center transition-all cursor-pointer shrink-0"
+                                      title="Remove this date"
+                                    >
+                                      <Minus className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
+
+                          {(Array.isArray(eventSched.dates) ? eventSched.dates : []).length > 0 && (
+                            <p className="text-[10px] text-[#888888] italic">
+                              {(Array.isArray(eventSched.dates) ? eventSched.dates : []).length} day{(Array.isArray(eventSched.dates) ? eventSched.dates : []).length > 1 ? 's' : ''} scheduled for {eventName}
+                            </p>
+                          )}
                         </div>
 
-                        {/* 2. Starting Time */}
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold uppercase tracking-wider text-[#444444] flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-[#8C6D3F]" />
-                            <span>Starting Time</span>
-                          </label>
-                          <select
-                            value={eventSched.startTime || ''}
-                            onChange={(e) => updateEventSchedule(eventName, 'startTime', e.target.value)}
-                            className="w-full bg-white border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all shadow-xs cursor-pointer"
-                          >
-                            <option value="">Select starting time</option>
-                            {TIME_OPTIONS.map((t) => (
-                              <option key={t} value={t}>{t}</option>
-                            ))}
-                          </select>
-                        </div>
+                        {/* Multi-Time Section */}
+                        <div className="space-y-2 pt-2 border-t border-[#E8DFC9]/70">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold uppercase tracking-wider text-[#444444] flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-[#8C6D3F]" />
+                              <span>{eventName} Timing{(() => {
+                                const arr = Array.isArray(eventSched.times) ? eventSched.times : ((eventSched.startTime || eventSched.endTime) ? [1] : []);
+                                return arr.length > 1 ? 's' : '';
+                              })()}</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => addTimeToEvent(eventName)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#C5A880]/15 hover:bg-[#C5A880]/30 border border-[#C5A880]/40 text-[#8C6D3F] text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>Add Time</span>
+                            </button>
+                          </div>
 
-                        {/* 3. Ending Time */}
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold uppercase tracking-wider text-[#444444] flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-[#8C6D3F]" />
-                            <span>Ending Time</span>
-                          </label>
-                          <select
-                            value={eventSched.endTime || ''}
-                            onChange={(e) => updateEventSchedule(eventName, 'endTime', e.target.value)}
-                            className="w-full bg-white border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all shadow-xs cursor-pointer"
-                          >
-                            <option value="">Select ending time</option>
-                            {TIME_OPTIONS.map((t) => (
-                              <option key={t} value={t}>{t}</option>
-                            ))}
-                          </select>
+                          {/* Time Slots List */}
+                          {(() => {
+                            let eventTimesArr = Array.isArray(eventSched.times) ? eventSched.times : [];
+                            if (eventTimesArr.length === 0 && (eventSched.startTime || eventSched.endTime)) {
+                              eventTimesArr = [{ startTime: eventSched.startTime || '', endTime: eventSched.endTime || '' }];
+                            }
+
+                            if (eventTimesArr.length === 0) {
+                              return (
+                                <div className="bg-white border border-dashed border-[#D8CFC4] rounded-xl p-3 text-center">
+                                  <p className="text-[11px] text-[#888888] italic">
+                                    No timings added yet. Click "Add Time" to schedule session hours.
+                                  </p>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="space-y-2">
+                                {eventTimesArr.map((tSlot, tIdx) => (
+                                  <div key={`${eventName}-time-${tIdx}`} className="flex items-center gap-2">
+                                    <span className="text-[10px] font-bold text-[#8C6D3F] bg-[#FAF0E1] border border-[#C5A880]/30 rounded-lg w-7 h-7 flex items-center justify-center shrink-0">
+                                      {tIdx + 1}
+                                    </span>
+                                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                      <select
+                                        value={tSlot.startTime || ''}
+                                        onChange={(e) => updateTimeInEvent(eventName, tIdx, 'startTime', e.target.value)}
+                                        className="w-full bg-white border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-2.5 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all shadow-xs cursor-pointer"
+                                      >
+                                        <option value="">Select starting time</option>
+                                        {TIME_OPTIONS.map((t) => (
+                                          <option key={t} value={t}>{t}</option>
+                                        ))}
+                                      </select>
+                                      <select
+                                        value={tSlot.endTime || ''}
+                                        onChange={(e) => updateTimeInEvent(eventName, tIdx, 'endTime', e.target.value)}
+                                        className="w-full bg-white border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-2.5 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all shadow-xs cursor-pointer"
+                                      >
+                                        <option value="">Select ending time</option>
+                                        {TIME_OPTIONS.map((t) => (
+                                          <option key={t} value={t}>{t}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => removeTimeFromEvent(eventName, tIdx)}
+                                      className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-400 hover:text-red-600 flex items-center justify-center transition-all cursor-pointer shrink-0"
+                                      title="Remove this time slot"
+                                    >
+                                      <Minus className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
+
+                          {(() => {
+                            let eventTimesArr = Array.isArray(eventSched.times) ? eventSched.times : [];
+                            if (eventTimesArr.length === 0 && (eventSched.startTime || eventSched.endTime)) {
+                              eventTimesArr = [{ startTime: eventSched.startTime || '', endTime: eventSched.endTime || '' }];
+                            }
+                            if (eventTimesArr.length > 0) {
+                              return (
+                                <p className="text-[10px] text-[#888888] italic">
+                                  {eventTimesArr.length} timing slot{eventTimesArr.length > 1 ? 's' : ''} scheduled for {eventName}
+                                </p>
+                              );
+                            }
+                            return null;
+                          })()}
                         </div>
                       </div>
 
@@ -1553,14 +1800,19 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                     const evPackages = selectedPackages.filter(p => p.eventTag === evName);
                     if (evPackages.length === 0) return null;
                     const sched = eventSchedules[evName] || {};
-                    const sTime = (sched.startTime && sched.endTime) ? `${sched.startTime} – ${sched.endTime}` : (sched.startTime || sched.endTime || sched.time || '');
+                    const sTime = formatEventTimes(sched);
 
                     return (
                       <div key={evName} className="space-y-1.5">
                         <div className="flex items-center justify-between bg-[#FAF0E1] px-3.5 py-1.5 rounded-lg border border-[#C5A880]/30 text-xs font-semibold">
                           <span className="text-[#8C6D3F] flex items-center gap-1.5">
                             <span>{getEventIcon(evName)} {evName} Coverage</span>
-                            {sched.date && <span className="text-[#666666] font-normal">({sched.date}{sTime ? ` • ${sTime}` : ''})</span>}
+                            {(() => {
+                              const summaryDates = Array.isArray(sched.dates) ? sched.dates.filter(Boolean) : (sched.date ? [sched.date] : []);
+                              const summaryDateStr = summaryDates.join(', ');
+                              const summarySched = [summaryDateStr, sTime].filter(Boolean).join(' • ');
+                              return summarySched ? <span className="text-[#666666] font-normal">({summarySched})</span> : null;
+                            })()}
                           </span>
                           <span className="font-serif font-bold text-[#8C6D3F]">
                             ₹{getEventSubtotal(evName).toLocaleString('en-IN')}/-

@@ -139,7 +139,11 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
     : (eventDate ? [eventDate] : []);
 
   if (eventDates.length === 0) {
-    const schedDates = Object.values(eventSchedules).map(s => s?.date).filter(Boolean);
+    const schedDates = Object.values(eventSchedules).flatMap(s => {
+      if (Array.isArray(s?.dates)) return s.dates.filter(Boolean);
+      if (s?.date) return [s.date];
+      return [];
+    });
     if (schedDates.length > 0) {
       eventDates = Array.from(new Set(schedDates));
     }
@@ -174,12 +178,23 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
 
   const eventsBulletList = selectedEvents.map(e => {
     const s = eventSchedules[e];
-    if (s && (s.date || s.startTime || s.endTime || s.time)) {
-      const timeVal = (s.startTime && s.endTime)
-        ? `${s.startTime} – ${s.endTime}`
-        : (s.startTime || s.endTime || s.time || '');
+    if (s && (s.dates || s.date || s.times || s.startTime || s.endTime || s.time)) {
+      let timeVal = '';
+      if (Array.isArray(s.times) && s.times.length > 0) {
+        timeVal = s.times
+          .map(t => (t.startTime && t.endTime ? `${t.startTime} – ${t.endTime}` : (t.startTime || t.endTime || '')))
+          .filter(Boolean)
+          .join(', ');
+      }
+      if (!timeVal) {
+        timeVal = (s.startTime && s.endTime)
+          ? `${s.startTime} – ${s.endTime}`
+          : (s.startTime || s.endTime || s.time || '');
+      }
       const timeTxt = timeVal ? ` (${timeVal})` : '';
-      return `• ${e}: ${s.date || 'Date TBD'}${timeTxt}`.trim();
+      const sDates = Array.isArray(s.dates) ? s.dates.filter(Boolean) : (s.date ? [s.date] : []);
+      const dateStr = sDates.length > 0 ? sDates.join(', ') : 'Date TBD';
+      return `• ${e}: ${dateStr}${timeTxt}`.trim();
     }
     return `• ${e}`;
   }).join('    ');
