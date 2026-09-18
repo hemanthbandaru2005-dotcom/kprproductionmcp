@@ -10,157 +10,43 @@ import { FLEXY_ALBUM_PHOTOS } from '../data/albumPhotosData';
 
 /* ─────────────────────────────────────────────────────
    Responsive Dimension Helper for 3D Photobook
-   Aspect ratio: ~1.45 (3:2 Landscape Photobook Spread Format)
-   Fills hero showcase area with zero empty side voids
+   Aspect ratio: ~0.76 (Portrait Fine-Art Photobook Format)
+   Matches the user's reference photograph exactly:
+   - Closed: Upright, elegant fine-art portrait photobook
+   - Open: 2 facing pages create a pristine 1.52 (3:2) spread
    ───────────────────────────────────────────────────── */
 function getBookDimensions() {
   if (typeof window === 'undefined') {
-    return { singlePageW: 340, singlePageH: 235 };
+    return { singlePageW: 280, singlePageH: 370 };
   }
   const w = window.innerWidth;
   if (w < 380) {
-    return { singlePageW: 155, singlePageH: 108 };
+    return { singlePageW: 150, singlePageH: 198 };
   }
   if (w < 480) {
-    return { singlePageW: 175, singlePageH: 122 };
+    return { singlePageW: 175, singlePageH: 230 };
   }
   if (w < 640) {
-    return { singlePageW: 215, singlePageH: 150 };
+    return { singlePageW: 215, singlePageH: 282 };
   }
   if (w < 768) {
-    return { singlePageW: 255, singlePageH: 178 };
+    return { singlePageW: 250, singlePageH: 328 };
   }
   if (w < 1024) {
-    return { singlePageW: 295, singlePageH: 205 };
+    return { singlePageW: 275, singlePageH: 362 };
   }
   if (w < 1280) {
-    return { singlePageW: 330, singlePageH: 228 };
+    return { singlePageW: 300, singlePageH: 395 };
   }
-  return { singlePageW: 350, singlePageH: 242 };
-}
-/* ─────────────────────────────────────────────────────
-   3D TOP PAGES BLOCK (Paper leaves, spine notch & stepped fore-edge)
-   Matches the user's line drawing reference exactly:
-   - C/U-notch headband on the spine side
-   - Slanted rear hardcover board
-   - Stepped fanned-out paper leaf edges on the fore-edge side
-   - Crisp, elegant bookbinding paper lines
-   - Visible ONLY when the book is closed (Front Cover or Back Cover)
-   - Hidden when the book is open ("if open the pages should not be appeared")
-   ───────────────────────────────────────────────────── */
-function BookTopPagesBlock({ width, height = 34, isReversed = false }) {
-  const w = width;
-  const h = height;
-  const spineW = Math.max(16, Math.round(w * 0.08));
-
-  // Stepped fore-edge points (7 steps matching user sketch)
-  const stepW = Math.round(spineW * 0.85);
-  const stepStartX = w - stepW;
-
-  return (
-    <svg
-      width={w}
-      height={h}
-      viewBox={`0 0 ${w} ${h}`}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="pointer-events-none select-none"
-      style={{
-        transform: isReversed ? 'scaleX(-1)' : 'none',
-        transformOrigin: 'center'
-      }}
-    >
-      <defs>
-        <linearGradient id="paperGradTop" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ECE3D6" />
-          <stop offset="25%" stopColor="#FAF7F2" />
-          <stop offset="75%" stopColor="#F5ECE0" />
-          <stop offset="100%" stopColor="#E2D4C3" />
-        </linearGradient>
-      </defs>
-
-      {/* ── 1. Rear Hardcover Board (Top slanted board from drawing) ── */}
-      <path
-        d={`M ${spineW * 0.5} ${h * 0.42} L ${stepStartX} 1.5 L ${stepStartX} 4.5 L ${spineW * 0.5} ${h * 0.42 + 3} Z`}
-        fill="#261E16"
-      />
-      <path
-        d={`M ${spineW * 0.5} ${h * 0.42} L ${stepStartX} 1.5`}
-        stroke="rgba(255,255,255,0.4)"
-        strokeWidth="0.8"
-      />
-
-      {/* ── 2. Paper Leaves Body (Stacked paper between rear board, spine & front cover) ── */}
-      <path
-        d={`M ${spineW * 0.5} ${h * 0.42 + 2}
-            L ${stepStartX} 4
-            L ${stepStartX + stepW * 0.15} ${h * 0.22}
-            L ${stepStartX + stepW * 0.30} ${h * 0.36}
-            L ${stepStartX + stepW * 0.45} ${h * 0.50}
-            L ${stepStartX + stepW * 0.60} ${h * 0.64}
-            L ${stepStartX + stepW * 0.75} ${h * 0.78}
-            L ${stepStartX + stepW * 0.90} ${h * 0.90}
-            L ${w} ${h}
-            L 2 ${h}
-            C 2 ${h * 0.7} 4 ${h * 0.45} ${spineW * 0.2} ${h * 0.32}
-            C ${spineW * 0.3} ${h * 0.5} ${spineW * 0.4} ${h * 0.52} ${spineW * 0.5} ${h * 0.42 + 2} Z`}
-        fill="url(#paperGradTop)"
-      />
-
-      {/* ── 3. Individual Paper Layer Lines (Matching pen sketch strokes) ── */}
-      <path d={`M ${spineW * 0.52} ${h * 0.48} L ${stepStartX + stepW * 0.12} ${h * 0.22}`} stroke="#BFAFA0" strokeWidth="0.8" />
-      <path d={`M ${spineW * 0.46} ${h * 0.56} L ${stepStartX + stepW * 0.27} ${h * 0.36}`} stroke="#D8CCC0" strokeWidth="0.8" />
-      <path d={`M ${spineW * 0.40} ${h * 0.64} L ${stepStartX + stepW * 0.42} ${h * 0.50}`} stroke="#BFAFA0" strokeWidth="0.8" />
-      <path d={`M ${spineW * 0.34} ${h * 0.72} L ${stepStartX + stepW * 0.57} ${h * 0.64}`} stroke="#D8CCC0" strokeWidth="0.8" />
-      <path d={`M ${spineW * 0.28} ${h * 0.80} L ${stepStartX + stepW * 0.72} ${h * 0.78}`} stroke="#BFAFA0" strokeWidth="0.8" />
-      <path d={`M ${spineW * 0.22} ${h * 0.88} L ${stepStartX + stepW * 0.87} ${h * 0.90}`} stroke="#D8CCC0" strokeWidth="0.8" />
-      <path d={`M ${spineW * 0.16} ${h * 0.94} L ${w - 1} ${h - 1}`} stroke="#BFAFA0" strokeWidth="0.8" />
-
-      {/* ── 4. Stepped Fore-Edge Outline (Crisp steps on right side) ── */}
-      <path
-        d={`M ${stepStartX} 4
-            L ${stepStartX + stepW * 0.15} ${h * 0.22}
-            L ${stepStartX + stepW * 0.30} ${h * 0.36}
-            L ${stepStartX + stepW * 0.45} ${h * 0.50}
-            L ${stepStartX + stepW * 0.60} ${h * 0.64}
-            L ${stepStartX + stepW * 0.75} ${h * 0.78}
-            L ${stepStartX + stepW * 0.90} ${h * 0.90}
-            L ${w} ${h}`}
-        stroke="#968878"
-        strokeWidth="0.9"
-        fill="none"
-      />
-
-      {/* ── 5. Spine U-Notch Headband Curve (Left side from drawing) ── */}
-      <path
-        d={`M 0 ${h}
-            C 1 ${h * 0.6} 3 ${h * 0.4} ${spineW * 0.2} ${h * 0.3}
-            C ${spineW * 0.32} ${h * 0.52} ${spineW * 0.42} ${h * 0.52} ${spineW * 0.5} ${h * 0.42}
-            L ${spineW * 0.5} ${h * 0.46}
-            C ${spineW * 0.4} ${h * 0.56} ${spineW * 0.3} ${h * 0.56} ${spineW * 0.18} ${h * 0.36}
-            C 2 ${h * 0.46} 1 ${h * 0.7} 0 ${h} Z`}
-        fill="#3A2E20"
-      />
-      {/* Decorative Headband Stitching Arc */}
-      <path
-        d={`M ${spineW * 0.22} ${h * 0.35} C ${spineW * 0.32} ${h * 0.52} ${spineW * 0.42} ${h * 0.52} ${spineW * 0.48} ${h * 0.44}`}
-        stroke="#C5A880"
-        strokeWidth="1"
-        strokeDasharray="2,2"
-      />
-
-      {/* ── 6. Front Cover Top Lip (Foreground edge) ── */}
-      <rect x="0" y={h - 3} width={w} height="3" rx="0.5" fill="#2E2419" />
-      <line x1="0" y1={h - 3} x2={w} y2={h - 3} stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" />
-    </svg>
-  );
+  return { singlePageW: 320, singlePageH: 420 };
 }
 
 /* ─────────────────────────────────────────────────────
-   PAGE 0: LUXURY HARDCOVER FRONT COVER
+   PAGE 0: LUXURY FINE-ART HARDCOVER FRONT COVER
    - data-density="hard" (rigid physical book cover)
-   - Realistic French groove, spine roll, and fore-edge
-   - Dynamic coverSrc (custom uploaded photo or demo cover)
+   - Fine-art archival paper/linen texture from client reference
+   - Embossed French groove / spine hinge indentation on the left
+   - Dynamic coverSrc (custom uploaded photo or pristine fine-art cover)
    ───────────────────────────────────────────────────── */
 const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, ...props }, ref) => {
   const imgSrc = coverSrc || "/images/album/front_cover.jpg";
@@ -170,7 +56,7 @@ const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, ...props }, ref) =>
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] cursor-pointer ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#F7F5F0] cursor-pointer ${props.className || ''}`}
       data-density="hard"
       title="Click or drag to open album"
       onClick={(e) => {
@@ -178,62 +64,46 @@ const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, ...props }, ref) =>
         onCoverClick?.();
       }}
     >
-      <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-r-2 border-r-[#8A7862]/30 bg-[#FAF8F5]">
+      <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border border-[#E5E0D8] bg-[#F7F5F0]">
         <img
           src={imgSrc}
-          alt="Photobook Front Cover"
+          alt="Fine Art Photobook Front Cover"
           className="w-full h-full object-cover object-center select-none pointer-events-none"
           loading="eager"
           draggable={false}
         />
 
-        {/* ── Realistic French Groove / Spine Hinge Indentation (Matches user sketch) ── */}
+        {/* ── Realistic Debossed French Groove / Spine Hinge Indentation (Matches client image) ── */}
         <div
           className="absolute top-0 bottom-0 pointer-events-none z-20"
           style={{
-            left: 'clamp(14px, 7.5%, 22px)',
-            width: '3.5px',
-            background: 'linear-gradient(to right, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.25) 100%)',
-            boxShadow: 'inset 1px 0 2px rgba(0,0,0,0.45)'
+            left: 'clamp(12px, 5.5%, 20px)',
+            width: '2.5px',
+            background: 'linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.04) 40%, rgba(255,255,255,0.4) 100%)',
+            boxShadow: 'inset 1px 0 1.5px rgba(0,0,0,0.3)'
           }}
         />
 
-        {/* ── Rounded Spine Backbone Lighting Roll (Left of groove) ── */}
+        {/* ── Soft Spine Lighting Highlight (Left of groove) ── */}
         <div
           className="absolute top-0 bottom-0 left-0 pointer-events-none z-20"
           style={{
-            width: 'clamp(14px, 7.5%, 22px)',
-            background: 'linear-gradient(to right, rgba(0,0,0,0.38) 0%, rgba(255,255,255,0.2) 35%, rgba(0,0,0,0.12) 80%, rgba(0,0,0,0.45) 100%)'
+            width: 'clamp(12px, 5.5%, 20px)',
+            background: 'linear-gradient(to right, rgba(0,0,0,0.18) 0%, rgba(255,255,255,0.15) 50%, rgba(0,0,0,0.06) 100%)'
           }}
         />
 
-        {/* ── Top-Left & Bottom-Left Spine Headband Notches (Matches sketch) ── */}
+        {/* ── Crisp Hardcover Bevel Edge ── */}
         <div
-          className="absolute -top-0.5 left-0 w-3 h-2 pointer-events-none z-30"
-          style={{
-            borderTopLeftRadius: '3px',
-            boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.6)'
-          }}
-        />
-        <div
-          className="absolute -bottom-0.5 left-0 w-3 h-2 pointer-events-none z-30"
-          style={{
-            borderBottomLeftRadius: '3px',
-            boxShadow: 'inset 1px -1px 2px rgba(0,0,0,0.6)'
-          }}
+          className="absolute inset-0 pointer-events-none z-20 border border-[#4A3C28]/15 shadow-[inset_0_0_4px_rgba(0,0,0,0.08)]"
         />
 
-        {/* ── Hardcover Outer Bevel Highlight ── */}
+        {/* ── Right Fore-Edge Paper Thickness Highlight ── */}
         <div
-          className="absolute inset-0 pointer-events-none z-20 border border-[#4A3C28]/25 shadow-[inset_0_0_6px_rgba(0,0,0,0.18)]"
-        />
-
-        {/* ── Right Fore-Edge Stacked Paper Thickness Highlight ── */}
-        <div
-          className="absolute top-0 bottom-0 right-0 w-2.5 pointer-events-none z-20 flex flex-col justify-between"
+          className="absolute top-0 bottom-0 right-0 w-2 pointer-events-none z-20"
           style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(240,230,215,0.4) 40%, transparent 100%)',
-            borderLeft: '1px solid rgba(0,0,0,0.08)'
+            background: 'linear-gradient(to left, rgba(0,0,0,0.15) 0%, rgba(255,255,255,0.3) 40%, transparent 100%)',
+            borderLeft: '1px solid rgba(0,0,0,0.05)'
           }}
         />
       </div>
@@ -243,9 +113,10 @@ const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, ...props }, ref) =>
 HeroFrontCover.displayName = 'HeroFrontCover';
 
 /* ─────────────────────────────────────────────────────
-   PHOTO PAGE HELPER (Full Bleed Edge-to-Edge)
-   - Zero padding / borders so images come FULL in the photobook
-   - Removed labels/names as requested by user
+   PHOTO PAGE HELPER (Fine-Art Archival Mounted)
+   - Zero cutting, cropping or distortion: 100% full photo preserved
+   - Neatly centered on museum-grade fine-art paper (#FAF9F6)
+   - Crisp rendering with high-quality filter
    - Spine crease shadow for authentic 3D book depth
    ───────────────────────────────────────────────────── */
 const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
@@ -254,25 +125,32 @@ const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF9F6] ${props.className || ''}`}
       data-density="soft"
     >
-      <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
-        {/* Full Bleed Photo Edge-to-Edge with centered balance */}
-        <img
-          src={src}
-          alt="Photobook Page"
-          className="w-full h-full object-cover object-center pointer-events-none select-none"
-          loading="lazy"
-          draggable={false}
-        />
+      <div className="w-full h-full relative overflow-hidden flex items-center justify-center p-2 xs:p-2.5 sm:p-3 bg-[#FAF9F6]">
+        {/* Full uncropped photo with fine-art archival mounting — pristine, neat, and never cut */}
+        <div className="w-full h-full relative flex items-center justify-center overflow-hidden">
+          <img
+            src={src}
+            alt="Photobook Page"
+            className="max-w-full max-h-full w-auto h-auto object-contain object-center select-none pointer-events-none rounded-[1px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+            style={{
+              imageRendering: 'high-quality',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'translateZ(0)'
+            }}
+            loading="eager"
+            draggable={false}
+          />
+        </div>
 
-        {/* Center Layflat Spine Crease Depth Shadow (Matching Image 2 Reference) */}
+        {/* Center Layflat Spine Crease Depth Shadow */}
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-4 sm:w-8 bg-gradient-to-l from-black/28 via-black/8 to-transparent'
-              : 'left-0 w-4 sm:w-8 bg-gradient-to-r from-black/28 via-black/8 to-transparent'
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/20 via-black/5 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/20 via-black/5 to-transparent'
           }`}
         />
 
@@ -291,10 +169,10 @@ const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
 HeroPhotoPage.displayName = 'HeroPhotoPage';
 
 /* ─────────────────────────────────────────────────────
-   PAGE: LUXURY HARDCOVER BACK COVER
+   PAGE: LUXURY FINE-ART HARDCOVER BACK COVER
    - data-density="hard" (rigid physical book cover)
-   - Closes book cleanly into single-page format
-   - Symmetrical French groove and spine roll
+   - Symmetrical debossed French groove on right side
+   - Closes book cleanly into portrait single-page format
    ───────────────────────────────────────────────────── */
 const HeroBackCover = forwardRef(({ onCoverClick, backCoverSrc, ...props }, ref) => {
   const imgSrc = backCoverSrc || "/images/album/back_cover.jpg";
@@ -304,7 +182,7 @@ const HeroBackCover = forwardRef(({ onCoverClick, backCoverSrc, ...props }, ref)
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] cursor-pointer ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#F7F5F0] cursor-pointer ${props.className || ''}`}
       data-density="hard"
       title="Click or drag to reopen album"
       onClick={(e) => {
@@ -312,46 +190,46 @@ const HeroBackCover = forwardRef(({ onCoverClick, backCoverSrc, ...props }, ref)
         onCoverClick?.();
       }}
     >
-      <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border-l-2 border-l-[#8A7862]/30 bg-[#FAF8F5]">
+      <div className="w-full h-full relative overflow-hidden flex flex-col justify-between shadow-2xl border border-[#E5E0D8] bg-[#F7F5F0]">
         <img
           src={imgSrc}
-          alt="Photobook Back Cover"
+          alt="Fine Art Photobook Back Cover"
           className="w-full h-full object-cover object-center select-none pointer-events-none"
           loading="lazy"
           draggable={false}
         />
 
-        {/* ── Realistic French Groove on Right Side (Hinge) ── */}
+        {/* ── Realistic Debossed French Groove on Right Side (Hinge) ── */}
         <div
           className="absolute top-0 bottom-0 pointer-events-none z-20"
           style={{
-            right: 'clamp(14px, 7.5%, 22px)',
-            width: '3.5px',
-            background: 'linear-gradient(to left, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.25) 100%)',
-            boxShadow: 'inset -1px 0 2px rgba(0,0,0,0.45)'
+            right: 'clamp(12px, 5.5%, 20px)',
+            width: '2.5px',
+            background: 'linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.04) 40%, rgba(255,255,255,0.4) 100%)',
+            boxShadow: 'inset -1px 0 1.5px rgba(0,0,0,0.3)'
           }}
         />
 
-        {/* ── Rounded Spine Backbone Lighting Roll (Right of groove) ── */}
+        {/* ── Soft Spine Lighting Highlight (Right of groove) ── */}
         <div
           className="absolute top-0 bottom-0 right-0 pointer-events-none z-20"
           style={{
-            width: 'clamp(14px, 7.5%, 22px)',
-            background: 'linear-gradient(to left, rgba(0,0,0,0.38) 0%, rgba(255,255,255,0.2) 35%, rgba(0,0,0,0.12) 80%, rgba(0,0,0,0.45) 100%)'
+            width: 'clamp(12px, 5.5%, 20px)',
+            background: 'linear-gradient(to left, rgba(0,0,0,0.18) 0%, rgba(255,255,255,0.15) 50%, rgba(0,0,0,0.06) 100%)'
           }}
         />
 
-        {/* ── Hardcover Outer Bevel Highlight ── */}
+        {/* ── Crisp Hardcover Bevel Edge ── */}
         <div
-          className="absolute inset-0 pointer-events-none z-20 border border-[#4A3C28]/25 shadow-[inset_0_0_6px_rgba(0,0,0,0.18)]"
+          className="absolute inset-0 pointer-events-none z-20 border border-[#4A3C28]/15 shadow-[inset_0_0_4px_rgba(0,0,0,0.08)]"
         />
 
-        {/* ── Left Fore-Edge Stacked Paper Thickness Highlight ── */}
+        {/* ── Left Fore-Edge Paper Thickness Highlight ── */}
         <div
-          className="absolute top-0 bottom-0 left-0 w-2.5 pointer-events-none z-20 flex flex-col justify-between"
+          className="absolute top-0 bottom-0 left-0 w-2 pointer-events-none z-20"
           style={{
-            background: 'linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(240,230,215,0.4) 40%, transparent 100%)',
-            borderRight: '1px solid rgba(0,0,0,0.08)'
+            background: 'linear-gradient(to right, rgba(0,0,0,0.15) 0%, rgba(255,255,255,0.3) 40%, transparent 100%)',
+            borderRight: '1px solid rgba(0,0,0,0.05)'
           }}
         />
       </div>
@@ -431,16 +309,11 @@ export default function HeroInteractiveAlbum({
   const isBackCover = currentPage >= totalPages - 1;
   const isOpen = !isCover && !isBackCover;
 
-  const topBlockHeight = Math.round(dims.singlePageW * 0.09) + 4;
-
   return (
     <div
-      className="relative flex flex-col items-center justify-center select-none my-0.5 sm:my-1 w-full max-w-full px-2"
-      style={{
-        paddingTop: `${topBlockHeight + 10}px`
-      }}
+      className="relative flex flex-col items-center justify-center select-none my-1 sm:my-2 w-full max-w-full px-2"
     >
-      {/* ── 3D Stage with Outer Drop Shadow ── */}
+      {/* ── 3D Stage with Natural Ambient Contact Shadow ── */}
       <div
         className="relative flex items-center justify-center select-none transition-all duration-500 ease-out"
         style={{
@@ -532,11 +405,11 @@ export default function HeroInteractiveAlbum({
           )}
         </AnimatePresence>
 
-        {/* Soft Grounding Ambient Contact Shadow */}
+        {/* Soft Ambient Contact Shadow Underneath (matching user reference image) */}
         <div
-          className="absolute -bottom-3 sm:-bottom-4 h-5 sm:h-6 bg-black/60 blur-md rounded-full pointer-events-none transition-all duration-500 ease-out"
+          className="absolute -bottom-3 sm:-bottom-4 h-4 sm:h-5 bg-black/45 blur-md rounded-full pointer-events-none transition-all duration-500 ease-out"
           style={{
-            width: isOpen ? dims.singlePageW * 1.85 : dims.singlePageW * 0.92,
+            width: isOpen ? dims.singlePageW * 1.85 : dims.singlePageW * 0.94,
             left: '50%',
             transform: 'translateX(-50%)'
           }}
@@ -589,61 +462,16 @@ export default function HeroInteractiveAlbum({
                 : 'translateX(0px)'
           }}
         >
-          {/* ── 3D Top Pages Block (Visible ONLY when closed on Front Cover, matches drawing) ── */}
-          <AnimatePresence>
-            {isCover && (
-              <motion.div
-                initial={{ opacity: 0, y: 2 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 2, transition: { duration: 0.15 } }}
-                transition={{ duration: 0.25 }}
-                className="absolute right-0 z-30 pointer-events-none"
-                style={{
-                  top: `-${topBlockHeight - 2}px`,
-                  width: `${dims.singlePageW}px`
-                }}
-              >
-                <BookTopPagesBlock
-                  width={dims.singlePageW}
-                  height={topBlockHeight}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── 3D Top Pages Block (Visible ONLY when closed on Back Cover) ── */}
-          <AnimatePresence>
-            {isBackCover && (
-              <motion.div
-                initial={{ opacity: 0, y: 2 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 2, transition: { duration: 0.15 } }}
-                transition={{ duration: 0.25 }}
-                className="absolute left-0 z-30 pointer-events-none"
-                style={{
-                  top: `-${topBlockHeight - 2}px`,
-                  width: `${dims.singlePageW}px`
-                }}
-              >
-                <BookTopPagesBlock
-                  width={dims.singlePageW}
-                  height={topBlockHeight}
-                  isReversed={true}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Hardcover Casing Underplate & Fore-Edge Framing (Matching Image 2 Reference) */}
+          {/* Hardcover Casing Underplate & Subtle Fore-Edge Framing */}
           {isOpen && (
             <div
-              className="absolute -inset-1.5 sm:-inset-2 rounded-xs pointer-events-none z-0"
+              className="absolute -inset-1 sm:-inset-1.5 rounded-xs pointer-events-none z-0"
               style={{
-                background: 'linear-gradient(to bottom, #1E1A16, #120F0C)',
-                boxShadow: '0 20px 48px -6px rgba(0,0,0,0.42), 0 8px 22px -4px rgba(0,0,0,0.22), inset 0 0 2px rgba(255,255,255,0.08)'
+                background: '#EAE5DC',
+                boxShadow: '0 20px 48px -8px rgba(0,0,0,0.28), 0 8px 20px -4px rgba(0,0,0,0.14)'
               }}
             >
-              {/* Visible Paper Block Fore-Edges on Left and Right (Matching Image 2) */}
+              {/* Visible Paper Block Fore-Edges on Left and Right */}
               <div className="absolute top-1 bottom-1 left-0.5 w-1 bg-gradient-to-r from-[#EFE9DF] to-[#FAF7F2] border-r border-black/10" />
               <div className="absolute top-1 bottom-1 right-0.5 w-1 bg-gradient-to-l from-[#EFE9DF] to-[#FAF7F2] border-l border-black/10" />
             </div>

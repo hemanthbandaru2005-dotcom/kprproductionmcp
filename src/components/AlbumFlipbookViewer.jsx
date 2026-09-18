@@ -89,7 +89,10 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, coverSrc, onOpen, ...p
 CoverPage.displayName = 'CoverPage';
 
 /* ─────────────────────────────────────────────────────
-   Inside Photo Page: Full Bleed Edge-to-Edge with Spine Depth
+   Inside Photo Page: Fine-Art Archival Mounting
+   - 100% full photo visible with zero cropping or cutting
+   - Pristine, sharp, and neat presentation on archival paper (#FAF9F6)
+   - High-quality rendering filter for crisp details
    ───────────────────────────────────────────────────── */
 const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...props }, ref) => {
   return (
@@ -97,25 +100,32 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] shadow-md ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF9F6] shadow-md ${props.className || ''}`}
       data-density="soft"
     >
-      <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
-        {/* Full Bleed Image Edge-to-Edge with centered balance */}
-        <img
-          src={src}
-          alt={`Album page ${pageIndex + 1}`}
-          className="w-full h-full object-cover object-center select-none pointer-events-none"
-          loading="lazy"
-          draggable={false}
-        />
+      <div className="w-full h-full relative overflow-hidden flex items-center justify-center p-2.5 xs:p-3 sm:p-4 bg-[#FAF9F6]">
+        {/* Full uncropped photo with fine-art archival mounting — pristine, neat, and never cut */}
+        <div className="w-full h-full relative flex items-center justify-center overflow-hidden">
+          <img
+            src={src}
+            alt={`Album page ${pageIndex + 1}`}
+            className="max-w-full max-h-full w-auto h-auto object-contain object-center select-none pointer-events-none rounded-[1px] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
+            style={{
+              imageRendering: 'high-quality',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'translateZ(0)'
+            }}
+            loading="lazy"
+            draggable={false}
+          />
+        </div>
 
         {/* Center Spine Crease / Binding Depth Shadow */}
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/30 via-black/10 to-transparent'
-              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/30 via-black/10 to-transparent'
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/20 via-black/5 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/20 via-black/5 to-transparent'
           }`}
         />
 
@@ -123,8 +133,8 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'left-0 w-1.5 bg-gradient-to-r from-black/15 to-transparent'
-              : 'right-0 w-1.5 bg-gradient-to-l from-black/15 to-transparent'
+              ? 'left-0 w-1 bg-gradient-to-r from-black/8 to-transparent'
+              : 'right-0 w-1 bg-gradient-to-l from-black/8 to-transparent'
           }`}
         />
       </div>
