@@ -6,12 +6,12 @@ export const EVENT_CATEGORIES = [
     group: '💍 Wedding & Couple Events',
     items: [
       'Wedding',
-      'Vratham',
       'Pre-Wedding (Song Shoot)',
       'Engagement',
       'Reception',
       'Haldi',
       'Mehendi',
+      'Vratham',
       'Sangeeth',
       'Bridal Shower',
       'Groom Ceremony',
@@ -35,7 +35,7 @@ export const EVENT_CATEGORIES = [
     items: [
       'Corporate Events',
       'Shopping Mall Opening',
-      'Hospital Events'
+      'Hospital'
     ]
   },
   {

@@ -133,15 +133,23 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
   doc.text(`Phone: +91 ${customerPhone}`, clientLeft, addressTop + 8.5);
-  const eventDates = Array.isArray(estimateData.eventDates) && estimateData.eventDates.length > 0
+  const eventSchedules = estimateData.eventSchedules || {};
+  let eventDates = Array.isArray(estimateData.eventDates) && estimateData.eventDates.length > 0
     ? estimateData.eventDates.filter(Boolean)
     : (eventDate ? [eventDate] : []);
+
+  if (eventDates.length === 0) {
+    const schedDates = Object.values(eventSchedules).map(s => s?.date).filter(Boolean);
+    if (schedDates.length > 0) {
+      eventDates = Array.from(new Set(schedDates));
+    }
+  }
 
   const startTime = estimateData.startTime || '';
   const endTime = estimateData.endTime || '';
   const timingTxt = (startTime && endTime)
     ? `Starting: ${startTime} • Ending: ${endTime}`
-    : (startTime ? `Starting Time: ${startTime}` : (eventTime ? `Event Time: ${eventTime}` : 'Flexible'));
+    : (startTime ? `Starting Time: ${startTime}` : (eventTime ? `Timing: ${eventTime}` : 'Per Celebration'));
 
   if (eventDates.length > 0) {
     if (eventDates.length === 1) {
@@ -150,26 +158,28 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
       const datesLine = `Event Dates: ${eventDates.join(', ')}`;
       doc.text(datesLine.length > 48 ? doc.splitTextToSize(datesLine, 85) : datesLine, clientLeft, addressTop + 12.5);
     }
-    doc.text(`Timing: ${timingTxt}`, clientLeft, addressTop + 16.5);
-    doc.text(`Area: ${eventLocation || 'Telangana, India'}`, clientLeft, addressTop + 20.5);
+    doc.text(`Area: ${eventLocation || 'Telangana, India'}`, clientLeft, addressTop + 16.5);
+    doc.text(`Timing: ${timingTxt}`, clientLeft, addressTop + 20.5);
   } else {
     doc.text(`Area: ${eventLocation || 'Telangana, India'}`, clientLeft, addressTop + 12.5);
     doc.text(`Timing: ${timingTxt}`, clientLeft, addressTop + 16.5);
   }
 
   // ══════════════════ 2B. SELECTED CELEBRATION EVENTS BLOCK ══════════════════
-  // Displays ALL events selected by the customer (Requirement 4, 5, 7)
+  // Displays ALL events selected by the customer
   const eventsBoxY = 66;
   doc.setFillColor(250, 247, 242); // Elegant cream
   doc.setDrawColor(216, 207, 196);
   doc.setLineWidth(0.3);
 
-  const eventSchedules = estimateData.eventSchedules || {};
   const eventsBulletList = selectedEvents.map(e => {
     const s = eventSchedules[e];
-    if (s && (s.date || s.time)) {
-      const timeTxt = s.time ? ` (${s.time})` : '';
-      return `• ${e}: ${s.date || ''}${timeTxt}`.trim();
+    if (s && (s.date || s.startTime || s.endTime || s.time)) {
+      const timeVal = (s.startTime && s.endTime)
+        ? `${s.startTime} – ${s.endTime}`
+        : (s.startTime || s.endTime || s.time || '');
+      const timeTxt = timeVal ? ` (${timeVal})` : '';
+      return `• ${e}: ${s.date || 'Date TBD'}${timeTxt}`.trim();
     }
     return `• ${e}`;
   }).join('    ');

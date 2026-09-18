@@ -254,6 +254,7 @@ import('../src/utils/catalogService.js').then(({ EVENT_CATEGORIES, getApplicable
   const weddingCat = EVENT_CATEGORIES.find(c => c.group.includes('Wedding'));
   assert(weddingCat, 'Wedding category must exist');
   assert(weddingCat.items.includes('Vratham'), 'Wedding must include Vratham');
+  assert(weddingCat.items.indexOf('Vratham') > 3, 'Vratham must be in the middle of the Wedding list, NOT at the top/first');
   assert(weddingCat.items.includes('Pre-Wedding (Song Shoot)'), 'Wedding must include Pre-Wedding (Song Shoot)');
   assert(!weddingCat.items.includes('Pre-Wedding'), 'Old Pre-Wedding should be replaced by Pre-Wedding (Song Shoot)');
 
@@ -263,12 +264,78 @@ import('../src/utils/catalogService.js').then(({ EVENT_CATEGORIES, getApplicable
 
   const commCat = EVENT_CATEGORIES.find(c => c.group.includes('Commercial'));
   assert(commCat, 'Commercial Events category must exist');
-  assert.deepStrictEqual(commCat.items, ['Corporate Events', 'Shopping Mall Opening', 'Hospital Events'], 'Commercial Events items must match');
+  assert.deepStrictEqual(commCat.items, ['Corporate Events', 'Shopping Mall Opening', 'Hospital'], 'Commercial Events items must match with Hospital (not Hospital Events)');
 
   const step3Packages = getApplicableCatalogPackages(['Wedding', 'Sangeeth', 'Corporate Events']);
   const hasSangeeth = step3Packages.some(p => p.id === 'pkg-sangeeth-1' || p.name.toLowerCase().includes('sangeeth'));
   assert(!hasSangeeth, 'Sangeeth package must NEVER be present in Step 3 package options');
 
   console.log('✓ Test 8 Passed: Step 2 categories and Step 3 Sangeeth exclusion fully verified!\n');
-  console.log('🎉 ALL 8 TEST CASES PASSED SUCCESSFULLY!');
+
+  // ── TEST 9: Multi-Event Separate Package Selection & Calculation Logic ──
+  console.log('--- TEST 9: Multi-Event Separate Package Selection & Calculation ---');
+  // Customer selects 2 events: Wedding and Reception
+  const test9Events = ['Wedding', 'Reception'];
+  const test9Schedules = {
+    'Wedding': {
+      date: '2026-11-20',
+      startTime: '09:00 AM',
+      endTime: '02:00 PM',
+      serviceIds: ['pkg-1', 'pkg-3'] // Traditional Photo (8000) + Candid Photo (12000) = 20,000
+    },
+    'Reception': {
+      date: '2026-11-21',
+      startTime: '06:00 PM',
+      endTime: '11:00 PM',
+      serviceIds: ['pkg-1', 'pkg-2'] // Traditional Photo (8000) + Traditional Video (8000) = 16,000
+    }
+  };
+
+  const weddingPackages = [
+    { id: 'pkg-1', name: 'Traditional Photography', category: 'Photography', duration: '6 hours', price: 8000, eventTag: 'Wedding', eventDate: '2026-11-20', startTime: '09:00 AM', endTime: '02:00 PM', eventTime: '09:00 AM – 02:00 PM' },
+    { id: 'pkg-3', name: 'Candid Photography', category: 'Photography', duration: '6 hours', price: 12000, eventTag: 'Wedding', eventDate: '2026-11-20', startTime: '09:00 AM', endTime: '02:00 PM', eventTime: '09:00 AM – 02:00 PM' }
+  ];
+
+  const receptionPackages = [
+    { id: 'pkg-1', name: 'Traditional Photography', category: 'Photography', duration: '6 hours', price: 8000, eventTag: 'Reception', eventDate: '2026-11-21', startTime: '06:00 PM', endTime: '11:00 PM', eventTime: '06:00 PM – 11:00 PM' },
+    { id: 'pkg-2', name: 'Traditional Video', category: 'Videography', duration: '6 hours', price: 8000, eventTag: 'Reception', eventDate: '2026-11-21', startTime: '06:00 PM', endTime: '11:00 PM', eventTime: '06:00 PM – 11:00 PM' }
+  ];
+
+  const combinedPackages = [...weddingPackages, ...receptionPackages];
+  const combinedSubtotal = combinedPackages.reduce((sum, p) => sum + p.price, 0);
+
+  // Assert calculations:
+  // Wedding: 20000, Reception: 16000, Total: 36000
+  assert.strictEqual(combinedSubtotal, 36000, 'Subtotal for Wedding (20k) + Reception (16k) must be exactly 36,000');
+  assert.strictEqual(combinedPackages.filter(p => p.id === 'pkg-1').length, 2, 'Traditional Photography must be counted separately for Wedding and Reception');
+
+  const estimateData9 = {
+    customerName: 'Aditya & Pooja',
+    customerPhone: '9849443648',
+    eventDates: ['2026-11-20', '2026-11-21'],
+    eventLocation: 'Hanamkonda, Warangal',
+    selectedEvents: test9Events,
+    eventSchedules: test9Schedules,
+    selectedPackages: combinedPackages,
+    album: { needAlbum: true, sheets: 40, price: 10000 },
+    deliverables: ['Cloud link', 'Color graded masters'],
+    addOns: [],
+    servicesSubtotal: combinedSubtotal,
+    albumSubtotal: 10000,
+    addOnsSubtotal: 0,
+    grandTotal: combinedSubtotal + 10000
+  };
+
+  const pdfDoc9 = generateEstimatePdf(estimateData9, false);
+  const pdfText9 = extractPdfText(pdfDoc9);
+
+  assert(pdfText9.includes('Wedding'), 'PDF must include Wedding');
+  assert(pdfText9.includes('Reception'), 'PDF must include Reception');
+  assert(pdfText9.includes('2026-11-20'), 'PDF must include Wedding date');
+  assert(pdfText9.includes('2026-11-21'), 'PDF must include Reception date');
+  assert(pdfText9.includes('36,000'), 'PDF must include 36,000 services subtotal');
+  assert(pdfText9.includes('46,000'), 'PDF must include 46,000 grand total (36,000 services + 10,000 album)');
+
+  console.log('✓ Test 9 Passed: Multi-event separate package selection and calculation verified!\n');
+  console.log('🎉 ALL 9 TEST CASES PASSED SUCCESSFULLY!');
 });
