@@ -53,6 +53,18 @@ const OPTIONAL_ADDONS = [
   }
 ];
 
+const TIME_OPTIONS = [
+  '06:00 AM', '06:30 AM', '07:00 AM', '07:30 AM',
+  '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM',
+  '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+  '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
+  '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM',
+  '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+  '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM',
+  '08:00 PM', '08:30 PM', '09:00 PM', '09:30 PM',
+  '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM'
+];
+
 export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPage, embedded = false }) {
   const containerRef = useRef(null);
 
@@ -72,24 +84,50 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const [customerPhone, setCustomerPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [nameError, setNameError] = useState('');
-  const [eventDate, setEventDate] = useState('');
-  const [eventTime, setEventTime] = useState('');
+  
+  // Step 1: Multiple Event Dates (Requirement 1)
+  const [eventDates, setEventDates] = useState(['']);
+  
+  // Step 1: Starting Time & Ending Time (Requirement 2)
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+
+  // Step 1: Area (Requirement 9: change Amount/Location text to Area)
   const [eventLocation, setEventLocation] = useState('');
 
+  // Derived primary date & timing for compatibility
+  const eventDate = eventDates.find(d => d && d.trim().length > 0) || '';
+  const eventTime = (startTime && endTime) ? `${startTime} - ${endTime}` : (startTime || '');
+
   // ── STEP 2: Selected Events (MULTI-SELECT ARRAY) ──
-  const [selectedEvents, setSelectedEvents] = useState(['Wedding', 'Pre-Wedding', 'Engagement', 'Reception']);
+  // Starts with 0 selected events by default (Requirement: fix 4 items pre-selected bug)
+  const [selectedEvents, setSelectedEvents] = useState([]);
 
   // ── STEP 3: Selected Packages & Celebration Section Scheduling ──
-  const [selectedPackageIds, setSelectedPackageIds] = useState(['pkg-1', 'pkg-2', 'pkg-3', 'pkg-4']);
+  const [selectedPackageIds, setSelectedPackageIds] = useState([]);
   const [packageCategoryFilter, setPackageCategoryFilter] = useState('ALL');
 
   // Celebration Sections scheduling: { [eventName]: { date: string, time: string, serviceIds: string[] } }
-  const [eventSchedules, setEventSchedules] = useState({
-    'Wedding': { date: '', time: '09:00', serviceIds: ['pkg-1', 'pkg-2', 'pkg-3', 'pkg-4'] },
-    'Pre-Wedding': { date: '', time: '16:00', serviceIds: ['pkg-3', 'pkg-4'] },
-    'Engagement': { date: '', time: '10:30', serviceIds: ['pkg-1', 'pkg-2'] },
-    'Reception': { date: '', time: '18:30', serviceIds: ['pkg-3', 'pkg-4'] }
-  });
+  const [eventSchedules, setEventSchedules] = useState({});
+
+  const handleAddDate = () => {
+    setEventDates(prev => [...prev, '']);
+  };
+
+  const handleRemoveDate = (index) => {
+    setEventDates(prev => {
+      const updated = prev.filter((_, i) => i !== index);
+      return updated.length === 0 ? [''] : updated;
+    });
+  };
+
+  const handleDateChange = (index, value) => {
+    setEventDates(prev => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  };
 
   const getEventSchedule = (eventName) => {
     return eventSchedules[eventName] || {
@@ -393,6 +431,9 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
       customerName,
       customerPhone,
       eventDate,
+      eventDates: eventDates.filter(Boolean),
+      startTime,
+      endTime,
       eventTime,
       eventLocation,
       event: selectedEvents.join(', '),
@@ -435,14 +476,20 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
       const s = eventSchedules[ev];
       return s?.date ? `${ev} (${s.date}${s.time ? ` ${s.time}` : ''})` : ev;
     }).join(', ');
-    const dateInfo = eventDate ? `\n*Primary Date:* ${eventDate}` : '';
-    const locationInfo = eventLocation ? `\n*Location:* ${eventLocation}` : '';
+    const validDates = eventDates.filter(Boolean);
+    const dateInfo = validDates.length > 0
+      ? `\n*Event Date${validDates.length > 1 ? 's' : ''}:* ${validDates.join(', ')}`
+      : '';
+    const timingInfo = (startTime && endTime)
+      ? `\n*Timings:* ${startTime} to ${endTime}`
+      : (startTime ? `\n*Starting Time:* ${startTime}` : (eventTime ? `\n*Time:* ${eventTime}` : ''));
+    const areaInfo = eventLocation ? `\n*Area:* ${eventLocation}` : '';
 
     const msg = `*KPR PHOTOGRAPHY COST ESTIMATE*\n` +
       `*Estimate No:* ${estimateNumber}\n` +
       `*Client:* ${customerName} (+91 ${customerPhone})\n` +
       `*Celebration Schedule:*\n${eventsList}` +
-      dateInfo + locationInfo +
+      dateInfo + timingInfo + areaInfo +
       `\n\n*Selected Services & Schedules:*\n${pkgNames}\n\n` +
       `*Album:* ${albumTxt}\n` +
       `*Total Estimated Investment:* ₹${grandTotal.toLocaleString('en-IN')}/-\n\n` +
@@ -456,11 +503,13 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     setCurrentStep(1);
     setCustomerName('');
     setCustomerPhone('');
-    setEventDate('');
-    setEventTime('');
+    setEventDates(['']);
+    setStartTime('');
+    setEndTime('');
     setEventLocation('');
-    setSelectedEvents(['Wedding']);
-    setSelectedPackageIds(['pkg-3', 'pkg-2']);
+    setSelectedEvents([]);
+    setSelectedPackageIds([]);
+    setEventSchedules({});
     setNeedAlbum(true);
     setAlbumSheets(30);
     setAlbumSheetsError('');
@@ -677,10 +726,100 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                 </div>
               </div>
 
-              {/* Event Location */}
+              {/* Step 1: Multiple Event Dates (Requirement 1) */}
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
+                    Event Dates {eventDates.filter(Boolean).length > 0 ? `(${eventDates.filter(Boolean).length})` : ''} <span className="text-red-400">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddDate}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#8C6D3F] hover:text-[#6E542D] transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>+ Add Another Date</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  {eventDates.map((d, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
+                        <input
+                          type="date"
+                          value={d}
+                          onChange={(e) => handleDateChange(idx, e.target.value)}
+                          className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#1A1A1A] outline-none transition-all cursor-pointer"
+                        />
+                      </div>
+                      <span className="text-xs font-medium text-[#777777] shrink-0 w-24">
+                        Event Date {idx + 1}
+                      </span>
+                      {eventDates.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveDate(idx)}
+                          className="p-2.5 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors cursor-pointer shrink-0"
+                          title="Remove Date"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-[#777777]">
+                  Add multiple dates if your wedding, reception or ceremonies take place over several days.
+                </p>
+              </div>
+
+              {/* Step 1: Starting Time & Ending Time (Requirement 2 & 6: No quick presets) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
+                    Starting Time
+                  </label>
+                  <div className="relative">
+                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
+                    <select
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#1A1A1A] outline-none transition-all cursor-pointer"
+                    >
+                      <option value="">Select starting time</option>
+                      {TIME_OPTIONS.map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
+                    Ending Time
+                  </label>
+                  <div className="relative">
+                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
+                    <select
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#8C6D3F] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#1A1A1A] outline-none transition-all cursor-pointer"
+                    >
+                      <option value="">Select ending time</option>
+                      {TIME_OPTIONS.map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 1: Area (Requirement 9: change existing Amount/Location text to Area) */}
               <div className="space-y-2 pt-1">
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#333333]">
-                  Event Location
+                  Area
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C6D3F]" />
@@ -693,7 +832,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   />
                 </div>
                 <p className="text-[11px] text-[#777777]">
-                  Venue or city of the events. Specific dates and timings can be scheduled individually for each celebration in Step 3.
+                  Area, venue or city of the events.
                 </p>
               </div>
 
@@ -820,17 +959,30 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   <span>Back</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCurrentStep(3);
-                    scrollToEstimatorTop();
-                  }}
-                  className="px-8 py-3.5 bg-[#C5A880] hover:bg-[#D4B991] text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2 cursor-pointer"
-                >
-                  <span>Select Packages</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                <div className="flex flex-col items-end gap-1.5">
+                  <button
+                    type="button"
+                    disabled={selectedEvents.length === 0}
+                    onClick={() => {
+                      if (selectedEvents.length === 0) return;
+                      setCurrentStep(3);
+                      scrollToEstimatorTop();
+                    }}
+                    className={`px-8 py-3.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
+                      selectedEvents.length > 0
+                        ? 'bg-[#C5A880] hover:bg-[#D4B991] text-black font-bold text-xs uppercase tracking-[0.2em] shadow-lg hover:shadow-xl hover:scale-[1.02]'
+                        : 'bg-[#E2D9CC] text-[#888888] font-bold text-xs uppercase tracking-[0.2em] cursor-not-allowed opacity-60'
+                    }`}
+                  >
+                    <span>Select Packages</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  {selectedEvents.length === 0 && (
+                    <span className="text-[11px] text-[#8C6D3F] italic">
+                      Please select at least 1 celebration to continue
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -1540,11 +1692,13 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   </div>
 
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#8C8375]">Event Details</span>
+                    <span className="text-[10px] uppercase tracking-wider text-[#8C8375]">Area & Timings</span>
                     <h4 className="text-sm sm:text-base font-bold text-[#1A1A1A] mt-0.5">{eventLocation || 'Telangana, India'}</h4>
                     <p className="text-xs text-[#8C6D3F] font-medium">
-                      {eventDate ? `Date: ${eventDate}` : 'Dates scheduled per celebration'}
-                      {eventTime ? ` • Time: ${eventTime}` : ''}
+                      {eventDates.filter(Boolean).length > 1
+                        ? `Dates: ${eventDates.filter(Boolean).join(', ')}`
+                        : (eventDate ? `Date: ${eventDate}` : 'Dates to be confirmed')}
+                      {(startTime || endTime) ? ` • ${startTime || ''}${startTime && endTime ? ' – ' : ''}${endTime || ''}` : ''}
                     </p>
                   </div>
 

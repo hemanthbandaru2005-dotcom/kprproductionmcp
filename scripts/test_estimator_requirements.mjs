@@ -213,4 +213,62 @@ assert(pdfText6.includes('Pre-Wedding'), 'PDF must include Pre-Wedding celebrati
 assert(!pdfText6.includes('Date to be confirmed'), 'PDF should not say Date to be confirmed when celebrations are scheduled');
 console.log('✓ Test 6 Passed: Per-celebration dates properly rendered without Step 1 primary dates\n');
 
-console.log('🎉 ALL 6 TEST CASES PASSED SUCCESSFULLY!');
+// ── TEST 7: Multiple Event Dates, Start/End Time, and Area Label in PDF ──
+console.log('--- TEST 7: Multiple Event Dates, Start/End Time, and Area in PDF ---');
+const estimateData7 = {
+  customerName: 'Suresh Reddy',
+  customerPhone: '9849443648',
+  eventDates: ['2026-11-20', '2026-11-21', '2026-11-22'],
+  eventDate: '2026-11-20',
+  startTime: '09:30 AM',
+  endTime: '08:30 PM',
+  eventLocation: 'Banjara Hills, Hyderabad',
+  selectedEvents: ['Wedding', 'Vratham', 'Corporate Events'],
+  selectedPackages: [
+    { id: 'pkg-1', name: 'Traditional Photography', category: 'Photography', duration: 'Full Day', price: 8000 }
+  ],
+  album: { needAlbum: false, sheets: 0, price: 0 },
+  deliverables: ['Cloud delivery'],
+  addOns: [],
+  servicesSubtotal: 8000,
+  albumSubtotal: 0,
+  addOnsSubtotal: 0,
+  grandTotal: 8000
+};
+
+const pdfDoc7 = generateEstimatePdf(estimateData7, false);
+const pdfText7 = extractPdfText(pdfDoc7);
+
+assert(pdfText7.includes('2026-11-20'), 'PDF must include date 1');
+assert(pdfText7.includes('2026-11-21'), 'PDF must include date 2');
+assert(pdfText7.includes('2026-11-22'), 'PDF must include date 3');
+assert(pdfText7.includes('09:30 AM'), 'PDF must include starting time 09:30 AM');
+assert(pdfText7.includes('08:30 PM'), 'PDF must include ending time 08:30 PM');
+assert(pdfText7.includes('Area: Banjara Hills, Hyderabad'), 'PDF must include Area label and value');
+assert(!pdfText7.includes('Event Location:'), 'PDF must NOT include old "Event Location:" label');
+console.log('✓ Test 7 Passed: Multiple event dates, start/end time, and Area label rendered in PDF\n');
+
+// ── TEST 8: Step 2 Categories and Step 3 Package Filtering ──
+console.log('--- TEST 8: Step 2 Categories and Step 3 Sangeeth Exclusion ---');
+import('../src/utils/catalogService.js').then(({ EVENT_CATEGORIES, getApplicableCatalogPackages }) => {
+  const weddingCat = EVENT_CATEGORIES.find(c => c.group.includes('Wedding'));
+  assert(weddingCat, 'Wedding category must exist');
+  assert(weddingCat.items.includes('Vratham'), 'Wedding must include Vratham');
+  assert(weddingCat.items.includes('Pre-Wedding (Song Shoot)'), 'Wedding must include Pre-Wedding (Song Shoot)');
+  assert(!weddingCat.items.includes('Pre-Wedding'), 'Old Pre-Wedding should be replaced by Pre-Wedding (Song Shoot)');
+
+  const bdayCat = EVENT_CATEGORIES.find(c => c.group.includes('Birthday'));
+  assert(bdayCat, 'Birthday category must exist');
+  assert.deepStrictEqual(bdayCat.items, ['Birthday', 'Pre-Birthday', 'Kids Birthday'], 'Birthday must ONLY have Birthday, Pre-Birthday, Kids Birthday');
+
+  const commCat = EVENT_CATEGORIES.find(c => c.group.includes('Commercial'));
+  assert(commCat, 'Commercial Events category must exist');
+  assert.deepStrictEqual(commCat.items, ['Corporate Events', 'Shopping Mall Opening', 'Hospital Events'], 'Commercial Events items must match');
+
+  const step3Packages = getApplicableCatalogPackages(['Wedding', 'Sangeeth', 'Corporate Events']);
+  const hasSangeeth = step3Packages.some(p => p.id === 'pkg-sangeeth-1' || p.name.toLowerCase().includes('sangeeth'));
+  assert(!hasSangeeth, 'Sangeeth package must NEVER be present in Step 3 package options');
+
+  console.log('✓ Test 8 Passed: Step 2 categories and Step 3 Sangeeth exclusion fully verified!\n');
+  console.log('🎉 ALL 8 TEST CASES PASSED SUCCESSFULLY!');
+});

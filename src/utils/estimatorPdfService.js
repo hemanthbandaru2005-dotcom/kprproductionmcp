@@ -133,13 +133,28 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
   doc.text(`Phone: +91 ${customerPhone}`, clientLeft, addressTop + 8.5);
-  if (eventDate) {
-    doc.text(`Event Date: ${eventDate}`, clientLeft, addressTop + 12.5);
-    doc.text(`Event Time: ${eventTime || 'Flexible'}`, clientLeft, addressTop + 16.5);
-    doc.text(`Event Location: ${eventLocation}`, clientLeft, addressTop + 20.5);
+  const eventDates = Array.isArray(estimateData.eventDates) && estimateData.eventDates.length > 0
+    ? estimateData.eventDates.filter(Boolean)
+    : (eventDate ? [eventDate] : []);
+
+  const startTime = estimateData.startTime || '';
+  const endTime = estimateData.endTime || '';
+  const timingTxt = (startTime && endTime)
+    ? `Starting: ${startTime} • Ending: ${endTime}`
+    : (startTime ? `Starting Time: ${startTime}` : (eventTime ? `Event Time: ${eventTime}` : 'Flexible'));
+
+  if (eventDates.length > 0) {
+    if (eventDates.length === 1) {
+      doc.text(`Event Date: ${eventDates[0]}`, clientLeft, addressTop + 12.5);
+    } else {
+      const datesLine = `Event Dates: ${eventDates.join(', ')}`;
+      doc.text(datesLine.length > 48 ? doc.splitTextToSize(datesLine, 85) : datesLine, clientLeft, addressTop + 12.5);
+    }
+    doc.text(`Timing: ${timingTxt}`, clientLeft, addressTop + 16.5);
+    doc.text(`Area: ${eventLocation || 'Telangana, India'}`, clientLeft, addressTop + 20.5);
   } else {
-    doc.text(`Event Location: ${eventLocation}`, clientLeft, addressTop + 12.5);
-    doc.text(`Schedule: Detailed per celebration below (Sec 2B)`, clientLeft, addressTop + 16.5);
+    doc.text(`Area: ${eventLocation || 'Telangana, India'}`, clientLeft, addressTop + 12.5);
+    doc.text(`Timing: ${timingTxt}`, clientLeft, addressTop + 16.5);
   }
 
   // ══════════════════ 2B. SELECTED CELEBRATION EVENTS BLOCK ══════════════════

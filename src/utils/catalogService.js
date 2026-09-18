@@ -6,7 +6,8 @@ export const EVENT_CATEGORIES = [
     group: '💍 Wedding & Couple Events',
     items: [
       'Wedding',
-      'Pre-Wedding',
+      'Vratham',
+      'Pre-Wedding (Song Shoot)',
       'Engagement',
       'Reception',
       'Haldi',
@@ -24,10 +25,17 @@ export const EVENT_CATEGORIES = [
   {
     group: '🎂 Birthdays & Milestones',
     items: [
-      '1st Birthday',
-      'Kids Birthday',
-      'Adult Milestone Birthday',
-      'Half Birthday'
+      'Birthday',
+      'Pre-Birthday',
+      'Kids Birthday'
+    ]
+  },
+  {
+    group: '🏢 Commercial Events',
+    items: [
+      'Corporate Events',
+      'Shopping Mall Opening',
+      'Hospital Events'
     ]
   },
   {
@@ -63,46 +71,37 @@ export const EVENT_CATEGORIES = [
 ];
 
 /**
- * Catalog Generation Logic (Requirement 6):
+ * Catalog Generation Logic (Requirement 6 & 7):
  * Iterates through all selected events, identifies applicable catalog/package information,
- * includes it in the result, and prevents duplicate entries.
+ * includes it in the result, excludes Sangeeth from Step 3, and prevents duplicate entries.
  */
 export function getApplicableCatalogPackages(selectedEvents, allPackages = OFFICIAL_PHOTOGRAPHY_PACKAGES) {
   const events = Array.isArray(selectedEvents) && selectedEvents.length > 0 ? selectedEvents : ['Wedding'];
   const catalogMap = new Map();
 
   for (const eventName of events) {
-    const evLower = eventName.toLowerCase();
-    
     for (const pkg of allPackages) {
-      // Exclude removed packages (Corporate, Mall, and Per-sheet item)
-      if (pkg.id === 'pkg-corp-1' || pkg.id === 'pkg-mall-1' || pkg.id === 'pkg-12' || pkg.name === 'Each Album One Sheet') {
+      // Exclude removed packages (Corporate, Mall, Per-sheet item, and Sangeeth per Step 3 requirement)
+      if (
+        pkg.id === 'pkg-corp-1' ||
+        pkg.id === 'pkg-mall-1' ||
+        pkg.id === 'pkg-12' ||
+        pkg.id === 'pkg-sangeeth-1' ||
+        pkg.name.toLowerCase().includes('sangeeth') ||
+        pkg.name === 'Each Album One Sheet'
+      ) {
         continue;
       }
 
-      // Check event applicability:
-      // Standard packages (Traditional Photo, Candid, Traditional Video, Cinematic Video, Drone, Teaser, Live Link, LED, Editing)
-      // apply to all photography/videography events.
-      // Sangeeth package is specific to Sangeeth or wedding/reception/celebration events.
-      let isApplicable = true;
-      if (pkg.id === 'pkg-sangeeth-1' || pkg.name.toLowerCase().includes('sangeeth')) {
-        const isWeddingOrSangeeth = /sangeeth|wedding|reception|mehendi|haldi|bridal|groom|couple/i.test(evLower);
-        if (!isWeddingOrSangeeth && !events.some(e => /sangeeth|wedding/i.test(e))) {
-          isApplicable = false;
-        }
-      }
-
-      if (isApplicable) {
-        if (!catalogMap.has(pkg.id)) {
-          catalogMap.set(pkg.id, {
-            ...pkg,
-            applicableEvents: [eventName]
-          });
-        } else {
-          const existing = catalogMap.get(pkg.id);
-          if (!existing.applicableEvents.includes(eventName)) {
-            existing.applicableEvents.push(eventName);
-          }
+      if (!catalogMap.has(pkg.id)) {
+        catalogMap.set(pkg.id, {
+          ...pkg,
+          applicableEvents: [eventName]
+        });
+      } else {
+        const existing = catalogMap.get(pkg.id);
+        if (!existing.applicableEvents.includes(eventName)) {
+          existing.applicableEvents.push(eventName);
         }
       }
     }
@@ -111,7 +110,14 @@ export function getApplicableCatalogPackages(selectedEvents, allPackages = OFFIC
   // Safety fallback: if no event-specific matches, supply standard active packages
   if (catalogMap.size === 0) {
     allPackages.forEach(pkg => {
-      if (pkg.id !== 'pkg-corp-1' && pkg.id !== 'pkg-mall-1' && pkg.id !== 'pkg-12' && pkg.name !== 'Each Album One Sheet') {
+      if (
+        pkg.id !== 'pkg-corp-1' &&
+        pkg.id !== 'pkg-mall-1' &&
+        pkg.id !== 'pkg-12' &&
+        pkg.id !== 'pkg-sangeeth-1' &&
+        !pkg.name.toLowerCase().includes('sangeeth') &&
+        pkg.name !== 'Each Album One Sheet'
+      ) {
         catalogMap.set(pkg.id, { ...pkg, applicableEvents: events });
       }
     });

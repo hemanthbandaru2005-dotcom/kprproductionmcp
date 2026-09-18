@@ -62,95 +62,165 @@ function ThreeDClosedBookMockup({
 }) {
   const w = width;
   const h = height;
+  const depth = Math.max(16, Math.round(w * 0.08)); // Realistic ~18-24px book block thickness
 
   return (
     <div
       onClick={onOpen}
-      className="relative flex items-center justify-center cursor-pointer select-none group py-2"
+      className="relative flex items-center justify-center cursor-pointer select-none group py-3 sm:py-5"
+      style={{ perspective: '1200px' }}
       title="Click or swipe to open photobook"
     >
-      {/* ── Studio Ground Contact & Ambient Shadow ── */}
+      {/* ── Realistic Diffuse Studio Ground Contact Shadow ── */}
       <div
-        className="absolute pointer-events-none rounded-lg transition-all duration-300 group-hover:scale-105"
+        className="absolute pointer-events-none transition-all duration-300 group-hover:scale-105"
         style={{
-          width: `${w + 24}px`,
-          height: `${h + 16}px`,
-          bottom: '2px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.18) 45%, rgba(0,0,0,0.04) 70%, transparent 80%)',
-          filter: 'blur(10px)',
+          width: `${w * 1.35}px`,
+          height: `${h * 1.15}px`,
+          bottom: '-14px',
+          left: isBackCover ? '44%' : '52%',
+          transform: 'translateX(-50%) skewX(-14deg)',
+          background: 'radial-gradient(ellipse at 46% 56%, rgba(0,0,0,0.46) 0%, rgba(0,0,0,0.22) 42%, rgba(0,0,0,0.06) 66%, transparent 80%)',
+          filter: 'blur(12px)',
           zIndex: 0
         }}
       />
 
-      {/* ── Solid Realistic Hardcover Photobook Body ── */}
+      {/* ── 3D Isometric Book Assembly matching Adobe Stock #1502582528 ── */}
       <div
-        className="relative overflow-hidden rounded-[3px] transition-all duration-300 ease-out group-hover:-translate-y-1.5 group-hover:scale-[1.02]"
+        className="relative transition-transform duration-300 ease-out group-hover:-translate-y-2 group-hover:scale-[1.02]"
         style={{
           width: `${w}px`,
           height: `${h}px`,
-          zIndex: 10,
-          background: '#FAF8F5',
-          boxShadow: isBackCover
-            ? '-1px 1px 0 #EDE6DC, -2px 2px 0 #E2DDD5, -3px 3px 0 #D8D2C8, -4px 4px 0 #CFC8BE, -5px 5px 0 #C4BCB1, -6px 6px 0 #B5AC9E, 0 16px 36px -4px rgba(0,0,0,0.38), 0 6px 14px -2px rgba(0,0,0,0.22)'
-            : '1px 1px 0 #EDE6DC, 2px 2px 0 #E2DDD5, 3px 3px 0 #D8D2C8, 4px 4px 0 #CFC8BE, 5px 5px 0 #C4BCB1, 6px 6px 0 #B5AC9E, 0 16px 36px -4px rgba(0,0,0,0.38), 0 6px 14px -2px rgba(0,0,0,0.22)',
-          border: '1px solid rgba(74,60,40,0.18)'
+          transformStyle: 'preserve-3d',
+          transform: isBackCover
+            ? 'rotateX(46deg) rotateZ(32deg) rotateY(-6deg)'
+            : 'rotateX(46deg) rotateZ(-32deg) rotateY(6deg)',
+          zIndex: 10
         }}
       >
-        {/* Cover Photo */}
-        <img
-          src={coverSrc}
-          alt="Wedding Photobook Cover"
-          className="w-full h-full object-cover object-center select-none pointer-events-none"
-          loading="eager"
-          draggable={false}
+        {/* 1. Bottom Hardcover Board (Lies flat on tabletop at Z=0) */}
+        <div
+          className="absolute inset-0 rounded-[2px] pointer-events-none"
+          style={{
+            transform: 'translateZ(0px)',
+            background: '#FAF8F5',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+            border: '1px solid rgba(74,60,40,0.2)'
+          }}
         />
 
-        {/* Realistic Debossed French Groove (Hinge Indentation) */}
+        {/* 2. Stacked Archival Paper Block (Fore-Edge - Right side) */}
         <div
-          className="absolute top-0 bottom-0 pointer-events-none z-20"
+          className="absolute top-[2px] bottom-[2px] right-0 pointer-events-none"
           style={{
-            left: isBackCover ? 'auto' : 'clamp(12px, 6%, 20px)',
-            right: isBackCover ? 'clamp(12px, 6%, 20px)' : 'auto',
-            width: '3.5px',
-            background: isBackCover
-              ? 'linear-gradient(to left, rgba(0,0,0,0.36) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)'
-              : 'linear-gradient(to right, rgba(0,0,0,0.36) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)',
+            width: `${depth}px`,
+            transformOrigin: 'right center',
+            transform: 'rotateY(90deg)',
+            background: 'repeating-linear-gradient(to bottom, #FAF7F2 0px, #EFECE6 1px, #E4DFD5 2px, #D5CDC0 3px)',
+            boxShadow: 'inset 0 0 6px rgba(0,0,0,0.28), inset -2px 0 3px rgba(0,0,0,0.2)',
+            borderTop: '1px solid rgba(74,60,40,0.18)',
+            borderBottom: '1px solid rgba(74,60,40,0.18)'
+          }}
+        />
+
+        {/* 3. Stacked Archival Paper Block (Tail - Bottom edge) */}
+        <div
+          className="absolute left-[3px] right-[2px] bottom-0 pointer-events-none"
+          style={{
+            height: `${depth}px`,
+            transformOrigin: 'center bottom',
+            transform: 'rotateX(-90deg)',
+            background: 'repeating-linear-gradient(to right, #FAF7F2 0px, #EFECE6 1px, #E4DFD5 2px, #D5CDC0 3px)',
+            boxShadow: 'inset 0 0 6px rgba(0,0,0,0.32), inset 0 -2px 3px rgba(0,0,0,0.2)',
+            borderLeft: '1px solid rgba(74,60,40,0.18)',
+            borderRight: '1px solid rgba(74,60,40,0.18)'
+          }}
+        />
+
+        {/* 4. Rounded Backbone Spine & Headband (Left edge) */}
+        <div
+          className="absolute top-0 bottom-0 left-0 pointer-events-none"
+          style={{
+            width: `${depth}px`,
+            transformOrigin: 'left center',
+            transform: 'rotateY(-90deg)',
+            background: 'linear-gradient(to bottom, #8C7862 0px, #FAF8F5 3px, #E8E2D8 50%, #FAF8F5 calc(100% - 3px), #8C7862 100%)',
+            boxShadow: 'inset 0 0 8px rgba(0,0,0,0.45)',
+            borderLeft: '1px solid rgba(0,0,0,0.2)'
+          }}
+        >
+          {/* Headband ribbons (striped cloth edge at top & bottom of spine) */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[repeating-linear-gradient(to_right,#8C7862_0px,#FAF8F5_2px,#C5A880_4px)] opacity-90" />
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[repeating-linear-gradient(to_right,#8C7862_0px,#FAF8F5_2px,#C5A880_4px)] opacity-90" />
+        </div>
+
+        {/* 5. Top Luxury Hardcover Board (Sits on top of the paper block at translateZ(depth)) */}
+        <div
+          className="absolute inset-0 overflow-hidden rounded-[2px]"
+          style={{
+            transform: `translateZ(${depth}px)`,
+            background: '#FAF8F5',
             boxShadow: isBackCover
-              ? 'inset -1px 0 2px rgba(0,0,0,0.4)'
-              : 'inset 1px 0 2px rgba(0,0,0,0.4)'
+              ? 'inset -1px 0 2px rgba(255,255,255,0.4), -1px 1px 3px rgba(0,0,0,0.25)'
+              : 'inset 1px 0 2px rgba(255,255,255,0.4), 1px 1px 3px rgba(0,0,0,0.25)',
+            border: '1px solid rgba(74,60,40,0.22)'
           }}
-        />
+        >
+          {/* Cover Photo */}
+          <img
+            src={coverSrc}
+            alt="Wedding Photobook Cover"
+            className="w-full h-full object-cover object-center select-none pointer-events-none"
+            loading="eager"
+            draggable={false}
+          />
 
-        {/* Soft Spine Roll Lighting Highlight */}
-        <div
-          className="absolute top-0 bottom-0 pointer-events-none z-20"
-          style={{
-            left: isBackCover ? 'auto' : '0px',
-            right: isBackCover ? '0px' : 'auto',
-            width: 'clamp(12px, 6%, 20px)',
-            background: isBackCover
-              ? 'linear-gradient(to left, rgba(0,0,0,0.24) 0%, rgba(255,255,255,0.22) 45%, rgba(0,0,0,0.08) 100%)'
-              : 'linear-gradient(to right, rgba(0,0,0,0.24) 0%, rgba(255,255,255,0.22) 45%, rgba(0,0,0,0.08) 100%)'
-          }}
-        />
+          {/* Realistic Debossed French Groove (Hinge Indentation) */}
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none z-20"
+            style={{
+              left: isBackCover ? 'auto' : 'clamp(12px, 6%, 20px)',
+              right: isBackCover ? 'clamp(12px, 6%, 20px)' : 'auto',
+              width: '3.5px',
+              background: isBackCover
+                ? 'linear-gradient(to left, rgba(0,0,0,0.36) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)'
+                : 'linear-gradient(to right, rgba(0,0,0,0.36) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)',
+              boxShadow: isBackCover
+                ? 'inset -1px 0 2px rgba(0,0,0,0.4)'
+                : 'inset 1px 0 2px rgba(0,0,0,0.4)'
+            }}
+          />
 
-        {/* Crisp Hardcover Outer Bevel Highlight */}
-        <div className="absolute inset-0 pointer-events-none z-20 border border-white/30 shadow-[inset_0_0_6px_rgba(0,0,0,0.14)]" />
+          {/* Soft Spine Roll Lighting Highlight */}
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none z-20"
+            style={{
+              left: isBackCover ? 'auto' : '0px',
+              right: isBackCover ? '0px' : 'auto',
+              width: 'clamp(12px, 6%, 20px)',
+              background: isBackCover
+                ? 'linear-gradient(to left, rgba(0,0,0,0.24) 0%, rgba(255,255,255,0.22) 45%, rgba(0,0,0,0.08) 100%)'
+                : 'linear-gradient(to right, rgba(0,0,0,0.24) 0%, rgba(255,255,255,0.22) 45%, rgba(0,0,0,0.08) 100%)'
+            }}
+          />
 
-        {/* Fore-Edge Lip Thickness Highlight */}
-        <div
-          className="absolute top-0 bottom-0 pointer-events-none z-20"
-          style={{
-            left: isBackCover ? '0px' : 'auto',
-            right: isBackCover ? 'auto' : '0px',
-            width: '3px',
-            background: isBackCover
-              ? 'linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
-              : 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
-          }}
-        />
+          {/* Crisp Hardcover Outer Bevel Highlight */}
+          <div className="absolute inset-0 pointer-events-none z-20 border border-white/30 shadow-[inset_0_0_6px_rgba(0,0,0,0.14)]" />
+
+          {/* Fore-Edge Lip Thickness Highlight */}
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none z-20"
+            style={{
+              left: isBackCover ? '0px' : 'auto',
+              right: isBackCover ? 'auto' : '0px',
+              width: '3px',
+              background: isBackCover
+                ? 'linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
+                : 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
+            }}
+          />
+        </div>
       </div>
     </div>
   );
