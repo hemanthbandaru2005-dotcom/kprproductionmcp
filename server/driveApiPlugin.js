@@ -102,7 +102,7 @@ export function driveApiPlugin() {
         // -------------------------------------------------------------
         // 0. GET /, /api, /drive, /api/drive, /api/health, /health
         // -------------------------------------------------------------
-        if ((pathname === '/' || pathname === '/api' || pathname === '/drive' || pathname === '/api/drive' || pathname === '/app/api/drive') && req.method === 'GET') {
+        if ((pathname === '/api' || pathname === '/drive' || pathname === '/api/drive' || pathname === '/app/api/drive') && req.method === 'GET') {
           res.setHeader('Content-Type', 'application/json');
           res.statusCode = 200;
           return res.end(JSON.stringify({

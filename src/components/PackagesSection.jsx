@@ -1,8 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import { SERVICES_PACKAGES as INITIAL_PHOTOGRAPHY_PACKAGES } from '../data/packagesData';
 import { fetchSitePackages } from '../utils/packagesService';
 import { Sparkles, ArrowLeft, PhoneCall } from 'lucide-react';
 import PhotographyCostEstimator from './estimator/PhotographyCostEstimator';
+
+class EstimatorErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('EstimatorErrorBoundary caught error:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-2xl p-6 text-center space-y-3">
+          <p className="text-sm text-[#8C6D3F] font-semibold">Cost Estimator is temporarily reloading.</p>
+          <button
+            type="button"
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="px-5 py-2 bg-[#C5A880] text-black text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer"
+          >
+            Reload Estimator
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export default function PackagesSection({
   onBackToGallery,
@@ -193,10 +223,12 @@ export default function PackagesSection({
         {/* Full 7-Step Photography Cost Estimator (Embedded at end of Packages - Not rendered in Color Lab) */}
         {showQuoteWidget && packageType !== 'colorlab' && (
           <div id="cost-estimator" className="w-full my-8 sm:my-14 scroll-mt-24">
-            <PhotographyCostEstimator
-              embedded={true}
-              onBackToHome={onBackToGallery}
-            />
+            <EstimatorErrorBoundary>
+              <PhotographyCostEstimator
+                embedded={true}
+                onBackToHome={onBackToGallery}
+              />
+            </EstimatorErrorBoundary>
           </div>
         )}
 

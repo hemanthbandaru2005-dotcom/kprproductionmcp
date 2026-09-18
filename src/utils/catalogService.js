@@ -81,15 +81,21 @@ export function getApplicableCatalogPackages(selectedEvents, allPackages = OFFIC
 
   for (const eventName of events) {
     for (const pkg of allPackages) {
-      // Exclude removed packages (Corporate, Mall, Per-sheet item, and Sangeeth per Step 3 requirement)
+      // Exclude per-sheet item (handled in Step 4) and Sangeeth per Step 3 requirement (Requirement 7)
       if (
-        pkg.id === 'pkg-corp-1' ||
-        pkg.id === 'pkg-mall-1' ||
         pkg.id === 'pkg-12' ||
         pkg.id === 'pkg-sangeeth-1' ||
         pkg.name.toLowerCase().includes('sangeeth') ||
         pkg.name === 'Each Album One Sheet'
       ) {
+        continue;
+      }
+
+      // Hide Corporate and Mall packages unless relevant commercial events are chosen in Step 2
+      if (pkg.id === 'pkg-corp-1' && !events.some(e => e.toLowerCase().includes('corporate') || e.toLowerCase().includes('commercial'))) {
+        continue;
+      }
+      if (pkg.id === 'pkg-mall-1' && !events.some(e => e.toLowerCase().includes('mall') || e.toLowerCase().includes('shopping'))) {
         continue;
       }
 
@@ -111,13 +117,13 @@ export function getApplicableCatalogPackages(selectedEvents, allPackages = OFFIC
   if (catalogMap.size === 0) {
     allPackages.forEach(pkg => {
       if (
-        pkg.id !== 'pkg-corp-1' &&
-        pkg.id !== 'pkg-mall-1' &&
         pkg.id !== 'pkg-12' &&
         pkg.id !== 'pkg-sangeeth-1' &&
         !pkg.name.toLowerCase().includes('sangeeth') &&
         pkg.name !== 'Each Album One Sheet'
       ) {
+        if (pkg.id === 'pkg-corp-1' && !events.some(e => e.toLowerCase().includes('corporate') || e.toLowerCase().includes('commercial'))) return;
+        if (pkg.id === 'pkg-mall-1' && !events.some(e => e.toLowerCase().includes('mall') || e.toLowerCase().includes('shopping'))) return;
         catalogMap.set(pkg.id, { ...pkg, applicableEvents: events });
       }
     });

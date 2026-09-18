@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Check, ArrowLeft, ArrowRight, Sparkles, Download, CheckCircle2,
-  Calendar, Phone, User, ShieldCheck, Heart, Camera, Video, Film,
-  Layers, Sliders, ChevronRight, RotateCcw, FileText, Send, Clock,
-  Plus, Minus, AlertCircle, Eye, MapPin
+  Calendar, Phone, User, ShieldCheck, RotateCcw, Clock,
+  Plus, Minus, AlertCircle, MapPin
 } from 'lucide-react';
 import { OFFICIAL_PHOTOGRAPHY_PACKAGES } from '../../utils/packagesService';
-import { generateEstimatePdf, formatINR } from '../../utils/estimatorPdfService';
+import { generateEstimatePdf } from '../../utils/estimatorPdfService';
 import { EVENT_CATEGORIES, getApplicableCatalogPackages } from '../../utils/catalogService';
 
 // Official Deliverable Add-ons (exact prices)
@@ -95,6 +94,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   // ── STEP 3: Celebration Sections scheduling & per-event package assignments ──
   // Format: { [eventName]: { date: string, startTime: string, endTime: string, serviceIds: string[] } }
   const [eventSchedules, setEventSchedules] = useState({});
+  const [packageCategoryFilter, setPackageCategoryFilter] = useState('ALL');
 
   const getEventSchedule = (eventName) => {
     return eventSchedules[eventName] || {
@@ -373,17 +373,6 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     }
   };
 
-  // Toggle package selection in step 3
-  const togglePackage = (id) => {
-    if (selectedPackageIds.includes(id)) {
-      if (selectedPackageIds.length === 1) {
-        return; // prevent empty
-      }
-      setSelectedPackageIds(selectedPackageIds.filter(item => item !== id));
-    } else {
-      setSelectedPackageIds([...selectedPackageIds, id]);
-    }
-  };
 
   // Deliverable add-on quantity controls
   const updateAddonQty = (addonId, delta) => {
@@ -892,8 +881,43 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                 </p>
               </div>
 
+              {/* Category Filter Tabs */}
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-none">
+                {['ALL', 'Photography', 'Videography', 'Aerial', 'Editing'].map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setPackageCategoryFilter(tab)}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase whitespace-nowrap transition-all cursor-pointer ${
+                      packageCategoryFilter === tab
+                        ? 'bg-[#1A1A1A] text-white shadow-md'
+                        : 'bg-[#F0EBE1] text-[#555555] hover:text-black hover:bg-[#E5DDCF]'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
               {/* Cards for each selected celebration section */}
-              <div className="space-y-6">
+              {selectedEvents.length === 0 ? (
+                <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-2xl p-8 text-center space-y-4">
+                  <p className="text-sm text-[#777777]">
+                    Please select at least one celebration in Step 2 to configure packages.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentStep(2);
+                      scrollToEstimatorTop();
+                    }}
+                    className="px-6 py-2.5 bg-[#C5A880] text-black font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer"
+                  >
+                    Go Back to Step 2
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
                 {selectedEvents.map((eventName) => {
                   const eventSched = getEventSchedule(eventName);
                   const icon = getEventIcon(eventName);
@@ -1002,7 +1026,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {availablePackages.map((pkg) => {
+                          {filteredPackages.map((pkg) => {
                             const isAssigned = isServiceAssignedToEvent(pkg.id, eventName);
                             const displayDuration = pkg.duration || '6 hours';
 
@@ -1055,6 +1079,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   );
                 })}
               </div>
+              )}
 
               {/* Subtotal of Step 3 */}
               <div className="bg-[#FAF8F5] border border-[#E8DFC9] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">

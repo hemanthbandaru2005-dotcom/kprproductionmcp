@@ -304,15 +304,17 @@ function AppContent() {
 
         {activePage === 'media' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <Suspense fallback={<PageLoader />}>
-              <MediaSection
-                initialTab="gallery"
-                onSelectPhoto={(photo) => setSelectedPhoto(photo)}
-                moodboardIds={moodboardIds}
-                toggleMoodboardItem={toggleMoodboardItem}
-                onOpenEstimator={() => handleSelectPage('estimator')}
-              />
-            </Suspense>
+            <SectionErrorBoundary sectionName="Fotography">
+              <Suspense fallback={<PageLoader />}>
+                <MediaSection
+                  initialTab="gallery"
+                  onSelectPhoto={(photo) => setSelectedPhoto(photo)}
+                  moodboardIds={moodboardIds}
+                  toggleMoodboardItem={toggleMoodboardItem}
+                  onOpenEstimator={() => handleSelectPage('estimator')}
+                />
+              </Suspense>
+            </SectionErrorBoundary>
           </div>
         )}
 
@@ -381,14 +383,16 @@ function AppContent() {
 
         {activePage === 'estimator' && (
           <div className="pt-14 sm:pt-16 pb-0 animate-fadeIn w-full m-0 p-0">
-            <Suspense fallback={<PageLoader />}>
-              <MediaSection
-                initialTab="estimator"
-                onSelectPhoto={(photo) => setSelectedPhoto(photo)}
-                moodboardIds={moodboardIds}
-                toggleMoodboardItem={toggleMoodboardItem}
-              />
-            </Suspense>
+            <SectionErrorBoundary sectionName="Cost Estimator">
+              <Suspense fallback={<PageLoader />}>
+                <MediaSection
+                  initialTab="estimator"
+                  onSelectPhoto={(photo) => setSelectedPhoto(photo)}
+                  moodboardIds={moodboardIds}
+                  toggleMoodboardItem={toggleMoodboardItem}
+                />
+              </Suspense>
+            </SectionErrorBoundary>
           </div>
         )}
       </main>
