@@ -8,9 +8,10 @@ import {
 
 /* ─────────────────────────────────────────────────────
    Helper to compute single-page aspect ratio from physical size
+   Default: 1.5 (Exact 3:2 Landscape Photobook Spread Format)
    ───────────────────────────────────────────────────── */
 function getPageAspectRatio(sizeStr) {
-  if (!sizeStr) return 0.75;
+  if (!sizeStr) return 1.5;
   const clean = String(sizeStr).toLowerCase().replace(/\s+/g, '');
   if (clean === '12x36') return 1.5;   // 18w / 12h per page (36x12 full spread)
   if (clean === '13x39') return 1.5;   // 19.5w / 13h per page (39x13 full spread)
@@ -18,7 +19,7 @@ function getPageAspectRatio(sizeStr) {
   if (clean === '16x24') return 0.75;  // 12w / 16h per page (portrait)
   if (clean === '18x24') return 0.67;  // 12w / 18h per page (portrait)
   if (clean === '12x24') return 1.0;   // 12w / 12h per page (square)
-  return 0.75;
+  return 1.5;
 }
 
 /* ─────────────────────────────────────────────────────
@@ -72,14 +73,17 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, coverSrc, onOpen, ...p
           }}
         />
 
-        {/* Hardcover Outer Bevel Edge */}
-        <div className="absolute inset-0 pointer-events-none z-10 border border-[#4A3C28]/20 shadow-[inset_0_0_6px_rgba(0,0,0,0.15)]" />
-
-        {/* Right Edge Stacked Page Thickness Highlight */}
+        {/* ── Hardcover Outer Bevel Highlight ── */}
         <div
-          className="absolute top-0 bottom-0 right-0 w-2 pointer-events-none z-10"
+          className="absolute inset-0 pointer-events-none z-20 border border-[#4A3C28]/25 shadow-[inset_0_0_6px_rgba(0,0,0,0.18)]"
+        />
+
+        {/* ── Right Fore-Edge Stacked Paper Thickness Highlight ── */}
+        <div
+          className="absolute top-0 bottom-0 right-0 w-2.5 pointer-events-none z-20 flex flex-col justify-between"
           style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, transparent 100%)'
+            background: 'linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(240,230,215,0.4) 40%, transparent 100%)',
+            borderLeft: '1px solid rgba(0,0,0,0.08)'
           }}
         />
       </div>
@@ -89,10 +93,10 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, coverSrc, onOpen, ...p
 CoverPage.displayName = 'CoverPage';
 
 /* ─────────────────────────────────────────────────────
-   Inside Photo Page: Fine-Art Archival Mounting
-   - 100% full photo visible with zero cropping or cutting
-   - Pristine, sharp, and neat presentation on archival paper (#FAF9F6)
-   - High-quality rendering filter for crisp details
+   Inside Photo Page: Full Bleed Edge-to-Edge with Spine Depth
+   - Zero cutting, zero empty margins: photos fill 100% of the page
+   - 1.50 aspect ratio matches 1500x1000 photos exactly
+   - Pristine, sharp, and neat presentation
    ───────────────────────────────────────────────────── */
 const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...props }, ref) => {
   return (
@@ -100,32 +104,30 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF9F6] shadow-md ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] shadow-md ${props.className || ''}`}
       data-density="soft"
     >
-      <div className="w-full h-full relative overflow-hidden flex items-center justify-center p-2.5 xs:p-3 sm:p-4 bg-[#FAF9F6]">
-        {/* Full uncropped photo with fine-art archival mounting — pristine, neat, and never cut */}
-        <div className="w-full h-full relative flex items-center justify-center overflow-hidden">
-          <img
-            src={src}
-            alt={`Album page ${pageIndex + 1}`}
-            className="max-w-full max-h-full w-auto h-auto object-contain object-center select-none pointer-events-none rounded-[1px] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
-            style={{
-              imageRendering: 'high-quality',
-              WebkitBackfaceVisibility: 'hidden',
-              transform: 'translateZ(0)'
-            }}
-            loading="lazy"
-            draggable={false}
-          />
-        </div>
+      <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
+        {/* Full Bleed Image Edge-to-Edge with centered balance */}
+        <img
+          src={src}
+          alt={`Album page ${pageIndex + 1}`}
+          className="w-full h-full object-cover object-center select-none pointer-events-none"
+          style={{
+            imageRendering: 'high-quality',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'translateZ(0)'
+          }}
+          loading="lazy"
+          draggable={false}
+        />
 
         {/* Center Spine Crease / Binding Depth Shadow */}
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/20 via-black/5 to-transparent'
-              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/20 via-black/5 to-transparent'
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/25 via-black/8 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/25 via-black/8 to-transparent'
           }`}
         />
 
