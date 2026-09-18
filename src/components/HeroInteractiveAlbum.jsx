@@ -43,6 +43,239 @@ function getBookDimensions() {
 }
 
 /* ─────────────────────────────────────────────────────
+   3D HARDCOVER CLOSED BOOK MOCKUP
+   Directly reproduces the user's Adobe Stock reference photo:
+   - 3D perspective isometric angle (lying flat on studio tabletop)
+   - Thick, cylindrical rounded spine with woven headband cloth ribbons
+   - Top & bottom hardcover boards with overhang ("the square")
+   - Thick stacked archival paper block recessed inside the boards
+   - Debossed French groove on front cover (hinge joint indentation)
+   - Real high-res Bride cover photo (front_cover.jpg)
+   - Realistic contact and diffuse studio shadows
+   ───────────────────────────────────────────────────── */
+function ThreeDClosedBookMockup({
+  coverSrc,
+  width,
+  height,
+  onOpen,
+  isBackCover = false
+}) {
+  const w = width;
+  const h = height;
+  const thickness = Math.max(16, Math.round(w * 0.095)); // ~26px on desktop, ~16px on mobile
+  const overhang = Math.max(3, Math.round(w * 0.015)); // ~4px overhang
+  const boardW = w + overhang;
+  const boardH = h + overhang * 2;
+
+  return (
+    <div
+      onClick={onOpen}
+      className="relative flex items-center justify-center cursor-pointer select-none group py-3 sm:py-4 px-2"
+      style={{
+        perspective: '1200px',
+        perspectiveOrigin: '50% 45%'
+      }}
+      title="Click or swipe to open photobook"
+    >
+      {/* ── Studio Ground Contact & Ambient Shadows (matching reference photo) ── */}
+      <div
+        className="absolute pointer-events-none transition-all duration-500 ease-out"
+        style={{
+          width: `${boardW * 1.18}px`,
+          height: `${boardH * 0.95}px`,
+          bottom: '6px',
+          left: '50%',
+          transform: isBackCover
+            ? 'translateX(-50%) rotateX(42deg) rotateY(10deg) rotateZ(20deg) translateY(18px) scale(0.96)'
+            : 'translateX(-50%) rotateX(42deg) rotateY(-8deg) rotateZ(-22deg) translateY(18px) scale(0.96)',
+          background: 'radial-gradient(ellipse at 46% 46%, rgba(0,0,0,0.46) 0%, rgba(0,0,0,0.24) 42%, rgba(0,0,0,0.06) 68%, transparent 82%)',
+          filter: 'blur(15px)',
+          zIndex: 0
+        }}
+      />
+
+      {/* ── 3D Isometric Hardcover Book Assembly ── */}
+      <div
+        className="relative transition-transform duration-500 ease-out group-hover:scale-[1.03] group-hover:-translate-y-2"
+        style={{
+          width: `${w}px`,
+          height: `${h}px`,
+          transformStyle: 'preserve-3d',
+          transform: isBackCover
+            ? 'rotateX(38deg) rotateY(8deg) rotateZ(22deg)'
+            : 'rotateX(38deg) rotateY(-8deg) rotateZ(-22deg)',
+          zIndex: 10
+        }}
+      >
+        {/* ── 1. BOTTOM HARDCOVER BOARD (Lies flat on ground) ── */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: `${boardW}px`,
+            height: `${boardH}px`,
+            left: `-${overhang * 0.5}px`,
+            top: `-${overhang}px`,
+            transform: 'translateZ(0px)',
+            background: '#F0ECE4',
+            borderRadius: '2px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.28), 0 1px 3px rgba(0,0,0,0.18)',
+            border: '1px solid rgba(0,0,0,0.08)'
+          }}
+        />
+
+        {/* ── 2. RECESSED STACKED PAPER BLOCK (Pages stacked between boards) ── */}
+        {/* Front-Facing Bottom Edge of Paper Block (Visible in reference image) */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: `${w}px`,
+            height: `${thickness}px`,
+            left: '0px',
+            top: `${h}px`,
+            transform: 'translateY(-1px) rotateX(-90deg)',
+            transformOrigin: 'top center',
+            background: 'repeating-linear-gradient(to bottom, #FAF7F2 0px, #FAF7F2 1.5px, #D8CEC0 2px, #FAF7F2 2.5px)',
+            boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.22), inset 0 -2px 4px rgba(0,0,0,0.16)'
+          }}
+        />
+
+        {/* Right-Facing Fore-Edge of Paper Block (Visible in reference image) */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: `${thickness}px`,
+            height: `${h}px`,
+            left: `${w}px`,
+            top: '0px',
+            transform: 'translateX(-1px) rotateY(90deg)',
+            transformOrigin: 'left center',
+            background: 'repeating-linear-gradient(to right, #FAF7F2 0px, #FAF7F2 1.5px, #D8CEC0 2px, #FAF7F2 2.5px)',
+            boxShadow: 'inset 3px 0 6px rgba(0,0,0,0.22), inset -2px 0 4px rgba(0,0,0,0.16)'
+          }}
+        />
+
+        {/* Top-Facing Rear Edge of Paper Block */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: `${w}px`,
+            height: `${thickness}px`,
+            left: '0px',
+            top: '0px',
+            transform: 'rotateX(90deg)',
+            transformOrigin: 'top center',
+            background: 'repeating-linear-gradient(to top, #FAF7F2 0px, #FAF7F2 1.5px, #D8CEC0 2px, #FAF7F2 2.5px)',
+            boxShadow: 'inset 0 -2px 4px rgba(0,0,0,0.2)'
+          }}
+        />
+
+        {/* ── 3. ROUNDED HARDCOVER SPINE (Left edge, matching reference) ── */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: `${thickness}px`,
+            height: `${boardH}px`,
+            left: '0px',
+            top: `-${overhang}px`,
+            transform: 'rotateY(-90deg)',
+            transformOrigin: 'left center',
+            background: 'linear-gradient(to bottom, #2C241C 0%, #4D4033 15%, #7D6B58 35%, #B39F88 50%, #7D6B58 65%, #4D4033 85%, #2C241C 100%)',
+            borderRadius: '4px 0 0 4px',
+            boxShadow: 'inset 0 0 4px rgba(0,0,0,0.6)'
+          }}
+        >
+          {/* Top Spine Cloth Headband Ribbon */}
+          <div
+            className="absolute top-0 left-0 right-0 h-1.5"
+            style={{
+              background: 'repeating-linear-gradient(45deg, #C5A880, #C5A880 2px, #8A2B1E 2px, #8A2B1E 4px)',
+              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)'
+            }}
+          />
+          {/* Bottom Spine Cloth Headband Ribbon */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-1.5"
+            style={{
+              background: 'repeating-linear-gradient(45deg, #C5A880, #C5A880 2px, #8A2B1E 2px, #8A2B1E 4px)',
+              boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.4)'
+            }}
+          />
+        </div>
+
+        {/* ── 4. TOP HARDCOVER BOARD (With Bride photo and debossed groove) ── */}
+        <div
+          className="absolute overflow-hidden rounded-[2px] shadow-2xl transition-transform duration-300 group-hover:translate-z-[3px]"
+          style={{
+            width: `${boardW}px`,
+            height: `${boardH}px`,
+            left: `-${overhang * 0.5}px`,
+            top: `-${overhang}px`,
+            transform: `translateZ(${thickness}px)`,
+            background: '#FAF8F5',
+            border: '1px solid rgba(255,255,255,0.35)',
+            boxShadow: '0 10px 28px -4px rgba(0,0,0,0.35), inset 0 0 6px rgba(0,0,0,0.15)'
+          }}
+        >
+          {/* Cover Photo */}
+          <img
+            src={coverSrc}
+            alt="Wedding Photobook Cover"
+            className="w-full h-full object-cover object-center select-none pointer-events-none"
+            loading="eager"
+            draggable={false}
+          />
+
+          {/* Realistic Debossed French Groove (Joint Indentation) */}
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none z-20"
+            style={{
+              left: isBackCover ? 'auto' : 'clamp(14px, 7%, 22px)',
+              right: isBackCover ? 'clamp(14px, 7%, 22px)' : 'auto',
+              width: '3.5px',
+              background: isBackCover
+                ? 'linear-gradient(to left, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)'
+                : 'linear-gradient(to right, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.06) 45%, rgba(255,255,255,0.3) 100%)',
+              boxShadow: isBackCover
+                ? 'inset -1px 0 2px rgba(0,0,0,0.45)'
+                : 'inset 1px 0 2px rgba(0,0,0,0.45)'
+            }}
+          />
+
+          {/* Soft Spine Roll Lighting Highlight */}
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none z-20"
+            style={{
+              left: isBackCover ? 'auto' : '0px',
+              right: isBackCover ? '0px' : 'auto',
+              width: 'clamp(14px, 7%, 22px)',
+              background: isBackCover
+                ? 'linear-gradient(to left, rgba(0,0,0,0.25) 0%, rgba(255,255,255,0.2) 40%, rgba(0,0,0,0.08) 100%)'
+                : 'linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(255,255,255,0.2) 40%, rgba(0,0,0,0.08) 100%)'
+            }}
+          />
+
+          {/* Hardcover Outer Bevel Highlight */}
+          <div className="absolute inset-0 pointer-events-none z-20 border border-white/25 shadow-[inset_0_0_6px_rgba(0,0,0,0.18)]" />
+
+          {/* Fore-Edge Lip Thickness Highlight */}
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none z-20"
+            style={{
+              left: isBackCover ? '0px' : 'auto',
+              right: isBackCover ? 'auto' : '0px',
+              width: '2.5px',
+              background: isBackCover
+                ? 'linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
+                : 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────
    PAGE 0: LUXURY FINE-ART HARDCOVER FRONT COVER
    - data-density="hard" (rigid physical book cover)
    - Real bride cover photo loaded from /images/album/front_cover.jpg
@@ -113,41 +346,70 @@ const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, ...props }, ref) =>
 HeroFrontCover.displayName = 'HeroFrontCover';
 
 /* ─────────────────────────────────────────────────────
-   PHOTO PAGE HELPER (Full Bleed Edge-to-Edge)
-   - Zero cutting, zero empty margins: photos fill 100% of the page
-   - 1.50 aspect ratio matches 1500x1000 photos exactly
-   - Crisp rendering with authentic layflat spine crease shadow
+   PHOTO PAGE HELPER (Archival Mounted: Photos Inserted Into Pages)
+   - Photos are neatly inserted into the pages with archival matting
+   - Seamless at center spine so 12x36 panoramic spreads meet perfectly
+   - Authentic fine-art album page folio (album title & page numbers)
+   - 1.50 aspect ratio matches 1500x1000 photos with zero cutting
    ───────────────────────────────────────────────────── */
-const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
+const HeroPhotoPage = forwardRef(({ src, isLeftPage, pageNumber, totalPhotos, ...props }, ref) => {
   return (
     <div
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF7F2] ${props.className || ''}`}
       data-density="soft"
     >
-      <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
-        {/* Full Bleed Photo Edge-to-Edge with centered balance — fills page completely without cut */}
-        <img
-          src={src}
-          alt="Photobook Page"
-          className="w-full h-full object-cover object-center select-none pointer-events-none"
-          style={{
-            imageRendering: 'high-quality',
-            WebkitBackfaceVisibility: 'hidden',
-            transform: 'translateZ(0)'
-          }}
-          loading="lazy"
-          draggable={false}
-        />
+      {/* ── Archival Fine-Art Album Page Structure ── */}
+      <div
+        className={`w-full h-full relative overflow-hidden flex flex-col justify-between bg-[#FAF7F2] ${
+          isLeftPage
+            ? 'p-2 sm:p-2.5 pr-0 sm:pr-0 pb-2.5 sm:pb-3'
+            : 'p-2 sm:p-2.5 pl-0 sm:pl-0 pb-2.5 sm:pb-3'
+        }`}
+      >
+        {/* ── Mounted Photo Frame (Inserted Into The Page) ── */}
+        <div className="w-full flex-1 relative overflow-hidden rounded-[1.5px] bg-[#EDE6DC] shadow-[0_1px_4px_rgba(0,0,0,0.12),inset_0_0_1px_rgba(0,0,0,0.18)] border border-[#4A3C28]/10">
+          <img
+            src={src}
+            alt={`Photobook Page ${pageNumber || ''}`}
+            className="w-full h-full object-cover object-center select-none pointer-events-none"
+            style={{
+              imageRendering: 'high-quality',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'translateZ(0)'
+            }}
+            loading="lazy"
+            draggable={false}
+          />
+          {/* Subtle archival matte print sheen */}
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-black/5 via-transparent to-white/10" />
+        </div>
+
+        {/* ── Fine-Art Page Folio / Luxury Album Footer ── */}
+        <div
+          className={`flex items-center mt-1 px-1 select-none pointer-events-none ${
+            isLeftPage ? 'justify-start' : 'justify-end'
+          }`}
+        >
+          {isLeftPage ? (
+            <span className="font-serif tracking-[0.18em] text-[7px] sm:text-[8.5px] uppercase text-[#7A6B58]/80 font-medium">
+              KPR PRODUCTIONS • WEDDING ALBUM
+            </span>
+          ) : (
+            <span className="font-serif tracking-[0.18em] text-[7px] sm:text-[8.5px] uppercase text-[#7A6B58]/80 font-medium">
+              {pageNumber ? `PAGE ${String(pageNumber).padStart(2, '0')}` : 'FINE ART'}
+            </span>
+          )}
+        </div>
 
         {/* Center Layflat Spine Crease Depth Shadow */}
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/25 via-black/8 to-transparent'
-              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/25 via-black/8 to-transparent'
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/28 via-black/8 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/28 via-black/8 to-transparent'
           }`}
         />
 
@@ -155,8 +417,8 @@ const HeroPhotoPage = forwardRef(({ src, isLeftPage, ...props }, ref) => {
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'left-0 w-1 bg-gradient-to-r from-black/8 to-transparent'
-              : 'right-0 w-1 bg-gradient-to-l from-black/8 to-transparent'
+              ? 'left-0 w-1 bg-gradient-to-r from-black/10 to-transparent'
+              : 'right-0 w-1 bg-gradient-to-l from-black/10 to-transparent'
           }`}
         />
       </div>
@@ -237,10 +499,11 @@ HeroBackCover.displayName = 'HeroBackCover';
 
 /* ─────────────────────────────────────────────────────
    Main Export: HeroInteractiveAlbum
-   - Uses real HTMLFlipBook engine (zero shaking, real 3D page curls)
-   - Realistic 3D Physical Book casing with top paper block from client sketch
-   - Supports dynamic user uploads (cover + pages) while preserving demo defaults
-   - Dedicated [ ⛶ Full View ] button
+   - Direct reproduction of the Adobe Stock 3D physical photobook mockup
+   - 3D perspective closed state with rounded spine, thick stacked paper block & shadows
+   - Smooth opening to 2-page interactive spread where photos are inserted into the pages
+   - Seamless 12x36 panoramic center fold
+   - Dedicated [ ⛶ Full View ] and [ ✕ Close Album ] controls
    ───────────────────────────────────────────────────── */
 export default function HeroInteractiveAlbum({
   onOpenUpload,
@@ -283,6 +546,33 @@ export default function HeroInteractiveAlbum({
     }
   }, []);
 
+  const handleOpenBook = useCallback(() => {
+    try {
+      flipBookRef.current?.pageFlip()?.flip(1);
+      setCurrentPage(1);
+    } catch (e) {
+      handleFlipNext();
+    }
+  }, [handleFlipNext]);
+
+  const handleReopenBook = useCallback(() => {
+    try {
+      flipBookRef.current?.pageFlip()?.flip(totalPages - 2);
+      setCurrentPage(totalPages - 2);
+    } catch (e) {
+      handleFlipPrev();
+    }
+  }, [totalPages, handleFlipPrev]);
+
+  const handleCloseBook = useCallback(() => {
+    try {
+      flipBookRef.current?.pageFlip()?.flip(0);
+      setCurrentPage(0);
+    } catch (e) {
+      console.warn('handleCloseBook error:', e);
+    }
+  }, []);
+
   const handlePageFlip = useCallback((e) => {
     if (e && typeof e.data === 'number') {
       setCurrentPage(e.data);
@@ -312,12 +602,56 @@ export default function HeroInteractiveAlbum({
     >
       {/* ── 3D Stage with Natural Ambient Contact Shadow ── */}
       <div
-        className="relative flex items-center justify-center select-none transition-all duration-500 ease-out"
+        className="relative flex items-center justify-center select-none transition-all duration-500 ease-out min-h-[195px] sm:min-h-[220px]"
         style={{
-          width: isOpen ? dims.singlePageW * 2 : dims.singlePageW,
-          height: dims.singlePageH
+          width: isOpen ? dims.singlePageW * 2 : dims.singlePageW + 60,
+          height: dims.singlePageH + 20
         }}
       >
+        {/* ── 3D CLOSED BOOK MOCKUP (Visible on Front Cover, matches Adobe Stock reference) ── */}
+        <AnimatePresence>
+          {isCover && (
+            <motion.div
+              key="closed-front-cover-mockup"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.35 }}
+              className="absolute z-30 flex items-center justify-center pointer-events-auto"
+            >
+              <ThreeDClosedBookMockup
+                coverSrc={activeCover}
+                width={dims.singlePageW}
+                height={dims.singlePageH}
+                onOpen={handleOpenBook}
+                isBackCover={false}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── 3D CLOSED BOOK MOCKUP (Visible on Back Cover) ── */}
+        <AnimatePresence>
+          {isBackCover && (
+            <motion.div
+              key="closed-back-cover-mockup"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.35 }}
+              className="absolute z-30 flex items-center justify-center pointer-events-auto"
+            >
+              <ThreeDClosedBookMockup
+                coverSrc={activeBackCover}
+                width={dims.singlePageW}
+                height={dims.singlePageH}
+                onOpen={handleReopenBook}
+                isBackCover={true}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ── "Swipe to open" Callout (Positioned in open space to the right of the book cover) ── */}
         <AnimatePresence>
           {isCover && (
@@ -326,8 +660,8 @@ export default function HeroInteractiveAlbum({
               animate={{ opacity: 1, scale: 1, x: 0 }}
               exit={{ opacity: 0, scale: 0.85, x: 8, transition: { duration: 0.2 } }}
               transition={{ duration: 0.35, delay: 0.15 }}
-              onClick={handleFlipNext}
-              className="absolute top-[18%] xs:top-[22%] sm:top-[25%] left-full ml-2 xs:ml-3 sm:ml-4 z-50 flex flex-col items-start cursor-pointer select-none pointer-events-auto group"
+              onClick={handleOpenBook}
+              className="absolute top-[18%] xs:top-[22%] sm:top-[25%] left-full ml-1 xs:ml-2 sm:ml-3 z-50 flex flex-col items-start cursor-pointer select-none pointer-events-auto group"
               title="Click or swipe to open"
             >
               <span className="font-serif italic font-semibold text-[11px] xs:text-xs sm:text-[13px] text-[#C85A48] tracking-wide whitespace-nowrap -rotate-6 group-hover:scale-105 group-hover:text-[#B34533] transition-all drop-shadow-xs">
@@ -368,8 +702,8 @@ export default function HeroInteractiveAlbum({
               animate={{ opacity: 1, scale: 1, x: 0 }}
               exit={{ opacity: 0, scale: 0.85, x: -8, transition: { duration: 0.2 } }}
               transition={{ duration: 0.35, delay: 0.15 }}
-              onClick={handleFlipPrev}
-              className="absolute top-[18%] xs:top-[22%] sm:top-[25%] right-full mr-2 xs:mr-3 sm:mr-4 z-50 flex flex-col items-end cursor-pointer select-none pointer-events-auto group"
+              onClick={handleReopenBook}
+              className="absolute top-[18%] xs:top-[22%] sm:top-[25%] right-full mr-1 xs:mr-2 sm:mr-3 z-50 flex flex-col items-end cursor-pointer select-none pointer-events-auto group"
               title="Click or swipe to reopen album"
             >
               <span className="font-serif italic font-semibold text-[11px] xs:text-xs sm:text-[13px] text-[#C85A48] tracking-wide whitespace-nowrap rotate-6 group-hover:scale-105 group-hover:text-[#B34533] transition-all drop-shadow-xs">
@@ -402,29 +736,19 @@ export default function HeroInteractiveAlbum({
           )}
         </AnimatePresence>
 
-        {/* Soft Ambient Contact Shadow Underneath (matching user reference image) */}
-        <div
-          className="absolute -bottom-3 sm:-bottom-4 h-4 sm:h-5 bg-black/45 blur-md rounded-full pointer-events-none transition-all duration-500 ease-out"
-          style={{
-            width: isOpen ? dims.singlePageW * 1.85 : dims.singlePageW * 0.94,
-            left: '50%',
-            transform: 'translateX(-50%)'
-          }}
-        />
-
-        {/* ── Discreet Outside Navigation Arrows ── */}
-        {(isOpen || isBackCover) && (
+        {/* ── Discreet Outside Navigation Arrows (When Open) ── */}
+        {isOpen && (
           <button
             type="button"
             onClick={handleFlipPrev}
-            className="absolute -left-9 sm:-left-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
+            className="absolute -left-8 sm:-left-11 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
             style={{
               background: 'rgba(20,20,22,0.92)',
               color: '#C5A880',
               borderColor: 'rgba(197,168,128,0.5)'
             }}
-            title={isBackCover ? 'Reopen album' : 'Previous page'}
-            aria-label={isBackCover ? 'Reopen album' : 'Previous page'}
+            title="Previous page"
+            aria-label="Previous page"
           >
             <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
@@ -434,7 +758,7 @@ export default function HeroInteractiveAlbum({
           <button
             type="button"
             onClick={handleFlipNext}
-            className="absolute -right-9 sm:-right-12 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
+            className="absolute -right-8 sm:-right-11 top-1/2 -translate-y-1/2 z-40 p-2 sm:p-2.5 rounded-full border shadow-md transition-all duration-200 cursor-pointer opacity-85 hover:opacity-100 hover:scale-110 active:scale-95"
             style={{
               background: 'rgba(20,20,22,0.92)',
               color: '#C5A880',
@@ -447,25 +771,22 @@ export default function HeroInteractiveAlbum({
           </button>
         )}
 
-        {/* ── Smooth Horizontal Translation Container (Centers Closed Cover & Open Spread) ── */}
+        {/* ── Smooth Container for Open 2-Page Spread ── */}
         <div
-          className="relative transition-transform duration-500 ease-out"
+          className="relative transition-all duration-500 ease-out"
           style={{
-            transform:
-              currentPage === 0
-                ? `translateX(-${Math.round(dims.singlePageW / 2)}px)`
-                : isBackCover
-                ? `translateX(${Math.round(dims.singlePageW / 2)}px)`
-                : 'translateX(0px)'
+            opacity: isOpen ? 1 : 0,
+            pointerEvents: isOpen ? 'auto' : 'none',
+            visibility: isOpen ? 'visible' : 'hidden'
           }}
         >
-          {/* Hardcover Casing Underplate & Subtle Fore-Edge Framing */}
+          {/* Hardcover Casing Underplate & Fore-Edge Framing Beneath Open Pages */}
           {isOpen && (
             <div
               className="absolute -inset-1 sm:-inset-1.5 rounded-xs pointer-events-none z-0"
               style={{
                 background: '#EAE5DC',
-                boxShadow: '0 20px 48px -8px rgba(0,0,0,0.28), 0 8px 20px -4px rgba(0,0,0,0.14)'
+                boxShadow: '0 20px 48px -8px rgba(0,0,0,0.3), 0 8px 20px -4px rgba(0,0,0,0.16)'
               }}
             >
               {/* Visible Paper Block Fore-Edges on Left and Right */}
@@ -508,12 +829,14 @@ export default function HeroInteractiveAlbum({
               onCoverClick={handleFlipNext}
             />
 
-            {/* Photo Pages: Edge-to-edge full bleed, Haldi to Birthday, no labels */}
+            {/* Photo Pages: Archival mounted, photos inserted into the pages with folios */}
             {activePhotos.map((photo, idx) => (
               <HeroPhotoPage
                 key={photo.id}
                 src={photo.src}
                 isLeftPage={idx % 2 === 0}
+                pageNumber={idx + 1}
+                totalPhotos={activePhotos.length}
               />
             ))}
 
@@ -526,9 +849,26 @@ export default function HeroInteractiveAlbum({
         </div>
       </div>
 
-      {/* ── FULL VIEW BUTTON (Dedicated Luxury Launcher) ── */}
-      {onOpenFullscreen && showFullscreenButton && (
-        <div className="flex items-center justify-center mt-2 sm:mt-2.5 select-none z-20">
+      {/* ── CONTROLS TOOLBAR: CLOSE ALBUM & FULL VIEW BUTTONS ── */}
+      <div className="flex items-center justify-center gap-2 mt-2 sm:mt-2.5 select-none z-20">
+        {isOpen && (
+          <button
+            type="button"
+            onClick={handleCloseBook}
+            className="group inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#2A241E]/90 hover:bg-[#1E1914] text-[#E8DEC8] text-[9.5px] sm:text-xs font-serif tracking-wider border border-[#8A7862]/40 hover:border-[#C5A880] shadow-sm hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+            title="Close photobook to 3D cover"
+          >
+            <span>✕ Close Book</span>
+          </button>
+        )}
+
+        {isOpen && (
+          <span className="text-[10px] sm:text-[11px] font-serif italic text-[#6B5E4E]">
+            Page {currentPage} of {totalPages - 2}
+          </span>
+        )}
+
+        {onOpenFullscreen && showFullscreenButton && (
           <button
             type="button"
             onClick={onOpenFullscreen}
@@ -538,8 +878,8 @@ export default function HeroInteractiveAlbum({
             <Maximize2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C5A880] group-hover:scale-110 transition-transform" />
             <span>Full View</span>
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

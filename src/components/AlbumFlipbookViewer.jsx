@@ -93,10 +93,11 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, coverSrc, onOpen, ...p
 CoverPage.displayName = 'CoverPage';
 
 /* ─────────────────────────────────────────────────────
-   Inside Photo Page: Full Bleed Edge-to-Edge with Spine Depth
-   - Zero cutting, zero empty margins: photos fill 100% of the page
+   Inside Photo Page: Archival Mounted (Photos Inserted Into Pages)
+   - Photos are neatly inserted into the pages with archival matting
+   - Seamless at center spine so 12x36 panoramic spreads meet perfectly
+   - Authentic fine-art album page folio (album title & page numbers)
    - 1.50 aspect ratio matches 1500x1000 photos exactly
-   - Pristine, sharp, and neat presentation
    ───────────────────────────────────────────────────── */
 const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...props }, ref) => {
   return (
@@ -104,30 +105,58 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
       ref={ref}
       {...props}
       style={{ ...props.style }}
-      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF8F5] shadow-md ${props.className || ''}`}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF7F2] shadow-md ${props.className || ''}`}
       data-density="soft"
     >
-      <div className="w-full h-full relative overflow-hidden flex items-center justify-center bg-[#FAF8F5]">
-        {/* Full Bleed Image Edge-to-Edge with centered balance */}
-        <img
-          src={src}
-          alt={`Album page ${pageIndex + 1}`}
-          className="w-full h-full object-cover object-center select-none pointer-events-none"
-          style={{
-            imageRendering: 'high-quality',
-            WebkitBackfaceVisibility: 'hidden',
-            transform: 'translateZ(0)'
-          }}
-          loading="lazy"
-          draggable={false}
-        />
+      {/* ── Archival Fine-Art Album Page Structure ── */}
+      <div
+        className={`w-full h-full relative overflow-hidden flex flex-col justify-between bg-[#FAF7F2] ${
+          isLeftPage
+            ? 'p-2 sm:p-3 pr-0 sm:pr-0 pb-2.5 sm:pb-3.5'
+            : 'p-2 sm:p-3 pl-0 sm:pl-0 pb-2.5 sm:pb-3.5'
+        }`}
+      >
+        {/* ── Mounted Photo Frame (Inserted Into The Page) ── */}
+        <div className="w-full flex-1 relative overflow-hidden rounded-[1.5px] bg-[#EDE6DC] shadow-[0_1px_4px_rgba(0,0,0,0.12),inset_0_0_1px_rgba(0,0,0,0.18)] border border-[#4A3C28]/10">
+          <img
+            src={src}
+            alt={`Album page ${pageIndex + 1}`}
+            className="w-full h-full object-cover object-center select-none pointer-events-none"
+            style={{
+              imageRendering: 'high-quality',
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'translateZ(0)'
+            }}
+            loading="lazy"
+            draggable={false}
+          />
+          {/* Subtle archival matte print sheen */}
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-black/5 via-transparent to-white/10" />
+        </div>
+
+        {/* ── Fine-Art Page Folio / Luxury Album Footer ── */}
+        <div
+          className={`flex items-center mt-1 px-1 select-none pointer-events-none ${
+            isLeftPage ? 'justify-start' : 'justify-end'
+          }`}
+        >
+          {isLeftPage ? (
+            <span className="font-serif tracking-[0.18em] text-[7.5px] sm:text-[9px] uppercase text-[#7A6B58]/80 font-medium">
+              KPR PRODUCTIONS • WEDDING ALBUM
+            </span>
+          ) : (
+            <span className="font-serif tracking-[0.18em] text-[7.5px] sm:text-[9px] uppercase text-[#7A6B58]/80 font-medium">
+              PAGE {String(pageIndex + 1).padStart(2, '0')}
+            </span>
+          )}
+        </div>
 
         {/* Center Spine Crease / Binding Depth Shadow */}
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/25 via-black/8 to-transparent'
-              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/25 via-black/8 to-transparent'
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/28 via-black/8 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/28 via-black/8 to-transparent'
           }`}
         />
 
@@ -135,8 +164,8 @@ const PhotoPage = forwardRef(({ src, pageIndex, totalPhotos, isLeftPage, ...prop
         <div
           className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
             isLeftPage
-              ? 'left-0 w-1 bg-gradient-to-r from-black/8 to-transparent'
-              : 'right-0 w-1 bg-gradient-to-l from-black/8 to-transparent'
+              ? 'left-0 w-1 bg-gradient-to-r from-black/10 to-transparent'
+              : 'right-0 w-1 bg-gradient-to-l from-black/10 to-transparent'
           }`}
         />
       </div>
