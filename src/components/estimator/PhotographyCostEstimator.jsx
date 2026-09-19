@@ -421,7 +421,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   };
 
   // ── STEP 4: Album Selection ──
-  const [needAlbum, setNeedAlbum] = useState(true);
+  const [needAlbum, setNeedAlbum] = useState(false);
   const [albumSheets, setAlbumSheets] = useState(30); // 30 sheets = 60 pages = 30 * 250 = ₹7,500
   const [albumCoverStyle, setAlbumCoverStyle] = useState('Italian Leatherette with Gold Embossing');
   const [albumSheetsError, setAlbumSheetsError] = useState('');
@@ -545,10 +545,18 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     }, 0);
   }, [selectedAddons]);
 
-  // Grand Total
+  // Progressive Running Total based on the current step the user is viewing
+  const runningTotal = useMemo(() => {
+    if (currentStep <= 2) return 0;
+    if (currentStep === 3) return servicesSubtotal;
+    if (currentStep === 4) return servicesSubtotal + (needAlbum ? albumSubtotal : 0);
+    return servicesSubtotal + (needAlbum ? albumSubtotal : 0) + addOnsSubtotal;
+  }, [currentStep, servicesSubtotal, needAlbum, albumSubtotal, addOnsSubtotal]);
+
+  // Grand Total for complete estimate
   const grandTotal = useMemo(() => {
-    return servicesSubtotal + albumSubtotal + addOnsSubtotal;
-  }, [servicesSubtotal, albumSubtotal, addOnsSubtotal]);
+    return servicesSubtotal + (needAlbum ? albumSubtotal : 0) + addOnsSubtotal;
+  }, [servicesSubtotal, needAlbum, albumSubtotal, addOnsSubtotal]);
 
   // Dynamic deliverables based on chosen packages
   const includedDeliverables = useMemo(() => {
@@ -743,7 +751,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     setEventLocation('');
     setSelectedEvents([]);
     setEventSchedules({});
-    setNeedAlbum(true);
+    setNeedAlbum(false);
     setAlbumSheets(30);
     setAlbumSheetsError('');
     setSelectedAddons({});
@@ -878,7 +886,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
             <div className="flex items-center gap-1.5">
               <span className="text-[#666666]">Running Total:</span>
               <span className="text-sm sm:text-base font-serif font-bold text-[#8C6D3F]">
-                ₹{grandTotal.toLocaleString('en-IN')}/-
+                ₹{runningTotal.toLocaleString('en-IN')}/-
               </span>
             </div>
           </div>
