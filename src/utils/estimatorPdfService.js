@@ -178,7 +178,21 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
 
   const eventsBulletList = selectedEvents.map(e => {
     const s = eventSchedules[e];
-    if (s && (s.dates || s.date || s.times || s.startTime || s.endTime || s.time)) {
+    if (s) {
+      if (Array.isArray(s.days) && s.days.length > 0) {
+        const validDays = s.days.filter(d => d && (d.date || d.startTime || d.endTime));
+        if (validDays.length > 0) {
+          const daysStr = validDays.map((d, idx) => {
+            const timeTxt = (d.startTime && d.endTime)
+              ? `${d.startTime} – ${d.endTime}`
+              : (d.startTime || d.endTime || '');
+            const dateTxt = d.date || '';
+            const dt = [dateTxt, timeTxt].filter(Boolean).join(' • ');
+            return `Day ${idx + 1}${dt ? ` (${dt})` : ''}`;
+          }).join(', ');
+          return `• ${e}: ${daysStr}`;
+        }
+      }
       let timeVal = '';
       if (Array.isArray(s.times) && s.times.length > 0) {
         timeVal = s.times
@@ -235,9 +249,12 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
     const sDate = pkg.eventDate || pkg.serviceDate || '';
     const sTime = pkg.eventTime || pkg.serviceTime || '';
     const sTag = pkg.eventTag || '';
+    const sSummary = pkg.eventScheduleSummary || '';
 
     let scheduleSnippet = '';
-    if (sDate && sTime) {
+    if (sSummary) {
+      scheduleSnippet = `Schedule: ${sSummary}`;
+    } else if (sDate && sTime) {
       scheduleSnippet = `Schedule: ${sDate} • ${sTime}`;
     } else if (sDate) {
       scheduleSnippet = `Schedule: ${sDate}`;
@@ -245,7 +262,7 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
       scheduleSnippet = `Schedule: ${sTime}`;
     }
 
-    if (sTag && sTag !== 'General') {
+    if (sTag && sTag !== 'General' && !scheduleSnippet.includes(sTag)) {
       scheduleSnippet = scheduleSnippet ? `${scheduleSnippet} (${sTag})` : `Function: ${sTag}`;
     }
 

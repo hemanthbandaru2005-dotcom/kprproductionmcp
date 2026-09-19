@@ -88,8 +88,68 @@ export function calculateSlotDurationHours(startTime, endTime) {
   return diffMin / 60;
 }
 
+export function normalizeEventSchedule(rawSched) {
+  if (!rawSched) {
+    return {
+      days: [{ date: '', startTime: '', endTime: '' }],
+      dates: [],
+      times: [],
+      startTime: '',
+      endTime: '',
+      serviceIds: []
+    };
+  }
+
+  let days = Array.isArray(rawSched.days) && rawSched.days.length > 0 ? rawSched.days.map(d => ({ ...d })) : null;
+  if (!days) {
+    const dates = Array.isArray(rawSched.dates) ? rawSched.dates : (rawSched.date ? [rawSched.date] : []);
+    const times = Array.isArray(rawSched.times) ? rawSched.times : [];
+    const maxLen = Math.max(dates.length, times.length, 1);
+    days = [];
+    for (let i = 0; i < maxLen; i++) {
+      const d = dates[i] || '';
+      const t = times[i] || (i === 0 && (rawSched.startTime || rawSched.endTime)
+        ? { startTime: rawSched.startTime || '', endTime: rawSched.endTime || '' }
+        : { startTime: '', endTime: '' });
+      days.push({
+        date: d,
+        startTime: t.startTime || '',
+        endTime: t.endTime || ''
+      });
+    }
+  }
+
+  const validDates = days.map(d => d.date).filter(Boolean);
+  const times = days.map(d => ({ startTime: d.startTime || '', endTime: d.endTime || '' }));
+  const firstSlot = times[0] || {};
+
+  return {
+    ...rawSched,
+    days,
+    dates: validDates.length > 0 ? validDates : (rawSched.dates || []),
+    times,
+    startTime: firstSlot.startTime || rawSched.startTime || '',
+    endTime: firstSlot.endTime || rawSched.endTime || '',
+    serviceIds: Array.isArray(rawSched.serviceIds) ? rawSched.serviceIds : []
+  };
+}
+
 export function calculateEventHours(sched) {
   if (!sched) return 6;
+
+  const normalized = normalizeEventSchedule(sched);
+  if (Array.isArray(normalized.days) && normalized.days.length > 0) {
+    let totalHours = 0;
+    normalized.days.forEach(d => {
+      if (d && d.startTime && d.endTime) {
+        const dur = calculateSlotDurationHours(d.startTime, d.endTime);
+        totalHours += dur > 0 ? dur : 6;
+      } else if (d && (d.date || d.startTime || d.endTime)) {
+        totalHours += 6;
+      }
+    });
+    if (totalHours > 0) return totalHours;
+  }
 
   let slots = [];
   if (Array.isArray(sched.times) && sched.times.length > 0) {
@@ -216,24 +276,12 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const [packageCategoryFilter, setPackageCategoryFilter] = useState('ALL');
 
   const getEventSchedule = (eventName) => {
-    return eventSchedules[eventName] || {
-      dates: [],
-      times: [],
-      startTime: '',
-      endTime: '',
-      serviceIds: []
-    };
+    return normalizeEventSchedule(eventSchedules[eventName]);
   };
 
   const updateEventSchedule = (eventName, field, value) => {
     setEventSchedules(prev => {
-      const current = prev[eventName] || {
-        dates: [],
-        times: [],
-        startTime: '',
-        endTime: '',
-        serviceIds: []
-      };
+      const current = normalizeEventSchedule(prev[eventName]);
       return {
         ...prev,
         [eventName]: {
@@ -244,127 +292,132 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     });
   };
 
-  // Multi-date helpers for Step 3
-  const addDateToEvent = (eventName) => {
+  // ── Day-wise helpers for Step 3 (Each Day has its own Date and Start/End Timing) ──
+  const addDayToEvent = (eventName) => {
     setEventSchedules(prev => {
-      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
-      const currentDates = Array.isArray(current.dates) ? current.dates : (current.date ? [current.date] : []);
+      const current = normalizeEventSchedule(prev[eventName]);
+      const newDays = [...current.days, { date: '', startTime: '', endTime: '' }];
+      const newDates = newDays.map(d => d.date).filter(Boolean);
+      const newTimes = newDays.map(d => ({ startTime: d.startTime, endTime: d.endTime }));
       return {
         ...prev,
         [eventName]: {
           ...current,
-          dates: [...currentDates, '']
+          days: newDays,
+          dates: newDates,
+          times: newTimes
         }
       };
     });
   };
 
-  const updateDateInEvent = (eventName, dateIndex, dateValue) => {
+  const updateDayInEvent = (eventName, dayIndex, field, value) => {
     setEventSchedules(prev => {
-      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
-      const currentDates = Array.isArray(current.dates) ? [...current.dates] : (current.date ? [current.date] : []);
-      currentDates[dateIndex] = dateValue;
+      const current = normalizeEventSchedule(prev[eventName]);
+      const newDays = current.days.map((d, idx) => {
+        if (idx === dayIndex) {
+          return { ...d, [field]: value };
+        }
+        return d;
+      });
+      const newDates = newDays.map(d => d.date).filter(Boolean);
+      const newTimes = newDays.map(d => ({ startTime: d.startTime, endTime: d.endTime }));
+      const firstDay = newDays[0] || {};
+
       return {
         ...prev,
         [eventName]: {
           ...current,
-          dates: currentDates
+          days: newDays,
+          dates: newDates,
+          times: newTimes,
+          startTime: firstDay.startTime || '',
+          endTime: firstDay.endTime || ''
         }
       };
     });
   };
 
-  const removeDateFromEvent = (eventName, dateIndex) => {
+  const removeDayFromEvent = (eventName, dayIndex) => {
     setEventSchedules(prev => {
-      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
-      const currentDates = Array.isArray(current.dates) ? [...current.dates] : (current.date ? [current.date] : []);
-      currentDates.splice(dateIndex, 1);
-      return {
-        ...prev,
-        [eventName]: {
-          ...current,
-          dates: currentDates
-        }
-      };
-    });
-  };
-
-  // Multi-time helpers for Step 3
-  const addTimeToEvent = (eventName) => {
-    setEventSchedules(prev => {
-      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
-      let currentTimes = Array.isArray(current.times) ? [...current.times] : [];
-      if (currentTimes.length === 0 && (current.startTime || current.endTime)) {
-        currentTimes = [{ startTime: current.startTime || '', endTime: current.endTime || '' }];
+      const current = normalizeEventSchedule(prev[eventName]);
+      let newDays = current.days.filter((_, idx) => idx !== dayIndex);
+      if (newDays.length === 0) {
+        newDays = [{ date: '', startTime: '', endTime: '' }];
       }
+      const newDates = newDays.map(d => d.date).filter(Boolean);
+      const newTimes = newDays.map(d => ({ startTime: d.startTime, endTime: d.endTime }));
+      const firstDay = newDays[0] || {};
+
       return {
         ...prev,
         [eventName]: {
           ...current,
-          times: [...currentTimes, { startTime: '', endTime: '' }]
+          days: newDays,
+          dates: newDates,
+          times: newTimes,
+          startTime: firstDay.startTime || '',
+          endTime: firstDay.endTime || ''
         }
       };
     });
   };
 
-  const updateTimeInEvent = (eventName, timeIndex, field, value) => {
-    setEventSchedules(prev => {
-      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
-      let currentTimes = Array.isArray(current.times) ? [...current.times] : [];
-      if (currentTimes.length === 0 && (current.startTime || current.endTime)) {
-        currentTimes = [{ startTime: current.startTime || '', endTime: current.endTime || '' }];
-      }
-      const targetSlot = currentTimes[timeIndex] ? { ...currentTimes[timeIndex] } : { startTime: '', endTime: '' };
-      targetSlot[field] = value;
-      currentTimes[timeIndex] = targetSlot;
-
-      const firstSlot = currentTimes[0] || {};
-      return {
-        ...prev,
-        [eventName]: {
-          ...current,
-          times: currentTimes,
-          startTime: firstSlot.startTime || '',
-          endTime: firstSlot.endTime || ''
-        }
-      };
-    });
-  };
-
-  const removeTimeFromEvent = (eventName, timeIndex) => {
-    setEventSchedules(prev => {
-      const current = prev[eventName] || { dates: [], times: [], startTime: '', endTime: '', serviceIds: [] };
-      let currentTimes = Array.isArray(current.times) ? [...current.times] : [];
-      if (currentTimes.length === 0 && (current.startTime || current.endTime)) {
-        currentTimes = [{ startTime: current.startTime || '', endTime: current.endTime || '' }];
-      }
-      currentTimes.splice(timeIndex, 1);
-      const firstSlot = currentTimes[0] || {};
-      return {
-        ...prev,
-        [eventName]: {
-          ...current,
-          times: currentTimes,
-          startTime: firstSlot.startTime || '',
-          endTime: firstSlot.endTime || ''
-        }
-      };
-    });
-  };
+  // Legacy multi-date & multi-time compatibility helpers
+  const addDateToEvent = (eventName) => addDayToEvent(eventName);
+  const updateDateInEvent = (eventName, dateIndex, dateValue) => updateDayInEvent(eventName, dateIndex, 'date', dateValue);
+  const removeDateFromEvent = (eventName, dateIndex) => removeDayFromEvent(eventName, dateIndex);
+  const addTimeToEvent = (eventName) => addDayToEvent(eventName);
+  const updateTimeInEvent = (eventName, timeIndex, field, value) => updateDayInEvent(eventName, timeIndex, field, value);
+  const removeTimeFromEvent = (eventName, timeIndex) => removeDayFromEvent(eventName, timeIndex);
 
   const formatEventTimes = (sched) => {
     if (!sched) return '';
+    const normalized = normalizeEventSchedule(sched);
+    if (Array.isArray(normalized.days) && normalized.days.length > 0) {
+      const formatted = normalized.days
+        .map(d => {
+          if (d && d.startTime && d.endTime) return `${d.startTime} – ${d.endTime}`;
+          return d?.startTime || d?.endTime || '';
+        })
+        .filter(Boolean);
+      if (formatted.length > 0) return formatted.join(', ');
+    }
     if (Array.isArray(sched.times) && sched.times.length > 0) {
       const formatted = sched.times
         .map(t => {
-          if (t.startTime && t.endTime) return `${t.startTime} – ${t.endTime}`;
-          return t.startTime || t.endTime || '';
+          if (t && t.startTime && t.endTime) return `${t.startTime} – ${t.endTime}`;
+          return t?.startTime || t?.endTime || '';
         })
         .filter(Boolean);
       if (formatted.length > 0) return formatted.join(', ');
     }
     if (sched.startTime && sched.endTime) return `${sched.startTime} – ${sched.endTime}`;
     return sched.startTime || sched.endTime || sched.time || '';
+  };
+
+  const formatEventScheduleString = (sched) => {
+    if (!sched) return '';
+    const normalized = normalizeEventSchedule(sched);
+    if (Array.isArray(normalized.days) && normalized.days.length > 0) {
+      const validDays = normalized.days.filter(d => d && (d.date || d.startTime || d.endTime));
+      if (validDays.length > 0) {
+        return validDays.map((d, idx) => {
+          const timePart = (d.startTime && d.endTime)
+            ? `${d.startTime} – ${d.endTime}`
+            : (d.startTime || d.endTime || '');
+          const datePart = d.date || '';
+          const detail = [datePart, timePart].filter(Boolean).join(' • ');
+          return `Day ${idx + 1}${detail ? ` (${detail})` : ''}`;
+        }).join(' | ');
+      }
+    }
+    const dates = Array.isArray(sched.dates) ? sched.dates.filter(Boolean) : (sched.date ? [sched.date] : []);
+    const times = formatEventTimes(sched);
+    if (dates.length > 0 && times) {
+      return `${dates.join(', ')} • ${times}`;
+    }
+    return dates.join(', ') || times || '';
   };
 
   const isServiceAssignedToEvent = (pkgId, eventName) => {
@@ -456,13 +509,14 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const selectedPackages = useMemo(() => {
     const list = [];
     selectedEvents.forEach(evName => {
-      const sched = eventSchedules[evName] || {};
+      const sched = getEventSchedule(evName);
       const serviceIds = sched.serviceIds || [];
       const schedDates = Array.isArray(sched.dates) ? sched.dates.filter(Boolean) : (sched.date ? [sched.date] : []);
       const sDate = schedDates.join(', ');
       const sStartTime = sched.startTime || '';
       const sEndTime = sched.endTime || '';
       const sTime = formatEventTimes(sched);
+      const sSummary = formatEventScheduleString(sched);
 
       serviceIds.forEach(id => {
         const pkg = availablePackages.find(p => p.id === id) || OFFICIAL_PHOTOGRAPHY_PACKAGES.find(p => p.id === id);
@@ -481,7 +535,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
             eventDate: sDate,
             startTime: sStartTime,
             endTime: sEndTime,
-            eventTime: sTime
+            eventTime: sTime,
+            eventScheduleSummary: sSummary
           });
         }
       });
@@ -503,9 +558,13 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
   const allEventDates = useMemo(() => {
     const dates = [];
     selectedEvents.forEach(ev => {
-      const sched = eventSchedules[ev];
+      const sched = getEventSchedule(ev);
       if (sched) {
-        if (Array.isArray(sched.dates)) {
+        if (Array.isArray(sched.days)) {
+          sched.days.forEach(d => {
+            if (d && d.date) dates.push(d.date);
+          });
+        } else if (Array.isArray(sched.dates)) {
           sched.dates.filter(Boolean).forEach(d => dates.push(d));
         } else if (sched.date) {
           dates.push(sched.date);
@@ -517,8 +576,9 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
 
   const eventDate = allEventDates[0] || '';
   const eventTime = useMemo(() => {
-    const firstSched = selectedEvents.map(ev => eventSchedules[ev]).find(s => {
+    const firstSched = selectedEvents.map(ev => getEventSchedule(ev)).find(s => {
       if (!s) return false;
+      if (Array.isArray(s.days) && s.days.some(d => d.startTime || d.endTime)) return true;
       if (Array.isArray(s.times) && s.times.some(t => t.startTime || t.endTime)) return true;
       return s.startTime || s.endTime || s.time;
     });
@@ -714,11 +774,8 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     selectedEvents.forEach(ev => {
       const evPkgs = selectedPackages.filter(p => p.eventTag === ev);
       if (evPkgs.length > 0) {
-        const sched = eventSchedules[ev] || {};
-        const schedDates = Array.isArray(sched.dates) ? sched.dates.filter(Boolean) : (sched.date ? [sched.date] : []);
-        const sDateStr = schedDates.join(', ');
-        const sTime = formatEventTimes(sched);
-        const schedDetails = [sDateStr, sTime].filter(Boolean).join(' • ');
+        const sched = getEventSchedule(ev);
+        const schedDetails = formatEventScheduleString(sched);
         const schedTxt = schedDetails ? ` (${schedDetails})` : '';
         servicesSummary += `\n*${ev}*${schedTxt}:\n` + evPkgs.map(p => {
           const tierInfo = (!p.isFixed && p.multiplier > 1) ? ` [${p.hours}h • ${p.multiplier} slots]` : '';
@@ -1197,6 +1254,9 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                 <div className="space-y-6">
                 {selectedEvents.map((eventName) => {
                   const eventSched = getEventSchedule(eventName);
+                  const days = Array.isArray(eventSched.days) && eventSched.days.length > 0
+                    ? eventSched.days
+                    : [{ date: '', startTime: '', endTime: '' }];
                   const icon = getEventIcon(eventName);
                   const eventSubtotal = getEventSubtotal(eventName);
                   const assignedCount = (eventSched.serviceIds || []).length;
@@ -1238,179 +1298,151 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                         </div>
                       </div>
 
-                      {/* Schedule: Multiple Dates, Starting Time, Ending Time */}
-                      <div className="bg-[#FAF8F5] p-4 rounded-xl border border-[#E8DFC9] space-y-3.5">
-                        {/* Multi-Date Section */}
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
+                      {/* Schedule: Day-wise Dates and Timings (Day 1: Date + Timing, Day 2: Date + Timing...) */}
+                      <div className="bg-[#FAF8F5] p-4 sm:p-5 rounded-2xl border border-[#E8DFC9] space-y-3.5 shadow-2xs">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
                             <label className="text-xs font-bold uppercase tracking-wider text-[#444444] flex items-center gap-1.5">
                               <Calendar className="w-3.5 h-3.5 text-[#8C6D3F]" />
-                              <span>{eventName} Date{(Array.isArray(eventSched.dates) ? eventSched.dates : []).length > 1 ? 's' : ''}</span>
+                              <span>{eventName} Schedule (Day-wise Dates & Timings)</span>
                             </label>
-                            <button
-                              type="button"
-                              onClick={() => addDateToEvent(eventName)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#C5A880]/15 hover:bg-[#C5A880]/30 border border-[#C5A880]/40 text-[#8C6D3F] text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
-                            >
-                              <Plus className="w-3 h-3" />
-                              <span>Add Date</span>
-                            </button>
-                          </div>
-
-                          {/* Date Inputs List */}
-                          {(() => {
-                            const eventDatesArr = Array.isArray(eventSched.dates) ? eventSched.dates : [];
-                            if (eventDatesArr.length === 0) {
-                              return (
-                                <div className="bg-white border border-dashed border-[#D8CFC4] rounded-xl p-3 text-center">
-                                  <p className="text-[11px] text-[#888888] italic">
-                                    No dates added yet. Click "Add Date" to schedule this celebration.
-                                  </p>
-                                </div>
-                              );
-                            }
-                            return (
-                              <div className="space-y-2">
-                                {eventDatesArr.map((dateVal, dateIdx) => (
-                                  <div key={`${eventName}-date-${dateIdx}`} className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold text-[#8C6D3F] bg-[#FAF0E1] border border-[#C5A880]/30 rounded-lg w-7 h-7 flex items-center justify-center shrink-0">
-                                      {dateIdx + 1}
-                                    </span>
-                                    <input
-                                      type="date"
-                                      value={dateVal || ''}
-                                      onChange={(e) => updateDateInEvent(eventName, dateIdx, e.target.value)}
-                                      className="flex-1 bg-white border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all shadow-xs cursor-pointer"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => removeDateFromEvent(eventName, dateIdx)}
-                                      className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-400 hover:text-red-600 flex items-center justify-center transition-all cursor-pointer shrink-0"
-                                      title="Remove this date"
-                                    >
-                                      <Minus className="w-3.5 h-3.5" />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            );
-                          })()}
-
-                          {(Array.isArray(eventSched.dates) ? eventSched.dates : []).length > 0 && (
-                            <p className="text-[10px] text-[#888888] italic">
-                              {(Array.isArray(eventSched.dates) ? eventSched.dates : []).length} day{(Array.isArray(eventSched.dates) ? eventSched.dates : []).length > 1 ? 's' : ''} scheduled for {eventName}
+                            <p className="text-[11px] text-[#777777] font-light mt-0.5">
+                              Set specific date and timing for Day 1, Day 2, etc. Each day has its own date & timing.
                             </p>
-                          )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => addDayToEvent(eventName)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#C5A880]/15 hover:bg-[#C5A880]/30 border border-[#C5A880]/50 text-[#8C6D3F] text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs self-start sm:self-auto"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Add Day</span>
+                          </button>
                         </div>
 
-                        {/* Multi-Time Section */}
-                        <div className="space-y-2 pt-2 border-t border-[#E8DFC9]/70">
-                          <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold uppercase tracking-wider text-[#444444] flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-[#8C6D3F]" />
-                              <span>{eventName} Timing{(() => {
-                                const arr = Array.isArray(eventSched.times) ? eventSched.times : ((eventSched.startTime || eventSched.endTime) ? [1] : []);
-                                return arr.length > 1 ? 's' : '';
-                              })()}</span>
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => addTimeToEvent(eventName)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#C5A880]/15 hover:bg-[#C5A880]/30 border border-[#C5A880]/40 text-[#8C6D3F] text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
-                            >
-                              <Plus className="w-3 h-3" />
-                              <span>Add Time</span>
-                            </button>
-                          </div>
-
-                          {/* Time Slots List */}
-                          {(() => {
-                            let eventTimesArr = Array.isArray(eventSched.times) ? eventSched.times : [];
-                            if (eventTimesArr.length === 0 && (eventSched.startTime || eventSched.endTime)) {
-                              eventTimesArr = [{ startTime: eventSched.startTime || '', endTime: eventSched.endTime || '' }];
-                            }
-
-                            if (eventTimesArr.length === 0) {
-                              return (
-                                <div className="bg-white border border-dashed border-[#D8CFC4] rounded-xl p-3 text-center">
-                                  <p className="text-[11px] text-[#888888] italic">
-                                    No timings added yet. Click "Add Time" to schedule session hours.
-                                  </p>
-                                </div>
-                              );
-                            }
+                        {/* Days List */}
+                        <div className="space-y-3">
+                          {days.map((dayItem, dayIdx) => {
+                            const daySlotHours = (dayItem.startTime && dayItem.endTime)
+                              ? calculateSlotDurationHours(dayItem.startTime, dayItem.endTime)
+                              : null;
 
                             return (
-                              <div className="space-y-2">
-                                {eventTimesArr.map((tSlot, tIdx) => (
-                                  <div key={`${eventName}-time-${tIdx}`} className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold text-[#8C6D3F] bg-[#FAF0E1] border border-[#C5A880]/30 rounded-lg w-7 h-7 flex items-center justify-center shrink-0">
-                                      {tIdx + 1}
+                              <div
+                                key={`${eventName}-day-${dayIdx}`}
+                                className="bg-white border border-[#E2D9CC] rounded-xl p-3.5 sm:p-4 space-y-3 shadow-2xs hover:border-[#C5A880]/60 transition-all"
+                              >
+                                {/* Day Title Bar */}
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-[#8C6D3F] bg-[#FAF0E1] border border-[#C5A880]/30 rounded-lg px-2.5 py-0.5 flex items-center gap-1.5">
+                                      <Calendar className="w-3 h-3 text-[#8C6D3F]" />
+                                      Day {dayIdx + 1}
                                     </span>
-                                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                      <select
-                                        value={tSlot.startTime || ''}
-                                        onChange={(e) => updateTimeInEvent(eventName, tIdx, 'startTime', e.target.value)}
-                                        className="w-full bg-white border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-2.5 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all shadow-xs cursor-pointer"
-                                      >
-                                        <option value="">Select starting time</option>
-                                        {TIME_OPTIONS.map((t) => (
-                                          <option key={t} value={t}>{t}</option>
-                                        ))}
-                                      </select>
-                                      <select
-                                        value={tSlot.endTime || ''}
-                                        onChange={(e) => updateTimeInEvent(eventName, tIdx, 'endTime', e.target.value)}
-                                        className="w-full bg-white border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-2.5 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all shadow-xs cursor-pointer"
-                                      >
-                                        <option value="">Select ending time</option>
-                                        {TIME_OPTIONS.map((t) => (
-                                          <option key={t} value={t}>{t}</option>
-                                        ))}
-                                      </select>
-                                    </div>
+                                    {dayItem.date && (
+                                      <span className="text-xs font-medium text-[#555555] hidden sm:inline">
+                                        • {dayItem.date}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {days.length > 1 && (
                                     <button
                                       type="button"
-                                      onClick={() => removeTimeFromEvent(eventName, tIdx)}
-                                      className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-400 hover:text-red-600 flex items-center justify-center transition-all cursor-pointer shrink-0"
-                                      title="Remove this time slot"
+                                      onClick={() => removeDayFromEvent(eventName, dayIdx)}
+                                      className="text-[11px] text-red-500 hover:text-red-700 font-medium inline-flex items-center gap-1 hover:bg-red-50 px-2 py-0.5 rounded-lg border border-transparent hover:border-red-200 transition-all cursor-pointer"
+                                      title={`Remove Day ${dayIdx + 1}`}
                                     >
-                                      <Minus className="w-3.5 h-3.5" />
+                                      <Minus className="w-3 h-3" />
+                                      <span>Remove Day {dayIdx + 1}</span>
                                     </button>
+                                  )}
+                                </div>
+
+                                {/* Date and Time Fields Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                  {/* Day Date */}
+                                  <div>
+                                    <label className="block text-[10px] uppercase font-bold text-[#666666] mb-1 flex items-center gap-1">
+                                      <Calendar className="w-3 h-3 text-[#8C6D3F]" />
+                                      <span>Day {dayIdx + 1} Date</span>
+                                    </label>
+                                    <input
+                                      type="date"
+                                      value={dayItem.date || ''}
+                                      onChange={(e) => updateDayInEvent(eventName, dayIdx, 'date', e.target.value)}
+                                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all cursor-pointer shadow-2xs"
+                                    />
                                   </div>
-                                ))}
+
+                                  {/* Day Starting Time */}
+                                  <div>
+                                    <label className="block text-[10px] uppercase font-bold text-[#666666] mb-1 flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-[#8C6D3F]" />
+                                      <span>Day {dayIdx + 1} Start Time</span>
+                                    </label>
+                                    <select
+                                      value={dayItem.startTime || ''}
+                                      onChange={(e) => updateDayInEvent(eventName, dayIdx, 'startTime', e.target.value)}
+                                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-2.5 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all cursor-pointer shadow-2xs"
+                                    >
+                                      <option value="">Select starting time</option>
+                                      {TIME_OPTIONS.map((t) => (
+                                        <option key={t} value={t}>{t}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  {/* Day Ending Time */}
+                                  <div>
+                                    <label className="block text-[10px] uppercase font-bold text-[#666666] mb-1 flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-[#8C6D3F]" />
+                                      <span>Day {dayIdx + 1} End Time</span>
+                                    </label>
+                                    <select
+                                      value={dayItem.endTime || ''}
+                                      onChange={(e) => updateDayInEvent(eventName, dayIdx, 'endTime', e.target.value)}
+                                      className="w-full bg-[#FAF8F5] border border-[#D8CFC4] focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] rounded-xl px-2.5 py-2 text-xs sm:text-sm font-medium text-[#1A1A1A] outline-none transition-all cursor-pointer shadow-2xs"
+                                    >
+                                      <option value="">Select ending time</option>
+                                      {TIME_OPTIONS.map((t) => (
+                                        <option key={t} value={t}>{t}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </div>
+
+                                {/* Day Duration Feedback */}
+                                {daySlotHours !== null && (
+                                  <div className="flex items-center justify-between text-[11px] bg-[#FAF6F0] border border-[#E8DFC9] rounded-lg px-2.5 py-1 text-[#8C6D3F]">
+                                    <span className="flex items-center gap-1.5 font-medium">
+                                      <Clock className="w-3 h-3" />
+                                      <span>Day {dayIdx + 1} Timing: {dayItem.startTime} – {dayItem.endTime}</span>
+                                    </span>
+                                    <span className="font-bold">
+                                      {daySlotHours} hr{daySlotHours !== 1 ? 's' : ''}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             );
-                          })()}
-
-                          {(() => {
-                            let eventTimesArr = Array.isArray(eventSched.times) ? eventSched.times : [];
-                            if (eventTimesArr.length === 0 && (eventSched.startTime || eventSched.endTime)) {
-                              eventTimesArr = [{ startTime: eventSched.startTime || '', endTime: eventSched.endTime || '' }];
-                            }
-                            if (eventTimesArr.length > 0) {
-                              return (
-                                <p className="text-[10px] text-[#888888] italic">
-                                  {eventTimesArr.length} timing slot{eventTimesArr.length > 1 ? 's' : ''} scheduled for {eventName}
-                                </p>
-                              );
-                            }
-                            return null;
-                          })()}
+                          })}
                         </div>
                       </div>
 
                       {/* Schedule Summary & Pricing Tier Info */}
                       {(() => {
-                        const sched = eventSchedules[eventName];
+                        const sched = getEventSchedule(eventName);
                         const hours = calculateEventHours(sched);
                         const multiplier = Math.max(1, Math.ceil(hours / 6));
+                        const activeDaysCount = (Array.isArray(sched.days) ? sched.days : []).filter(d => d && (d.date || d.startTime || d.endTime)).length || 1;
+
                         return (
                           <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-[#FAF5EC] border border-[#E8DFC9] rounded-xl text-xs">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-semibold text-[#8C6D3F] flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5" />
-                                <span>Event Duration: {hours} hr{hours > 1 ? 's' : ''}</span>
+                                <span>Total Event Duration: {hours} hr{hours > 1 ? 's' : ''} ({activeDaysCount} day{activeDaysCount > 1 ? 's' : ''} scheduled)</span>
                               </span>
                               <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
                                 multiplier > 1
@@ -1987,20 +2019,15 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                   {selectedEvents.map(evName => {
                     const evPackages = selectedPackages.filter(p => p.eventTag === evName);
                     if (evPackages.length === 0) return null;
-                    const sched = eventSchedules[evName] || {};
-                    const sTime = formatEventTimes(sched);
+                    const sched = getEventSchedule(evName);
+                    const schedSummary = formatEventScheduleString(sched);
 
                     return (
                       <div key={evName} className="space-y-1.5">
-                        <div className="flex items-center justify-between bg-[#FAF0E1] px-3.5 py-1.5 rounded-lg border border-[#C5A880]/30 text-xs font-semibold">
-                          <span className="text-[#8C6D3F] flex items-center gap-1.5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-[#FAF0E1] px-3.5 py-2 rounded-lg border border-[#C5A880]/30 text-xs font-semibold gap-1.5">
+                          <span className="text-[#8C6D3F] flex items-center gap-1.5 flex-wrap">
                             <span>{getEventIcon(evName)} {evName} Coverage</span>
-                            {(() => {
-                              const summaryDates = Array.isArray(sched.dates) ? sched.dates.filter(Boolean) : (sched.date ? [sched.date] : []);
-                              const summaryDateStr = summaryDates.join(', ');
-                              const summarySched = [summaryDateStr, sTime].filter(Boolean).join(' • ');
-                              return summarySched ? <span className="text-[#666666] font-normal">({summarySched})</span> : null;
-                            })()}
+                            {schedSummary && <span className="text-[#666666] font-normal">({schedSummary})</span>}
                           </span>
                           <span className="font-serif font-bold text-[#8C6D3F]">
                             ₹{getEventSubtotal(evName).toLocaleString('en-IN')}/-
