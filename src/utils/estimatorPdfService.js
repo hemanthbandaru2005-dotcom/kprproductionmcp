@@ -253,10 +253,14 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
       ? `${pkg.name}\n${scheduleSnippet}`
       : pkg.name;
 
+    const durationDisplay = (!pkg.isFixed && pkg.multiplier > 1)
+      ? `${pkg.hours} hrs (${pkg.multiplier} × 6h slots)`
+      : (pkg.duration || (pkg.isFixed ? 'Fixed Scope' : '6 hours'));
+
     tableRows.push([
       serviceDisplay,
       categoryDisplay,
-      pkg.duration || '6 hours',
+      durationDisplay,
       `Rs. ${Number(pkg.price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
     ]);
   });

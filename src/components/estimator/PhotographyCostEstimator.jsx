@@ -64,6 +64,125 @@ const TIME_OPTIONS = [
   '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM'
 ];
 
+// ── Time & Duration Calculation Helpers ──
+export function parseTimeToMinutes(timeStr) {
+  if (!timeStr || typeof timeStr !== 'string') return null;
+  const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return null;
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const ampm = match[3].toUpperCase();
+  if (ampm === 'PM' && hours !== 12) hours += 12;
+  if (ampm === 'AM' && hours === 12) hours = 0;
+  return hours * 60 + minutes;
+}
+
+export function calculateSlotDurationHours(startTime, endTime) {
+  const startMin = parseTimeToMinutes(startTime);
+  const endMin = parseTimeToMinutes(endTime);
+  if (startMin === null || endMin === null) return 0;
+  let diffMin = endMin - startMin;
+  if (diffMin <= 0) {
+    diffMin += 24 * 60; // Overnight duration
+  }
+  return diffMin / 60;
+}
+
+export function calculateEventHours(sched) {
+  if (!sched) return 6;
+
+  let slots = [];
+  if (Array.isArray(sched.times) && sched.times.length > 0) {
+    slots = sched.times.filter(s => s && (s.startTime || s.endTime));
+  }
+  if (slots.length === 0 && (sched.startTime || sched.endTime)) {
+    slots = [{ startTime: sched.startTime, endTime: sched.endTime }];
+  }
+
+  let totalSlotHours = 0;
+  slots.forEach(slot => {
+    if (slot.startTime && slot.endTime) {
+      const dur = calculateSlotDurationHours(slot.startTime, slot.endTime);
+      totalSlotHours += dur;
+    }
+  });
+
+  const dailyHours = totalSlotHours > 0 ? totalSlotHours : 6;
+  const datesCount = Array.isArray(sched.dates)
+    ? sched.dates.filter(Boolean).length
+    : (sched.date ? 1 : 0);
+  const daysMultiplier = Math.max(1, datesCount);
+
+  return dailyHours * daysMultiplier;
+}
+
+// Fixed-cost services whose prices do NOT change with hours/time (from user specification)
+const FIXED_PRICE_PACKAGE_IDS = new Set([
+  'pkg-5', // Drone (4 hours, ₹6,000)
+  'pkg-6', // LED Screen (6 hours (+ Transport Charges), ₹16,000)
+  'pkg-7', // Avata Drone (3 hours, ₹12,000)
+  'pkg-8', // Live Link (4 hours, ₹6,000)
+  'pkg-9', // Cinematic Teaser (4-5 min, ₹8,000)
+  'pkg-10', // Traditional Video Editing (1 hour, ₹2,000)
+  'pkg-11', // Cinematic Video Editing (1 hour, ₹6,000)
+  'pkg-12', // Each Album One Sheet (per sheet, ₹250)
+  7, 8, 9, 10, 11, 12, 13, 14
+]);
+
+const FIXED_CATEGORIES = new Set([
+  'Aerial',
+  'Setup',
+  'Broadcast',
+  'Editing',
+  'Print Album',
+  'Storage'
+]);
+
+export function isPackagePriceFixed(pkg) {
+  if (!pkg) return true;
+  if (FIXED_PRICE_PACKAGE_IDS.has(pkg.id)) return true;
+  if (FIXED_CATEGORIES.has(pkg.category)) return true;
+  return false;
+}
+
+// Calculate dynamic price, multiplier, and duration display for a package based on event schedule
+export function getPackagePriceForEvent(pkg, eventName, eventSchedules) {
+  const basePrice = Number(pkg?.price) || 0;
+  if (!pkg) {
+    return { finalPrice: 0, basePrice: 0, multiplier: 1, hours: 6, isFixed: true, durationDisplay: '6 hours' };
+  }
+
+  const isFixed = isPackagePriceFixed(pkg);
+  if (isFixed) {
+    return {
+      finalPrice: basePrice,
+      basePrice,
+      multiplier: 1,
+      hours: 6,
+      isFixed: true,
+      durationDisplay: pkg.duration || 'Fixed Scope'
+    };
+  }
+
+  const sched = eventSchedules?.[eventName];
+  const hours = calculateEventHours(sched);
+  // Time-based pricing: 1 to 6 hrs = 1x base price, 7 to 12 hrs = 2x base price, and continuing every 6 hrs
+  const multiplier = Math.max(1, Math.ceil(hours / 6));
+  const finalPrice = basePrice * multiplier;
+  const durationDisplay = multiplier > 1
+    ? `${hours} hours (${multiplier} × 6h slots)`
+    : (pkg.duration || '6 hours (1–6 hrs)');
+
+  return {
+    finalPrice,
+    basePrice,
+    multiplier,
+    hours,
+    isFixed: false,
+    durationDisplay
+  };
+}
+
 export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPage, embedded = false }) {
   const containerRef = useRef(null);
 
@@ -280,7 +399,9 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
     const ids = eventSchedules[eventName]?.serviceIds || [];
     return ids.reduce((acc, id) => {
       const pkg = availablePackages.find(p => p.id === id) || OFFICIAL_PHOTOGRAPHY_PACKAGES.find(p => p.id === id);
-      return acc + (pkg ? Number(pkg.price) || 0 : 0);
+      if (!pkg) return acc;
+      const pricing = getPackagePriceForEvent(pkg, eventName, eventSchedules);
+      return acc + pricing.finalPrice;
     }, 0);
   };
 
@@ -346,8 +467,15 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
       serviceIds.forEach(id => {
         const pkg = availablePackages.find(p => p.id === id) || OFFICIAL_PHOTOGRAPHY_PACKAGES.find(p => p.id === id);
         if (pkg) {
+          const pricing = getPackagePriceForEvent(pkg, evName, eventSchedules);
           list.push({
             ...pkg,
+            basePrice: Number(pkg.price) || 0,
+            price: pricing.finalPrice,
+            duration: pricing.durationDisplay,
+            multiplier: pricing.multiplier,
+            hours: pricing.hours,
+            isFixed: pricing.isFixed,
             instanceKey: `${evName}-${pkg.id}`,
             eventTag: evName,
             eventDate: sDate,
@@ -584,7 +712,10 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
         const sTime = formatEventTimes(sched);
         const schedDetails = [sDateStr, sTime].filter(Boolean).join(' • ');
         const schedTxt = schedDetails ? ` (${schedDetails})` : '';
-        servicesSummary += `\n*${ev}*${schedTxt}:\n` + evPkgs.map(p => `  • ${p.name} (₹${p.price.toLocaleString('en-IN')})`).join('\n');
+        servicesSummary += `\n*${ev}*${schedTxt}:\n` + evPkgs.map(p => {
+          const tierInfo = (!p.isFixed && p.multiplier > 1) ? ` [${p.hours}h • ${p.multiplier} slots]` : '';
+          return `  • ${p.name}${tierInfo} (₹${p.price.toLocaleString('en-IN')})`;
+        }).join('\n');
       }
     });
 
@@ -1261,6 +1392,37 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                         </div>
                       </div>
 
+                      {/* Schedule Summary & Pricing Tier Info */}
+                      {(() => {
+                        const sched = eventSchedules[eventName];
+                        const hours = calculateEventHours(sched);
+                        const multiplier = Math.max(1, Math.ceil(hours / 6));
+                        return (
+                          <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-[#FAF5EC] border border-[#E8DFC9] rounded-xl text-xs">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-[#8C6D3F] flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>Event Duration: {hours} hr{hours > 1 ? 's' : ''}</span>
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                                multiplier > 1
+                                  ? 'bg-[#8C6D3F] text-white'
+                                  : 'bg-[#C5A880]/20 text-[#8C6D3F]'
+                              }`}>
+                                {multiplier === 1
+                                  ? '1–6 hrs Tier (1x)'
+                                  : `${multiplier} × 6h Sessions (${(multiplier - 1) * 6 + 1}–${multiplier * 6} hrs • ${multiplier}x)`}
+                              </span>
+                            </div>
+                            <span className="text-[10.5px] text-[#777777] italic">
+                              {multiplier === 1
+                                ? 'Photo & Video: Base 6-hr rate • Fixed items: Fixed rate'
+                                : `Photo & Video: Scaled for ${hours} hrs (${multiplier}x) • Fixed items: Unchanged`}
+                            </span>
+                          </div>
+                        );
+                      })()}
+
                       {/* Packages Selection for this celebration */}
                       <div className="space-y-2.5 pt-1">
                         <div className="flex items-center justify-between">
@@ -1275,7 +1437,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                           {filteredPackages.map((pkg) => {
                             const isAssigned = isServiceAssignedToEvent(pkg.id, eventName);
-                            const displayDuration = pkg.duration || '6 hours';
+                            const pricing = getPackagePriceForEvent(pkg, eventName, eventSchedules);
 
                             return (
                               <div
@@ -1289,9 +1451,20 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                               >
                                 <div>
                                   <div className="flex items-start justify-between gap-2 mb-1.5">
-                                    <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 rounded bg-[#FAF0E1] text-[#8C6D3F] font-semibold border border-[#C5A880]/30">
-                                      {pkg.category === 'Fotography' ? 'Photography' : pkg.category}
-                                    </span>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 rounded bg-[#FAF0E1] text-[#8C6D3F] font-semibold border border-[#C5A880]/30">
+                                        {pkg.category === 'Fotography' ? 'Photography' : pkg.category}
+                                      </span>
+                                      {pricing.isFixed ? (
+                                        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-medium">
+                                          Fixed
+                                        </span>
+                                      ) : pricing.multiplier > 1 ? (
+                                        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#C5A880]/25 text-[#8C6D3F] font-bold">
+                                          {pricing.multiplier}x Rate
+                                        </span>
+                                      ) : null}
+                                    </div>
                                     <div className={`w-4 h-4 rounded flex items-center justify-center transition-all ${
                                       isAssigned ? 'bg-[#C5A880] text-black' : 'border border-[#D8CFC4] group-hover:border-[#C5A880]'
                                     }`}>
@@ -1311,11 +1484,18 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                                 <div className="mt-3 pt-2.5 border-t border-[#E8DFC9] flex items-center justify-between">
                                   <span className="text-[10.5px] text-[#777777] flex items-center gap-1">
                                     <Clock className="w-3 h-3 text-[#8C6D3F]" />
-                                    <span>{displayDuration}</span>
+                                    <span>{pricing.durationDisplay}</span>
                                   </span>
-                                  <span className="text-xs sm:text-sm font-serif font-bold text-[#8C6D3F]">
-                                    ₹{Number(pkg.price).toLocaleString('en-IN')}/-
-                                  </span>
+                                  <div className="text-right">
+                                    <span className="text-xs sm:text-sm font-serif font-bold text-[#8C6D3F]">
+                                      ₹{pricing.finalPrice.toLocaleString('en-IN')}/-
+                                    </span>
+                                    {!pricing.isFixed && pricing.multiplier > 1 && (
+                                      <span className="block text-[9.5px] text-[#888888]">
+                                        (₹{pricing.basePrice.toLocaleString('en-IN')} × {pricing.multiplier})
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             );
@@ -1825,11 +2005,23 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
                                 <strong className="text-[#1A1A1A] text-sm">{pkg.name}</strong>
                                 <div className="text-[11px] text-[#666666]">
                                   {pkg.category === 'Fotography' ? 'Photography' : pkg.category} • Scope: {pkg.duration || '6 hours'}
+                                  {!pkg.isFixed && pkg.multiplier > 1 && (
+                                    <span className="text-[#8C6D3F] font-semibold ml-1.5">
+                                      ({pkg.hours} hrs • {pkg.multiplier} × 6h slots)
+                                    </span>
+                                  )}
                                 </div>
                               </div>
-                              <span className="font-serif text-sm font-bold text-[#8C6D3F]">
-                                ₹{Number(pkg.price).toLocaleString('en-IN')}/-
-                              </span>
+                              <div className="text-right">
+                                <span className="font-serif text-sm font-bold text-[#8C6D3F]">
+                                  ₹{Number(pkg.price).toLocaleString('en-IN')}/-
+                                </span>
+                                {!pkg.isFixed && pkg.multiplier > 1 && (
+                                  <span className="block text-[10px] text-[#888888]">
+                                    (₹{Number(pkg.basePrice || 0).toLocaleString('en-IN')} × {pkg.multiplier})
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
