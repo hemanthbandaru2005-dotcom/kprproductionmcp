@@ -18,14 +18,15 @@ import { FLEXY_ALBUM_PHOTOS } from '../data/albumPhotosData';
    ───────────────────────────────────────────────────── */
 function getBookDimensions() {
   if (typeof window === 'undefined') {
-    return { singlePageW: 285, singlePageH: 190 };
+    return { singlePageW: 345, singlePageH: 230 };
   }
   const w = window.innerWidth;
   const h = window.innerHeight || 800;
 
-  let baseW = 285;
-  let baseH = 190;
+  let baseW = 345;
+  let baseH = 230;
 
+  // 1. MOBILE VIEW: 100% UNTOUCHED ("dont touch mobile")
   if (w < 380) {
     baseW = 144;
     baseH = 96;
@@ -39,33 +40,35 @@ function getBookDimensions() {
     baseW = 210;
     baseH = 140;
   } else if (w < 1024) {
-    baseW = 240;
-    baseH = 160;
-  } else if (w < 1366) {
+    // Tablet landscape
     baseW = 264;
     baseH = 176;
+  } else if (w < 1366) {
+    // Compact laptop (e.g. 1280x800)
+    baseW = 300;
+    baseH = 200;
   } else if (w < 1440) {
-    // 1366px - 1439px desktop/laptop (e.g. 1366x768)
-    baseW = 276;
-    baseH = 184;
+    // 1366px laptop (1366x768) - Enriched sizing
+    baseW = 318;
+    baseH = 212;
   } else if (w < 1600) {
-    // 1440px reference laptop
-    baseW = 285;
-    baseH = 190;
+    // 1440px laptop (1440x900 reference laptop) - ENLARGED (+21%)
+    baseW = 345;
+    baseH = 230;
   } else if (w < 1920) {
-    // 1600px desktop
-    baseW = 306;
-    baseH = 204;
+    // 1600px desktop monitor - ENLARGED
+    baseW = 375;
+    baseH = 250;
   } else {
-    // 1920px+ Full HD desktop
-    baseW = 330;
-    baseH = 220;
+    // 1920px+ Full HD / QHD desktop computer view - ENLARGED (+23%)
+    baseW = 405;
+    baseH = 270;
   }
 
   // Height-constraint protection: on shorter viewports (e.g. 720p or 768p laptops with browser toolbars)
-  // Ensure album height never exceeds ~23% of viewport height on desktop, maintaining 1.50 aspect ratio
+  // Allows up to ~28% of viewport height on desktop, maintaining exact 1.50 (3:2) aspect ratio
   if (w >= 1024 && h < 850) {
-    const maxAllowedH = Math.max(140, Math.floor(h * 0.23));
+    const maxAllowedH = Math.max(150, Math.floor(h * 0.28));
     if (baseH > maxAllowedH) {
       baseH = maxAllowedH;
       baseW = Math.round(baseH * 1.5);

@@ -103,8 +103,8 @@ export default function Hero({ onOpenPage }) {
 
       {/* ── 2. Middle Section: Brand Centerpiece, Album Feature & Showcase ── */}
       <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 pointer-events-auto hero-responsive-container">
-        {/* Center Logo & Tagline (Quote sits cleanly above the album) */}
-        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1 sm:mb-1.5 relative z-30">
+        {/* Center Logo & Tagline (Moved slightly upwards on laptop & desktop into open space below navbar) */}
+        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1 sm:mb-1.5 md:-mt-4 lg:-mt-6 xl:-mt-7 md:mb-1.5 lg:mb-2 relative z-30">
           <motion.img
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
