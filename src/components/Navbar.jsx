@@ -28,13 +28,13 @@ export default function Navbar({ activePage, onSelectPage }) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 pointer-events-none ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 pointer-events-none px-4 md:px-6 lg:px-8 ${
         scrolled
           ? 'bg-[#F7F3EE]/95 backdrop-blur-md shadow-md border-b border-black/10 py-2.5 sm:py-3'
           : 'pt-2.5 sm:pt-4 md:pt-5'
       }`}
     >
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between pointer-events-auto">
+      <div className="w-full flex items-center justify-between pointer-events-auto">
         
         {/* 1. LEFT: Brand Logo */}
         <button
