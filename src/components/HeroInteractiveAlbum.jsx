@@ -565,7 +565,8 @@ export default function HeroInteractiveAlbum({
         style={{
           width: isOpen ? dims.singlePageW * 2 : dims.singlePageW + 60,
           height: dims.singlePageH + 20,
-          minHeight: `${dims.singlePageH + 16}px`
+          minHeight: `${dims.singlePageH + 16}px`,
+          '--album-half-w': `${Math.round(dims.singlePageW / 2)}px`
         }}
       >
         {/* ── 3D CLOSED BOOK MOCKUP (Visible on Front Cover, matches Adobe Stock reference) ── */}
@@ -621,19 +622,19 @@ export default function HeroInteractiveAlbum({
               exit={{ opacity: 0, scale: 0.85, x: 8, transition: { duration: 0.2 } }}
               transition={{ duration: 0.35, delay: 0.15 }}
               onClick={handleOpenBook}
-              className="absolute top-[18%] xs:top-[22%] sm:top-[25%] left-full ml-1 xs:ml-2 sm:ml-3 z-50 flex flex-col items-start cursor-pointer select-none pointer-events-auto group"
+              className="hero-swipe-callout absolute top-[16%] xs:top-[20%] sm:top-[24%] z-50 flex flex-col items-start cursor-pointer select-none pointer-events-auto group max-w-[85px] sm:max-w-none"
               title="Click or swipe to open"
             >
-              <span className="font-serif italic font-semibold text-[11px] xs:text-xs sm:text-[13px] text-[#C85A48] tracking-wide whitespace-nowrap -rotate-6 group-hover:scale-105 group-hover:text-[#B34533] transition-all drop-shadow-xs">
+              <span className="font-serif italic font-semibold text-[10px] xs:text-[11px] sm:text-[13px] text-[#C85A48] tracking-wide whitespace-nowrap -rotate-6 group-hover:scale-105 group-hover:text-[#B34533] transition-all drop-shadow-xs">
                 Swipe to open
               </span>
               <svg
-                width="32"
-                height="22"
+                width="28"
+                height="20"
                 viewBox="0 0 32 22"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="text-[#C85A48] group-hover:text-[#B34533] mt-0.5 ml-1 group-hover:-translate-x-1 transition-all"
+                className="text-[#C85A48] group-hover:text-[#B34533] mt-0.5 ml-0.5 group-hover:-translate-x-1 transition-all sm:w-8 sm:h-5"
               >
                 <path
                   d="M26 4C18 4 12 8 5 15"
@@ -663,19 +664,19 @@ export default function HeroInteractiveAlbum({
               exit={{ opacity: 0, scale: 0.85, x: -8, transition: { duration: 0.2 } }}
               transition={{ duration: 0.35, delay: 0.15 }}
               onClick={handleReopenBook}
-              className="absolute top-[18%] xs:top-[22%] sm:top-[25%] right-full mr-1 xs:mr-2 sm:mr-3 z-50 flex flex-col items-end cursor-pointer select-none pointer-events-auto group"
+              className="hero-reopen-callout absolute top-[16%] xs:top-[20%] sm:top-[24%] z-50 flex flex-col items-end cursor-pointer select-none pointer-events-auto group max-w-[85px] sm:max-w-none"
               title="Click or swipe to reopen album"
             >
-              <span className="font-serif italic font-semibold text-[11px] xs:text-xs sm:text-[13px] text-[#C85A48] tracking-wide whitespace-nowrap rotate-6 group-hover:scale-105 group-hover:text-[#B34533] transition-all drop-shadow-xs">
+              <span className="font-serif italic font-semibold text-[10px] xs:text-[11px] sm:text-[13px] text-[#C85A48] tracking-wide whitespace-nowrap rotate-6 group-hover:scale-105 group-hover:text-[#B34533] transition-all drop-shadow-xs">
                 Tap to reopen
               </span>
               <svg
-                width="32"
-                height="22"
+                width="28"
+                height="20"
                 viewBox="0 0 32 22"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                className="text-[#C85A48] group-hover:text-[#B34533] mt-0.5 mr-1 group-hover:translate-x-1 transition-all"
+                className="text-[#C85A48] group-hover:text-[#B34533] mt-0.5 mr-0.5 group-hover:translate-x-1 transition-all sm:w-8 sm:h-5"
               >
                 <path
                   d="M6 4C14 4 20 8 27 15"

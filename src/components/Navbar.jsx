@@ -34,7 +34,7 @@ export default function Navbar({ activePage, onSelectPage }) {
           : 'pt-2.5 sm:pt-4 md:pt-5'
       }`}
     >
-      <div className="w-full hero-responsive-container flex items-center justify-between pointer-events-auto">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between pointer-events-auto">
         
         {/* 1. LEFT: Brand Logo */}
         <button

@@ -44,7 +44,9 @@
     margin: 0;
     padding: 0;
     width: 100%;
+    max-width: 100vw;
     min-height: 100%;
+    overflow-x: hidden;
     color-scheme: only light !important;
     forced-color-adjust: none !important;
     -webkit-overflow-scrolling: touch;
@@ -342,18 +344,16 @@
 :root {
   /* Dynamic hero container max-width: smoothly scales across desktop resolutions */
   --hero-container-max-w: 1100px;
-  --hero-logo-h: clamp(2.5rem, 5.5vh, 5.5rem);
+  --hero-logo-h: clamp(2.25rem, 4.8vh, 3.5rem);
   --hero-tagline-size: clamp(0.75rem, 1vw + 0.3vh, 1.15rem);
-  --hero-card-img-h: clamp(48px, 8.5vh, 96px);
   --hero-bg-pos: center 38%;
 }
 
 @media (min-width: 1024px) {
   :root {
     --hero-container-max-w: 960px;
-    --hero-logo-h: clamp(2.75rem, 5.8vh, 4.75rem);
+    --hero-logo-h: clamp(2.75rem, 5.8vh, 4.5rem);
     --hero-tagline-size: clamp(0.8rem, 1.05vw, 1rem);
-    --hero-card-img-h: clamp(52px, 8vh, 80px);
     --hero-bg-pos: center 40%;
   }
 }
@@ -361,9 +361,8 @@
 @media (min-width: 1366px) {
   :root {
     --hero-container-max-w: 1040px;
-    --hero-logo-h: clamp(3rem, 6vh, 5rem);
+    --hero-logo-h: clamp(3rem, 6vh, 4.75rem);
     --hero-tagline-size: clamp(0.85rem, 1.1vw, 1.05rem);
-    --hero-card-img-h: clamp(56px, 8.5vh, 88px);
     --hero-bg-pos: center 38%;
   }
 }
@@ -371,29 +370,26 @@
 @media (min-width: 1440px) {
   :root {
     --hero-container-max-w: 1120px;
-    --hero-logo-h: clamp(3.25rem, 6.2vh, 5.25rem);
+    --hero-logo-h: clamp(3.25rem, 6.2vh, 5rem);
     --hero-tagline-size: clamp(0.875rem, 1.15vw, 1.125rem);
-    --hero-card-img-h: clamp(60px, 9vh, 92px);
     --hero-bg-pos: center 40%;
   }
 }
 
 @media (min-width: 1600px) {
   :root {
-    --hero-container-max-w: 1240px;
-    --hero-logo-h: clamp(3.5rem, 6.5vh, 5.75rem);
-    --hero-tagline-size: clamp(0.95rem, 1.2vw, 1.2rem);
-    --hero-card-img-h: clamp(64px, 9.5vh, 100px);
+    --hero-container-max-w: 1200px;
+    --hero-logo-h: clamp(3.5rem, 6.5vh, 5.25rem);
+    --hero-tagline-size: clamp(0.95rem, 1.2vw, 1.15rem);
     --hero-bg-pos: center 38%;
   }
 }
 
 @media (min-width: 1920px) {
   :root {
-    --hero-container-max-w: 1380px;
-    --hero-logo-h: clamp(4rem, 7vh, 6.5rem);
-    --hero-tagline-size: clamp(1rem, 1.25vw, 1.3rem);
-    --hero-card-img-h: clamp(72px, 10vh, 115px);
+    --hero-container-max-w: 1280px;
+    --hero-logo-h: clamp(3.75rem, 6.8vh, 5.5rem);
+    --hero-tagline-size: clamp(1rem, 1.2vw, 1.25rem);
     --hero-bg-pos: center 38%;
   }
 }
@@ -416,7 +412,6 @@
   :root {
     --hero-logo-h: clamp(2.25rem, 4.8vh, 3.5rem);
     --hero-tagline-size: clamp(0.72rem, 0.9vw, 0.9rem);
-    --hero-card-img-h: clamp(42px, 6.5vh, 68px);
   }
 }
 
@@ -429,10 +424,53 @@
   padding-right: clamp(0.75rem, 2vw, 2rem);
 }
 
+/* Dedicated Showcase Cards Container: Sits perfectly in the center desk opening without expanding onto the photobook or aperture */
+.hero-showcase-container {
+  width: 100%;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(0.5rem, 1.5vw, 1rem);
+  padding-right: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+@media (min-width: 1280px) {
+  .hero-showcase-container {
+    max-width: 900px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .hero-showcase-container {
+    max-width: 940px;
+  }
+}
+
 .hero-bg-cover {
   background-size: cover;
   background-position: var(--hero-bg-pos);
   background-repeat: no-repeat;
+}
+
+/* Mobile-Safe Photobook Callout Positioning: Prevents text truncation on OnePlus, Oppo & all mobile viewports */
+.hero-swipe-callout {
+  left: calc(50% + var(--album-half-w, 78px) + 4px);
+}
+@media (min-width: 640px) {
+  .hero-swipe-callout {
+    left: 100%;
+    margin-left: 0.65rem;
+  }
+}
+
+.hero-reopen-callout {
+  right: calc(50% + var(--album-half-w, 78px) + 4px);
+}
+@media (min-width: 640px) {
+  .hero-reopen-callout {
+    right: 100%;
+    margin-right: 0.65rem;
+  }
 }
 
 
