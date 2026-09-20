@@ -72,7 +72,7 @@ export default function Hero({ onOpenPage }) {
   return (
     <section
       id="hero"
-      className="relative w-full h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-14 xs:pt-15 sm:pt-16 md:pt-18 pb-2 sm:pb-3 px-2 sm:px-5 lg:px-8 select-none"
+      className="relative w-full h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-12 sm:pt-14 md:pt-16 pb-2 sm:pb-3 select-none"
       style={{ height: 'var(--app-height, 100vh)' }}
     >
       {/* Semantic H1 for Search Engine Indexing */}
@@ -80,41 +80,37 @@ export default function Hero({ onOpenPage }) {
         KPR Productions - Luxury Wedding Photography, Fine Art Storytelling, Digital Color Lab Photobooks & Live Stage Event Production
       </h1>
 
-      {/* ── 1. Desktop Background Image (For Laptops & Desktops Only) ── */}
-      <img
-        src={heroDesktop}
-        alt="KPR Productions Luxury Photography Flatlay Studio Scene with Cameras, Photo Album and Flora"
-        className="hidden md:block absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0"
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-        loading="eager"
-        fetchPriority="high"
-        decoding="async"
-        draggable="false"
+      {/* ── 1. Desktop Background Composition with Stable Framing ── */}
+      <div
+        className="hidden md:block absolute inset-0 w-full h-full pointer-events-none select-none z-0 hero-bg-cover"
+        style={{
+          backgroundImage: `url(${heroDesktop})`,
+        }}
+        aria-hidden="true"
       />
 
-      {/* ── 1b. Mobile-Only Background Image (For Mobile Screens Only) ── */}
-      <img
-        src={heroMobile}
-        alt="KPR Productions Luxury Photography Flatlay Studio Scene Mobile"
-        className="block md:hidden absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0"
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-        loading="eager"
-        fetchPriority="high"
-        decoding="async"
-        draggable="false"
+      {/* ── 1b. Mobile-Only Background Image ── */}
+      <div
+        className="block md:hidden absolute inset-0 w-full h-full pointer-events-none select-none z-0 hero-bg-cover"
+        style={{
+          backgroundImage: `url(${heroMobile})`,
+          backgroundPosition: 'center center'
+        }}
+        aria-hidden="true"
       />
 
       {/* ── 2. Middle Section: Brand Centerpiece, Album Feature & Showcase ── */}
-      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 pointer-events-auto max-w-4xl mx-auto">
+      <div className="w-full flex-1 flex flex-col items-center justify-center z-20 py-0.5 pointer-events-auto hero-responsive-container">
         {/* Center Logo & Tagline (Quote sits cleanly above the album) */}
-        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1.5 sm:mb-2 relative z-30">
+        <div className="flex flex-col items-center text-center mt-0.5 sm:mt-1 mb-1 sm:mb-1.5 relative z-30">
           <motion.img
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
             src={kprProductionsLogo}
             alt="KPR PRODUCTIONS"
-            className="h-10 xs:h-12 sm:h-16 md:h-20 lg:h-24 w-auto object-contain select-none drop-shadow-xs"
+            className="w-auto object-contain select-none drop-shadow-xs"
+            style={{ height: 'var(--hero-logo-h)' }}
             loading="eager"
           />
 
@@ -122,7 +118,8 @@ export default function Hero({ onOpenPage }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.08 }}
-            className="font-serif italic text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-[#1A1A1A] tracking-normal mt-0.5 sm:mt-1 flex items-center justify-center gap-1.5 sm:gap-2.5 select-none relative z-30"
+            className="font-serif italic text-[#1A1A1A] tracking-normal mt-0.5 sm:mt-1 flex items-center justify-center gap-1.5 sm:gap-2.5 select-none relative z-30"
+            style={{ fontSize: 'var(--hero-tagline-size)' }}
           >
             <span className="text-[#D32F2F] not-italic font-sans font-bold text-xs sm:text-base leading-none">—</span>
             <span>Turn Your Moments Into Memories</span>
@@ -131,7 +128,7 @@ export default function Hero({ onOpenPage }) {
         </div>
 
         {/* Album + Buttons Block (Centered in the middle on mobile & laptop) */}
-        <div className="w-full flex flex-col items-center justify-center my-0.5 sm:my-1">
+        <div className="w-full flex flex-col items-center justify-center my-0.5">
           {/* Interactive 3D Photobook Album */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -151,12 +148,12 @@ export default function Hero({ onOpenPage }) {
             />
           </motion.div>
 
-          {/* Action Buttons: PREVIEW, PRINT YOUR ALBUMS and WHATSAPP (Side by side with WhatsApp in yellow mark position) */}
+          {/* Action Buttons: PREVIEW, PRINT YOUR ALBUMS and WHATSAPP */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 }}
-            className="flex flex-col items-center justify-center gap-1.5 mt-1 sm:mt-1.5"
+            className="flex flex-col items-center justify-center gap-1 mt-0.5 sm:mt-1"
           >
             <div className="flex items-center justify-center gap-2 sm:gap-2.5 flex-nowrap">
               <button
@@ -208,7 +205,7 @@ export default function Hero({ onOpenPage }) {
       </div>
 
       {/* ── 3. Unified 3-Column Services Showcase Cards (Matching Background) ── */}
-      <div className="w-full max-w-4xl lg:max-w-5xl mx-auto grid grid-cols-3 gap-1.5 xs:gap-2 sm:gap-3 md:gap-4 relative z-30 pointer-events-auto mb-1 sm:mb-2 py-0 px-0.5 sm:px-1">
+      <div className="w-full hero-responsive-container grid grid-cols-3 gap-1.5 xs:gap-2 sm:gap-3 md:gap-4 relative z-30 pointer-events-auto mb-1 sm:mb-2 py-0">
         {SERVICES.map((service, index) => {
           return (
             <motion.div
@@ -220,12 +217,12 @@ export default function Hero({ onOpenPage }) {
               className="group relative bg-[#FAF5ED]/92 hover:bg-[#FAF5ED] backdrop-blur-md border border-[#C5A880]/50 hover:border-[#C5A880] rounded-xl sm:rounded-2xl p-1.5 xs:p-2 sm:p-2.5 md:p-3 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_16px_rgba(180,140,90,0.16)] hover:shadow-[0_8px_24px_rgba(197,168,128,0.3)]"
             >
               {/* 1. Official Logo Badge & Optional Title Section */}
-              <div className="h-10 xs:h-11 sm:h-13 md:h-16 w-full flex flex-col items-center justify-center">
-                <div className={`w-full flex items-center justify-center ${service.showTitleText ? 'h-6 xs:h-7 sm:h-8 md:h-10' : 'h-10 xs:h-11 sm:h-13 md:h-16'}`}>
+              <div className="w-full flex flex-col items-center justify-center" style={{ minHeight: 'clamp(2.5rem, 5vh, 4rem)' }}>
+                <div className={`w-full flex items-center justify-center ${service.showTitleText ? 'h-[clamp(1.5rem,3.2vh,2.5rem)]' : 'h-[clamp(2.5rem,4.8vh,3.75rem)]'}`}>
                   <img
                     src={service.logoSrc}
                     alt={service.title}
-                    className={`${service.showTitleText ? 'max-h-6 xs:max-h-7 sm:max-h-8 md:max-h-10 max-w-[90%] sm:max-w-[85%]' : 'max-h-8 xs:max-h-9 sm:max-h-11 md:max-h-13 max-w-[92%] sm:max-w-[88%]'} w-auto object-contain drop-shadow-xs group-hover:scale-105 transition-transform duration-300 select-none`}
+                    className="max-h-full max-w-[90%] sm:max-w-[85%] w-auto object-contain drop-shadow-xs group-hover:scale-105 transition-transform duration-300 select-none"
                     loading="eager"
                   />
                 </div>
@@ -238,7 +235,10 @@ export default function Hero({ onOpenPage }) {
               </div>
 
               {/* 3. Supporting Visual Asset */}
-              <div className="w-full h-11 xs:h-13 sm:h-16 md:h-20 lg:h-22 flex items-center justify-center my-0.5 sm:my-1 relative overflow-hidden rounded-md sm:rounded-lg border border-[#C5A880]/30 shadow-[0_2px_8px_rgba(0,0,0,0.06)] bg-[#F5ECE0]">
+              <div
+                className="w-full flex items-center justify-center my-0.5 sm:my-1 relative overflow-hidden rounded-md sm:rounded-lg border border-[#C5A880]/30 shadow-[0_2px_8px_rgba(0,0,0,0.06)] bg-[#F5ECE0]"
+                style={{ height: 'var(--hero-card-img-h)' }}
+              >
                 <img
                   src={service.cardImage}
                   alt={service.cardAlt}

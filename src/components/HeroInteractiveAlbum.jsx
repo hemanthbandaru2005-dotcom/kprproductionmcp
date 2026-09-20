@@ -21,25 +21,58 @@ function getBookDimensions() {
     return { singlePageW: 285, singlePageH: 190 };
   }
   const w = window.innerWidth;
+  const h = window.innerHeight || 800;
+
+  let baseW = 285;
+  let baseH = 190;
+
   if (w < 380) {
-    return { singlePageW: 144, singlePageH: 96 };
+    baseW = 144;
+    baseH = 96;
+  } else if (w < 480) {
+    baseW = 156;
+    baseH = 104;
+  } else if (w < 640) {
+    baseW = 180;
+    baseH = 120;
+  } else if (w < 768) {
+    baseW = 210;
+    baseH = 140;
+  } else if (w < 1024) {
+    baseW = 240;
+    baseH = 160;
+  } else if (w < 1366) {
+    baseW = 264;
+    baseH = 176;
+  } else if (w < 1440) {
+    // 1366px - 1439px desktop/laptop (e.g. 1366x768)
+    baseW = 276;
+    baseH = 184;
+  } else if (w < 1600) {
+    // 1440px reference laptop
+    baseW = 285;
+    baseH = 190;
+  } else if (w < 1920) {
+    // 1600px desktop
+    baseW = 306;
+    baseH = 204;
+  } else {
+    // 1920px+ Full HD desktop
+    baseW = 330;
+    baseH = 220;
   }
-  if (w < 480) {
-    return { singlePageW: 156, singlePageH: 104 };
+
+  // Height-constraint protection: on shorter viewports (e.g. 720p or 768p laptops with browser toolbars)
+  // Ensure album height never exceeds ~23% of viewport height on desktop, maintaining 1.50 aspect ratio
+  if (w >= 1024 && h < 850) {
+    const maxAllowedH = Math.max(140, Math.floor(h * 0.23));
+    if (baseH > maxAllowedH) {
+      baseH = maxAllowedH;
+      baseW = Math.round(baseH * 1.5);
+    }
   }
-  if (w < 640) {
-    return { singlePageW: 180, singlePageH: 120 };
-  }
-  if (w < 768) {
-    return { singlePageW: 210, singlePageH: 140 };
-  }
-  if (w < 1024) {
-    return { singlePageW: 240, singlePageH: 160 };
-  }
-  if (w < 1280) {
-    return { singlePageW: 264, singlePageH: 176 };
-  }
-  return { singlePageW: 285, singlePageH: 190 };
+
+  return { singlePageW: baseW, singlePageH: baseH };
 }
 
 /* ─────────────────────────────────────────────────────
@@ -528,10 +561,11 @@ export default function HeroInteractiveAlbum({
     >
       {/* ── 3D Stage with Natural Ambient Contact Shadow ── */}
       <div
-        className="relative flex items-center justify-center select-none transition-all duration-500 ease-out min-h-[195px] sm:min-h-[220px]"
+        className="relative flex items-center justify-center select-none transition-all duration-500 ease-out"
         style={{
           width: isOpen ? dims.singlePageW * 2 : dims.singlePageW + 60,
-          height: dims.singlePageH + 20
+          height: dims.singlePageH + 20,
+          minHeight: `${dims.singlePageH + 16}px`
         }}
       >
         {/* ── 3D CLOSED BOOK MOCKUP (Visible on Front Cover, matches Adobe Stock reference) ── */}

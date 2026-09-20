@@ -30,11 +30,11 @@ export default function Navbar({ activePage, onSelectPage }) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 pointer-events-none ${
         scrolled
-          ? 'bg-[#F7F3EE]/95 backdrop-blur-md shadow-md border-b border-black/10 py-3 px-4 sm:px-10 lg:px-16'
-          : 'pt-4 sm:pt-6 px-4 sm:px-10 lg:px-16'
+          ? 'bg-[#F7F3EE]/95 backdrop-blur-md shadow-md border-b border-black/10 py-2.5 sm:py-3'
+          : 'pt-2.5 sm:pt-4 md:pt-5'
       }`}
     >
-      <div className="w-full max-w-[1920px] mx-auto flex items-center justify-between pointer-events-auto">
+      <div className="w-full hero-responsive-container flex items-center justify-between pointer-events-auto">
         
         {/* 1. LEFT: Brand Logo */}
         <button
@@ -45,12 +45,12 @@ export default function Navbar({ activePage, onSelectPage }) {
           <img
             src={kprProductionsLogo}
             alt="KPR PRODUCTIONS - Luxury Wedding Photography, Color Lab and Event Production"
-            className="h-8 sm:h-10 w-auto object-contain drop-shadow-sm"
+            className="h-7 sm:h-8 md:h-9 lg:h-10 w-auto object-contain drop-shadow-sm"
           />
         </button>
 
         {/* 2. CENTER: Navigation Links */}
-        <nav className="hidden md:flex items-center space-x-7 lg:space-x-10 text-xs font-bold tracking-[0.2em] uppercase">
+        <nav className="hidden md:flex items-center space-x-4 lg:space-x-7 xl:space-x-9 text-[11px] lg:text-xs font-bold tracking-[0.16em] xl:tracking-[0.2em] uppercase">
           
           {/* HOME */}
           <button
@@ -136,9 +136,9 @@ export default function Navbar({ activePage, onSelectPage }) {
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => handlePageClick('login')}
-            className="hidden md:flex px-6 py-2 rounded-full border border-[#C5A880] bg-[#1A1A1A] hover:bg-black text-[#F4ECD8] hover:text-white font-bold text-xs tracking-[0.18em] uppercase shadow-[0_3px_12px_rgba(0,0,0,0.25)] hover:shadow-[0_4px_16px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer items-center gap-2"
+            className="hidden md:flex px-4 lg:px-6 py-1.5 lg:py-2 rounded-full border border-[#C5A880] bg-[#1A1A1A] hover:bg-black text-[#F4ECD8] hover:text-white font-bold text-[11px] lg:text-xs tracking-[0.15em] lg:tracking-[0.18em] uppercase shadow-[0_3px_12px_rgba(0,0,0,0.25)] hover:shadow-[0_4px_16px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer items-center gap-1.5 lg:gap-2"
           >
-            <User className="w-4 h-4 text-[#C5A880] stroke-[2.5]" />
+            <User className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-[#C5A880] stroke-[2.5]" />
             <span>LOGIN</span>
           </button>
 
