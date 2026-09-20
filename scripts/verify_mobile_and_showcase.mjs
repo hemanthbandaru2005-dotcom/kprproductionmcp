@@ -40,15 +40,15 @@ for (const dev of mobileDevices) {
   }
 }
 
-// 2. Check Action Buttons width on mobile
-// PREVIEW (~75px) + PRINT YOUR ALBUMS (~120px) + WHATSAPP (~85px) + gaps (16px) = ~296px
-const estimatedButtonsWidth = 75 + 120 + 85 + 16;
-console.log(`Action Buttons Total Width: ~${estimatedButtonsWidth}px`);
+// 2. Check Action Buttons width on mobile (PREVIEW removed; 2 buttons: PRINT YOUR ALBUMS + WHATSAPP)
+// PRINT YOUR ALBUMS (~130px) + WHATSAPP (~95px) + gap (16px) = ~241px
+const estimatedButtonsWidth = 130 + 95 + 16;
+console.log(`Action Buttons Total Width (2 buttons): ~${estimatedButtonsWidth}px`);
 for (const dev of mobileDevices) {
   const gutter = dev.width - estimatedButtonsWidth;
   console.log(`  On ${dev.name}: ${gutter.toFixed(0)}px total gutter (~${(gutter/2).toFixed(0)}px each side)`);
-  if (gutter >= 30) {
-    console.log('  Status: PASS (Comfortable breathing room, no edge touching)');
+  if (gutter >= 50) {
+    console.log('  Status: PASS (Exceptional breathing room, perfectly centered)');
   } else {
     console.log('  Status: FAIL (Buttons too wide for screen!)');
     allPassed = false;

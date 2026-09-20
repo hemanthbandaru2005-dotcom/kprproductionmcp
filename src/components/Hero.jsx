@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import CustomAlbumUploadModal from './CustomAlbumUploadModal';
 import AlbumFlipbookViewer from './AlbumFlipbookViewer';
 import HeroInteractiveAlbum from './HeroInteractiveAlbum';
@@ -148,37 +148,22 @@ export default function Hero({ onOpenPage }) {
             />
           </motion.div>
 
-          {/* Action Buttons: PREVIEW, PRINT YOUR ALBUMS and WHATSAPP */}
+          {/* Action Buttons: PRINT YOUR ALBUMS and WHATSAPP */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.15 }}
-            className="flex flex-col items-center justify-center gap-1 mt-0.5 sm:mt-1"
+            className="flex flex-col items-center justify-center gap-1 mt-1 sm:mt-1.5 md:mt-2"
           >
-            <div className="flex items-center justify-center gap-1.5 xs:gap-2 sm:gap-2.5 flex-nowrap max-w-full px-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setFlipbookImages(HERO_SAMPLE_PHOTOS);
-                  setFlipbookCover('/images/album/front_cover.jpg');
-                  setFlipbookBackCover('/images/album/back_cover.jpg');
-                  setFlipbookSize('12x36');
-                }}
-                className="group inline-flex items-center gap-1 sm:gap-1.5 px-2.5 xs:px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-[#FAF5ED]/95 hover:bg-white text-[#1A1A1A] hover:text-black text-[8.5px] xs:text-[10px] sm:text-xs font-bold tracking-wider uppercase border border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.22)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
-                title="Preview 3D Photobook"
-              >
-                <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-[#A47E43] group-hover:scale-110 transition-transform" />
-                <span>PREVIEW</span>
-              </button>
-
+            <div className="flex items-center justify-center gap-2.5 xs:gap-3 sm:gap-4 md:gap-5 flex-nowrap max-w-full px-2">
               <button
                 type="button"
                 onClick={() => setUploadModalOpen(true)}
-                className="group inline-flex items-center gap-1 sm:gap-1.5 px-2.5 xs:px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-[#FAF5ED]/95 hover:bg-white text-[#1A1A1A] hover:text-black border-2 border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.25)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
+                className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 xs:px-4 sm:px-6 md:px-7 py-1.5 sm:py-2 md:py-2.5 rounded-full bg-[#FAF5ED]/95 hover:bg-white text-[#1A1A1A] hover:text-black border-2 border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.25)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
                 title="Print Your Albums"
               >
-                <Upload className="w-3 h-3 sm:w-4 sm:h-4 text-[#A47E43] group-hover:text-[#8D652B] transition-colors" />
-                <span className="text-[8px] xs:text-[9px] sm:text-[11px] font-bold tracking-[0.12em] sm:tracking-[0.14em] uppercase font-sans">
+                <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#A47E43] group-hover:text-[#8D652B] transition-colors" />
+                <span className="text-[8.5px] xs:text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.14em] uppercase font-sans">
                   PRINT YOUR ALBUMS
                 </span>
               </button>
@@ -190,11 +175,11 @@ export default function Hero({ onOpenPage }) {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-1 sm:gap-1.5 px-2.5 xs:px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-[8.5px] xs:text-[10px] sm:text-xs font-bold tracking-wider uppercase shadow-[0_4px_14px_rgba(37,211,102,0.38)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.55)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
+                className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 xs:px-4 sm:px-6 md:px-7 py-1.5 sm:py-2 md:py-2.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white text-[8.5px] xs:text-[10px] sm:text-xs md:text-sm font-bold tracking-wider uppercase shadow-[0_4px_14px_rgba(37,211,102,0.38)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.55)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
                 title="Chat with KPR Colour Lab on WhatsApp (+91 98493 90876)"
                 aria-label="Chat with KPR Colour Lab on WhatsApp"
               >
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24">
                   <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12 0 2.159.57 4.187 1.564 5.941l-1.664 6.082 6.221-1.632c1.707.933 3.666 1.465 5.748 1.465 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12z"/>
                 </svg>
                 <span>WHATSAPP</span>
