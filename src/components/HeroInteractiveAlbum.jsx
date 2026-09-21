@@ -94,7 +94,8 @@ function ThreeDClosedBookMockup({
   width,
   height,
   onOpen,
-  isBackCover = false
+  isBackCover = false,
+  onOpenFullscreen
 }) {
   const w = width;
   const h = height;
@@ -256,6 +257,24 @@ function ThreeDClosedBookMockup({
                 : 'linear-gradient(to left, rgba(0,0,0,0.2) 0%, rgba(255,255,255,0.35) 40%, transparent 100%)'
             }}
           />
+
+          {/* ── Full View Button on Top-Right Corner (like <> expand icon, matching marked location) ── */}
+          {!isBackCover && onOpenFullscreen && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onOpenFullscreen();
+              }}
+              className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-30 inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#161412]/90 hover:bg-black text-[#F4ECD8] border border-[#C5A880]/80 hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.55)] hover:shadow-[0_0_16px_rgba(197,168,128,0.7)] hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer pointer-events-auto group/cover-fv"
+              title="Open Full View Photobook"
+              aria-label="Open Full View Photobook"
+            >
+              <Maximize2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C5A880] group-hover/cover-fv:scale-110 transition-transform" />
+              <span className="hidden sm:inline text-[9px] sm:text-[10px] font-serif tracking-widest uppercase font-semibold">Full View</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -268,7 +287,7 @@ function ThreeDClosedBookMockup({
    - Real bride cover photo loaded from /images/album/front_cover.jpg
    - Debossed French groove / spine hinge indentation on the left
    ───────────────────────────────────────────────────── */
-const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, ...props }, ref) => {
+const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, onOpenFullscreen, ...props }, ref) => {
   const imgSrc = coverSrc || "/images/album/front_cover.jpg";
 
   return (
@@ -326,6 +345,24 @@ const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, ...props }, ref) =>
             borderLeft: '1px solid rgba(0,0,0,0.06)'
           }}
         />
+
+        {/* ── Full View Button on Top-Right Corner (like <> expand icon, matching marked location) ── */}
+        {onOpenFullscreen && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onOpenFullscreen();
+            }}
+            className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-30 inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#161412]/90 hover:bg-black text-[#F4ECD8] border border-[#C5A880]/80 hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.55)] hover:shadow-[0_0_16px_rgba(197,168,128,0.7)] hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer pointer-events-auto group/cover-fv"
+            title="Open Full View Photobook"
+            aria-label="Open Full View Photobook"
+          >
+            <Maximize2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C5A880] group-hover/cover-fv:scale-110 transition-transform" />
+            <span className="hidden sm:inline text-[9px] sm:text-[10px] font-serif tracking-widest uppercase font-semibold">Full View</span>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -589,6 +626,7 @@ export default function HeroInteractiveAlbum({
                 height={dims.singlePageH}
                 onOpen={handleOpenBook}
                 isBackCover={false}
+                onOpenFullscreen={onOpenFullscreen}
               />
             </motion.div>
           )}
@@ -611,6 +649,7 @@ export default function HeroInteractiveAlbum({
                 height={dims.singlePageH}
                 onOpen={handleReopenBook}
                 isBackCover={true}
+                onOpenFullscreen={onOpenFullscreen}
               />
             </motion.div>
           )}
@@ -791,6 +830,7 @@ export default function HeroInteractiveAlbum({
             <HeroFrontCover
               coverSrc={activeCover}
               onCoverClick={handleFlipNext}
+              onOpenFullscreen={onOpenFullscreen}
             />
 
             {/* Photo Pages: Archival mounted, photos inserted into the pages with folios */}
