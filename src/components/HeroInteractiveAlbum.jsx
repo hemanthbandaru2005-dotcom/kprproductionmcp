@@ -258,7 +258,7 @@ function ThreeDClosedBookMockup({
             }}
           />
 
-          {/* ── Full View Button on Top-Right Corner (like <> expand icon, matching marked location) ── */}
+          {/* ── Full View Button on Top-Right Corner (only <> expand arrows icon) ── */}
           {!isBackCover && onOpenFullscreen && (
             <button
               type="button"
@@ -267,12 +267,11 @@ function ThreeDClosedBookMockup({
                 e.stopPropagation();
                 onOpenFullscreen();
               }}
-              className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-30 inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#161412]/90 hover:bg-black text-[#F4ECD8] border border-[#C5A880]/80 hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.55)] hover:shadow-[0_0_16px_rgba(197,168,128,0.7)] hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer pointer-events-auto group/cover-fv"
+              className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-30 inline-flex items-center justify-center p-1.5 sm:p-2 rounded-full bg-[#161412]/90 hover:bg-black text-[#F4ECD8] border border-[#C5A880]/80 hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.55)] hover:shadow-[0_0_16px_rgba(197,168,128,0.7)] hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer pointer-events-auto group/cover-fv"
               title="Open Full View Photobook"
               aria-label="Open Full View Photobook"
             >
-              <Maximize2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C5A880] group-hover/cover-fv:scale-110 transition-transform" />
-              <span className="hidden sm:inline text-[9px] sm:text-[10px] font-serif tracking-widest uppercase font-semibold">Full View</span>
+              <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C5A880] group-hover/cover-fv:scale-110 transition-transform" />
             </button>
           )}
         </div>
@@ -346,7 +345,7 @@ const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, onOpenFullscreen, .
           }}
         />
 
-        {/* ── Full View Button on Top-Right Corner (like <> expand icon, matching marked location) ── */}
+        {/* ── Full View Button on Top-Right Corner (only <> expand arrows icon) ── */}
         {onOpenFullscreen && (
           <button
             type="button"
@@ -355,12 +354,11 @@ const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, onOpenFullscreen, .
               e.stopPropagation();
               onOpenFullscreen();
             }}
-            className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-30 inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#161412]/90 hover:bg-black text-[#F4ECD8] border border-[#C5A880]/80 hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.55)] hover:shadow-[0_0_16px_rgba(197,168,128,0.7)] hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer pointer-events-auto group/cover-fv"
+            className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-30 inline-flex items-center justify-center p-1.5 sm:p-2 rounded-full bg-[#161412]/90 hover:bg-black text-[#F4ECD8] border border-[#C5A880]/80 hover:border-[#C5A880] shadow-[0_4px_14px_rgba(0,0,0,0.55)] hover:shadow-[0_0_16px_rgba(197,168,128,0.7)] hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer pointer-events-auto group/cover-fv"
             title="Open Full View Photobook"
             aria-label="Open Full View Photobook"
           >
-            <Maximize2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C5A880] group-hover/cover-fv:scale-110 transition-transform" />
-            <span className="hidden sm:inline text-[9px] sm:text-[10px] font-serif tracking-widest uppercase font-semibold">Full View</span>
+            <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C5A880] group-hover/cover-fv:scale-110 transition-transform" />
           </button>
         )}
       </div>
