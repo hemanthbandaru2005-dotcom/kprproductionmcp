@@ -167,44 +167,75 @@ function AppContent() {
   // ── Per-Page SEO Metadata (unique title + description per route) ──
   const SEO_META = {
     home: {
-      title: 'KPR Production | Fine Art Wedding Photography & Cinematography in Warangal & Hanumakonda',
-      description: 'KPR Production - fine art wedding photography & cinematography studio serving Warangal, Hanumakonda and Telangana. Cinematic wedding films, editorial photography, custom color grading.',
-      ogTitle: 'KPR Production | Fine Art Wedding Photography Warangal',
+      title: 'KPR Productions | Fine Art Wedding Photography & Cinematography in Warangal & Hanumakonda',
+      description: 'KPR Productions is a premier fine art wedding photography and cinematography studio serving Warangal, Hanumakonda, and Telangana. Cinematic films, bespoke albums, and stage production.',
+      ogTitle: 'KPR Productions | Fine Art Wedding Photography Warangal',
       ogDescription: 'Cinematic wedding films & editorial photography in Warangal and Hanumakonda.',
-      twTitle: 'KPR Production | Fine Art Wedding Photography',
+      twTitle: 'KPR Productions | Fine Art Wedding Photography',
       twDescription: "Warangal & Hanumakonda's fine art wedding photography studio.",
+      keywords: 'wedding photography warangal, fine art wedding photography, wedding cinematographer hanumakonda, telangana wedding photographers, luxury wedding photography',
     },
     media: {
-      title: 'Wedding Photography Portfolio | KPR Production Warangal',
-      description: 'Explore KPR Production\'s wedding photography portfolio — cinematic wedding films, editorial portraits, and fine art photography from Warangal & Hanumakonda, Telangana.',
+      title: 'Wedding Photography Portfolio | KPR Productions Warangal',
+      description: 'Explore KPR Productions\' curated wedding portfolio: authentic candid moments, pre-wedding sessions, haldi, engagement, and traditional ceremonies across Warangal and Hanumakonda.',
+      ogTitle: 'Wedding Photography Portfolio | KPR Productions Warangal',
+      ogDescription: 'Curated fine art wedding photography and films from Warangal & Hanumakonda by KPR Productions.',
+      twTitle: 'Wedding Photography Portfolio | KPR Productions Warangal',
+      twDescription: 'Fine art wedding photography portfolio across Warangal, Hanumakonda and Telangana.',
+      keywords: 'wedding photography portfolio warangal, pre wedding shoot warangal, haldi ceremony photography, wedding couple portraits telangana, candid wedding photographer hanumakonda',
     },
     colorlab: {
-      title: 'Signature Color Grading Styles | KPR Production',
-      description: 'Discover KPR Production\'s signature color grading styles and luxury photobook album printing. Custom layflat albums, embossed leather cases, and professional color lab services.',
+      title: 'Signature Color Grading Styles & Album Printing | KPR Productions',
+      description: 'Discover KPR Colour Lab: master layflat photobook album manufacturing (12x36 to 18x24), custom embossed leather cases, cinematic color grading, and framing in Warangal.',
+      ogTitle: 'Signature Color Grading Styles & Album Printing | KPR Productions',
+      ogDescription: 'Master layflat album printing, custom embossed leather cases, and color grading services.',
+      twTitle: 'Signature Color Grading Styles & Album Printing | KPR Productions',
+      twDescription: 'Luxury photobook album printing and signature color grading by KPR Colour Lab.',
+      keywords: 'photo album printing warangal, layflat wedding album printing, color lab hanumakonda, custom photobook album, signature color grading styles',
     },
     events: {
-      title: 'Event Photography & Cinematography Packages | KPR Production',
-      description: 'Grand stage event production, HD LED walls, truss rigging, choreography, and event photography packages by KPR Production in Warangal & Hanumakonda.',
+      title: 'Event Photography & Stage Production Packages | KPR Productions',
+      description: 'Grand stage event production, high-definition LED video walls, truss rigging, stage lighting, and professional wedding choreography packages in Hanumakonda & Warangal.',
+      ogTitle: 'Event Photography & Stage Production Packages | KPR Productions',
+      ogDescription: 'Grand stage LED video walls, truss rigging, lighting, and wedding choreography in Warangal & Hanumakonda.',
+      twTitle: 'Event Photography & Stage Production Packages | KPR Productions',
+      twDescription: 'Grand stage production, LED walls, and wedding choreography packages by KPR Productions.',
+      keywords: 'event photography hanumakonda, stage lighting warangal, wedding sangeet choreography hanumakonda, led wall stage rental telangana, event production warangal',
     },
     about: {
-      title: 'About KPR Production | Fine Art Wedding Photographers in Hanumakonda',
-      description: 'Learn about KPR Production — fine art wedding photographers and cinematographers based in Hanumakonda & Warangal, Telangana. Our story, team, and creative vision.',
+      title: 'About KPR Productions | Fine Art Wedding Photographers in Hanumakonda',
+      description: 'Learn about KPR Productions\' 20-year legacy of visual storytelling, fine-art photobook manufacturing, and stagecraft across Warangal, Hanumakonda, and Telangana.',
+      ogTitle: 'About KPR Productions | Fine Art Wedding Photographers in Hanumakonda',
+      ogDescription: '20-year legacy of fine art photography, photobook printing, and stage production.',
+      twTitle: 'About KPR Productions | Fine Art Wedding Photographers in Hanumakonda',
+      twDescription: 'About KPR Productions - fine art wedding photography studio in Hanumakonda.',
+      keywords: 'about kpr productions, best photographers in hanumakonda, wedding photography team warangal, photography studio history telangana',
     },
     contact: {
-      title: 'Contact KPR Production | Wedding Photography Warangal',
-      description: 'Get in touch with KPR Production for wedding photography, cinematography, color lab printing, and event production services in Warangal, Hanumakonda & Telangana.',
-    },
-    login: {
-      title: 'Login | KPR Production',
-      description: 'Sign in to your KPR Production account to manage albums, view galleries, and access your dashboard.',
+      title: 'Contact KPR Productions | Wedding Photography Warangal',
+      description: 'Connect with KPR Productions. Visit our Warangal (Station Road) and Hyderabad (Hastinapuram) studios, request date availability, or chat instantly via WhatsApp.',
+      ogTitle: 'Contact KPR Productions | Wedding Photography Warangal',
+      ogDescription: 'Connect with KPR Productions for wedding photography, albums, and stage production in Warangal & Hyderabad.',
+      twTitle: 'Contact KPR Productions | Wedding Photography Warangal',
+      twDescription: 'Contact KPR Productions for wedding photography and event inquiries in Warangal.',
+      keywords: 'contact wedding photographer warangal, kpr productions phone number, photography studio station road warangal, wedding photography studio hanumakonda contact',
     },
     estimator: {
-      title: 'Photography Cost Estimator | KPR Production',
-      description: 'Estimate your wedding photography and event production costs with KPR Production\'s interactive pricing calculator.',
+      title: 'Wedding & Event Photography Cost Estimator | KPR Productions',
+      description: 'Calculate estimated wedding photography, color lab photobook album, and event production investment with KPR Productions\' interactive 7-step pricing calculator.',
+      ogTitle: 'Wedding & Event Photography Cost Estimator | KPR Productions',
+      ogDescription: 'Interactive 7-step budget calculator for wedding photography, albums, and event production.',
+      twTitle: 'Wedding & Event Photography Cost Estimator | KPR Productions',
+      twDescription: 'Estimate your wedding photography and event production costs with KPR Productions.',
+      keywords: 'wedding photography cost calculator, wedding photography prices warangal, photography package cost estimate telangana, photobook album pricing',
+    },
+    login: {
+      title: 'Login | KPR Productions',
+      description: 'Sign in to your KPR Productions account to access client galleries or studio staff dashboards.',
     },
     'album-preview': {
-      title: 'Album Preview | KPR Production',
-      description: 'Preview your luxury photobook album design before printing with KPR Production\'s 3D album viewer.',
+      title: 'Album Preview | KPR Productions',
+      description: 'Preview your luxury photobook album design with KPR Productions\' 3D album viewer.',
     },
   };
 
@@ -224,7 +255,7 @@ function AppContent() {
     };
   }, []);
 
-  // ── Dynamic SEO: Update document.title, meta description & canonical on page change ──
+  // ── Dynamic SEO: Update document.title, meta description, keywords & canonical on page change ──
   useEffect(() => {
     const meta = SEO_META[activePage] || SEO_META.home;
     document.title = meta.title;
@@ -237,11 +268,16 @@ function AppContent() {
     const titleTag = document.querySelector('meta[name="title"]');
     if (titleTag) titleTag.setAttribute('content', meta.title);
 
+    // Update keywords
+    const kwTag = document.querySelector('meta[name="keywords"]');
+    if (kwTag && meta.keywords) kwTag.setAttribute('content', meta.keywords);
+
     // Update OG tags
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) ogTitle.setAttribute('content', meta.ogTitle || meta.title);
     const ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute('content', meta.ogDescription || meta.description);
+    const ogUrl = document.querySelector('meta[property="og:url"]');
 
     // Update Twitter tags
     const twTitle = document.querySelector('meta[name="twitter:title"]');
@@ -249,12 +285,16 @@ function AppContent() {
     const twDesc = document.querySelector('meta[name="twitter:description"]');
     if (twDesc) twDesc.setAttribute('content', meta.twDescription || meta.description);
 
-    // Update canonical URL
+    // Update canonical and OG URL
+    const slug = ROUTE_SLUGS[activePage];
+    const canonicalUrl = slug ? `https://kprproductions.com/${slug}` : 'https://kprproductions.com/';
+    
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) {
-      const slug = ROUTE_SLUGS[activePage];
-      const url = slug ? `https://kprproductions.com/${slug}` : 'https://kprproductions.com/';
-      canonical.setAttribute('href', url);
+      canonical.setAttribute('href', canonicalUrl);
+    }
+    if (ogUrl) {
+      ogUrl.setAttribute('content', canonicalUrl);
     }
   }, [activePage]);
 
