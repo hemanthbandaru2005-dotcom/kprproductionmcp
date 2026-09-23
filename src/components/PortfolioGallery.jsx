@@ -133,7 +133,7 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
             <span>CURATED WORKS ({items.length} TOTAL PHOTOS)</span>
           </p>
           <h2 className="font-serif text-3xl sm:text-5xl text-[#1A1A1A] font-light tracking-wide text-center">
-            THE GALLERY COLLECTION
+            Our Signature Photography Styles
           </h2>
         </div>
 
@@ -185,6 +185,9 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
               >
                 {filteredItems.map((item, index) => {
                   const isSaved = moodboardIds.includes(item.id);
+                  const imageAlt = item.category && item.category.toLowerCase().includes('wedding')
+                    ? `Fine art wedding photography Warangal - ${item.title || 'bride and groom candid moment'}, KPR Production`
+                    : `Fine art ${item.category || 'celebration'} photography Warangal & Hanumakonda - ${item.title || 'candid moment'}, KPR Production`;
                   return (
                     <motion.div
                       key={item.id}
@@ -202,7 +205,7 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
                       <div className="relative aspect-[4/5] overflow-hidden rounded-[10px] bg-[#1A1A1A]">
                         <img
                           src={item.image}
-                          alt={item.title || 'KPR Fotography'}
+                          alt={imageAlt}
                           loading={index < 6 ? 'eager' : 'lazy'}
                           decoding="async"
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108 select-none"

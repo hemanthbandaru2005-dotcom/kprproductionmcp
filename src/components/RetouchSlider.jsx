@@ -46,7 +46,7 @@ export default function RetouchSlider() {
             FINE ART POST-PRODUCTION
           </p>
           <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl text-white font-light tracking-wide mb-4 sm:mb-6">
-            THE RETOUCHING ARTISTRY
+            Color Grading - Signature Looks
           </h2>
           <p className="text-white/70 text-xs sm:text-sm font-light leading-relaxed">
             Drag the interactive slider below to witness how our signature color grading transforms raw unedited captures into warm, timeless cinematic heirlooms.

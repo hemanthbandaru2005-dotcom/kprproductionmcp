@@ -224,6 +224,8 @@ export default function ColorLabSection() {
 
   return (
     <div id="colorlab" className="w-full bg-[#F7F3EE] transition-all duration-300">
+      {/* Semantic H1 for Color Lab Page */}
+      <h1 className="sr-only">Signature Color Grading Styles &amp; Luxury Photobook Album Printing | KPR Production</h1>
       <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
         {/* 1. Main Collapsible "COLOR LAB" Header Bar (Corner Spread Showcase Photos & Grand Center Logo) */}
@@ -236,7 +238,7 @@ export default function ColorLabSection() {
           <div className="absolute left-0 top-0 bottom-0 h-full w-20 sm:w-40 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
             <img
               src={colorLabHeaderLeft}
-              alt="KPR Color Lab - Luxury Heirloom Wedding Albums Stack"
+              alt="Fine art wedding photography Warangal - luxury heirloom album printing and color grading, KPR Production"
               className="w-full h-full object-cover object-left group-hover:scale-105 transition-transform duration-700 select-none"
             />
           </div>
@@ -245,7 +247,7 @@ export default function ColorLabSection() {
           <div className="relative z-10 mx-auto flex items-center justify-center px-4 sm:px-8 md:px-12 py-2 pointer-events-none max-w-[55%] sm:max-w-[65%] md:max-w-[70%]">
             <img
               src={kprColorLabLogo}
-              alt="KPR Colour Lab"
+              alt="KPR Color Lab Warangal &amp; Hanumakonda - Signature Color Grading and Album Printing"
               className="h-11 sm:h-22 md:h-32 lg:h-40 w-auto max-w-full object-contain group-hover:scale-105 transition-transform duration-300 select-none drop-shadow-sm"
             />
           </div>
@@ -254,7 +256,7 @@ export default function ColorLabSection() {
           <div className="absolute right-0 top-0 bottom-0 h-full w-20 sm:w-40 md:w-60 lg:w-72 overflow-hidden pointer-events-none z-0">
             <img
               src="/images/services/wedding_album_printing.png"
-              alt="KPR Color Lab - Wedding Album Printing"
+              alt="Fine art wedding photography Warangal - custom layflat photobook album manufacturing, KPR Production"
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 select-none"
             />
           </div>
@@ -381,7 +383,7 @@ export default function ColorLabSection() {
                       <div className="relative aspect-[16/10] overflow-hidden bg-[#121212]">
                         <img
                           src={service.image}
-                          alt={service.title}
+                          alt={`Fine art wedding photography Warangal - ${service.title}, signature color grading & photobook printing, KPR Production`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -443,7 +445,7 @@ export default function ColorLabSection() {
                           <div className="relative aspect-square overflow-hidden bg-black">
                             <img
                               src={photo.file_url || photo.url || '/images/services/wedding_album_printing.png'}
-                              alt={photo.title || 'Color Lab Print'}
+                              alt={`Fine art wedding photography Warangal - ${photo.title || 'custom photobook print'}, KPR Production`}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             {photo.category && (

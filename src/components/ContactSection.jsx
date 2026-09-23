@@ -56,9 +56,9 @@ export default function ContactSection() {
           <span className="text-[10px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-[#8C6D3F] font-semibold block">
             VISIT & CONNECT WITH US
           </span>
-          <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-light text-[#1A1A1A] tracking-wide">
-            Contact KPR Productions
-          </h2>
+          <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl font-light text-[#1A1A1A] tracking-wide">
+            Contact KPR Production | Wedding Photography Warangal
+          </h1>
           <div className="w-16 h-0.5 bg-[#C5A880] mx-auto my-2" />
           <p className="text-xs sm:text-sm text-[#666666] font-light leading-relaxed">
             Have a question or planning your special celebration? Reach out to our Warangal & Hyderabad studios directly or drop us a message below.

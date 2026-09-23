@@ -81,7 +81,7 @@ export default function ServicesShowcase({ onSelectPage }) {
             <span>KPR PRODUCTIONS ECOSYSTEM</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white font-sans uppercase">
-            OUR CORE DISCIPLINES
+            Wedding Cinematography & Production
           </h2>
           <p className="text-sm sm:text-base text-[#A0A5B0] font-normal max-w-xl mx-auto">
             Three pillars of creative excellence dedicated to immortalizing your most sacred celebrations.

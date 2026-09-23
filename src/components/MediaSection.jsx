@@ -25,6 +25,8 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
 
   return (
     <div id="media" data-section="photography-section" className="w-full bg-[#F7F3EE] transition-all duration-300">
+      {/* Semantic H1 for Media Page */}
+      <h1 className="sr-only">Fine Art Wedding Photography in Warangal &amp; Hanumakonda</h1>
       <div id="photography-section" className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
         {/* 1. Main Collapsible "PHOTOGRAPHY" Header Bar */}
@@ -34,7 +36,7 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
         >
           <img
             src={kprLogo}
-            alt="KPR Fotography"
+            alt="Fine art wedding photography Warangal - KPR Production"
             className="h-20 sm:h-32 md:h-44 w-auto max-w-[85%] sm:max-w-[75%] object-contain transition-transform duration-300 group-hover:scale-105 select-none"
           />
 

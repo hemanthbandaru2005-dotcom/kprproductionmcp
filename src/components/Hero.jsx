@@ -77,7 +77,7 @@ export default function Hero({ onOpenPage }) {
     >
       {/* Semantic H1 for Search Engine Indexing */}
       <h1 className="sr-only">
-        KPR Productions - Luxury Wedding Photography, Fine Art Storytelling, Digital Color Lab Photobooks & Live Stage Event Production
+        Fine Art Wedding Photography in Warangal & Hanumakonda
       </h1>
 
       {/* ── 1. Desktop Background Composition with Stable Framing ── */}

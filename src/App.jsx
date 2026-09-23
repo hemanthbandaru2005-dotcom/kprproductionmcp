@@ -64,16 +64,50 @@ function PageLoader() {
   );
 }
 
+export const ROUTE_SLUGS = {
+  home: '',
+  media: 'wedding-photography-warangal',
+  colorlab: 'color-lab',
+  events: 'event-photography-hanumakonda',
+  about: 'about',
+  contact: 'contact',
+  login: 'login',
+  estimator: 'cost-estimator',
+  'album-preview': 'album-preview',
+  'admin-dashboard': 'admin-dashboard',
+  'worker-dashboard': 'worker-dashboard',
+  'client-dashboard': 'client-dashboard',
+};
+
+export const SLUG_TO_PAGE = {
+  '': 'home',
+  'home': 'home',
+  'wedding-photography-warangal': 'media',
+  'media': 'media',
+  'color-lab': 'colorlab',
+  'colorlab': 'colorlab',
+  'event-photography-hanumakonda': 'events',
+  'events': 'events',
+  'about': 'about',
+  'contact': 'contact',
+  'login': 'login',
+  'cost-estimator': 'estimator',
+  'estimator': 'estimator',
+  'album-preview': 'album-preview',
+  'admin-dashboard': 'admin-dashboard',
+  'worker-dashboard': 'worker-dashboard',
+  'client-dashboard': 'client-dashboard',
+};
+
 function getInitialPage() {
   try {
-    const hash = window.location.hash.replace('#', '').trim();
-    const validPages = [
-      'home', 'media', 'colorlab', 'events', 'login', 'contact', 'about',
-      'album-preview', 'estimator', 'cost-estimator', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'
-    ];
-    if (validPages.includes(hash)) {
-      if (hash === 'cost-estimator') return 'estimator';
-      return hash;
+    const hash = window.location.hash.replace('#', '').replace(/^\//, '').trim();
+    const pathname = window.location.pathname.replace(/^\//, '').replace(/\/$/, '').trim();
+    if (hash && SLUG_TO_PAGE[hash]) {
+      return SLUG_TO_PAGE[hash];
+    }
+    if (pathname && SLUG_TO_PAGE[pathname]) {
+      return SLUG_TO_PAGE[pathname];
     }
   } catch (e) {}
   return 'home';
@@ -183,7 +217,11 @@ function AppContent() {
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleHashChange);
+    };
   }, []);
 
   // ── Dynamic SEO: Update document.title, meta description & canonical on page change ──
@@ -214,8 +252,9 @@ function AppContent() {
     // Update canonical URL
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) {
-      const hash = activePage === 'home' ? '' : `#${activePage}`;
-      canonical.setAttribute('href', `https://kprproduction.com/${hash}`);
+      const slug = ROUTE_SLUGS[activePage];
+      const url = slug ? `https://kprproduction.com/${slug}` : 'https://kprproduction.com/';
+      canonical.setAttribute('href', url);
     }
   }, [activePage]);
 
@@ -273,10 +312,13 @@ function AppContent() {
       return;
     }
 
+    const slug = ROUTE_SLUGS[pageName] !== undefined ? ROUTE_SLUGS[pageName] : pageName;
+    const urlTarget = slug ? `#${slug}` : '#';
+
     if (replace) {
-      window.history.replaceState({ page: pageName }, '', `#${pageName}`);
+      window.history.replaceState({ page: pageName }, '', urlTarget);
     } else {
-      window.history.pushState({ page: pageName }, '', `#${pageName}`);
+      window.history.pushState({ page: pageName }, '', urlTarget);
     }
 
     setActivePage(pageName);

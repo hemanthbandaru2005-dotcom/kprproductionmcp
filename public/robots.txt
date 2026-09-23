@@ -1,6 +1,5 @@
-# Robots.txt for KPR Productions
+# Robots.txt for KPR Production
 User-agent: *
 Allow: /
 
-# Sitemap Index
-Sitemap: https://kprproductionmcp-hemanthbandaru2005-4637s-projects.vercel.app/sitemap.xml
+Sitemap: https://kprproduction.com/sitemap.xml
