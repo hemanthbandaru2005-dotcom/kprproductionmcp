@@ -132,7 +132,7 @@ export default function EventsSection({ onOpenPage }) {
   return (
     <div id="events" className="w-full bg-[#F7F3EE] transition-all duration-300">
       {/* Semantic H1 for Events Page */}
-      <h1 className="sr-only">Event Photography &amp; Cinematography Packages in Warangal &amp; Hanumakonda | KPR Production</h1>
+      <h1 className="sr-only">Event Photography &amp; Cinematography Packages in Warangal &amp; Hanumakonda | KPR Productions</h1>
       <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
         {/* 1. Main Collapsible "KPR EVENTS" Header Bar (Corner Spread Showcase Photos & Grand Center Logo) */}

@@ -66,7 +66,7 @@ export default function RetouchSlider() {
           {/* AFTER (Color Graded Masterpiece) - Full background */}
           <img
             src="/images/21/photo_1.jpg"
-            alt="Master Color Graded Photo"
+            alt="Master Color Graded Fine Art Wedding Portrait - KPR Productions Color Lab"
             className="absolute inset-0 w-full h-full object-cover filter contrast-[1.05] brightness-105 pointer-events-none"
             loading="lazy"
             draggable="false"
@@ -86,7 +86,7 @@ export default function RetouchSlider() {
           >
             <img
               src="/images/21/photo_1.jpg"
-              alt="Raw Unedited Photo"
+              alt="Raw Unedited Wedding Photo Before Master Color Grading - KPR Productions"
               className="absolute inset-0 w-full h-full object-cover filter grayscale-[50%] brightness-75 contrast-80"
               loading="lazy"
               draggable="false"

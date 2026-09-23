@@ -25,7 +25,7 @@ const SERVICES = [
     showTitleText: true,
     logoSrc: showcasePhotoLogoExact,
     cardImage: heroApertureSquare,
-    cardAlt: 'DSLR Multi-Blade Aperture Lens',
+    cardAlt: 'Fine Art Wedding Photography & Cinematography Equipment - KPR Productions Warangal',
     buttonText: 'EXPLORE',
   },
   {
@@ -35,7 +35,7 @@ const SERVICES = [
     showTitleText: false,
     logoSrc: showcaseColorLabLogoExact,
     cardImage: cardAlbumReal,
-    cardAlt: 'High-Clarity Luxury Wedding Layflat Photobook Album',
+    cardAlt: 'Master Layflat Wedding Photobook Album Printing - KPR Colour Lab Warangal',
     buttonText: 'EXPLORE',
   },
   {
@@ -45,7 +45,7 @@ const SERVICES = [
     showTitleText: true,
     logoSrc: showcaseEventsLogoExact,
     cardImage: cardStageReal,
-    cardAlt: 'High-Clarity Grand Wedding Stage & Mandap Decor',
+    cardAlt: 'Grand Stage Production, LED Video Walls & Truss Rigging - KPR Events Hanumakonda',
     buttonText: 'EXPLORE',
   }
 ];

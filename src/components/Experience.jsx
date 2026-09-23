@@ -6,21 +6,21 @@ export default function Experience({ onOpenInquire }) {
     {
       id: 'hangar',
       image: '/images/hangar_couple.png',
-      alt: 'Hangar Aviation Shoot',
+      alt: 'High fashion editorial pre-wedding couple shoot at aviation hangar - KPR Productions',
       title: 'High Fashion Editorial',
       location: 'Industrial & Aviation Venues'
     },
     {
       id: 'estate',
       image: '/images/stone_estate.png',
-      alt: 'Limestone Estate Walk',
+      alt: 'Luxury destination wedding photography at stone estate manor - KPR Productions',
       title: 'Estate & Historic Manors',
       location: 'European & Tuscan Architecture'
     },
     {
       id: 'chandelier',
       image: '/images/chandelier_dance.png',
-      alt: 'Chandelier Sparkle First Dance',
+      alt: 'Romantic first dance in luxury grand ballroom under chandelier - KPR Productions',
       title: 'Candid Ballroom Romance',
       location: 'Luxury Grand Ballrooms'
     }

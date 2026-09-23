@@ -225,7 +225,7 @@ export default function ColorLabSection() {
   return (
     <div id="colorlab" className="w-full bg-[#F7F3EE] transition-all duration-300">
       {/* Semantic H1 for Color Lab Page */}
-      <h1 className="sr-only">Signature Color Grading Styles &amp; Luxury Photobook Album Printing | KPR Production</h1>
+      <h1 className="sr-only">Signature Color Grading Styles &amp; Luxury Photobook Album Printing | KPR Productions</h1>
       <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
         {/* 1. Main Collapsible "COLOR LAB" Header Bar (Corner Spread Showcase Photos & Grand Center Logo) */}

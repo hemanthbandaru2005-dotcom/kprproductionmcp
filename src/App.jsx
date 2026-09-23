@@ -296,6 +296,28 @@ function AppContent() {
     if (ogUrl) {
       ogUrl.setAttribute('content', canonicalUrl);
     }
+
+    // Dynamic Robots Meta Tag: noindex for internal/private dashboard & login pages
+    const isPrivateRoute = ['login', 'admin-dashboard', 'worker-dashboard', 'client-dashboard'].includes(activePage);
+    const robotsTag = document.querySelector('meta[name="robots"]');
+    if (robotsTag) {
+      robotsTag.setAttribute(
+        'content',
+        isPrivateRoute
+          ? 'noindex, nofollow'
+          : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+      );
+    }
+
+    // Google Analytics 4: Send page_view event on SPA route transitions
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+      const pagePath = slug ? `/${slug}` : '/';
+      window.gtag('config', 'G-CC7SGN68SD', {
+        page_title: meta.title,
+        page_location: canonicalUrl,
+        page_path: pagePath,
+      });
+    }
   }, [activePage]);
 
   // Password reset recovery mode

@@ -37,8 +37,12 @@ export default function Navbar({ activePage, onSelectPage }) {
       <div className="w-full flex items-center justify-between pointer-events-auto">
         
         {/* 1. LEFT: Brand Logo */}
-        <button
-          onClick={() => handlePageClick('home')}
+        <a
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            handlePageClick('home');
+          }}
           aria-label="KPR Productions - Return to Homepage"
           className="flex items-center group cursor-pointer focus:outline-none transition-transform duration-300 hover:scale-105"
         >
@@ -47,14 +51,18 @@ export default function Navbar({ activePage, onSelectPage }) {
             alt="KPR PRODUCTIONS - Luxury Wedding Photography, Color Lab and Event Production"
             className="h-7 sm:h-8 md:h-9 lg:h-10 w-auto object-contain drop-shadow-sm"
           />
-        </button>
+        </a>
 
         {/* 2. CENTER: Navigation Links */}
         <nav className="hidden md:flex items-center space-x-4 lg:space-x-7 xl:space-x-9 text-[11px] lg:text-xs font-bold tracking-[0.16em] xl:tracking-[0.2em] uppercase">
           
           {/* HOME */}
-          <button
-            onClick={() => handlePageClick('home')}
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageClick('home');
+            }}
             className={`transition-all duration-300 py-1 cursor-pointer flex flex-col items-center ${
               activePage === 'home'
                 ? 'text-[#000000] font-black'
@@ -65,11 +73,15 @@ export default function Navbar({ activePage, onSelectPage }) {
             {activePage === 'home' && (
               <span className="w-full h-0.5 bg-[#D32F2F] mt-1 rounded-full animate-fadeIn" />
             )}
-          </button>
+          </a>
 
           {/* FOTOGRAPHY ▾ */}
-          <button
-            onClick={() => handlePageClick('media')}
+          <a
+            href="/wedding-photography-warangal"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageClick('media');
+            }}
             className={`transition-all duration-300 py-1 cursor-pointer flex items-center gap-1.5 ${
               activePage === 'media'
                 ? 'text-[#D32F2F] font-black'
@@ -78,11 +90,15 @@ export default function Navbar({ activePage, onSelectPage }) {
           >
             <span>FOTOGRAPHY</span>
             <ChevronDown className={`w-3.5 h-3.5 ${activePage === 'media' ? 'text-[#D32F2F]' : 'text-[#555555]'}`} />
-          </button>
+          </a>
 
           {/* COLOR LAB ▾ */}
-          <button
-            onClick={() => handlePageClick('colorlab')}
+          <a
+            href="/color-lab"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageClick('colorlab');
+            }}
             className={`transition-all duration-300 py-1 cursor-pointer flex items-center gap-1.5 ${
               activePage === 'colorlab'
                 ? 'text-[#1E88E5] font-black'
@@ -91,11 +107,15 @@ export default function Navbar({ activePage, onSelectPage }) {
           >
             <span>COLOR LAB</span>
             <ChevronDown className={`w-3.5 h-3.5 ${activePage === 'colorlab' ? 'text-[#1E88E5]' : 'text-[#555555]'}`} />
-          </button>
+          </a>
 
           {/* EVENTS ▾ */}
-          <button
-            onClick={() => handlePageClick('events')}
+          <a
+            href="/event-photography-hanumakonda"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageClick('events');
+            }}
             className={`transition-all duration-300 py-1 cursor-pointer flex items-center gap-1.5 ${
               activePage === 'events'
                 ? 'text-[#D32F2F] font-black'
@@ -104,11 +124,15 @@ export default function Navbar({ activePage, onSelectPage }) {
           >
             <span>EVENTS</span>
             <ChevronDown className={`w-3.5 h-3.5 ${activePage === 'events' ? 'text-[#D32F2F]' : 'text-[#555555]'}`} />
-          </button>
+          </a>
 
           {/* CONTACT US */}
-          <button
-            onClick={() => handlePageClick('contact')}
+          <a
+            href="/contact"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageClick('contact');
+            }}
             className={`transition-all duration-300 py-1 cursor-pointer ${
               activePage === 'contact'
                 ? 'text-[#D32F2F] font-black'
@@ -116,11 +140,15 @@ export default function Navbar({ activePage, onSelectPage }) {
             }`}
           >
             <span>CONTACT US</span>
-          </button>
+          </a>
 
           {/* ABOUT US */}
-          <button
-            onClick={() => handlePageClick('about')}
+          <a
+            href="/about"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageClick('about');
+            }}
             className={`transition-all duration-300 py-1 cursor-pointer ${
               activePage === 'about'
                 ? 'text-[#D32F2F] font-black'
@@ -128,19 +156,23 @@ export default function Navbar({ activePage, onSelectPage }) {
             }`}
           >
             <span>ABOUT US</span>
-          </button>
+          </a>
 
         </nav>
 
         {/* 3. RIGHT: LOGIN Button (Laptop / Desktop Only) & Mobile Toggle */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => handlePageClick('login')}
+          <a
+            href="/login"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageClick('login');
+            }}
             className="hidden md:flex px-4 lg:px-6 py-1.5 lg:py-2 rounded-full border border-[#C5A880] bg-[#1A1A1A] hover:bg-black text-[#F4ECD8] hover:text-white font-bold text-[11px] lg:text-xs tracking-[0.15em] lg:tracking-[0.18em] uppercase shadow-[0_3px_12px_rgba(0,0,0,0.25)] hover:shadow-[0_4px_16px_rgba(197,168,128,0.35)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer items-center gap-1.5 lg:gap-2"
           >
             <User className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-[#C5A880] stroke-[2.5]" />
             <span>LOGIN</span>
-          </button>
+          </a>
 
           {/* Mobile Hamburger Toggle */}
           <div className="flex md:hidden items-center">
@@ -160,52 +192,80 @@ export default function Navbar({ activePage, onSelectPage }) {
       {mobileMenuOpen && (
         <div className="md:hidden mt-4 mx-2 p-6 bg-[#111111]/98 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl space-y-4 text-white pointer-events-auto animate-fadeIn">
           <div className="flex flex-col space-y-3 text-sm font-bold tracking-wider uppercase">
-            <button
-              onClick={() => handlePageClick('home')}
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePageClick('home');
+              }}
               className={`text-left py-2 border-b border-white/5 ${activePage === 'home' ? 'text-[#D32F2F]' : 'text-white/90'}`}
             >
               HOME
-            </button>
-            <button
-              onClick={() => handlePageClick('media')}
+            </a>
+            <a
+              href="/wedding-photography-warangal"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePageClick('media');
+              }}
               className={`text-left py-2 border-b border-white/5 ${activePage === 'media' ? 'text-[#D32F2F]' : 'text-white/90'}`}
             >
               FOTOGRAPHY
-            </button>
-            <button
-              onClick={() => handlePageClick('colorlab')}
+            </a>
+            <a
+              href="/color-lab"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePageClick('colorlab');
+              }}
               className={`text-left py-2 border-b border-white/5 ${activePage === 'colorlab' ? 'text-[#1E88E5]' : 'text-white/90'}`}
             >
               COLOR LAB
-            </button>
-            <button
-              onClick={() => handlePageClick('events')}
+            </a>
+            <a
+              href="/event-photography-hanumakonda"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePageClick('events');
+              }}
               className={`text-left py-2 border-b border-white/5 ${activePage === 'events' ? 'text-[#D32F2F]' : 'text-white/90'}`}
             >
               EVENTS
-            </button>
-            <button
-              onClick={() => handlePageClick('contact')}
+            </a>
+            <a
+              href="/contact"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePageClick('contact');
+              }}
               className={`text-left py-2 border-b border-white/5 ${activePage === 'contact' ? 'text-[#D32F2F]' : 'text-white/90'}`}
             >
               CONTACT US
-            </button>
-            <button
-              onClick={() => handlePageClick('about')}
+            </a>
+            <a
+              href="/about"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePageClick('about');
+              }}
               className={`text-left py-2 ${activePage === 'about' ? 'text-[#D32F2F]' : 'text-white/90'}`}
             >
               ABOUT US
-            </button>
+            </a>
           </div>
           
           <div className="pt-2">
-            <button
-              onClick={() => handlePageClick('login')}
+            <a
+              href="/login"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePageClick('login');
+              }}
               className="w-full py-3 rounded-xl bg-[#1A1A1A] hover:bg-black text-[#F4ECD8] border border-[#C5A880] font-bold text-xs tracking-widest uppercase flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-102 transition-all duration-300"
             >
               <User className="w-4 h-4 text-[#C5A880]" />
               <span>LOGIN</span>
-            </button>
+            </a>
           </div>
         </div>
       )}

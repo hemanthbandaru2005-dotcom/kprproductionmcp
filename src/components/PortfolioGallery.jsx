@@ -186,8 +186,8 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
                 {filteredItems.map((item, index) => {
                   const isSaved = moodboardIds.includes(item.id);
                   const imageAlt = item.category && item.category.toLowerCase().includes('wedding')
-                    ? `Fine art wedding photography Warangal - ${item.title || 'bride and groom candid moment'}, KPR Production`
-                    : `Fine art ${item.category || 'celebration'} photography Warangal & Hanumakonda - ${item.title || 'candid moment'}, KPR Production`;
+                    ? `Fine art wedding photography Warangal - ${item.title || 'bride and groom candid moment'}, KPR Productions`
+                    : `Fine art ${item.category || 'celebration'} photography Warangal & Hanumakonda - ${item.title || 'candid moment'}, KPR Productions`;
                   return (
                     <motion.div
                       key={item.id}
