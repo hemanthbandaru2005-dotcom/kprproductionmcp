@@ -130,6 +130,46 @@ function AppContent() {
   const [moodboardIds, setMoodboardIds] = useState(['21-photo-1', '21-photo-2']);
   const [moodboardOpen, setMoodboardOpen] = useState(false);
 
+  // ── Per-Page SEO Metadata (unique title + description per route) ──
+  const SEO_META = {
+    home: {
+      title: 'KPR Production | Fine Art Wedding Photography & Cinematography in Warangal & Hanumakonda',
+      description: 'KPR Production - fine art wedding photography & cinematography studio serving Warangal, Hanumakonda and Telangana. Cinematic wedding films, editorial photography, custom color grading.',
+    },
+    media: {
+      title: 'Wedding Photography Portfolio | KPR Production Warangal',
+      description: 'Explore KPR Production\'s wedding photography portfolio — cinematic wedding films, editorial portraits, and fine art photography from Warangal & Hanumakonda, Telangana.',
+    },
+    colorlab: {
+      title: 'Signature Color Grading Styles | KPR Production',
+      description: 'Discover KPR Production\'s signature color grading styles and luxury photobook album printing. Custom layflat albums, embossed leather cases, and professional color lab services.',
+    },
+    events: {
+      title: 'Event Photography & Cinematography Packages | KPR Production',
+      description: 'Grand stage event production, HD LED walls, truss rigging, choreography, and event photography packages by KPR Production in Warangal & Hanumakonda.',
+    },
+    about: {
+      title: 'About KPR Production | Fine Art Wedding Photographers in Hanumakonda',
+      description: 'Learn about KPR Production — fine art wedding photographers and cinematographers based in Hanumakonda & Warangal, Telangana. Our story, team, and creative vision.',
+    },
+    contact: {
+      title: 'Contact KPR Production | Wedding Photography Warangal',
+      description: 'Get in touch with KPR Production for wedding photography, cinematography, color lab printing, and event production services in Warangal, Hanumakonda & Telangana.',
+    },
+    login: {
+      title: 'Login | KPR Production',
+      description: 'Sign in to your KPR Production account to manage albums, view galleries, and access your dashboard.',
+    },
+    estimator: {
+      title: 'Photography Cost Estimator | KPR Production',
+      description: 'Estimate your wedding photography and event production costs with KPR Production\'s interactive pricing calculator.',
+    },
+    'album-preview': {
+      title: 'Album Preview | KPR Production',
+      description: 'Preview your luxury photobook album design before printing with KPR Production\'s 3D album viewer.',
+    },
+  };
+
   // Sync route on hash change (supports swipe-back, browser back/forward seamlessly across all mobile browsers)
   useEffect(() => {
     const handleHashChange = () => {
@@ -141,6 +181,39 @@ function AppContent() {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  // ── Dynamic SEO: Update document.title, meta description & canonical on page change ──
+  useEffect(() => {
+    const meta = SEO_META[activePage] || SEO_META.home;
+    document.title = meta.title;
+
+    // Update meta description
+    const descTag = document.querySelector('meta[name="description"]');
+    if (descTag) descTag.setAttribute('content', meta.description);
+
+    // Update meta title
+    const titleTag = document.querySelector('meta[name="title"]');
+    if (titleTag) titleTag.setAttribute('content', meta.title);
+
+    // Update OG tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', meta.title);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', meta.description);
+
+    // Update Twitter tags
+    const twTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twTitle) twTitle.setAttribute('content', meta.title);
+    const twDesc = document.querySelector('meta[name="twitter:description"]');
+    if (twDesc) twDesc.setAttribute('content', meta.description);
+
+    // Update canonical URL
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      const hash = activePage === 'home' ? '' : `#${activePage}`;
+      canonical.setAttribute('href', `https://kprproduction.com/${hash}`);
+    }
+  }, [activePage]);
 
   // Password reset recovery mode
   useEffect(() => {
