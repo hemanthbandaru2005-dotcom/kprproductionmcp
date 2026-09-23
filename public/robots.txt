@@ -1,5 +1,14 @@
-# Robots.txt for KPR Production
+# Robots.txt for KPR Productions (https://kprproductions.com)
 User-agent: *
 Allow: /
 
-Sitemap: https://kprproduction.com/sitemap.xml
+# Disallow private, administrative, login, and internal API routes
+Disallow: /admin-dashboard
+Disallow: /worker-dashboard
+Disallow: /client-dashboard
+Disallow: /login
+Disallow: /api/
+Disallow: /app/api/
+
+# Sitemap location
+Sitemap: https://kprproductions.com/sitemap.xml

@@ -253,7 +253,7 @@ function AppContent() {
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) {
       const slug = ROUTE_SLUGS[activePage];
-      const url = slug ? `https://kprproduction.com/${slug}` : 'https://kprproduction.com/';
+      const url = slug ? `https://kprproductions.com/${slug}` : 'https://kprproductions.com/';
       canonical.setAttribute('href', url);
     }
   }, [activePage]);
