@@ -36,7 +36,7 @@ export default function MediaSection({ onSelectPhoto, moodboardIds, toggleMoodbo
         >
           <img
             src={kprLogo}
-            alt="Fine art wedding photography Warangal - KPR Production"
+            alt="Fine art wedding photography Warangal - KPR Productions"
             className="h-20 sm:h-32 md:h-44 w-auto max-w-[85%] sm:max-w-[75%] object-contain transition-transform duration-300 group-hover:scale-105 select-none"
           />
 

@@ -57,7 +57,7 @@ export default function ContactSection() {
             VISIT & CONNECT WITH US
           </span>
           <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl font-light text-[#1A1A1A] tracking-wide">
-            Contact KPR Production | Wedding Photography Warangal
+            Contact KPR Productions | Wedding Photography Warangal
           </h1>
           <div className="w-16 h-0.5 bg-[#C5A880] mx-auto my-2" />
           <p className="text-xs sm:text-sm text-[#666666] font-light leading-relaxed">

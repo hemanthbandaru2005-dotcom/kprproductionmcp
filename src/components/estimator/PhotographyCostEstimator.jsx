@@ -877,7 +877,7 @@ export default function PhotographyCostEstimator({ onBackToHome, onNavigateToPag
             <span>KPR Photography Studio • Cost Estimator</span>
           </div>
           <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl font-light text-[#1A1A1A] tracking-wide">
-            Event Photography Cost Estimator
+            Wedding &amp; Event Photography Cost Estimator
           </h1>
           <p className="text-xs sm:text-sm text-[#A89F91] max-w-xl mx-auto mt-2 font-light">
             Plan your celebration with 100% transparent studio pricing. Calculate exact costs for candid photography, 4K cinematic video, drone, and luxury layflat albums.

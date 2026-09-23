@@ -640,6 +640,7 @@ function AppContent() {
                 ? '+91 99489 72531'
                 : '+91 98494 43648'
             }
+            onSelectPage={handleSelectPage}
           />
         </footer>
       )}

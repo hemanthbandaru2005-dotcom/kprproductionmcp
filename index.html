@@ -50,50 +50,107 @@
   <meta name="twitter:description" content="Warangal &amp; Hanumakonda's fine art wedding photography studio." />
   <meta name="twitter:image" content="https://kprproductions.com/og-cover.jpg" />
 
-  <!-- Schema Markup (JSON-LD) - Local Search & Professional Service -->
+  <!-- Schema Markup (JSON-LD) - Local Search & Structured Data Graph -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    "name": "KPR Productions",
-    "image": "https://kprproductions.com/logo.jpg",
-    "url": "https://kprproductions.com",
-    "telephone": "+91-9849443648",
-    "priceRange": "₹₹",
-    "description": "Premier fine art wedding photography, luxury layflat photobook album printing, and grand stage event production in Warangal, Hanumakonda, and Telangana.",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Hanumakonda",
-      "addressRegion": "Telangana",
-      "addressCountry": "IN"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 17.9689,
-      "longitude": 79.5941
-    },
-    "openingHoursSpecification": [
+    "@graph": [
       {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday"
+        "@type": "WebSite",
+        "@id": "https://kprproductions.com/#website",
+        "url": "https://kprproductions.com/",
+        "name": "KPR Productions",
+        "description": "Fine art wedding photography, luxury layflat photobook albums, and stage event production in Warangal & Hanumakonda.",
+        "publisher": {
+          "@id": "https://kprproductions.com/#organization"
+        },
+        "inLanguage": "en-IN"
+      },
+      {
+        "@type": ["LocalBusiness", "ProfessionalService"],
+        "@id": "https://kprproductions.com/#organization",
+        "name": "KPR Productions",
+        "alternateName": "KPR Fotography, Colour Lab & Events",
+        "url": "https://kprproductions.com/",
+        "logo": "https://kprproductions.com/logo.jpg",
+        "image": "https://kprproductions.com/og-cover.jpg",
+        "telephone": "+91-9849443648",
+        "email": "kprfotography@gmail.com",
+        "priceRange": "₹₹",
+        "description": "Premier fine art wedding photography, luxury layflat photobook album printing, and grand stage event production in Warangal, Hanumakonda, and Telangana.",
+        "hasMap": "https://goo.gl/maps/NtABjd1bV6S5kNHq8?g_st=ac",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Grand Gayathri, 8-5-34, TKS Commercial Complex, Station Road",
+          "addressLocality": "Warangal",
+          "addressRegion": "Telangana",
+          "postalCode": "506002",
+          "addressCountry": "IN"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 17.9689,
+          "longitude": 79.5941
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+              "Sunday"
+            ],
+            "opens": "09:30",
+            "closes": "21:30"
+          }
         ],
-        "opens": "09:30",
-        "closes": "21:30"
+        "areaServed": [
+          { "@type": "City", "name": "Warangal" },
+          { "@type": "City", "name": "Hanumakonda" },
+          { "@type": "AdministrativeArea", "name": "Telangana" },
+          { "@type": "City", "name": "Hyderabad" }
+        ],
+        "sameAs": [
+          "https://www.instagram.com/kpr_fotography",
+          "https://www.instagram.com/kpr_colourlab",
+          "https://youtube.com/@kprfotography",
+          "https://www.facebook.com/share/1DJkiNdpax/"
+        ],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Photography, Color Lab & Event Production Services",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Fine Art Wedding Photography & Cinematography",
+                "description": "Editorial candid wedding photography, cinematic wedding films, and pre-wedding portraits in Warangal and Telangana."
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "KPR Colour Lab Layflat Photobook Album Printing",
+                "description": "Master layflat photobook albums (sizes 12x36 to 18x24), custom embossed leather casing, and color grading services."
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Grand Stage Event Production & Lighting",
+                "description": "P2.5/P3 high-definition LED video walls, truss rigging, stage lighting, and professional choreography."
+              }
+            }
+          ]
+        }
       }
-    ],
-    "areaServed": ["Warangal", "Hanumakonda", "Telangana", "Hyderabad"],
-    "sameAs": [
-      "https://www.instagram.com/kpr_fotography",
-      "https://www.instagram.com/kpr_colourlab",
-      "https://youtube.com/@kprfotography",
-      "https://www.facebook.com/share/1DJkiNdpax/"
     ]
   }
   </script>

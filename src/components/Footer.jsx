@@ -4,6 +4,7 @@ import { SOCIAL_LINKS } from '../utils/socialLinks';
 import { InstagramIcon, FacebookIcon, YoutubeIcon } from './SocialIcons';
 
 export default function Footer({
+  onSelectPage,
   onOpenInquire,
   showInstagram = true,
   showFacebook = true,
@@ -19,6 +20,14 @@ export default function Footer({
   addressLine1 = 'Grand Gayathri, 8-5-34',
   addressLine2 = 'TKS Commercial Complex, Station Road, Warangal 506002'
 }) {
+  const handleNavClick = (pageName) => {
+    if (typeof onSelectPage === 'function') {
+      onSelectPage(pageName);
+    } else if (typeof window !== 'undefined') {
+      window.location.hash = `#${pageName}`;
+    }
+  };
+
   const instagramGrid = [
     '/images/21/photo_1.jpg',
     '/images/21/photo_2.jpg',
@@ -78,10 +87,10 @@ export default function Footer({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 pb-8 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 pb-8 border-b border-white/10">
           
-          {/* Brand Column */}
-          <div className="md:col-span-5 space-y-3">
+          {/* Brand Column (4 cols) */}
+          <div className="md:col-span-4 space-y-3">
             <div className="flex items-center gap-2">
               <span className="font-serif text-xl tracking-wider font-light text-white">KPR PRODUCTIONS</span>
             </div>
@@ -89,12 +98,79 @@ export default function Footer({
               FINE ART WEDDING & PORTRAIT STUDIO
             </p>
             <p className="text-xs text-white/60 font-light leading-relaxed max-w-sm">
-              Capturing iconic love stories, high fashion editorial portraiture, and luxury destination celebrations worldwide.
+              Capturing iconic love stories, high fashion editorial portraiture, and luxury destination celebrations worldwide across Warangal, Hanumakonda, and Telangana.
             </p>
           </div>
 
-          {/* Studio Contact Info */}
-          <div className="md:col-span-4 space-y-3">
+          {/* Quick Links Column (2 cols) */}
+          <div className="md:col-span-2 space-y-3">
+            <h4 className="text-[11px] tracking-[0.25em] uppercase text-[#C5A880] font-semibold">Studio Pages</h4>
+            <nav className="flex flex-col space-y-2 text-xs text-white/70 font-light">
+              <a
+                href="/wedding-photography-warangal"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick('media');
+                }}
+                className="hover:text-[#C5A880] transition-colors"
+              >
+                Photography
+              </a>
+              <a
+                href="/color-lab"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick('colorlab');
+                }}
+                className="hover:text-[#C5A880] transition-colors"
+              >
+                Color Lab
+              </a>
+              <a
+                href="/event-photography-hanumakonda"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick('events');
+                }}
+                className="hover:text-[#C5A880] transition-colors"
+              >
+                Event Stage
+              </a>
+              <a
+                href="/cost-estimator"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick('estimator');
+                }}
+                className="hover:text-[#C5A880] transition-colors"
+              >
+                Cost Calculator
+              </a>
+              <a
+                href="/about"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick('about');
+                }}
+                className="hover:text-[#C5A880] transition-colors"
+              >
+                About Studio
+              </a>
+              <a
+                href="/contact"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavClick('contact');
+                }}
+                className="hover:text-[#C5A880] transition-colors"
+              >
+                Contact Us
+              </a>
+            </nav>
+          </div>
+
+          {/* Studio Contact Info (3 cols) */}
+          <div className="md:col-span-3 space-y-3">
             <h4 className="text-[11px] tracking-[0.25em] uppercase text-[#C5A880] font-semibold">Studio Enquiries</h4>
             <div className="space-y-2.5 text-xs text-white/70 font-light">
               {showAddress && (
