@@ -135,6 +135,10 @@ function AppContent() {
     home: {
       title: 'KPR Production | Fine Art Wedding Photography & Cinematography in Warangal & Hanumakonda',
       description: 'KPR Production - fine art wedding photography & cinematography studio serving Warangal, Hanumakonda and Telangana. Cinematic wedding films, editorial photography, custom color grading.',
+      ogTitle: 'KPR Production | Fine Art Wedding Photography Warangal',
+      ogDescription: 'Cinematic wedding films & editorial photography in Warangal and Hanumakonda.',
+      twTitle: 'KPR Production | Fine Art Wedding Photography',
+      twDescription: "Warangal & Hanumakonda's fine art wedding photography studio.",
     },
     media: {
       title: 'Wedding Photography Portfolio | KPR Production Warangal',
@@ -197,15 +201,15 @@ function AppContent() {
 
     // Update OG tags
     const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute('content', meta.title);
+    if (ogTitle) ogTitle.setAttribute('content', meta.ogTitle || meta.title);
     const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute('content', meta.description);
+    if (ogDesc) ogDesc.setAttribute('content', meta.ogDescription || meta.description);
 
     // Update Twitter tags
     const twTitle = document.querySelector('meta[name="twitter:title"]');
-    if (twTitle) twTitle.setAttribute('content', meta.title);
+    if (twTitle) twTitle.setAttribute('content', meta.twTitle || meta.title);
     const twDesc = document.querySelector('meta[name="twitter:description"]');
-    if (twDesc) twDesc.setAttribute('content', meta.description);
+    if (twDesc) twDesc.setAttribute('content', meta.twDescription || meta.description);
 
     // Update canonical URL
     const canonical = document.querySelector('link[rel="canonical"]');
