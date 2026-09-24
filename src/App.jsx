@@ -287,7 +287,7 @@ function AppContent() {
 
     // Update canonical and OG URL
     const slug = ROUTE_SLUGS[activePage];
-    const canonicalUrl = slug ? `https://kprproductions.com/${slug}` : 'https://kprproductions.com/';
+    const canonicalUrl = slug ? `https://www.kprproductions.com/${slug}` : 'https://www.kprproductions.com/';
     
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) {
