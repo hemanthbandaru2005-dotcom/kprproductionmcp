@@ -14,8 +14,12 @@
     gtag('config', 'G-CC7SGN68SD');
   </script>
 
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="alternate icon" href="/favicon.ico" />
+  <!-- Website Favicon & Touch Icons (Google Search & Mobile Compatible) -->
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="/favicon.ico" />
   <!-- Responsive Mobile Viewport with Safe-Area support for all mobile browsers -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <meta name="color-scheme" content="light" />
@@ -50,6 +54,23 @@
   <meta name="twitter:description" content="Warangal &amp; Hanumakonda's fine art wedding photography studio." />
   <meta name="twitter:image" content="https://kprproductions.com/og-cover.jpg" />
 
+  <!-- Organization Structured Data (Google Search Logo & Knowledge Graph) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "KPR Productions",
+    "url": "https://www.kprproductions.com/",
+    "logo": "https://www.kprproductions.com/kpr-productions-logo.png",
+    "sameAs": [
+      "https://www.instagram.com/kpr_fotography",
+      "https://www.instagram.com/kpr_colourlab",
+      "https://youtube.com/@kprfotography",
+      "https://www.facebook.com/share/1DJkiNdpax/"
+    ]
+  }
+  </script>
+
   <!-- Schema Markup (JSON-LD) - Local Search & Structured Data Graph -->
   <script type="application/ld+json">
   {
@@ -57,23 +78,23 @@
     "@graph": [
       {
         "@type": "WebSite",
-        "@id": "https://kprproductions.com/#website",
-        "url": "https://kprproductions.com/",
+        "@id": "https://www.kprproductions.com/#website",
+        "url": "https://www.kprproductions.com/",
         "name": "KPR Productions",
         "description": "Fine art wedding photography, luxury layflat photobook albums, and stage event production in Warangal & Hanumakonda.",
         "publisher": {
-          "@id": "https://kprproductions.com/#organization"
+          "@id": "https://www.kprproductions.com/#organization"
         },
         "inLanguage": "en-IN"
       },
       {
-        "@type": ["LocalBusiness", "ProfessionalService"],
-        "@id": "https://kprproductions.com/#organization",
+        "@type": ["Organization", "LocalBusiness", "ProfessionalService"],
+        "@id": "https://www.kprproductions.com/#organization",
         "name": "KPR Productions",
         "alternateName": "KPR Fotography, Colour Lab & Events",
-        "url": "https://kprproductions.com/",
-        "logo": "https://kprproductions.com/logo.jpg",
-        "image": "https://kprproductions.com/og-cover.jpg",
+        "url": "https://www.kprproductions.com/",
+        "logo": "https://www.kprproductions.com/kpr-productions-logo.png",
+        "image": "https://www.kprproductions.com/kpr-productions-logo.png",
         "telephone": "+91-9849443648",
         "email": "kprfotography@gmail.com",
         "priceRange": "₹₹",
