@@ -368,6 +368,49 @@ const HeroFrontCover = forwardRef(({ onCoverClick, coverSrc, onOpenFullscreen, .
 HeroFrontCover.displayName = 'HeroFrontCover';
 
 /* ─────────────────────────────────────────────────────
+   PAGE: ARCHIVAL BLANK FLYLEAF / ENDSHEET
+   - Luxury textured archival matte paper (#FAF7F2 / #FAF8F5)
+   - Real layflat center spine crease depth shadow
+   - Real outer fore-edge paper thickness highlight
+   - Clean, pristine, elegant flyleaf matching fine-art wedding albums
+   ───────────────────────────────────────────────────── */
+const HeroBlankPage = forwardRef(({ isLeftPage, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF7F2] ${props.className || ''}`}
+      data-density="soft"
+    >
+      <div className="w-full h-full relative overflow-hidden bg-[#FAF7F2] flex items-center justify-center">
+        {/* Subtle archival paper grain and matte sheen */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-black/[0.03] via-transparent to-white/40" />
+
+        {/* Center Layflat Spine Crease Depth Shadow */}
+        <div
+          className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
+            isLeftPage
+              ? 'right-0 w-3 sm:w-6 bg-gradient-to-l from-black/28 via-black/8 to-transparent'
+              : 'left-0 w-3 sm:w-6 bg-gradient-to-r from-black/28 via-black/8 to-transparent'
+          }`}
+        />
+
+        {/* Outer Fore-Edge Paper Thickness Highlight */}
+        <div
+          className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
+            isLeftPage
+              ? 'left-0 w-1 bg-gradient-to-r from-black/10 to-transparent'
+              : 'right-0 w-1 bg-gradient-to-l from-black/10 to-transparent'
+          }`}
+        />
+      </div>
+    </div>
+  );
+});
+HeroBlankPage.displayName = 'HeroBlankPage';
+
+/* ─────────────────────────────────────────────────────
    PHOTO PAGE HELPER (Archival Mounted: Photos Inserted Into Pages)
    - Photos are neatly inserted into the pages with archival matting
    - Seamless at center spine so 12x36 panoramic spreads meet perfectly
@@ -520,12 +563,16 @@ export default function HeroInteractiveAlbum({
   }, []);
 
   // Demo Photobook: Always pristine default demo with full storytelling sequence
-  const activePhotos = FLEXY_ALBUM_PHOTOS;
+  // Ensure even number of photos so photos start on Right (Page 2) and end on Left (Page N-1)
+  const rawPhotos = FLEXY_ALBUM_PHOTOS;
+  const activePhotos = rawPhotos.length % 2 === 0
+    ? rawPhotos
+    : rawPhotos.slice(0, rawPhotos.length - (rawPhotos.length > 1 ? 1 : 0));
   const activeCover = '/images/album/front_cover.jpg';
   const activeBackCover = '/images/album/back_cover.jpg';
 
-  // 1 (Front Cover) + 66 (Photos) + 1 (Back Cover) = 68 pages (EVEN total, closes cleanly to back cover)
-  const totalPages = 1 + activePhotos.length + 1;
+  // 1 (Front Cover) + 1 (Blank Flyleaf Left) + activePhotos (Starts Right, Ends Left) + 1 (Blank Endsheet Right) + 1 (Back Cover)
+  const totalPages = 1 + 1 + activePhotos.length + 1 + 1;
 
   const handleFlipNext = useCallback(() => {
     try {
@@ -831,16 +878,28 @@ export default function HeroInteractiveAlbum({
               onOpenFullscreen={onOpenFullscreen}
             />
 
-            {/* Photo Pages: Archival mounted, photos inserted into the pages with folios */}
+            {/* Page 1 (Spread 1 Left): Blank First Inside Page */}
+            <HeroBlankPage
+              key="hero-first-blank-flyleaf"
+              isLeftPage={true}
+            />
+
+            {/* Photo Pages: Starts on Page 2 (Right), ends on Page N-1 (Left) */}
             {activePhotos.map((photo, idx) => (
               <HeroPhotoPage
                 key={photo.id}
                 src={photo.src}
-                isLeftPage={idx % 2 === 0}
+                isLeftPage={idx % 2 === 1}
                 pageNumber={idx + 1}
                 totalPhotos={activePhotos.length}
               />
             ))}
+
+            {/* Page N (Last Spread Right): Blank Page facing the last photo on the left */}
+            <HeroBlankPage
+              key="hero-last-blank-endsheet"
+              isLeftPage={false}
+            />
 
             {/* Final Page: Luxury Hardcover Back Cover (Closes directly to single-page mode) */}
             <HeroBackCover

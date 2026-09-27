@@ -93,6 +93,49 @@ const CoverPage = forwardRef(({ title, size, totalPhotos, coverSrc, onOpen, ...p
 CoverPage.displayName = 'CoverPage';
 
 /* ─────────────────────────────────────────────────────
+   PAGE: ARCHIVAL BLANK FLYLEAF / ENDSHEET
+   - Luxury textured archival matte paper (#FAF7F2 / #FAF8F5)
+   - Real layflat center spine crease depth shadow
+   - Real outer fore-edge paper thickness highlight
+   - Clean, pristine, elegant flyleaf matching fine-art wedding albums
+   ───────────────────────────────────────────────────── */
+const BlankFlyleafPage = forwardRef(({ isLeftPage, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      style={{ ...props.style }}
+      className={`page-wrapper select-none relative overflow-hidden bg-[#FAF7F2] shadow-md ${props.className || ''}`}
+      data-density="soft"
+    >
+      <div className="w-full h-full relative overflow-hidden bg-[#FAF7F2] flex items-center justify-center">
+        {/* Subtle archival paper sheen */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-black/[0.03] via-transparent to-white/40" />
+
+        {/* Center Spine Crease / Binding Depth Shadow */}
+        <div
+          className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
+            isLeftPage
+              ? 'right-0 w-4 sm:w-8 bg-gradient-to-l from-black/28 via-black/8 to-transparent'
+              : 'left-0 w-4 sm:w-8 bg-gradient-to-r from-black/28 via-black/8 to-transparent'
+          }`}
+        />
+
+        {/* Outer Fore-Edge Paper Highlight */}
+        <div
+          className={`absolute top-0 bottom-0 pointer-events-none z-10 ${
+            isLeftPage
+              ? 'left-0 w-1.5 bg-gradient-to-r from-black/10 to-transparent'
+              : 'right-0 w-1.5 bg-gradient-to-l from-black/10 to-transparent'
+          }`}
+        />
+      </div>
+    </div>
+  );
+});
+BlankFlyleafPage.displayName = 'BlankFlyleafPage';
+
+/* ─────────────────────────────────────────────────────
    Inside Photo Page: Archival Mounted (Photos Inserted Into Pages)
    - Photos are neatly inserted into the pages with archival matting
    - Seamless at center spine so 12x36 panoramic spreads meet perfectly
@@ -307,7 +350,6 @@ export default function AlbumFlipbookViewer({
   const safeImages = Array.isArray(images)
     ? images.filter(img => typeof img === 'string' && img.trim().length > 0)
     : [];
-  const totalPhotos = safeImages.length;
 
   /* ── Lock body scroll when viewer is open ── */
   useEffect(() => {
@@ -415,12 +457,14 @@ export default function AlbumFlipbookViewer({
     touchStartY.current = null;
   };
 
-  // No endsheet pages when total photos is even; only 1 blank parity page if photo count is odd
-  const endsheetPages = totalPhotos % 2 === 0
-    ? []
-    : [<div key="flip-parity-leaf" className="page-wrapper bg-[#FAF8F5]" data-density="soft" />];
+  // Ensure even number of photos so photos start on Right (Page 2) and end on Left (Page N-1)
+  const displayImages = safeImages.length % 2 === 0
+    ? safeImages
+    : safeImages.slice(0, safeImages.length - (safeImages.length > 1 ? 1 : 0));
+  const totalPhotos = displayImages.length;
 
-  const totalPages = 1 + totalPhotos + endsheetPages.length + 1;
+  // 1 (Front Cover) + 1 (Blank Flyleaf Left) + totalPhotos + 1 (Blank Endsheet Right) + 1 (Back Cover)
+  const totalPages = 1 + 1 + totalPhotos + 1 + 1;
 
   /* ── Dynamic Page Counter Label ── */
   const getPageLabel = () => {
@@ -431,16 +475,18 @@ export default function AlbumFlipbookViewer({
       return 'Back Cover · Archival Quality';
     }
     const maxPhoto = totalPhotos;
-    const leftPhoto = currentPage;
-    const rightPhoto = currentPage + 1;
-
-    if (leftPhoto > maxPhoto) {
-      return 'Heirloom · Timeless Memories';
+    // Spread 1 (pages 1 & 2): Left is Blank, Right is Photo 1
+    if (currentPage <= 2) {
+      return `Photo 1 of ${maxPhoto}`;
     }
-    if (rightPhoto > maxPhoto) {
-      return `Page ${leftPhoto} of ${maxPhoto}`;
+    // Last spread (pages totalPages-3 & totalPages-2): Left is Last Photo, Right is Blank
+    if (currentPage >= totalPages - 2) {
+      return `Photo ${maxPhoto} of ${maxPhoto}`;
     }
-    return `Pages ${leftPhoto} & ${rightPhoto} of ${maxPhoto}`;
+    // Middle spreads: e.g. pages 3 & 4 -> photos 2 & 3
+    const leftPhoto = currentPage - 1;
+    const rightPhoto = currentPage;
+    return `Photos ${leftPhoto} & ${rightPhoto} of ${maxPhoto}`;
   };
 
   /* ── Keyboard navigation ── */
@@ -513,16 +559,23 @@ export default function AlbumFlipbookViewer({
       coverSrc={activeCover}
       onOpen={handleFlipNext}
     />,
-    ...safeImages.map((src, i) => (
+    <BlankFlyleafPage
+      key="flip-first-blank-flyleaf"
+      isLeftPage={true}
+    />,
+    ...displayImages.map((src, i) => (
       <PhotoPage
         key={`flip-photo-${i}`}
         src={src}
         pageIndex={i}
         totalPhotos={totalPhotos}
-        isLeftPage={i % 2 === 0}
+        isLeftPage={i % 2 === 1}
       />
     )),
-    ...endsheetPages,
+    <BlankFlyleafPage
+      key="flip-last-blank-endsheet"
+      isLeftPage={false}
+    />,
     <BackCoverPage
       key="flip-backcover"
       backCoverSrc={activeBackCover}
@@ -745,16 +798,16 @@ export default function AlbumFlipbookViewer({
                   </button>
 
                   {/* Photo thumbnails */}
-                  {safeImages.map((src, i) => (
+                  {displayImages.map((src, i) => (
                     <button
                       key={i}
-                      onClick={() => goToPage(i + 1)}
+                      onClick={() => goToPage(i + 2)}
                       className={`shrink-0 w-14 h-18 sm:w-20 sm:h-26 rounded-md overflow-hidden border-2 transition-all cursor-pointer hover:scale-105 bg-[#141414] ${
-                        currentPage === i + 1 || (currentPage > 0 && Math.floor((currentPage - 1) / 2) === Math.floor(i / 2))
+                        currentPage === i + 2 || (currentPage > 0 && Math.floor(currentPage / 2) === Math.floor((i + 2) / 2))
                           ? 'border-[#C5A880] shadow-lg shadow-[#C5A880]/30 ring-2 ring-[#C5A880]/50'
                           : 'border-white/20 hover:border-white/40'
                       }`}
-                      title={`Page ${i + 1}`}
+                      title={`Photo ${i + 1}`}
                     >
                       <img
                         src={src}
