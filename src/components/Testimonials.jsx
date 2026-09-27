@@ -16,7 +16,7 @@ export default function Testimonials() {
   const current = TESTIMONIALS[activeIdx];
 
   return (
-    <section className="py-24 bg-white relative overflow-hidden border-t border-[#E8E1D5]">
+    <section className="py-24 bg-[#F7F3EE] relative overflow-hidden border-t border-[#E8E1D5]">
       <div className="max-w-4xl mx-auto px-6 text-center">
         
         <p className="text-[11px] md:text-[12px] tracking-[0.4em] uppercase text-[#666666] font-medium mb-3">

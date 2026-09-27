@@ -130,7 +130,7 @@ export default function EventsSection({ onOpenPage }) {
   };
 
   return (
-    <div id="events" className="w-full bg-white transition-all duration-300">
+    <div id="events" className="w-full bg-[#F7F3EE] transition-all duration-300">
       {/* Semantic H1 for Events Page */}
       <h1 className="sr-only">Event Photography &amp; Cinematography Packages in Warangal &amp; Hanumakonda | KPR Productions</h1>
       <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
@@ -184,7 +184,7 @@ export default function EventsSection({ onOpenPage }) {
         }`}>
           
           {/* 2. Subsections Navigation & Big Title Bar (3-Column Layout: Left Button | Big Center Title | Right Button) */}
-          <div className="w-full bg-white border-b border-[#E2D9CC] px-4 sm:px-8 md:px-12 py-3.5 sm:py-5">
+          <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-4 sm:px-8 md:px-12 py-3.5 sm:py-5">
             <div className="max-w-[1920px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-6">
               
               {/* 1. LEFT BOX: STAGE & LIGHTING BUTTON (Desktop) */}
@@ -336,7 +336,7 @@ export default function EventsSection({ onOpenPage }) {
                         </a>
                         <button
                           onClick={() => setSelectedEventPhoto(featuredEvent)}
-                          className="px-3.5 py-3 rounded-xl bg-white hover:bg-[#FAF8F5] text-[#1A1A1A] border border-[#E2D9CC] text-xs font-semibold transition-colors cursor-pointer"
+                          className="px-3.5 py-3 rounded-xl bg-[#F7F3EE] hover:bg-[#EAE4DC] text-[#1A1A1A] border border-[#E2D9CC] text-xs font-semibold transition-colors cursor-pointer"
                           title="View Fullscreen"
                         >
                           <Maximize2 className="w-4 h-4" />

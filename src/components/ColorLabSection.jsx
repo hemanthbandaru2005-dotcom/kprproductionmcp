@@ -223,7 +223,7 @@ export default function ColorLabSection() {
   };
 
   return (
-    <div id="colorlab" className="w-full bg-white transition-all duration-300">
+    <div id="colorlab" className="w-full bg-[#F7F3EE] transition-all duration-300">
       {/* Semantic H1 for Color Lab Page */}
       <h1 className="sr-only">Signature Color Grading Styles &amp; Luxury Photobook Album Printing | KPR Productions</h1>
       <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
@@ -277,7 +277,7 @@ export default function ColorLabSection() {
         }`}>
           
           {/* 2. Subsections Navigation Tabs: PRINTING & CUTTING | PACKAGES | ALBUMS */}
-          <div className="w-full bg-white border-b border-[#E2D9CC] px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-center">
+          <div className="w-full bg-[#F7F3EE] border-b border-[#E2D9CC] px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-center">
             <div className="inline-flex justify-center items-center gap-1 sm:gap-2 p-1 bg-white border border-[#E2D9CC] rounded-full shadow-sm max-w-full overflow-x-auto">
               
               {/* PRINTING & CUTTING TAB */}
@@ -286,7 +286,7 @@ export default function ColorLabSection() {
                 className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
                   activeSubTab === 'designs'
                     ? 'bg-[#1A1A1A] text-white shadow-md'
-                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-white'
+                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
                 }`}
               >
                 <Palette className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'designs' ? 'text-[#C5A880]' : ''}`} />
@@ -299,7 +299,7 @@ export default function ColorLabSection() {
                 className={`inline-flex justify-center items-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap ${
                   activeSubTab === 'packages'
                     ? 'bg-[#1A1A1A] text-white shadow-md'
-                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-white'
+                    : 'text-[#555555] hover:text-[#1A1A1A] hover:bg-[#F7F3EE]'
                 }`}
               >
                 <Package className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeSubTab === 'packages' ? 'text-[#C5A880]' : ''}`} />
@@ -310,7 +310,7 @@ export default function ColorLabSection() {
           </div>
 
           {/* 3. Subsections Content Area */}
-          <div className="w-full p-3 sm:p-8 lg:p-12 bg-white">
+          <div className="w-full p-3 sm:p-8 lg:p-12 bg-[#F7F3EE]">
             <div className="w-full max-w-[1920px] mx-auto">
             
             {/* PRINTING & CUTTING SUBSECTION */}

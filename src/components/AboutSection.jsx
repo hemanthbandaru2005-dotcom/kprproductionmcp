@@ -35,7 +35,7 @@ const STATS = [
 
 export default function AboutSection() {
   return (
-    <div id="about" className="w-full bg-white transition-all duration-300">
+    <div id="about" className="w-full bg-[#F7F3EE] transition-all duration-300">
       <div className="w-full bg-white border-b border-[#E2D9CC] overflow-hidden transition-all duration-500">
         
         {/* 1. Header Banner Bar */}
@@ -59,7 +59,7 @@ export default function AboutSection() {
         </div>
 
         {/* 2. Main Story & Founder Section */}
-        <div className="p-6 sm:p-12 lg:p-16 bg-white border-b border-[#E2D9CC] w-full">
+        <div className="p-6 sm:p-12 lg:p-16 bg-[#FAF8F5] border-b border-[#E2D9CC] w-full">
           <div className="max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
             
             {/* Left: Founder Portrait with Luxury Frame */}
@@ -178,7 +178,7 @@ export default function AboutSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.08 }}
-                  className="bg-white border border-[#E2D9CC] rounded-xl p-5 sm:p-6 text-center hover:border-[#C5A880] hover:shadow-lg transition-all duration-300 group flex flex-col items-center justify-between"
+                  className="bg-[#FAF8F5] border border-[#E2D9CC] rounded-xl p-5 sm:p-6 text-center hover:border-[#C5A880] hover:shadow-lg transition-all duration-300 group flex flex-col items-center justify-between"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#1A1A1A] text-[#E8D4B8] flex items-center justify-center mb-3 group-hover:bg-[#C5A880] group-hover:text-black transition-colors">
                     <Icon className="w-5 h-5" />

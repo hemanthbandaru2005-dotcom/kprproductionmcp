@@ -15,13 +15,13 @@
   :root {
     color-scheme: only light !important;
     forced-color-adjust: none !important;
-    --background: #FFFFFF;
+    --background: #F7F3EE;
     --surface: #FFFFFF;
     --foreground: #1A1A1A;
     --border: #E2D9CC;
     --primary: #1A1A1A;
     --gold: #C5A880;
-    --bg-cream: #FFFFFF;
+    --bg-cream: #F7F3EE;
     --bg-dark: #121212;
     --accent-gold: #C5A880;
     --accent-gold-dark: #A4865E;
@@ -55,7 +55,7 @@
   html {
     overflow-x: hidden;
     max-width: 100vw;
-    background-color: #FFFFFF !important;
+    background-color: #F7F3EE !important;
     color: #1A1A1A !important;
     color-scheme: only light !important;
     forced-color-adjust: none !important;
@@ -66,7 +66,7 @@
 
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #FFFFFF !important;
+    background-color: #F7F3EE !important;
     color: #1A1A1A !important;
     color-scheme: only light !important;
     forced-color-adjust: none !important;
