@@ -123,7 +123,7 @@ export default function PortfolioGallery({ onSelectPhoto, moodboardIds = [], tog
   });
 
   return (
-    <section id="portfolio" className="py-8 sm:py-12 bg-[#F7F3EE] relative overflow-hidden w-full">
+    <section id="portfolio" className="py-8 sm:py-12 bg-white relative overflow-hidden w-full">
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-8 lg:px-12 xl:px-16">
         
         {/* Top Header - Centered in Middle */}

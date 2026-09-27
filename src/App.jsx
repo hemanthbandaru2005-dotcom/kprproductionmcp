@@ -130,7 +130,7 @@ class SectionErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="w-full min-h-[50vh] flex flex-col items-center justify-center p-8 text-center bg-[#F7F3EE]">
+        <div className="w-full min-h-[50vh] flex flex-col items-center justify-center p-8 text-center bg-white">
           <div className="w-12 h-12 rounded-xl bg-[#C5A880]/20 text-[#8C6D3F] border border-[#C5A880]/30 flex items-center justify-center mb-3">
             <span className="font-serif font-bold text-xl">KPR</span>
           </div>
@@ -416,7 +416,7 @@ function AppContent() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F7F3EE] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-2 border-[#C5A880] border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-xs tracking-widest uppercase text-[#888888]">Loading...</p>
@@ -465,7 +465,7 @@ function AppContent() {
   }
 
   return (
-    <div className={`min-h-screen ${activePage === 'home' ? 'bg-[#0D0B08]' : 'bg-[#F7F3EE]'} text-[#1A1A1A] font-sans selection:bg-[#C5A880] selection:text-white w-full m-0 p-0`}>
+    <div className="min-h-screen bg-white text-[#1A1A1A] font-sans selection:bg-[#C5A880] selection:text-white w-full m-0 p-0">
 
       {/* Top Navigation Header Bar */}
       <Navbar

@@ -72,7 +72,7 @@ export default function Hero({ onOpenPage }) {
   return (
     <section
       id="hero"
-      className="relative w-full h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col justify-between bg-[#07090D] text-white pt-12 sm:pt-14 md:pt-16 pb-2 sm:pb-3 select-none"
+      className="relative w-full h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col justify-between bg-white text-[#1A1A1A] pt-12 sm:pt-14 md:pt-16 pb-2 sm:pb-3 select-none"
       style={{ height: 'var(--app-height, 100vh)' }}
     >
       {/* Semantic H1 for Search Engine Indexing */}
@@ -158,7 +158,7 @@ export default function Hero({ onOpenPage }) {
             <div className="flex items-center justify-center gap-2.5 xs:gap-3 sm:gap-4 md:gap-5 flex-nowrap max-w-full px-2">
               <button
                 type="button"
-                onClick={() => setUploadModalOpen(true)}
+                onClick={() => handleCardClick('colorlab')}
                 className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 xs:px-4 sm:px-6 md:px-7 py-1.5 sm:py-2 md:py-2.5 rounded-full bg-[#FAF5ED]/95 hover:bg-white text-[#1A1A1A] hover:text-black border-2 border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.25)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
                 title="Print Your Albums"
               >

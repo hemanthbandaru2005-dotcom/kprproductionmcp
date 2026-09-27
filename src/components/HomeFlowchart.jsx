@@ -3,7 +3,7 @@ import { Home, Layers, Camera, Package, ArrowDown, ArrowRight, Sparkles, PhoneCa
 
 export default function HomeFlowchart({ onNavigateToMedia }) {
   return (
-    <div id="home" className="w-full bg-[#F7F3EE] py-12 px-4 sm:px-6 lg:px-12 animate-fadeIn">
+    <div id="home" className="w-full bg-white py-12 px-4 sm:px-6 lg:px-12 animate-fadeIn">
       <div className="max-w-6xl mx-auto">
         
         {/* Welcome Banner */}
@@ -53,7 +53,7 @@ export default function HomeFlowchart({ onNavigateToMedia }) {
             {/* STEP 2: MEDIA HUB NODE (MAIN CONTAINER) */}
             <button
               onClick={() => onNavigateToMedia('gallery')}
-              className="w-full max-w-lg bg-[#F7F3EE] hover:bg-[#F0E8DD] border-2 border-[#C5A880] p-6 rounded-xl shadow-xl text-center group cursor-pointer transition-all duration-300 transform hover:-translate-y-1"
+              className="w-full max-w-lg bg-white hover:bg-[#FAF8F5] border-2 border-[#C5A880] p-6 rounded-xl shadow-xl text-center group cursor-pointer transition-all duration-300 transform hover:-translate-y-1"
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C5A880] text-white text-[10px] font-bold tracking-widest uppercase mb-2">
                 <Layers className="w-3.5 h-3.5" />

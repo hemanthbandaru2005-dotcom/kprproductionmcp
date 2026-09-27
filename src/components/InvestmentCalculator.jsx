@@ -37,7 +37,7 @@ export default function InvestmentCalculator({ onOpenInquireWithPackage }) {
   };
 
   return (
-    <section id="investment" className="py-24 bg-[#F7F3EE] relative">
+    <section id="investment" className="py-24 bg-white relative">
       <div className="w-full max-w-[1920px] mx-auto px-6 md:px-12 lg:px-16">
         
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -105,7 +105,7 @@ export default function InvestmentCalculator({ onOpenInquireWithPackage }) {
                   className={`w-full py-3 mt-8 text-[11px] tracking-[0.25em] uppercase font-medium transition-colors ${
                     isSelected
                       ? 'bg-[#1A1A1A] text-white'
-                      : 'bg-[#F7F3EE] text-[#1A1A1A] hover:bg-[#C5A880] hover:text-white border border-[#E2D9CC]'
+                      : 'bg-white text-[#1A1A1A] hover:bg-[#C5A880] hover:text-white border border-[#E2D9CC]'
                   }`}
                 >
                   {isSelected ? 'SELECTED PACKAGE' : 'SELECT PACKAGE'}

@@ -75,7 +75,7 @@ export default function PackagesSection({
   };
 
   return (
-    <div className="w-full bg-[#F7F3EE] py-2 sm:py-8">
+    <div className="w-full bg-white py-2 sm:py-8">
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-8 lg:px-12 xl:px-16">
         
         {/* Back Button */}

@@ -27,7 +27,7 @@ export default function Experience({ onOpenInquire }) {
   ];
 
   return (
-    <section id="experience" className="py-24 md:py-32 bg-[#F7F3EE] relative overflow-hidden">
+    <section id="experience" className="py-24 md:py-32 bg-white relative overflow-hidden">
       
       {/* Container */}
       <div className="max-w-6xl mx-auto px-6 md:px-12 text-center">
