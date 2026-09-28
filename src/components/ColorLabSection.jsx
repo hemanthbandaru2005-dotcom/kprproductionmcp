@@ -333,7 +333,7 @@ export default function ColorLabSection() {
 
                 {/* Interactive 3D Photobook Generator Showcase Banner */}
                 <div
-                  onClick={handleOpenUploadModal}
+                  onClick={() => window.open(`https://wa.me/${COLORLAB_WHATSAPP_NUMBER}?text=${encodeURIComponent('Hello KPR Colour Lab! I would like to get my custom wedding album printed. Please share the details, album sizes, and pricing.')}`, '_blank')}
                   className="bg-gradient-to-br from-[#1C1712] via-[#251F19] to-[#120F0D] border-2 border-[#C5A880]/50 hover:border-[#C5A880] rounded-2xl p-6 sm:p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer relative overflow-hidden group mb-8"
                 >
                   <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#C5A880_1px,transparent_1px)] [background-size:12px_12px] pointer-events-none" />
@@ -347,28 +347,32 @@ export default function ColorLabSection() {
                       <div className="space-y-1.5">
                         <div className="inline-flex items-center gap-2 bg-[#C5A880]/20 border border-[#C5A880]/40 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest text-[#E8D4B8]">
                           <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                          <span>Interactive 3D Album Generator</span>
+                          <span>Custom Album Orders</span>
                         </div>
                         <h4 className="font-serif text-2xl sm:text-3xl text-[#F5EFE6] font-medium">
-                          Print Your Album
+                          Click Here to Get Your Album
                         </h4>
                         <p className="text-xs sm:text-sm text-[#D5C6B0]/80 font-light max-w-2xl leading-relaxed">
-                          Choose from <strong>12x36 · 13x39 · 14x40 · 16x24 · 18x24 · 12x24</strong> layflat sizes, upload your wedding photos or PDF spreads, and preview your realistic 3D photobook instantly before printing.
+                          Choose from <strong>12x36 · 13x39 · 14x40 · 16x24 · 18x24 · 12x24</strong> layflat sizes with luxury debossed velvet covers, metallic embossing, and HD non-tearable paper. Connect directly with KPR Colour Lab on WhatsApp to order your custom album.
                         </p>
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenUploadModal();
-                      }}
-                      className="w-full sm:w-auto px-6 py-3.5 bg-[#C5A880] hover:bg-[#D4BC9A] text-black text-xs uppercase font-bold tracking-widest rounded-xl transition-all shadow-lg hover:shadow-xl shrink-0 flex items-center justify-center gap-2 cursor-pointer group-hover:scale-105"
+                    <a
+                      href={`https://wa.me/${COLORLAB_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                        'Hello KPR Colour Lab! I would like to get my custom wedding album printed. Please share the details, album sizes, and pricing.'
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-full sm:w-auto px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs uppercase font-bold tracking-widest rounded-xl transition-all shadow-lg hover:shadow-xl shrink-0 flex items-center justify-center gap-2 cursor-pointer group-hover:scale-105"
+                      title="Order Album on WhatsApp (+91 98493 90876)"
                     >
-                      <Upload className="w-4 h-4" />
-                      <span>Select Size & Upload Photos</span>
-                    </button>
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824zm-3.423-14.416c-6.627 0-12 5.373-12 12 0 2.159.57 4.187 1.564 5.941l-1.664 6.082 6.221-1.632c1.707.933 3.666 1.465 5.748 1.465 6.627 0 12-5.373 12-12 0-6.627-5.373-12-12-12z"/>
+                      </svg>
+                      <span>Click Here to Get Your Album</span>
+                    </a>
                   </div>
                 </div>
 

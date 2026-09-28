@@ -132,8 +132,8 @@ export default function Footer({
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 pb-8 border-b border-white/10">
           
-          {/* Brand Column (4 cols) */}
-          <div className="md:col-span-4 space-y-3">
+          {/* Brand Column (5 cols) */}
+          <div className="md:col-span-5 space-y-3">
             <div className="flex items-center gap-2">
               <span className="font-serif text-xl tracking-wider font-light text-white">KPR PRODUCTIONS</span>
             </div>
@@ -145,75 +145,8 @@ export default function Footer({
             </p>
           </div>
 
-          {/* Quick Links Column (2 cols) */}
-          <div className="md:col-span-2 space-y-3">
-            <h4 className="text-[11px] tracking-[0.25em] uppercase text-[#C5A880] font-semibold">Studio Pages</h4>
-            <nav className="flex flex-col space-y-2 text-xs text-white/70 font-light">
-              <a
-                href="/wedding-photography-warangal"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick('media');
-                }}
-                className="hover:text-[#C5A880] transition-colors"
-              >
-                Photography
-              </a>
-              <a
-                href="/color-lab"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick('colorlab');
-                }}
-                className="hover:text-[#C5A880] transition-colors"
-              >
-                Color Lab
-              </a>
-              <a
-                href="/event-photography-hanumakonda"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick('events');
-                }}
-                className="hover:text-[#C5A880] transition-colors"
-              >
-                Event Stage
-              </a>
-              <a
-                href="/cost-estimator"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick('estimator');
-                }}
-                className="hover:text-[#C5A880] transition-colors"
-              >
-                Cost Calculator
-              </a>
-              <a
-                href="/about"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick('about');
-                }}
-                className="hover:text-[#C5A880] transition-colors"
-              >
-                About Studio
-              </a>
-              <a
-                href="/contact"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick('contact');
-                }}
-                className="hover:text-[#C5A880] transition-colors"
-              >
-                Contact Us
-              </a>
-            </nav>
-          </div>
-
-          {/* Studio Contact Info (3 cols) */}
-          <div className="md:col-span-3 space-y-3">
+          {/* Studio Contact Info (4 cols) */}
+          <div className="md:col-span-4 space-y-3">
             <h4 className="text-[11px] tracking-[0.25em] uppercase text-[#C5A880] font-semibold">Studio Enquiries</h4>
             <div className="space-y-2.5 text-xs text-white/70 font-light">
               {showAddress && (
