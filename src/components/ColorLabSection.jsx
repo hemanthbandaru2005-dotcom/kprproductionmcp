@@ -340,22 +340,17 @@ export default function ColorLabSection() {
                   <div className="absolute top-0 right-0 w-64 h-64 bg-[#C5A880]/10 rounded-full blur-3xl pointer-events-none" />
 
                   <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#C5A880]/20 border border-[#C5A880]/40 flex items-center justify-center text-[#C5A880] shrink-0 group-hover:scale-105 transition-transform shadow-inner">
-                        <FolderUp className="w-8 h-8 sm:w-10 sm:h-10 text-[#E8D4B8]" />
+                    <div className="flex flex-col items-center sm:items-start gap-3 text-center sm:text-left">
+                      <div className="inline-flex items-center gap-2 bg-[#C5A880]/20 border border-[#C5A880]/40 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest text-[#E8D4B8]">
+                        <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                        <span>Custom Album Orders</span>
                       </div>
-                      <div className="space-y-1.5">
-                        <div className="inline-flex items-center gap-2 bg-[#C5A880]/20 border border-[#C5A880]/40 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest text-[#E8D4B8]">
-                          <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                          <span>Custom Album Orders</span>
-                        </div>
-                        <h4 className="font-serif text-2xl sm:text-3xl text-[#F5EFE6] font-medium">
-                          Click Here to Get Your Album
-                        </h4>
-                        <p className="text-xs sm:text-sm text-[#D5C6B0]/80 font-light max-w-2xl leading-relaxed">
-                          Choose from <strong>12x36 · 13x39 · 14x40 · 16x24 · 18x24 · 12x24</strong> layflat sizes with luxury debossed velvet covers, metallic embossing, and HD non-tearable paper. Connect directly with KPR Colour Lab on WhatsApp to order your custom album.
-                        </p>
-                      </div>
+                      <h4 className="font-serif text-2xl sm:text-3xl text-[#F5EFE6] font-medium">
+                        Click Here to Get Your Album
+                      </h4>
+                      <p className="text-xs sm:text-sm text-[#D5C6B0]/80 font-light max-w-2xl leading-relaxed">
+                        Tap the button to connect with KPR Colour Lab on WhatsApp and get your premium wedding album printed today.
+                      </p>
                     </div>
 
                     <a

@@ -432,6 +432,28 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.text(`Rs. ${grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, summaryRightVal - 2, currentY + 3, { align: 'right' });
 
   // ══════════════════ 6. QR CODE PAYMENT CARD & STUDIO TERMS ══════════════════
+  // Check if there is enough space remaining on the current page for QR + Terms + Signature + Footer.
+  // QR card needs ~55mm, terms ~25mm, signature ~10mm, footer ~10mm ≈ 75mm total.
+  const pageHeight = doc.internal.pageSize.getHeight(); // 297mm for A4
+  const spaceNeeded = 78; // mm needed for QR card + terms + signature + footer
+  const spaceRemaining = pageHeight - currentY - 10; // 10mm bottom margin
+
+  if (spaceRemaining < spaceNeeded) {
+    // Not enough room — add a new page and reset Y
+    doc.addPage();
+    currentY = 20; // fresh top margin on new page
+
+    // Re-draw a light header on the continuation page
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(140, 109, 63);
+    doc.text('PAYMENT & BOOKING DETAILS (CONTINUED)', 14, currentY);
+    doc.setDrawColor(216, 207, 196);
+    doc.setLineWidth(0.3);
+    doc.line(14, currentY + 2, 196, currentY + 2);
+    currentY += 8;
+  }
+
   // Official Google Pay UPI QR Code Card
   const qrWidth = 37;
   const qrHeight = qrWidth / 0.67436; // 54.8mm
@@ -477,15 +499,16 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
   doc.text('Authorized Studio Representative', sigLeft, sigTop + 4);
 
   // ══════════════════ 7. FOOTER ══════════════════
+  const footerY = doc.internal.pageSize.getHeight() - 15;
   doc.setDrawColor(220, 215, 205);
   doc.setLineWidth(0.2);
-  doc.line(14, 282, 196, 282);
+  doc.line(14, footerY, 196, footerY);
 
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(7.5);
   doc.setTextColor(130, 130, 130);
-  doc.text('KPR Productions • Capturing Moments | Creating Memories • Telangana, India', 14, 286);
-  doc.text('www.kprproductions.in', 196, 286, { align: 'right' });
+  doc.text('KPR Productions • Capturing Moments | Creating Memories • Telangana, India', 14, footerY + 4);
+  doc.text('www.kprproductions.in', 196, footerY + 4, { align: 'right' });
 
   if (autoDownload) {
     const sanitizedName = customerName.replace(/[^a-zA-Z0-9]/g, '_');
@@ -495,3 +518,4 @@ export function generateEstimatePdf(estimateData, autoDownload = true) {
 
   return doc;
 }
+

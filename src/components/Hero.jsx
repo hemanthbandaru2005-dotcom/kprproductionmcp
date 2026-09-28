@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload } from 'lucide-react';
+import { Upload, Eye } from 'lucide-react';
 import CustomAlbumUploadModal from './CustomAlbumUploadModal';
 import AlbumFlipbookViewer from './AlbumFlipbookViewer';
 import HeroInteractiveAlbum from './HeroInteractiveAlbum';
@@ -169,17 +169,17 @@ export default function Hero({ onOpenPage }) {
                 </span>
               </button>
 
-              {/* 3D VIEW & UPLOAD BUTTON */}
+              {/* PREVIEW YOUR 3D ALBUM BUTTON */}
               <button
                 type="button"
                 onClick={() => setUploadModalOpen(true)}
-                className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 xs:px-4 sm:px-6 md:px-7 py-1.5 sm:py-2 md:py-2.5 rounded-full bg-[#1A1A1A] hover:bg-black text-white hover:text-white border-2 border-[#C5A880] hover:border-[#DFC5A0] shadow-[0_4px_14px_rgba(0,0,0,0.22)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
-                title="Open 3D View & Upload Photos"
-                aria-label="Open 3D View and Upload Photos"
+                className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 xs:px-4 sm:px-6 md:px-7 py-1.5 sm:py-2 md:py-2.5 rounded-full bg-white/95 hover:bg-white text-[#1A1A1A] hover:text-black border-2 border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.25)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
+                title="Preview Your 3D Album"
+                aria-label="Preview Your 3D Album"
               >
-                <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#DFC5A0] group-hover:scale-110 transition-transform" />
+                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#A47E43] group-hover:text-[#8D652B] transition-colors" />
                 <span className="text-[8.5px] xs:text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.14em] uppercase font-sans">
-                  3D VIEW
+                  PREVIEW YOUR 3D ALBUM
                 </span>
               </button>
             </div>
