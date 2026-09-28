@@ -4,6 +4,7 @@ import { SOCIAL_LINKS } from '../utils/socialLinks';
 import { InstagramIcon, FacebookIcon, YoutubeIcon } from './SocialIcons';
 
 export default function Footer({
+  activePage = 'media',
   onSelectPage,
   onOpenInquire,
   showInstagram = true,
@@ -28,14 +29,47 @@ export default function Footer({
     }
   };
 
-  const instagramGrid = [
-    '/images/21/photo_1.jpg',
-    '/images/21/photo_2.jpg',
-    '/images/21/photo_3.jpg',
-    '/images/21/photo_4.jpg',
-    '/images/21/photo_5.jpg',
-    '/images/21/photo_1.jpg'
-  ];
+  // Section-specific gallery curation
+  const SECTION_GALLERIES = {
+    // Fotography section: Luxury weddings, romantic couple portraits & fine-art moments
+    media: [
+      { src: '/images/wedding/photo_1.jpg', alt: 'KPR Fotography Fine Art Wedding Bride Portrait Warangal' },
+      { src: '/images/engagement/photo_1.jpg', alt: 'KPR Fotography Romantic Candid Engagement Shoot' },
+      { src: '/images/wedding/photo_10.jpg', alt: 'KPR Fotography Luxury Cinematic Couple Portrait' },
+      { src: '/images/wedding/photo_3.jpg', alt: 'KPR Fotography Traditional Royal Telugu Wedding Rituals' },
+      { src: '/images/reception/photo_1.jpg', alt: 'KPR Fotography Grand Evening Wedding Reception' },
+      { src: '/images/wedding/photo_11.jpg', alt: 'KPR Fotography Editorial Candid Wedding Moment' },
+    ],
+    // Colour Lab section: Photobook printing, layflat albums, frame craftsmanship & cases
+    colorlab: [
+      { src: '/images/services/wedding_album_printing.png', alt: 'KPR Colour Lab Layflat Wedding Photobook Album Printing' },
+      { src: '/images/services/acrylic_mdf_frames.jpg', alt: 'KPR Colour Lab HD Acrylic & MDF Embossed Frames' },
+      { src: '/images/colorlab_album_case.jpg', alt: 'KPR Colour Lab Handcrafted Velvet Album Briefcase & Box' },
+      { src: '/images/services/photo_frames.png', alt: 'KPR Colour Lab Premium Italian Wooden Gallery Wall Frames' },
+      { src: '/images/colorlab_red_album.jpg', alt: 'KPR Colour Lab Gold Foil Debossed Photobook Craftsmanship' },
+      { src: '/images/services/laser_printing.jpg', alt: 'KPR Colour Lab High Precision Digital Laser Production' },
+    ],
+    // Events section: Grand concerts, LED video walls, beam lighting & truss production
+    events: [
+      { src: '/images/events_gallery/event_photo_1.jpg', alt: 'KPR Events Grand Concert & Sangeet Stage Setup' },
+      { src: '/images/events_gallery/event_photo_2.jpg', alt: 'KPR Events High-Tech LED Video Wall & Intelligent Beam Lighting' },
+      { src: '/images/events_gallery/event_photo_3.jpg', alt: 'KPR Events Corporate Arena Audio & Line Array Truss Rigging' },
+      { src: '/images/events_gallery/event_photo_4.jpg', alt: 'KPR Events Spectacular Live Musical Performance Atmosphere' },
+      { src: '/images/events_gallery/event_photo_5.jpg', alt: 'KPR Events Royal Mandap & Thematic Destination Stage Production' },
+      { src: '/images/events_gallery/event_photo_7.jpg', alt: 'KPR Events Mega Stage Architecture & Cold Pyro Atmospheric FX' },
+    ],
+    // Default fallback (About, Contact, Home): Flagship multi-division highlights
+    default: [
+      { src: '/images/wedding/photo_1.jpg', alt: 'KPR Productions Fine Art Wedding Photography' },
+      { src: '/images/services/wedding_album_printing.png', alt: 'KPR Colour Lab Premium Layflat Album Printing' },
+      { src: '/images/events_gallery/event_photo_1.jpg', alt: 'KPR Events Stage Production & LED Walls' },
+      { src: '/images/wedding/photo_10.jpg', alt: 'KPR Productions Cinematic Wedding Portrait' },
+      { src: '/images/colorlab_album_case.jpg', alt: 'KPR Colour Lab Handcrafted Album Packaging' },
+      { src: '/images/events_gallery/event_photo_2.jpg', alt: 'KPR Events Concert Lighting & Truss Rigging' },
+    ],
+  };
+
+  const galleryItems = SECTION_GALLERIES[activePage] || SECTION_GALLERIES.default;
 
   return (
     <footer className="bg-[#0A0A0A] text-white border-t border-white/10 pt-10 sm:pt-16 pb-8 sm:pb-12">
@@ -49,7 +83,15 @@ export default function Footer({
                 <span className="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase text-[#C5A880] font-medium block">
                   {instagramHandle.toUpperCase()}
                 </span>
-                <h3 className="font-serif text-xl sm:text-2xl text-white font-light">Follow Our Journal On Instagram</h3>
+                <h3 className="font-serif text-xl sm:text-2xl text-white font-light">
+                  {activePage === 'colorlab'
+                    ? 'Follow Our Colour Lab Journal On Instagram'
+                    : activePage === 'events'
+                    ? 'Follow Our Events Journal On Instagram'
+                    : activePage === 'media'
+                    ? 'Follow Our Photography Journal On Instagram'
+                    : 'Follow Our Journal On Instagram'}
+                </h3>
               </div>
               <a
                 href={instagramUrl}
@@ -63,17 +105,18 @@ export default function Footer({
             </div>
 
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
-              {instagramGrid.map((img, i) => (
+              {galleryItems.map((item, i) => (
                 <a
                   key={i}
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="aspect-square bg-white/5 overflow-hidden group/item relative rounded-sm"
+                  title={item.alt}
                 >
                   <img
-                    src={img}
-                    alt={`KPR Productions Instagram Editorial Wedding Photo ${i + 1}`}
+                    src={item.src}
+                    alt={item.alt}
                     className="w-full h-full object-cover grayscale brightness-90 group-hover/item:grayscale-0 group-hover/item:brightness-100 group-hover/item:scale-105 transition-all duration-500"
                     loading="lazy"
                     decoding="async"

@@ -55,7 +55,7 @@
   html {
     overflow-x: hidden;
     max-width: 100vw;
-    background-color: #F7F3EE !important;
+    background-color: #F7F3EE;
     color: #1A1A1A !important;
     color-scheme: only light !important;
     forced-color-adjust: none !important;
@@ -66,7 +66,7 @@
 
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #F7F3EE !important;
+    background-color: #F7F3EE;
     color: #1A1A1A !important;
     color-scheme: only light !important;
     forced-color-adjust: none !important;
@@ -450,6 +450,7 @@
   background-size: cover;
   background-position: var(--hero-bg-pos);
   background-repeat: no-repeat;
+  background-color: #FFFFFF !important;
 }
 
 /* Mobile-Safe Photobook Callout Positioning: Prevents text truncation on OnePlus, Oppo & all mobile viewports */

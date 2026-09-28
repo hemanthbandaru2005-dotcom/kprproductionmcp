@@ -73,7 +73,7 @@ export default function Hero({ onOpenPage }) {
     <section
       id="hero"
       className="relative w-full h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col justify-between bg-white text-[#1A1A1A] pt-12 sm:pt-14 md:pt-16 pb-2 sm:pb-3 select-none"
-      style={{ height: 'var(--app-height, 100vh)' }}
+      style={{ height: 'var(--app-height, 100vh)', backgroundColor: '#FFFFFF' }}
     >
       {/* Semantic H1 for Search Engine Indexing */}
       <h1 className="sr-only">
@@ -82,9 +82,10 @@ export default function Hero({ onOpenPage }) {
 
       {/* ── 1. Desktop Background Composition with Stable Framing ── */}
       <div
-        className="hidden md:block absolute inset-0 w-full h-full pointer-events-none select-none z-0 hero-bg-cover"
+        className="hidden md:block absolute inset-0 w-full h-full pointer-events-none select-none z-0 hero-bg-cover bg-white"
         style={{
           backgroundImage: `url(${heroDesktop})`,
+          backgroundColor: '#FFFFFF',
         }}
         aria-hidden="true"
       />
@@ -93,8 +94,8 @@ export default function Hero({ onOpenPage }) {
       <img
         src={heroMobile}
         alt="KPR Productions Luxury Photography Flatlay Studio Scene Mobile"
-        className="block md:hidden absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0"
-        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+        className="block md:hidden absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none z-0 bg-white"
+        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', backgroundColor: '#FFFFFF' }}
         loading="eager"
         fetchPriority="high"
         decoding="async"
@@ -159,7 +160,7 @@ export default function Hero({ onOpenPage }) {
               <button
                 type="button"
                 onClick={() => handleCardClick('colorlab')}
-                className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 xs:px-4 sm:px-6 md:px-7 py-1.5 sm:py-2 md:py-2.5 rounded-full bg-[#FAF5ED]/95 hover:bg-white text-[#1A1A1A] hover:text-black border-2 border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.25)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
+                className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 xs:px-4 sm:px-6 md:px-7 py-1.5 sm:py-2 md:py-2.5 rounded-full bg-white/95 hover:bg-white text-[#1A1A1A] hover:text-black border-2 border-[#C5A880] hover:border-[#9E783D] shadow-[0_4px_14px_rgba(180,140,90,0.25)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer backdrop-blur-sm whitespace-nowrap"
                 title="Print Your Albums"
               >
                 <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#A47E43] group-hover:text-[#8D652B] transition-colors" />
@@ -199,7 +200,7 @@ export default function Hero({ onOpenPage }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.06, ease: 'easeOut' }}
               onClick={() => handleCardClick(service.route)}
-              className="group relative bg-[#FAF5ED]/92 hover:bg-[#FAF5ED] backdrop-blur-md border border-[#C5A880]/50 hover:border-[#C5A880] rounded-xl sm:rounded-2xl p-1.5 xs:p-2 sm:p-2.5 md:p-3 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_16px_rgba(180,140,90,0.16)] hover:shadow-[0_8px_24px_rgba(197,168,128,0.3)]"
+              className="group relative bg-white/95 hover:bg-white backdrop-blur-md border border-[#C5A880]/60 hover:border-[#C5A880] rounded-xl sm:rounded-2xl p-1.5 xs:p-2 sm:p-2.5 md:p-3 flex flex-col items-center text-center justify-between transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(197,168,128,0.25)]"
             >
               {/* 1. Official Logo Badge & Optional Title Section */}
               <div className="h-8 xs:h-9 sm:h-11 md:h-12 w-full flex flex-col items-center justify-center">
@@ -220,7 +221,7 @@ export default function Hero({ onOpenPage }) {
               </div>
 
               {/* 3. Supporting Visual Asset */}
-              <div className="w-full h-11 xs:h-12 sm:h-14 md:h-16 lg:h-18 flex items-center justify-center my-0.5 sm:my-1 relative overflow-hidden rounded-md sm:rounded-lg border border-[#C5A880]/30 shadow-[0_2px_8px_rgba(0,0,0,0.06)] bg-[#F5ECE0]">
+              <div className="w-full h-11 xs:h-12 sm:h-14 md:h-16 lg:h-18 flex items-center justify-center my-0.5 sm:my-1 relative overflow-hidden rounded-md sm:rounded-lg border border-[#C5A880]/30 shadow-[0_2px_8px_rgba(0,0,0,0.06)] bg-white">
                 <img
                   src={service.cardImage}
                   alt={service.cardAlt}

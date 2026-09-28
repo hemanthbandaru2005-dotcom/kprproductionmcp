@@ -320,6 +320,16 @@ function AppContent() {
     }
   }, [activePage]);
 
+  // Ensure pure white background on desktop/mobile for Home/Hero, and warm cream for all other pages
+  useEffect(() => {
+    const isHome = activePage === 'home';
+    const bg = isHome ? '#FFFFFF' : '#F7F3EE';
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty('background-color', bg, 'important');
+      document.body.style.setProperty('background-color', bg, 'important');
+    }
+  }, [activePage]);
+
   // Password reset recovery mode
   useEffect(() => {
     if (isRecoveryMode) {
@@ -465,7 +475,10 @@ function AppContent() {
   }
 
   return (
-    <div className={`min-h-screen ${activePage === 'home' ? 'bg-white' : 'bg-[#F7F3EE]'} text-[#1A1A1A] font-sans selection:bg-[#C5A880] selection:text-white w-full m-0 p-0`}>
+    <div
+      className={`min-h-screen ${activePage === 'home' ? 'bg-white' : 'bg-[#F7F3EE]'} text-[#1A1A1A] font-sans selection:bg-[#C5A880] selection:text-white w-full m-0 p-0`}
+      style={{ backgroundColor: activePage === 'home' ? '#FFFFFF' : '#F7F3EE' }}
+    >
 
       {/* Top Navigation Header Bar */}
       <Navbar
@@ -582,6 +595,7 @@ function AppContent() {
       {activePage !== 'login' && activePage !== 'home' && activePage !== 'estimator' && (
         <footer id="footer">
           <Footer
+            activePage={activePage}
             onOpenInquire={() => handleSelectPage('contact')}
             showInstagram={true}
             showFacebook={activePage !== 'events' && activePage !== 'colorlab'}

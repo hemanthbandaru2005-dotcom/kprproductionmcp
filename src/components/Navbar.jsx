@@ -30,7 +30,7 @@ export default function Navbar({ activePage, onSelectPage }) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 pointer-events-none px-4 md:px-6 lg:px-8 ${
         scrolled
-          ? 'bg-[#F7F3EE]/95 backdrop-blur-md shadow-md border-b border-black/10 py-2.5 sm:py-3'
+          ? (activePage === 'home' ? 'bg-white/95 backdrop-blur-md shadow-md border-b border-black/10 py-2.5 sm:py-3' : 'bg-[#F7F3EE]/95 backdrop-blur-md shadow-md border-b border-black/10 py-2.5 sm:py-3')
           : 'pt-2.5 sm:pt-4 md:pt-5'
       }`}
     >
